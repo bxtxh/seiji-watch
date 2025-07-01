@@ -1,0 +1,32 @@
+# Docker Compose Override Example
+# Copy this file to docker-compose.override.yml for local customizations
+# This file is ignored by git to avoid committing local settings
+
+version: '3.8'
+
+services:
+  postgres:
+    # Expose additional ports or modify configuration for local development
+    environment:
+      # Add any additional environment variables for development
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    # volumes:
+    #   # Mount additional SQL scripts or data
+    #   - ./local-data:/docker-entrypoint-initdb.d/local
+
+  # Add development-only services
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   ports:
+  #     - "1025:1025"
+  #     - "8025:8025"
+
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: dev@example.com
+  #     PGADMIN_DEFAULT_PASSWORD: dev
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - postgres
