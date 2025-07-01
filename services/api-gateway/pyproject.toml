@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "api-gateway"
+version = "0.1.0"
+description = "API gateway with embedded vector operations"
+authors = ["Diet Issue Tracker Team"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.0"
+uvicorn = "^0.24.0"
+psycopg2-binary = "^2.9.0"
+sqlalchemy = "^2.0.0"
+pgvector = "^0.2.0"
+pydantic = "^2.5.0"
+openai = "^1.0.0"
+redis = "^5.0.0"
+python-jose = "^3.3.0"
+passlib = "^1.7.0"
+python-multipart = "^0.0.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+httpx = "^0.25.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

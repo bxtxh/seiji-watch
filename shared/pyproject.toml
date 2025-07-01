@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "shared"
+version = "0.1.0"
+description = "Shared data models and utilities"
+authors = ["Diet Issue Tracker Team"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.5.0"
+sqlalchemy = "^2.0.0"
+pgvector = "^0.2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "seiji-watch"
+version = "0.1.0"
+description = "Diet Issue Tracker - Independent platform tracking Diet issues as tickets"
+authors = ["Diet Issue Tracker Team"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1.0"
+mypy = "^1.7.0"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = []
+
+[tool.ruff.isort]
+known-first-party = ["shared"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
