@@ -115,3 +115,24 @@ ARTIFACT_REGISTRY_URL=asia-northeast1-docker.pkg.dev
 
 ## Project Status
 🚧 **In Development** - MVP target: July 22, 2025
+
+### Development Progress
+- ✅ **EPIC 0: Infrastructure Foundations** (5/5 completed - July 1, 2025)
+  - Repository structure and monorepo setup
+  - Local development environment (Docker + PostgreSQL + pgvector)
+  - GCP infrastructure with Terraform (Cloud Run, Cloud SQL, Artifact Registry)
+  - CI/CD pipeline with GitHub Actions
+  - Shared data models with Alembic migrations
+
+- 🎯 **Next: EPIC 1: Single Meeting Pipeline** (0/6 tickets)
+  - Diet website scraper implementation
+  - Speech-to-text integration
+  - Data normalization pipeline
+  - Vector embedding generation
+  - Search API implementation
+  - Basic frontend interface
+
+### Milestones
+- ✅ Infrastructure complete (3 days ahead of schedule)
+- 🎯 Feature freeze: July 15, 2025 (14 days remaining)
+- 🎯 MVP launch: July 22, 2025 (21 days remaining)
