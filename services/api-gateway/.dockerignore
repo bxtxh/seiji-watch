@@ -1,0 +1,54 @@
+# Git files
+.git
+.gitignore
+
+# Python cache files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+docs/
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Development files
+.env.local
+.env.development
+.env.test
+
+# Poetry
+poetry.lock
+
+# Build artifacts
+dist/
+build/
+
+# Logs
+*.log
+logs/

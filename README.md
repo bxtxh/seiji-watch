@@ -86,5 +86,32 @@ gcloud secrets versions add seiji-watch-openai-api-key-dev --data-file=- <<< 'yo
 - **Pub/Sub**: Asynchronous job processing queue
 - **VPC**: Private networking with Cloud SQL access
 
+## CI/CD Pipeline
+
+### GitHub Actions Workflows
+- **Main CI/CD**: Automated testing, building, and deployment on push to main
+- **Pull Request Checks**: Code quality gates for all PRs
+- **Infrastructure Management**: Terraform validation and deployment
+
+### Required GitHub Secrets
+Set these secrets in your GitHub repository settings:
+```bash
+GCP_PROJECT_ID=your-gcp-project-id
+GCP_SA_KEY=<service-account-key-json>  # From Terraform output
+ARTIFACT_REGISTRY_URL=asia-northeast1-docker.pkg.dev
+```
+
+### Development Workflow
+1. Create feature branch from `main`
+2. Make changes and commit with conventional commit format
+3. Push branch - PR checks run automatically
+4. Create PR - additional quality gates and security scans
+5. Merge to `main` - automatic deployment to staging
+6. Manual approval required for production deployment
+
+### Environment Promotions
+- **Staging**: Auto-deployed on main branch push
+- **Production**: Manual approval gate via GitHub Environment protection
+
 ## Project Status
 🚧 **In Development** - MVP target: July 22, 2025

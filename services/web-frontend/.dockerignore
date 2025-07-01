@@ -1,0 +1,61 @@
+# Git files
+.git
+.gitignore
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next/
+out/
+
+# Production build
+build/
+
+# Environment variables
+.env*.local
+.env.development
+.env.test
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+docs/
+
+# Test files
+**/*.test.js
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.js
+**/*.spec.ts
+**/*.spec.tsx
+__tests__/
+coverage/
+
+# Storybook
+.storybook/
+storybook-static/
+
+# Logs
+*.log
+logs/
+
+# Cache
+.eslintcache
+.next/cache/
+
+# Misc
+*.tgz
+*.tar.gz

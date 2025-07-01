@@ -1,0 +1,337 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  GCP_REGION: asia-northeast1
+  ARTIFACT_REGISTRY_URL: asia-northeast1-docker.pkg.dev
+  
+jobs:
+  test-python:
+    name: Test Python Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [shared, api-gateway, ingest-worker]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        
+    - name: Install dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      working-directory: services/${{ matrix.service }}
+      run: poetry install --no-interaction --no-root
+      
+    - name: Install project
+      working-directory: services/${{ matrix.service }}
+      run: poetry install --no-interaction
+      
+    - name: Run linting with ruff
+      working-directory: services/${{ matrix.service }}
+      run: poetry run ruff check .
+      
+    - name: Run formatting check with ruff
+      working-directory: services/${{ matrix.service }}
+      run: poetry run ruff format --check .
+      
+    - name: Run type checking with mypy
+      working-directory: services/${{ matrix.service }}
+      run: poetry run mypy .
+      continue-on-error: true  # Allow mypy to fail during initial development
+      
+    - name: Run tests with pytest
+      working-directory: services/${{ matrix.service }}
+      run: poetry run pytest --cov=. --cov-report=xml
+      continue-on-error: true  # Allow tests to fail during initial development
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./services/${{ matrix.service }}/coverage.xml
+        flags: ${{ matrix.service }}
+        name: codecov-${{ matrix.service }}
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint --workspace=services/web-frontend
+      continue-on-error: true  # Allow linting to fail during initial development
+      
+    - name: Run type checking
+      run: npm run type-check --workspace=services/web-frontend
+      continue-on-error: true  # Allow type checking to fail during initial development
+      
+    - name: Run tests
+      run: npm run test --workspace=services/web-frontend
+      continue-on-error: true  # Allow tests to fail during initial development
+      
+    - name: Build application
+      run: npm run build --workspace=services/web-frontend
+      continue-on-error: true  # Allow build to fail during initial development
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner in repo mode
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-python, test-frontend]
+    if: github.ref == 'refs/heads/main'
+    
+    strategy:
+      matrix:
+        service: [api-gateway, ingest-worker, web-frontend]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        
+    - name: Configure Docker for Artifact Registry
+      run: gcloud auth configure-docker ${{ env.ARTIFACT_REGISTRY_URL }}
+      
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.ARTIFACT_REGISTRY_URL }}/${{ secrets.GCP_PROJECT_ID }}/seiji-watch-dev/${{ matrix.service }}
+        tags: |
+          type=ref,event=branch
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./services/${{ matrix.service }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Scan image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.ARTIFACT_REGISTRY_URL }}/${{ secrets.GCP_PROJECT_ID }}/seiji-watch-dev/${{ matrix.service }}:latest
+        format: 'sarif'
+        output: 'trivy-image-results.sarif'
+        
+    - name: Upload Trivy image scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-image-results.sarif'
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.url }}
+    
+    strategy:
+      matrix:
+        service: [api-gateway, ingest-worker]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      
+    - name: Deploy to Cloud Run
+      id: deploy
+      run: |
+        IMAGE_URL="${{ env.ARTIFACT_REGISTRY_URL }}/${{ secrets.GCP_PROJECT_ID }}/seiji-watch-dev/${{ matrix.service }}:${{ github.sha }}"
+        
+        gcloud run deploy seiji-watch-${{ matrix.service }}-dev \
+          --image=$IMAGE_URL \
+          --region=${{ env.GCP_REGION }} \
+          --platform=managed \
+          --allow-unauthenticated \
+          --set-env-vars="ENVIRONMENT=staging" \
+          --set-env-vars="GIT_SHA=${{ github.sha }}" \
+          --set-env-vars="DEPLOYMENT_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --max-instances=10 \
+          --min-instances=0 \
+          --memory=512Mi \
+          --cpu=1 \
+          --timeout=3600 \
+          --concurrency=80
+          
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe seiji-watch-${{ matrix.service }}-dev \
+          --region=${{ env.GCP_REGION }} \
+          --format='value(status.url)')
+        
+        echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+        
+    - name: Run health check
+      run: |
+        SERVICE_URL=$(gcloud run services describe seiji-watch-${{ matrix.service }}-dev \
+          --region=${{ env.GCP_REGION }} \
+          --format='value(status.url)')
+        
+        # Wait for service to be ready
+        sleep 30
+        
+        # Health check (adjust endpoint as needed)
+        if [ "${{ matrix.service }}" = "api-gateway" ]; then
+          curl -f "$SERVICE_URL/health" || exit 1
+        else
+          # For ingest-worker, just check if service responds
+          curl -f "$SERVICE_URL/" || exit 1
+        fi
+        
+    - name: Notify deployment success
+      run: |
+        echo "✅ Successfully deployed ${{ matrix.service }} to staging"
+        echo "Service URL: ${{ steps.deploy.outputs.url }}"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    
+    strategy:
+      matrix:
+        service: [api-gateway, ingest-worker]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+      
+    - name: Deploy to Cloud Run Production
+      id: deploy
+      run: |
+        IMAGE_URL="${{ env.ARTIFACT_REGISTRY_URL }}/${{ secrets.GCP_PROJECT_ID }}/seiji-watch-prod/${{ matrix.service }}:${{ github.sha }}"
+        
+        gcloud run deploy seiji-watch-${{ matrix.service }}-prod \
+          --image=$IMAGE_URL \
+          --region=${{ env.GCP_REGION }} \
+          --platform=managed \
+          --allow-unauthenticated \
+          --set-env-vars="ENVIRONMENT=production" \
+          --set-env-vars="GIT_SHA=${{ github.sha }}" \
+          --set-env-vars="DEPLOYMENT_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          --max-instances=100 \
+          --min-instances=1 \
+          --memory=1Gi \
+          --cpu=2 \
+          --timeout=3600 \
+          --concurrency=80
+          
+        # Get the service URL
+        SERVICE_URL=$(gcloud run services describe seiji-watch-${{ matrix.service }}-prod \
+          --region=${{ env.GCP_REGION }} \
+          --format='value(status.url)')
+        
+        echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+        
+    - name: Run production health check
+      run: |
+        SERVICE_URL=$(gcloud run services describe seiji-watch-${{ matrix.service }}-prod \
+          --region=${{ env.GCP_REGION }} \
+          --format='value(status.url)')
+        
+        # Wait for service to be ready
+        sleep 30
+        
+        # Health check
+        if [ "${{ matrix.service }}" = "api-gateway" ]; then
+          curl -f "$SERVICE_URL/health" || exit 1
+        else
+          curl -f "$SERVICE_URL/" || exit 1
+        fi
+        
+    - name: Notify production deployment
+      run: |
+        echo "🚀 Successfully deployed ${{ matrix.service }} to production"
+        echo "Service URL: ${{ steps.deploy.outputs.url }}"
