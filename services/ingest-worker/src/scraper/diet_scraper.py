@@ -5,9 +5,12 @@ import requests
 from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
 import re
+import time
+import logging
 from datetime import datetime
 from dataclasses import dataclass
 from urllib.parse import urljoin, urlparse
+from urllib.robotparser import RobotFileParser
 
 
 @dataclass
@@ -28,13 +31,65 @@ class DietScraper:
     """Main scraper class for Diet website data collection"""
     
     BASE_URL = "https://www.sangiin.go.jp"
-    BILLS_URL = "https://www.sangiin.go.jp/japanese/joho1/kousei/gian/current/index.htm"
+    BILLS_URL = "https://www.sangiin.go.jp/japanese/joho1/kousei/gian/217/gian.htm"
     
-    def __init__(self):
+    def __init__(self, delay_seconds: float = 1.5):
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
         })
+        self.delay_seconds = delay_seconds
+        self.logger = logging.getLogger(__name__)
+        self._last_request_time = 0
+        self._robots_parser = None
+        self._init_robots_parser()
+    
+    def _init_robots_parser(self):
+        """Initialize robots.txt parser"""
+        try:
+            robots_url = urljoin(self.BASE_URL, '/robots.txt')
+            self._robots_parser = RobotFileParser()
+            self._robots_parser.set_url(robots_url)
+            self._robots_parser.read()
+            self.logger.info("Robots.txt parser initialized")
+        except Exception as e:
+            self.logger.warning(f"Could not load robots.txt: {e}")
+            self._robots_parser = None
+    
+    def _can_fetch(self, url: str) -> bool:
+        """Check if URL can be fetched according to robots.txt"""
+        if not self._robots_parser:
+            return True
+        
+        user_agent = self.session.headers.get('User-Agent', '*')
+        return self._robots_parser.can_fetch(user_agent, url)
+    
+    def _rate_limit(self):
+        """Implement rate limiting between requests"""
+        current_time = time.time()
+        time_since_last = current_time - self._last_request_time
+        
+        if time_since_last < self.delay_seconds:
+            sleep_time = self.delay_seconds - time_since_last
+            self.logger.debug(f"Rate limiting: sleeping {sleep_time:.2f}s")
+            time.sleep(sleep_time)
+        
+        self._last_request_time = time.time()
+    
+    def _make_request(self, url: str, **kwargs) -> requests.Response:
+        """Make HTTP request with rate limiting and robots.txt checking"""
+        # Check robots.txt
+        if not self._can_fetch(url):
+            raise requests.RequestException(f"Robots.txt disallows fetching: {url}")
+        
+        # Apply rate limiting
+        self._rate_limit()
+        
+        # Make request
+        response = self.session.get(url, **kwargs)
+        response.raise_for_status()
+        
+        return response
     
     def fetch_current_bills(self) -> List[BillData]:
         """
@@ -42,21 +97,39 @@ class DietScraper:
         Returns list of BillData objects
         """
         try:
-            response = self.session.get(self.BILLS_URL, timeout=30)
-            response.raise_for_status()
+            response = self._make_request(self.BILLS_URL, timeout=30)
             
             soup = BeautifulSoup(response.content, 'html.parser')
             bills = []
             
-            # Parse bill listing table
-            bill_tables = soup.find_all('table', class_='data')
+            # Debug: Print page structure
+            self.logger.info(f"Page title: {soup.title.string if soup.title else 'No title'}")
             
-            for table in bill_tables:
-                rows = table.find_all('tr')[1:]  # Skip header row
+            # Look for various table structures
+            bill_tables = soup.find_all('table')
+            self.logger.info(f"Found {len(bill_tables)} tables on page")
+            
+            for i, table in enumerate(bill_tables):
+                self.logger.info(f"Table {i}: classes={table.get('class')}, rows={len(table.find_all('tr'))}")
                 
-                for row in rows:
+                rows = table.find_all('tr')
+                if len(rows) <= 1:  # Skip tables with no data rows
+                    continue
+                
+                # Debug first few rows of first table (only if needed)
+                if i == 1 and self.logger.level <= logging.DEBUG:
+                    self.logger.debug(f"Debugging Table {i}:")
+                    for j, row in enumerate(rows[:3]):
+                        cells = row.find_all(['td', 'th'])
+                        cell_texts = [c.get_text(strip=True)[:20] + '...' if len(c.get_text(strip=True)) > 20 else c.get_text(strip=True) for c in cells]
+                        self.logger.debug(f"  Row {j}: {cell_texts}")
+                    
+                # Skip header row if exists
+                data_rows = rows[1:] if rows[0].find('th') else rows
+                
+                for row in data_rows:
                     cells = row.find_all(['td', 'th'])
-                    if len(cells) >= 4:
+                    if len(cells) >= 3:  # Minimum required cells
                         bill = self._parse_bill_row(cells)
                         if bill:
                             bills.append(bill)
@@ -64,17 +137,24 @@ class DietScraper:
             return bills
             
         except requests.RequestException as e:
-            print(f"Error fetching bills: {e}")
+            self.logger.error(f"Error fetching bills: {e}")
             return []
     
     def _parse_bill_row(self, cells) -> Optional[BillData]:
         """Parse individual bill row from table"""
         try:
+            if len(cells) < 3:
+                return None
+            
             # Extract bill information from table cells
-            bill_number = cells[0].get_text(strip=True)
-            title_cell = cells[1]
-            status = cells[2].get_text(strip=True)
-            submitter = cells[3].get_text(strip=True) if len(cells) > 3 else ""
+            # Column structure: [提出回次, 提出番号, 件名, 議案要旨, 提出法律案]
+            diet_session = cells[0].get_text(strip=True)
+            bill_number = cells[1].get_text(strip=True)
+            title_cell = cells[2]
+            
+            # Check if this is a header row
+            if not diet_session or diet_session in ['提出回次', '回次']:
+                return None
             
             # Extract title and URL
             title_link = title_cell.find('a')
@@ -85,12 +165,26 @@ class DietScraper:
                 title = title_cell.get_text(strip=True)
                 url = ""
             
+            # Skip if no title
+            if not title:
+                return None
+            
+            # Create bill ID from session and number
+            bill_id = f"{diet_session}-{bill_number}"
+            
+            # Extract status from remaining cells
+            status = cells[3].get_text(strip=True) if len(cells) > 3 else "審議中"
+            bill_type = cells[4].get_text(strip=True) if len(cells) > 4 else "提出法律案"
+            
+            # Determine submitter based on bill type and context
+            submitter = "政府" if "政府" in bill_type else "議員"
+            
             # Parse bill ID and determine stage
             stage = self._determine_stage(status)
             category = self._determine_category(title)
             
             return BillData(
-                bill_id=bill_number,
+                bill_id=bill_id,
                 title=title,
                 submission_date=None,  # To be parsed from detail page
                 status=status,
@@ -101,7 +195,7 @@ class DietScraper:
             )
             
         except Exception as e:
-            print(f"Error parsing bill row: {e}")
+            self.logger.error(f"Error parsing bill row: {e}")
             return None
     
     def _determine_stage(self, status: str) -> str:
@@ -133,8 +227,7 @@ class DietScraper:
     def fetch_bill_details(self, bill_url: str) -> Dict:
         """Fetch detailed information for a specific bill"""
         try:
-            response = self.session.get(bill_url, timeout=30)
-            response.raise_for_status()
+            response = self._make_request(bill_url, timeout=30)
             
             soup = BeautifulSoup(response.content, 'html.parser')
             
@@ -149,7 +242,7 @@ class DietScraper:
             return details
             
         except requests.RequestException as e:
-            print(f"Error fetching bill details from {bill_url}: {e}")
+            self.logger.error(f"Error fetching bill details from {bill_url}: {e}")
             return {}
     
     def _extract_summary(self, soup: BeautifulSoup) -> str:
@@ -191,11 +284,13 @@ class DietScraper:
 
 if __name__ == "__main__":
     # PoC test
+    logging.basicConfig(level=logging.INFO)
+    
     scraper = DietScraper()
-    print("Fetching current bills...")
+    scraper.logger.info("Fetching current bills...")
     
     bills = scraper.fetch_current_bills()
-    print(f"Found {len(bills)} bills")
+    scraper.logger.info(f"Found {len(bills)} bills")
     
     for bill in bills[:3]:  # Show first 3 bills
         print(f"- {bill.bill_id}: {bill.title[:50]}...")
