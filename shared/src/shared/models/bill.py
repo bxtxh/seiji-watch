@@ -1,11 +1,11 @@
 """Models for Diet bills and legislation."""
 
 import enum
-from sqlalchemy import Column, String, Text, Boolean, Enum, Date, Index, JSON
-from sqlalchemy.orm import relationship
-from pgvector.sqlalchemy import Vector
+from datetime import date
+from typing import Optional, List, Dict, Any
+from pydantic import Field
 
-from .base import Base, TimestampMixin
+from .base import BaseRecord
 
 
 class BillStatus(enum.Enum):
@@ -37,77 +37,57 @@ class BillCategory(enum.Enum):
     OTHER = "other"                      # その他
 
 
-class Bill(Base, TimestampMixin):
+class Bill(BaseRecord):
     """Diet bill model."""
     
-    __tablename__ = "bills"
-    
     # Basic identification
-    bill_number = Column(String(50), nullable=False, unique=True, index=True)
-    title = Column(String(500), nullable=False, index=True)
-    title_en = Column(String(1000), nullable=True)  # English title
-    short_title = Column(String(200), nullable=True)  # 略称
+    bill_number: str = Field(..., description="Official bill number")
+    title: str = Field(..., description="Bill title")
+    title_en: Optional[str] = Field(None, description="English title")
+    short_title: Optional[str] = Field(None, description="Short title/abbreviation")
     
     # Content
-    summary = Column(Text, nullable=True)
-    full_text = Column(Text, nullable=True)
-    purpose = Column(Text, nullable=True)  # 法案の目的
+    summary: Optional[str] = Field(None, description="Bill summary")
+    full_text: Optional[str] = Field(None, description="Full bill text")
+    purpose: Optional[str] = Field(None, description="Purpose of the bill")
     
     # Classification
-    status = Column(Enum(BillStatus), default=BillStatus.BACKLOG, nullable=False, index=True)
-    category = Column(Enum(BillCategory), nullable=True, index=True)
-    bill_type = Column(String(50), nullable=True, index=True)  # 政府提出/議員提出など
+    status: BillStatus = Field(BillStatus.BACKLOG, description="Current bill status")
+    category: Optional[BillCategory] = Field(None, description="Bill category")
+    bill_type: Optional[str] = Field(None, description="Bill type (government/member)")
     
     # Timeline
-    submitted_date = Column(Date, nullable=True, index=True)
-    first_reading_date = Column(Date, nullable=True)
-    committee_referral_date = Column(Date, nullable=True)
-    committee_report_date = Column(Date, nullable=True)
-    final_vote_date = Column(Date, nullable=True)
-    promulgated_date = Column(Date, nullable=True)
+    submitted_date: Optional[str] = Field(None, description="Submission date (YYYY-MM-DD)")
+    first_reading_date: Optional[str] = Field(None, description="First reading date")
+    committee_referral_date: Optional[str] = Field(None, description="Committee referral date")
+    committee_report_date: Optional[str] = Field(None, description="Committee report date")
+    final_vote_date: Optional[str] = Field(None, description="Final vote date")
+    promulgated_date: Optional[str] = Field(None, description="Promulgation date")
     
     # Session information
-    diet_session = Column(String(20), nullable=True, index=True)  # 国会回次
-    house_of_origin = Column(String(20), nullable=True)  # 提出院（衆議院/参議院）
+    diet_session: Optional[str] = Field(None, description="Diet session number")
+    house_of_origin: Optional[str] = Field(None, description="House of origin")
     
     # Submitter information
-    submitter_type = Column(String(20), nullable=True)  # government/member
-    submitting_members = Column(JSON, nullable=True)  # List of member IDs for member bills
-    sponsoring_ministry = Column(String(100), nullable=True)  # 主管省庁
+    submitter_type: Optional[str] = Field(None, description="Submitter type")
+    submitting_members: Optional[List[str]] = Field(None, description="List of submitting member IDs")
+    sponsoring_ministry: Optional[str] = Field(None, description="Sponsoring ministry")
     
     # URLs and references
-    diet_url = Column(String(500), nullable=True)
-    pdf_url = Column(String(500), nullable=True)
-    related_bills = Column(JSON, nullable=True)  # List of related bill IDs
+    diet_url: Optional[str] = Field(None, description="Diet website URL")
+    pdf_url: Optional[str] = Field(None, description="PDF document URL")
+    related_bills: Optional[List[str]] = Field(None, description="List of related bill IDs")
     
     # LLM-generated content
-    ai_summary = Column(Text, nullable=True)  # AI-generated summary
-    key_points = Column(JSON, nullable=True)  # List of key points
-    tags = Column(JSON, nullable=True)  # List of tags
-    impact_assessment = Column(JSON, nullable=True)  # AI impact analysis
-    
-    # Vector embeddings for semantic search
-    title_embedding = Column(Vector(1536), nullable=True)  # OpenAI embedding dimension
-    content_embedding = Column(Vector(1536), nullable=True)
+    ai_summary: Optional[str] = Field(None, description="AI-generated summary")
+    key_points: Optional[List[str]] = Field(None, description="List of key points")
+    tags: Optional[List[str]] = Field(None, description="List of tags")
+    impact_assessment: Optional[Dict[str, Any]] = Field(None, description="AI impact analysis")
     
     # Metadata
-    is_controversial = Column(Boolean, default=False, nullable=False)
-    priority_level = Column(String(20), default="normal", nullable=False)  # high/normal/low
-    estimated_cost = Column(String(100), nullable=True)  # 予算規模
-    
-    # Relationships
-    speeches = relationship("Speech", back_populates="related_bill", lazy="dynamic")
-    votes = relationship("Vote", back_populates="bill", lazy="dynamic")
-    
-    # Indexes for efficient queries
-    __table_args__ = (
-        Index("idx_bill_status_date", "status", "submitted_date"),
-        Index("idx_bill_category_session", "category", "diet_session"),
-        Index("idx_bill_timeline", "submitted_date", "final_vote_date"),
-        Index("idx_bill_search", "title", "bill_number"),
-        Index("idx_bill_content_embedding", "content_embedding"),
-        Index("idx_bill_title_embedding", "title_embedding"),
-    )
+    is_controversial: bool = Field(False, description="Whether the bill is controversial")
+    priority_level: str = Field("normal", description="Priority level (high/normal/low)")
+    estimated_cost: Optional[str] = Field(None, description="Estimated cost")
     
     def __repr__(self) -> str:
         return f"<Bill(number='{self.bill_number}', title='{self.title[:50]}...', status='{self.status.value}')>"
@@ -127,5 +107,9 @@ class Bill(Base, TimestampMixin):
         """Calculate days since bill submission."""
         if not self.submitted_date:
             return None
-        from datetime import date
-        return (date.today() - self.submitted_date).days
+        try:
+            from datetime import datetime
+            submitted = datetime.strptime(self.submitted_date, "%Y-%m-%d").date()
+            return (date.today() - submitted).days
+        except ValueError:
+            return None

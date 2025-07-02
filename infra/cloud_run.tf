@@ -41,7 +41,6 @@ resource "google_cloud_run_service" "api_gateway" {
       annotations = {
         "autoscaling.knative.dev/minScale"      = var.cloud_run_min_instances
         "autoscaling.knative.dev/maxScale"      = var.cloud_run_max_instances
-        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.main.connection_name
         "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.connector.id
         "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
       }
@@ -70,11 +69,6 @@ resource "google_cloud_run_service" "api_gateway" {
         }
 
         env {
-          name  = "DATABASE_URL"
-          value = "postgresql://${google_sql_user.app_user.name}:${random_password.db_password.result}@/${google_sql_database.app_db.name}?host=/cloudsql/${google_sql_database_instance.main.connection_name}"
-        }
-
-        env {
           name  = "GCS_BUCKET_NAME"
           value = google_storage_bucket.main.name
         }
@@ -93,6 +87,46 @@ resource "google_cloud_run_service" "api_gateway" {
             }
           }
         }
+
+        env {
+          name = "AIRTABLE_API_KEY"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.airtable_api_key.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "AIRTABLE_BASE_ID"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.airtable_base_id.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "WEAVIATE_API_KEY"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.weaviate_api_key.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "WEAVIATE_CLUSTER_URL"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.weaviate_cluster_url.secret_id
+              key  = "latest"
+            }
+          }
+        }
       }
     }
   }
@@ -104,7 +138,6 @@ resource "google_cloud_run_service" "api_gateway" {
 
   depends_on = [
     google_project_service.required_apis,
-    google_sql_database_instance.main,
     google_vpc_access_connector.connector
   ]
 }
@@ -124,7 +157,6 @@ resource "google_cloud_run_service" "ingest_worker" {
       annotations = {
         "autoscaling.knative.dev/minScale"      = "0"
         "autoscaling.knative.dev/maxScale"      = "5"
-        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.main.connection_name
         "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.connector.id
         "run.googleapis.com/vpc-access-egress"    = "private-ranges-only"
       }
@@ -154,11 +186,6 @@ resource "google_cloud_run_service" "ingest_worker" {
         }
 
         env {
-          name  = "DATABASE_URL"
-          value = "postgresql://${google_sql_user.app_user.name}:${random_password.db_password.result}@/${google_sql_database.app_db.name}?host=/cloudsql/${google_sql_database_instance.main.connection_name}"
-        }
-
-        env {
           name  = "GCS_BUCKET_NAME"
           value = google_storage_bucket.main.name
         }
@@ -179,6 +206,46 @@ resource "google_cloud_run_service" "ingest_worker" {
         }
 
         env {
+          name = "AIRTABLE_API_KEY"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.airtable_api_key.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "AIRTABLE_BASE_ID"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.airtable_base_id.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "WEAVIATE_API_KEY"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.weaviate_api_key.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
+          name = "WEAVIATE_CLUSTER_URL"
+          value_from {
+            secret_key_ref {
+              name = google_secret_manager_secret.weaviate_cluster_url.secret_id
+              key  = "latest"
+            }
+          }
+        }
+
+        env {
           name  = "PUBSUB_TOPIC"
           value = google_pubsub_topic.ingest_jobs.name
         }
@@ -193,12 +260,11 @@ resource "google_cloud_run_service" "ingest_worker" {
 
   depends_on = [
     google_project_service.required_apis,
-    google_sql_database_instance.main,
     google_vpc_access_connector.connector
   ]
 }
 
-# VPC Connector for private database access
+# VPC Connector for Cloud Run services
 resource "google_vpc_access_connector" "connector" {
   name          = "${var.app_name}-vpc-connector-${var.environment}"
   ip_cidr_range = "10.8.0.0/28"

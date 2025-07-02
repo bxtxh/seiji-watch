@@ -88,6 +88,32 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_jwt_accessor" {
   member    = "serviceAccount:${google_service_account.cloud_run.email}"
 }
 
+# IAM for accessing Airtable secrets
+resource "google_secret_manager_secret_iam_member" "cloud_run_airtable_api_accessor" {
+  secret_id = google_secret_manager_secret.airtable_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "cloud_run_airtable_base_accessor" {
+  secret_id = google_secret_manager_secret.airtable_base_id.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+# IAM for accessing Weaviate secrets
+resource "google_secret_manager_secret_iam_member" "cloud_run_weaviate_api_accessor" {
+  secret_id = google_secret_manager_secret.weaviate_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "cloud_run_weaviate_url_accessor" {
+  secret_id = google_secret_manager_secret.weaviate_cluster_url.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.cloud_run.email}"
+}
+
 # Service account key for GitHub Actions
 resource "google_service_account_key" "github_actions" {
   service_account_id = google_service_account.github_actions.name

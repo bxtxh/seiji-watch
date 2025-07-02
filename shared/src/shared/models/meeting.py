@@ -1,141 +1,105 @@
 """Models for Diet meetings and speeches."""
 
-import enum
-from sqlalchemy import Column, String, Text, DateTime, Boolean, ForeignKey, Integer, Index, JSON
-from sqlalchemy.orm import relationship
-from pgvector.sqlalchemy import Vector
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from pydantic import Field
 
-from .base import Base, TimestampMixin
+from .base import BaseRecord
 
 
-class Meeting(Base, TimestampMixin):
+class Meeting(BaseRecord):
     """Diet meeting/session model."""
     
-    __tablename__ = "meetings"
-    
     # Basic identification
-    meeting_id = Column(String(50), nullable=False, unique=True, index=True)
-    title = Column(String(500), nullable=False, index=True)
-    meeting_type = Column(String(50), nullable=False, index=True)  # 本会議/委員会/分科会
-    committee_name = Column(String(200), nullable=True, index=True)  # 委員会名
+    meeting_id: str = Field(..., description="Unique meeting identifier")
+    title: str = Field(..., description="Meeting title")
+    meeting_type: str = Field(..., description="Meeting type (本会議/委員会/分科会)")
+    committee_name: Optional[str] = Field(None, description="Committee name")
     
     # Session information
-    diet_session = Column(String(20), nullable=False, index=True)  # 国会回次
-    house = Column(String(20), nullable=False, index=True)  # 衆議院/参議院
-    session_number = Column(Integer, nullable=True)  # 第何回
+    diet_session: str = Field(..., description="Diet session number")
+    house: str = Field(..., description="House (衆議院/参議院)")
+    session_number: Optional[int] = Field(None, description="Session number")
     
     # Timing
-    meeting_date = Column(DateTime(timezone=True), nullable=False, index=True)
-    start_time = Column(DateTime(timezone=True), nullable=True)
-    end_time = Column(DateTime(timezone=True), nullable=True)
-    duration_minutes = Column(Integer, nullable=True)
+    meeting_date: str = Field(..., description="Meeting date (ISO format)")
+    start_time: Optional[str] = Field(None, description="Start time (ISO format)")
+    end_time: Optional[str] = Field(None, description="End time (ISO format)")
+    duration_minutes: Optional[int] = Field(None, description="Duration in minutes")
     
     # Content
-    agenda = Column(JSON, nullable=True)  # List of agenda items
-    summary = Column(Text, nullable=True)
-    meeting_notes = Column(Text, nullable=True)
+    agenda: Optional[List[str]] = Field(None, description="List of agenda items")
+    summary: Optional[str] = Field(None, description="Meeting summary")
+    meeting_notes: Optional[str] = Field(None, description="Meeting notes")
     
     # Media and documents
-    video_url = Column(String(500), nullable=True)
-    audio_url = Column(String(500), nullable=True)
-    transcript_url = Column(String(500), nullable=True)
-    documents_urls = Column(JSON, nullable=True)  # List of document URLs
+    video_url: Optional[str] = Field(None, description="Video URL")
+    audio_url: Optional[str] = Field(None, description="Audio URL")
+    transcript_url: Optional[str] = Field(None, description="Transcript URL")
+    documents_urls: Optional[List[str]] = Field(None, description="List of document URLs")
     
     # Processing status
-    is_processed = Column(Boolean, default=False, nullable=False, index=True)
-    transcript_processed = Column(Boolean, default=False, nullable=False)
-    stt_completed = Column(Boolean, default=False, nullable=False)
+    is_processed: bool = Field(False, description="Whether meeting is processed")
+    transcript_processed: bool = Field(False, description="Whether transcript is processed")
+    stt_completed: bool = Field(False, description="Whether STT is completed")
     
     # Metadata
-    participant_count = Column(Integer, nullable=True)
-    is_public = Column(Boolean, default=True, nullable=False)
-    is_cancelled = Column(Boolean, default=False, nullable=False)
-    
-    # Relationships
-    speeches = relationship("Speech", back_populates="meeting", lazy="dynamic", cascade="all, delete-orphan")
-    
-    # Indexes
-    __table_args__ = (
-        Index("idx_meeting_date_house", "meeting_date", "house"),
-        Index("idx_meeting_session_type", "diet_session", "meeting_type"),
-        Index("idx_meeting_committee", "committee_name", "meeting_date"),
-        Index("idx_meeting_processing", "is_processed", "transcript_processed"),
-    )
+    participant_count: Optional[int] = Field(None, description="Number of participants")
+    is_public: bool = Field(True, description="Whether meeting is public")
+    is_cancelled: bool = Field(False, description="Whether meeting is cancelled")
     
     def __repr__(self) -> str:
         return f"<Meeting(id='{self.meeting_id}', title='{self.title[:50]}...', date='{self.meeting_date}')>"
 
 
-class Speech(Base, TimestampMixin):
+class Speech(BaseRecord):
     """Individual speech within a meeting."""
     
-    __tablename__ = "speeches"
-    
     # Relationships
-    meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False, index=True)
-    speaker_id = Column(Integer, ForeignKey("members.id"), nullable=True, index=True)
-    related_bill_id = Column(Integer, ForeignKey("bills.id"), nullable=True, index=True)
+    meeting_id: str = Field(..., description="Airtable Meeting record ID")
+    speaker_id: Optional[str] = Field(None, description="Airtable Member record ID")
+    related_bill_id: Optional[str] = Field(None, description="Airtable Bill record ID")
     
     # Speech metadata
-    speech_order = Column(Integer, nullable=False, index=True)  # Order within meeting
-    start_time = Column(DateTime(timezone=True), nullable=True)
-    end_time = Column(DateTime(timezone=True), nullable=True)
-    duration_seconds = Column(Integer, nullable=True)
+    speech_order: int = Field(..., description="Order within meeting")
+    start_time: Optional[str] = Field(None, description="Speech start time (ISO format)")
+    end_time: Optional[str] = Field(None, description="Speech end time (ISO format)")
+    duration_seconds: Optional[int] = Field(None, description="Duration in seconds")
     
     # Speaker information (for non-member speakers)
-    speaker_name = Column(String(200), nullable=True)  # For ministers, officials, etc.
-    speaker_title = Column(String(200), nullable=True)  # 大臣、局長、etc.
-    speaker_type = Column(String(50), nullable=False, default="member", index=True)  # member/minister/official/other
+    speaker_name: Optional[str] = Field(None, description="Speaker name (for non-members)")
+    speaker_title: Optional[str] = Field(None, description="Speaker title")
+    speaker_type: str = Field("member", description="Speaker type (member/minister/official/other)")
     
     # Content
-    original_text = Column(Text, nullable=False)  # Original transcript
-    cleaned_text = Column(Text, nullable=True)  # Cleaned/processed text
-    speech_type = Column(String(50), nullable=True, index=True)  # 質問/答弁/討論/etc.
+    original_text: str = Field(..., description="Original transcript text")
+    cleaned_text: Optional[str] = Field(None, description="Cleaned/processed text")
+    speech_type: Optional[str] = Field(None, description="Speech type (質問/答弁/討論)")
     
     # LLM-generated content
-    summary = Column(Text, nullable=True)  # AI-generated summary
-    key_points = Column(JSON, nullable=True)  # List of key points
-    topics = Column(JSON, nullable=True)  # List of topics/tags
-    sentiment = Column(String(20), nullable=True)  # positive/negative/neutral
-    stance = Column(String(50), nullable=True)  # 賛成/反対/中立
-    
-    # Vector embeddings for semantic search
-    content_embedding = Column(Vector(1536), nullable=True)
+    summary: Optional[str] = Field(None, description="AI-generated summary")
+    key_points: Optional[List[str]] = Field(None, description="List of key points")
+    topics: Optional[List[str]] = Field(None, description="List of topics/tags")
+    sentiment: Optional[str] = Field(None, description="Sentiment (positive/negative/neutral)")
+    stance: Optional[str] = Field(None, description="Stance (賛成/反対/中立)")
     
     # Quality metrics
-    word_count = Column(Integer, nullable=True)
-    confidence_score = Column(String(10), nullable=True)  # STT confidence
-    is_interruption = Column(Boolean, default=False, nullable=False)
+    word_count: Optional[int] = Field(None, description="Word count")
+    confidence_score: Optional[str] = Field(None, description="STT confidence score")
+    is_interruption: bool = Field(False, description="Whether this is an interruption")
     
     # Processing flags
-    is_processed = Column(Boolean, default=False, nullable=False, index=True)
-    needs_review = Column(Boolean, default=False, nullable=False)
-    
-    # Relationships
-    meeting = relationship("Meeting", back_populates="speeches")
-    speaker = relationship("Member", back_populates="speeches")
-    related_bill = relationship("Bill", back_populates="speeches")
-    
-    # Indexes for efficient queries
-    __table_args__ = (
-        Index("idx_speech_meeting_order", "meeting_id", "speech_order"),
-        Index("idx_speech_speaker_date", "speaker_id", "start_time"),
-        Index("idx_speech_bill_speaker", "related_bill_id", "speaker_id"),
-        Index("idx_speech_type_date", "speech_type", "start_time"),
-        Index("idx_speech_content_embedding", "content_embedding"),
-        Index("idx_speech_processing", "is_processed", "needs_review"),
-    )
+    is_processed: bool = Field(False, description="Whether speech is processed")
+    needs_review: bool = Field(False, description="Whether speech needs review")
     
     def __repr__(self) -> str:
-        speaker_name = self.speaker.name if self.speaker else self.speaker_name or "Unknown"
+        speaker_name = self.speaker_name or "Unknown"
         return f"<Speech(speaker='{speaker_name}', order={self.speech_order}, meeting_id={self.meeting_id})>"
     
     @property
     def display_speaker_name(self) -> str:
         """Get the display name for the speaker."""
-        if self.speaker:
-            return self.speaker.display_name
-        elif self.speaker_name:
+        if self.speaker_name:
             title = f" ({self.speaker_title})" if self.speaker_title else ""
             return f"{self.speaker_name}{title}"
         else:

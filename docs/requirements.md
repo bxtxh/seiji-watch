@@ -77,10 +77,10 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 ## 3. Non-Functional Requirements
 
 ### 3.1 Performance
-- **NFR-001**: Mobile page load time ≤ 200ms
-- **NFR-002**: API response time p95 ≤ 500ms
-- **NFR-003**: Support 1000+ concurrent users
-- **NFR-004**: Lighthouse performance score > 90
+- **NFR-001**: Mobile page load time ≤ 500ms (relaxed for MVP)
+- **NFR-002**: API response time p95 ≤ 1000ms (MVP tolerance)
+- **NFR-003**: Support 100+ concurrent users (MVP scale)
+- **NFR-004**: Lighthouse performance score > 80 (MVP target)
 
 ### 3.2 Availability & Reliability
 - **NFR-005**: System uptime ≥ 99.5%
@@ -118,14 +118,15 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 ### 4.2 Technology Stack
 - **TR-005**: Backend: Python 3.11.2 with FastAPI
 - **TR-006**: Frontend: Next.js with TypeScript
-- **TR-007**: Database: PostgreSQL with pgvector extension
+- **TR-007**: Database: Airtable (MVP), PostgreSQL (post-MVP migration)
+- **TR-007-B**: Vector Database: Weaviate Cloud for semantic search
 - **TR-008**: Message Queue: Google Cloud Pub/Sub
 - **TR-009**: Infrastructure: Google Cloud Platform (GCP)
 - **TR-010**: AI/ML: OpenAI API, Claude API, Whisper, sentence-transformers
 
 ### 4.3 Data Storage
-- **TR-011**: Structured data in PostgreSQL
-- **TR-012**: Vector embeddings in pgvector
+- **TR-011**: Structured data in Airtable (MVP), PostgreSQL (post-MVP)
+- **TR-012**: Vector embeddings in Weaviate Cloud
 - **TR-013**: Binary files in Cloud Storage
 - **TR-014**: Application logs in Cloud Logging
 - **TR-015**: Metrics in Cloud Monitoring

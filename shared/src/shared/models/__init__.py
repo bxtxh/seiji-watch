@@ -1,14 +1,14 @@
 """Data models for Diet Issue Tracker."""
 
-from .base import Base, TimestampMixin
+from .base import BaseRecord, WeaviateEmbedding
 from .bill import Bill, BillStatus, BillCategory
 from .meeting import Meeting, Speech
 from .member import Member, Party
 from .vote import Vote, VoteResult
 
 __all__ = [
-    "Base",
-    "TimestampMixin",
+    "BaseRecord",
+    "WeaviateEmbedding",
     "Bill",
     "BillStatus",
     "BillCategory",

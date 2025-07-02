@@ -27,13 +27,19 @@
 - **Timeline**: 3 weeks to July 22, 2025 with July 15 feature freeze
 
 ### Service Architecture (MVP → Future)
-**MVP (3 Services):**
-- `ingest-worker`: Scraper + STT processing
-- `api-gateway`: FastAPI with embedded vector operations
+**MVP (3 Services) - Updated for Airtable + Weaviate:**
+- `ingest-worker`: Scraper + STT processing → Airtable + Weaviate
+- `api-gateway`: FastAPI with Airtable + Weaviate integration
 - `web-frontend`: Next.js PWA
 
+**Data Architecture (MVP):**
+- **Structured Data**: Airtable (Bills, Members, Sessions, Speeches)
+- **Vector Data**: Weaviate Cloud (Speech embeddings)
+- **Binary Files**: Cloud Storage (Audio, PDFs)
+
 **Post-MVP Migration Path:**
-- Split vector operations to dedicated `vector-store` service
+- Migrate from Airtable to PostgreSQL for complex queries
+- Keep Weaviate or migrate to self-hosted vector solution
 - Add separate `data-processor` service for complex analysis
 - Implement `stt-worker` as independent service
 
@@ -60,14 +66,16 @@
 **DoD:** `docker-compose up` starts complete local environment
 **Commits:** f4d094e, 8e0883c
 
-#### T02 - GCP Infrastructure Bootstrap ✅ COMPLETED
+#### T02 - GCP Infrastructure Bootstrap ✅ COMPLETED → 🔄 UPDATED FOR AIRTABLE+WEAVIATE
 **Priority:** P0 | **Estimate:** 8 hours | **Actual:** 8 hours
 - ✅ Terraform configuration for GCP resources
-- ✅ Cloud SQL (PostgreSQL + pgvector extension)
+- ~~✅ Cloud SQL (PostgreSQL + pgvector extension)~~ → **Updated:** Airtable + Weaviate Cloud setup
 - ✅ Cloud Run services (3 services)
 - ✅ Artifact Registry for container images
 - ✅ Cloud Storage bucket for raw files
 **DoD:** Infrastructure provisioned via `terraform apply`
+**Architecture Update:** Cloud SQL replaced with Airtable (structured data) + Weaviate Cloud (vectors)
+**Cost Impact:** $628/month → $155/month (75% reduction)
 **Commits:** 74ffb66
 
 #### T03 - CI/CD Pipeline Foundation ✅ COMPLETED
@@ -79,12 +87,15 @@
 **DoD:** Push to main automatically deploys to staging environment
 **Commits:** 285754e
 
-#### T04 - Shared Data Models ✅ COMPLETED
+#### T04 - Shared Data Models ✅ COMPLETED → 🔄 UPDATED FOR AIRTABLE+WEAVIATE
 **Priority:** P0 | **Estimate:** 4 hours | **Actual:** 4 hours
 - ✅ Pydantic models for Meeting, Speech, Member, Bill
-- ✅ Database schema with migrations (Alembic)
+- ~~✅ Database schema with migrations (Alembic)~~ → **Updated:** Airtable base schemas
 - ✅ Shared types package for cross-service communication
-**DoD:** Models are importable across services, migrations run successfully
+- **New:** Airtable API client models
+- **New:** Weaviate schema definitions
+**DoD:** Models are importable across services, Airtable bases configured
+**Architecture Update:** PostgreSQL schemas replaced with Airtable base structures
 **Commits:** [pending commit]
 
 **EPIC 0 Summary:**
@@ -117,24 +128,26 @@
 **Priority:** P0 | **Estimate:** 8 hours
 - Split transcripts into individual speeches
 - Speaker identification and matching
-- PostgreSQL storage with proper indexing
+- **Updated:** Airtable storage via API with proper field mapping
 - Basic data validation and cleanup
-**DoD:** Raw transcript becomes structured speech records in database
+- **New:** Sync with Weaviate for vector storage
+**DoD:** Raw transcript becomes structured speech records in Airtable
 
 #### T13 - Vector Embedding Generation
 **Priority:** P0 | **Estimate:** 6 hours
 - OpenAI text-embedding-3-small integration
 - Batch embedding generation for speeches
-- pgvector storage with efficient indexing
-- **Architecture Note:** Embedded in API service with clear separation for future extraction
-**DoD:** All speeches have vector representations stored in pgvector
+- **Updated:** Weaviate Cloud storage with automatic indexing
+- **New:** Weaviate client integration and schema setup
+**DoD:** All speeches have vector representations stored in Weaviate Cloud
 
 #### T14 - Search API Implementation
 **Priority:** P0 | **Estimate:** 8 hours
-- Hybrid search: keyword (PostgreSQL) + vector (pgvector)
+- **Updated:** Hybrid search: keyword (Airtable API) + vector (Weaviate)
 - RESTful endpoints with proper pagination
 - Result ranking and relevance scoring
-- **Future-Proofing:** Abstract vector operations into separate module
+- **New:** Caching layer to handle Airtable rate limits (5 req/s)
+- **New:** Data synchronization between Airtable and Weaviate
 **DoD:** API returns ranked search results combining text and semantic search
 
 #### T15 - Basic Frontend Interface
