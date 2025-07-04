@@ -13,6 +13,7 @@ from pydantic import BaseModel
 import uvicorn
 
 from scraper.diet_scraper import DietScraper, BillData
+from scraper.voting_scraper import VotingScraper, VotingSession, VoteRecord
 from stt.whisper_client import WhisperClient, TranscriptionResult
 from embeddings.vector_client import VectorClient, EmbeddingResult
 
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Global instances
 diet_scraper: Optional[DietScraper] = None
+voting_scraper: Optional[VotingScraper] = None
 whisper_client: Optional[WhisperClient] = None
 vector_client: Optional[VectorClient] = None
 
@@ -32,7 +34,7 @@ vector_client: Optional[VectorClient] = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler"""
-    global diet_scraper, whisper_client, vector_client
+    global diet_scraper, voting_scraper, whisper_client, vector_client
     
     # Startup
     logger.info("Starting ingest-worker service...")
@@ -41,6 +43,10 @@ async def lifespan(app: FastAPI):
         # Initialize Diet scraper
         diet_scraper = DietScraper()
         logger.info("Diet scraper initialized")
+        
+        # Initialize Voting scraper
+        voting_scraper = VotingScraper()
+        logger.info("Voting scraper initialized")
         
         # Initialize Whisper client (only if API key is available)
         try:
@@ -149,6 +155,22 @@ class SearchResponse(BaseModel):
     total_found: int = 0
 
 
+class VotingRequest(BaseModel):
+    """Request model for voting data collection"""
+    force_refresh: bool = False
+    vote_type: str = "all"  # "plenary", "committee", "all"
+
+
+class VotingResponse(BaseModel):
+    """Response model for voting data collection"""
+    success: bool
+    message: str
+    sessions_processed: int
+    votes_processed: int
+    members_processed: int
+    errors: List[str] = []
+
+
 @app.get("/health")
 async def health_check() -> Dict[str, str]:
     """Health check endpoint"""
@@ -193,6 +215,58 @@ async def get_scrape_status() -> Dict[str, str]:
         "status": "ready",
         "last_scrape": "N/A",
         "bills_in_queue": "0"
+    }
+
+
+@app.post("/voting/collect", response_model=VotingResponse)
+async def collect_voting_data(
+    request: VotingRequest,
+    background_tasks: BackgroundTasks
+) -> VotingResponse:
+    """Collect voting data from Diet website and store in Airtable"""
+    
+    if not voting_scraper:
+        raise HTTPException(
+            status_code=500,
+            detail="Voting scraper not properly initialized"
+        )
+    
+    # Run voting data collection in background
+    background_tasks.add_task(
+        _collect_voting_data_task,
+        vote_type=request.vote_type,
+        force_refresh=request.force_refresh
+    )
+    
+    return VotingResponse(
+        success=True,
+        message="Voting data collection task started",
+        sessions_processed=0,
+        votes_processed=0,
+        members_processed=0
+    )
+
+
+@app.get("/voting/status")
+async def get_voting_status() -> Dict[str, str]:
+    """Get current voting data collection status"""
+    # TODO: Implement proper status tracking
+    return {
+        "status": "ready",
+        "last_collection": "N/A",
+        "sessions_in_queue": "0"
+    }
+
+
+@app.get("/voting/stats")
+async def get_voting_stats() -> Dict[str, Union[int, str]]:
+    """Get voting data statistics"""
+    # TODO: Implement with Airtable queries
+    return {
+        "total_sessions": 0,
+        "total_votes": 0,
+        "total_members": 0,
+        "latest_session_date": "N/A"
     }
 
 
@@ -564,6 +638,143 @@ async def _transcribe_task(
         
     except Exception as e:
         logger.error(f"Transcription task failed: {e}")
+
+
+async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool = False) -> None:
+    """Background task to collect voting data and store in Airtable"""
+    logger.info(f"Starting voting data collection task (type: {vote_type})...")
+    
+    try:
+        # Fetch voting sessions from Diet website
+        voting_sessions = voting_scraper.fetch_voting_sessions()
+        logger.info(f"Scraped {len(voting_sessions)} voting sessions from Diet website")
+        
+        # Process and store the data
+        sessions_processed = 0
+        votes_processed = 0
+        members_processed = 0
+        errors = []
+        unique_members = set()
+        unique_parties = set()
+        
+        for session in voting_sessions:
+            try:
+                # Process voting session
+                session_data = _normalize_voting_session(session)
+                logger.debug(f"Processing session: {session_data['bill_number']} - {session_data['bill_title'][:50]}...")
+                
+                # Process individual vote records
+                for vote_record in session.vote_records:
+                    try:
+                        # Normalize vote data
+                        vote_data = _normalize_vote_record(vote_record, session)
+                        
+                        # Track unique members and parties for later processing
+                        unique_members.add((vote_record.member_name, vote_record.party_name, vote_record.constituency))
+                        unique_parties.add(vote_record.party_name)
+                        
+                        votes_processed += 1
+                        
+                        # Rate limiting - respect Airtable API limits
+                        await asyncio.sleep(0.2)
+                        
+                    except Exception as e:
+                        error_msg = f"Failed to process vote record for {vote_record.member_name}: {str(e)}"
+                        logger.warning(error_msg)
+                        errors.append(error_msg)
+                
+                sessions_processed += 1
+                
+                # TODO: Store session data in Airtable
+                # TODO: Store vote records in Airtable
+                
+            except Exception as e:
+                error_msg = f"Failed to process voting session {session.bill_number}: {str(e)}"
+                logger.warning(error_msg)
+                errors.append(error_msg)
+        
+        # Process unique members and parties
+        members_processed = len(unique_members)
+        logger.info(f"Found {len(unique_parties)} unique parties and {members_processed} unique members")
+        
+        # TODO: Store parties and members in Airtable if they don't exist
+        
+        logger.info(f"Voting data collection completed:")
+        logger.info(f"  Sessions processed: {sessions_processed}")
+        logger.info(f"  Votes processed: {votes_processed}")
+        logger.info(f"  Members identified: {members_processed}")
+        logger.info(f"  Parties identified: {len(unique_parties)}")
+        logger.info(f"  Errors: {len(errors)}")
+        
+        if errors:
+            logger.warning(f"First few errors: {errors[:3]}")
+        
+    except Exception as e:
+        logger.error(f"Voting data collection task failed: {e}")
+
+
+def _normalize_voting_session(session: VotingSession) -> Dict[str, any]:
+    """
+    Normalize voting session data for Airtable storage
+    
+    Args:
+        session: VotingSession object from scraper
+        
+    Returns:
+        Normalized voting session data dictionary
+    """
+    return {
+        "bill_number": session.bill_number,
+        "bill_title": session.bill_title,
+        "vote_date": session.vote_date.strftime("%Y-%m-%d"),
+        "vote_type": session.vote_type,
+        "vote_stage": session.vote_stage,
+        "committee_name": session.committee_name,
+        "house": "参議院",
+        "total_votes": session.total_votes,
+        "yes_votes": session.yes_votes,
+        "no_votes": session.no_votes,
+        "abstain_votes": session.abstain_votes,
+        "absent_votes": session.absent_votes,
+        "is_final_vote": session.vote_stage == "最終" if session.vote_stage else False
+    }
+
+
+def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> Dict[str, any]:
+    """
+    Normalize individual vote record for Airtable storage
+    
+    Args:
+        vote_record: VoteRecord object from scraper
+        session: Parent VotingSession object
+        
+    Returns:
+        Normalized vote record data dictionary
+    """
+    # Map Japanese vote results to standardized format
+    vote_result_mapping = {
+        "賛成": "yes",
+        "反対": "no",
+        "棄権": "abstain",
+        "欠席": "absent",
+        "出席": "present"
+    }
+    
+    return {
+        "member_name": vote_record.member_name,
+        "member_name_kana": vote_record.member_name_kana,
+        "party_name": vote_record.party_name,
+        "constituency": vote_record.constituency,
+        "house": vote_record.house,
+        "vote_result": vote_result_mapping.get(vote_record.vote_result, vote_record.vote_result),
+        "vote_date": session.vote_date.strftime("%Y-%m-%d"),
+        "vote_type": session.vote_type,
+        "vote_stage": session.vote_stage,
+        "committee_name": session.committee_name,
+        "bill_number": session.bill_number,
+        "bill_title": session.bill_title,
+        "is_final_vote": session.vote_stage == "最終" if session.vote_stage else False
+    }
 
 
 if __name__ == "__main__":
