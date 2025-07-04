@@ -72,3 +72,27 @@ export interface IssueTag {
   category: string;
   description?: string;
 }
+
+export interface VoteResult {
+  member_name: string;
+  party_name: string;
+  constituency: string;
+  vote_result: 'yes' | 'no' | 'abstain' | 'absent' | 'present';
+}
+
+export interface VotingSession {
+  bill_number: string;
+  bill_title: string;
+  vote_date: string;
+  vote_type: string;
+  vote_stage?: string;
+  committee_name?: string;
+  house: string;
+  total_votes: number;
+  yes_votes: number;
+  no_votes: number;
+  abstain_votes: number;
+  absent_votes: number;
+  is_final_vote: boolean;
+  vote_records?: VoteResult[];
+}

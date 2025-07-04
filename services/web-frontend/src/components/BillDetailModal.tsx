@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Bill } from '@/types';
+import VotingResults from './VotingResults';
 
 interface BillDetailModalProps {
   bill: Bill;
@@ -152,6 +153,9 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
                   </p>
                 </div>
               )}
+
+              {/* Voting Results */}
+              <VotingResults billNumber={bill.bill_number} />
 
               {/* Actions */}
               <div className="border-t border-gray-200 pt-6">

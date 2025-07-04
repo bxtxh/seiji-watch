@@ -475,3 +475,81 @@ class AirtableClient:
         # Airtable doesn't return total count directly, so we need to paginate
         # For now, return the number of records in first page
         return len(response.get("records", []))
+    
+    # Votes table operations
+    async def create_vote(self, vote_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new vote record."""
+        url = f"{self.base_url}/Votes"
+        data = {
+            "fields": {
+                "Vote_Result": vote_data["vote_result"],
+                "Vote_Date": vote_data["vote_date"],
+                "House": vote_data["house"],
+                "Vote_Type": vote_data["vote_type"],
+                "Vote_Stage": vote_data.get("vote_stage"),
+                "Committee_Name": vote_data.get("committee_name"),
+                "Total_Votes": vote_data.get("total_votes"),
+                "Yes_Votes": vote_data.get("yes_votes"),
+                "No_Votes": vote_data.get("no_votes"),
+                "Abstain_Votes": vote_data.get("abstain_votes"),
+                "Absent_Votes": vote_data.get("absent_votes"),
+                "Notes": vote_data.get("notes"),
+                "Is_Final_Vote": vote_data.get("is_final_vote", False),
+                "Created_At": datetime.now().isoformat(),
+                "Updated_At": datetime.now().isoformat()
+            }
+        }
+        
+        # Handle relationships
+        if "bill_id" in vote_data and vote_data["bill_id"]:
+            data["fields"]["Bill"] = [vote_data["bill_id"]]
+        if "member_id" in vote_data and vote_data["member_id"]:
+            data["fields"]["Member"] = [vote_data["member_id"]]
+        
+        # Remove None values
+        data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
+        
+        response = await self._rate_limited_request("POST", url, json=data)
+        return response
+    
+    async def get_vote(self, record_id: str) -> Dict[str, Any]:
+        """Get a vote record by ID."""
+        url = f"{self.base_url}/Votes/{record_id}"
+        return await self._rate_limited_request("GET", url)
+    
+    async def list_votes(self, filter_formula: Optional[str] = None,
+                        max_records: int = 100) -> List[Dict[str, Any]]:
+        """List vote records with optional filtering."""
+        url = f"{self.base_url}/Votes"
+        params = {"maxRecords": max_records}
+        if filter_formula:
+            params["filterByFormula"] = filter_formula
+        
+        response = await self._rate_limited_request("GET", url, params=params)
+        return response.get("records", [])
+    
+    async def find_member_by_name(self, member_name: str, party_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Find member by name and optionally party."""
+        filter_parts = [f"{{Name}} = '{member_name}'"]
+        if party_name:
+            # Note: This assumes we have party name stored directly or via lookup
+            filter_parts.append(f"{{Party_Name}} = '{party_name}'")
+        
+        filter_formula = "AND(" + ", ".join(filter_parts) + ")"
+        members = await self.list_members(filter_formula=filter_formula, max_records=1)
+        
+        return members[0] if members else None
+    
+    async def find_party_by_name(self, party_name: str) -> Optional[Dict[str, Any]]:
+        """Find party by name."""
+        filter_formula = f"{{Name}} = '{party_name}'"
+        parties = await self.list_parties(filter_formula=filter_formula, max_records=1)
+        
+        return parties[0] if parties else None
+    
+    async def find_bill_by_number(self, bill_number: str) -> Optional[Dict[str, Any]]:
+        """Find bill by bill number."""
+        filter_formula = f"{{Bill_Number}} = '{bill_number}'"
+        bills = await self.list_bills(filter_formula=filter_formula, max_records=1)
+        
+        return bills[0] if bills else None
