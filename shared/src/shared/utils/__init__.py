@@ -7,6 +7,7 @@ from .database import (
     drop_tables,
     check_database_connection,
 )
+from .issue_extractor import IssueExtractor
 
 __all__ = [
     "init_database",
@@ -14,4 +15,5 @@ __all__ = [
     "create_tables",
     "drop_tables",
     "check_database_connection",
+    "IssueExtractor",
 ]

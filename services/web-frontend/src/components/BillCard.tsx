@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bill } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { Bill, IssueTag } from '@/types';
 import BillDetailModal from './BillDetailModal';
 
 interface BillCardProps {
@@ -8,6 +8,37 @@ interface BillCardProps {
 
 export default function BillCard({ bill }: BillCardProps) {
   const [showDetail, setShowDetail] = useState(false);
+  const [issueTags, setIssueTags] = useState<IssueTag[]>([]);
+
+  useEffect(() => {
+    if (bill.issue_tags && bill.issue_tags.length > 0) {
+      fetchIssueTags();
+    }
+  }, [bill.issue_tags]);
+
+  const fetchIssueTags = async () => {
+    try {
+      const response = await fetch('/api/issues/tags/');
+      const data = await response.json();
+      
+      const transformedTags: IssueTag[] = data.map((record: any) => ({
+        id: record.id,
+        name: record.fields?.Name || '',
+        color_code: record.fields?.Color_Code || '#3B82F6',
+        category: record.fields?.Category || '',
+        description: record.fields?.Description
+      }));
+      
+      // Filter tags that are associated with this bill
+      const billTags = transformedTags.filter(tag => 
+        bill.issue_tags?.includes(tag.id)
+      );
+      
+      setIssueTags(billTags);
+    } catch (error) {
+      console.error('Failed to fetch issue tags:', error);
+    }
+  };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
@@ -105,6 +136,29 @@ export default function BillCard({ bill }: BillCardProps) {
             <p className="text-sm text-gray-700 japanese-text line-clamp-3">
               {bill.summary}
             </p>
+          )}
+
+          {/* Issue Tags */}
+          {issueTags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {issueTags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag.id}
+                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                  style={{
+                    backgroundColor: tag.color_code + '20',
+                    color: tag.color_code
+                  }}
+                >
+                  {tag.name}
+                </span>
+              ))}
+              {issueTags.length > 3 && (
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                  +{issueTags.length - 3} more
+                </span>
+              )}
+            </div>
           )}
 
           {/* Category and metadata */}

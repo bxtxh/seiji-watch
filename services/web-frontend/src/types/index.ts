@@ -9,6 +9,8 @@ export interface Bill {
   diet_url: string;
   relevance_score?: number;
   search_method?: string;
+  related_issues?: string[];
+  issue_tags?: string[];
 }
 
 export interface Speech {
@@ -46,4 +48,27 @@ export interface HealthStatus {
   status: string;
   service: string;
   version: string;
+}
+
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  status: 'active' | 'reviewed' | 'archived';
+  related_bills?: string[];
+  issue_tags?: string[];
+  created_at?: string;
+  updated_at?: string;
+  extraction_confidence?: number;
+  review_notes?: string;
+  is_llm_generated?: boolean;
+}
+
+export interface IssueTag {
+  id: string;
+  name: string;
+  color_code: string;
+  category: string;
+  description?: string;
 }

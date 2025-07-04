@@ -26,53 +26,72 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 - **FR-004**: Capture Diet TV video streams (HLS format)
 - **FR-005**: Implement rate limiting (1-2 second delays, respect robots.txt)
 - **FR-006**: Handle errors with exponential backoff retry logic
+- **FR-007**: **[NEW]** Collect member voting data from HTML voting result pages (House of Councillors)
+- **FR-008**: **[NEW]** Extract voting data from PDF name lists (House of Representatives, roll-call votes only)
+- **FR-009**: **[NEW]** Maintain member database with party affiliations and constituencies
 
 ### 2.2 Speech Processing (stt-worker)
-- **FR-007**: Convert audio/video to text using OpenAI Whisper large-v3
-- **FR-008**: Achieve Word Error Rate (WER) ≤ 15% for Japanese speech
-- **FR-009**: Process audio files asynchronously via message queue
-- **FR-010**: Store raw audio in Cloud Storage, transcripts in PostgreSQL
+- **FR-010**: Convert audio/video to text using OpenAI Whisper large-v3
+- **FR-011**: Achieve Word Error Rate (WER) ≤ 15% for Japanese speech
+- **FR-012**: Process audio files asynchronously via message queue
+- **FR-013**: Store raw audio in Cloud Storage, transcripts in Airtable
 
 ### 2.3 Data Processing & AI Analysis (data-processor)
-- **FR-011**: Extract entities: {Issue, Bill, Stage, Party, Member, Vote}
-- **FR-012**: Categorize bills: 予算・決算, 税制, 社会保障, 外交・国際, 経済・産業, その他
-- **FR-013**: Track bill workflow: Backlog → 審議中 → 採決待ち → 成立
-- **FR-014**: **[NEW]** Dynamic issue extraction from bill content using LLM
-- **FR-015**: **[NEW]** Parliamentary debate content analysis and topic modeling
-- **FR-016**: **[NEW]** Automatic bill-to-debate content linking via semantic similarity
-- **FR-017**: **[NEW]** Current political issue trend analysis from aggregated content
-- **FR-018**: **[NEW]** Bill social impact assessment using multi-factor LLM evaluation
-- **FR-019**: **[NEW]** Cross-reference analysis between related bills and policy discussions
-- **FR-020**: **[NEW]** Temporal tracking of political agenda shifts and emerging issues
+- **FR-014**: Extract entities: {Issue, Bill, Stage, Party, Member, Vote}
+- **FR-015**: Categorize bills: 予算・決算, 税制, 社会保障, 外交・国際, 経済・産業, その他
+- **FR-016**: Track bill workflow: Backlog → 審議中 → 採決待ち → 成立
+- **FR-017**: **[NEW]** Process and normalize member voting data
+- **FR-018**: **[NEW]** Calculate member voting patterns and correlations
+- **FR-019**: **[NEW]** Dynamic issue extraction from bill content using LLM
+- **FR-020**: **[NEW]** Parliamentary debate content analysis and topic modeling
+- **FR-021**: **[NEW]** Automatic bill-to-debate content linking via semantic similarity
+- **FR-022**: **[NEW]** Current political issue trend analysis from aggregated content
+- **FR-023**: **[NEW]** Bill social impact assessment using multi-factor LLM evaluation
+- **FR-024**: **[NEW]** Cross-reference analysis between related bills and policy discussions
+- **FR-025**: **[NEW]** Temporal tracking of political agenda shifts and emerging issues
 
 ### 2.4 Vector Search & Semantic Analysis (vector-store)
-- **FR-021**: Generate embeddings using Japanese-optimized models
-- **FR-022**: Implement vector similarity search with pgvector
-- **FR-023**: Support incremental indexing for new content
-- **FR-024**: **[NEW]** Semantic similarity search between bills and debates
-- **FR-025**: **[NEW]** Issue-based clustering and topic discovery
-- **FR-026**: **[NEW]** Cross-temporal policy evolution tracking
-- **FR-027**: **[NEW]** Similar bill recommendation system
-- **FR-028**: **[NEW]** Political stance analysis through embedding space geometry
+- **FR-026**: Generate embeddings using Japanese-optimized models
+- **FR-027**: Implement vector similarity search with Weaviate Cloud
+- **FR-028**: Support incremental indexing for new content
+- **FR-029**: **[NEW]** Semantic similarity search between bills and debates
+- **FR-030**: **[NEW]** Issue-based clustering and topic discovery
+- **FR-031**: **[NEW]** Cross-temporal policy evolution tracking
+- **FR-032**: **[NEW]** Similar bill recommendation system
+- **FR-033**: **[NEW]** Political stance analysis through embedding space geometry
 
 ### 2.5 API Gateway (api-gateway)
-- **FR-029**: Provide unified REST API with OpenAPI 3.0 specifications
-- **FR-030**: Implement JWT-based authentication
-- **FR-031**: Rate limiting per user and per endpoint
-- **FR-032**: CORS configuration for frontend domains
-- **FR-033**: API versioning and backward compatibility
+- **FR-034**: Provide unified REST API with OpenAPI 3.0 specifications
+- **FR-035**: Implement JWT-based authentication
+- **FR-036**: Rate limiting per user and per endpoint
+- **FR-037**: CORS configuration for frontend domains
+- **FR-038**: API versioning and backward compatibility
+- **FR-039**: **[NEW]** Member voting data API endpoints
+- **FR-040**: **[NEW]** Voting pattern analysis API endpoints
 
 ### 2.6 Web Frontend (web-frontend)
-- **FR-034**: Progressive Web App (PWA) with offline capabilities
-- **FR-035**: Mobile-first responsive design
-- **FR-036**: Accessibility features (ARIA labels, keyboard navigation)
-- **FR-037**: Color-blind friendly palette (#27AE60/#C0392B/#F1C40F)
-- **FR-038**: Furigana toggle for Japanese text readability
-- **FR-039**: **[NEW]** Issue trend dashboard with LLM-generated insights
-- **FR-040**: **[NEW]** Bill impact visualization and analysis summaries
-- **FR-041**: **[NEW]** Semantic search interface for bill and debate content
-- **FR-042**: **[NEW]** Personalized bill recommendations based on user interests  
-- **FR-043**: **[NEW]** Real-time political agenda tracking and alerts
+- **FR-041**: Progressive Web App (PWA) with offline capabilities
+- **FR-042**: Mobile-first responsive design
+- **FR-043**: Accessibility features (ARIA labels, keyboard navigation)
+- **FR-044**: Color-blind friendly palette (#27AE60/#C0392B/#F1C40F)
+- **FR-045**: Furigana toggle for Japanese text readability
+- **FR-046**: **[NEW]** Member voting visualization for each bill
+- **FR-047**: **[NEW]** Member voting pattern analysis dashboard
+- **FR-048**: **[NEW]** Issue trend dashboard with LLM-generated insights
+- **FR-049**: **[NEW]** Bill impact visualization and analysis summaries
+- **FR-050**: **[NEW]** Semantic search interface for bill and debate content
+- **FR-051**: **[NEW]** Personalized bill recommendations based on user interests  
+- **FR-052**: **[NEW]** Real-time political agenda tracking and alerts
+- **FR-053**: **[NEW]** Issue management system with LLM-assisted extraction
+- **FR-054**: **[NEW]** Issue tag categorization and visualization
+- **FR-055**: **[NEW]** Bill-to-issue linking and relationship management
+
+### 2.7 Issue Management & Policy Analysis
+- **FR-056**: **[NEW]** Policy issue extraction from bill content using LLM
+- **FR-057**: **[NEW]** Issue tag creation and management (admin interface)
+- **FR-058**: **[NEW]** Multiple issue tags per bill assignment
+- **FR-059**: **[NEW]** Issue board with filtering and categorization
+- **FR-060**: **[NEW]** Bill card integration with issue tags and descriptions
 
 ## 3. Non-Functional Requirements
 
@@ -220,8 +239,32 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2025-06-30  
+## 📝 Additional Requirements - Member Voting Features
+**Added Date**: July 1, 2025
+
+### New Functional Requirements Added:
+- **FR-007-009**: Member voting data collection (House of Councillors HTML, House of Representatives PDF)
+- **FR-017-018**: Voting data processing and pattern analysis  
+- **FR-039-040**: Member voting data API endpoints
+- **FR-046-047**: Voting visualization and pattern analysis UI
+- **FR-053-060**: Issue management system with LLM-assisted extraction and tagging (July 1, 2025)
+
+### Modified Technical Requirements:
+- **TR-007**: ~~Database: PostgreSQL with pgvector extension~~ → **UPDATED**: Database: Airtable (MVP), PostgreSQL (post-MVP migration)
+- **TR-007-B**: **NEW**: Vector Database: Weaviate Cloud for semantic search
+- **TR-011**: ~~Structured data in PostgreSQL~~ → **UPDATED**: Structured data in Airtable (MVP), PostgreSQL (post-MVP)
+- **TR-012**: ~~Vector embeddings in pgvector~~ → **UPDATED**: Vector embeddings in Weaviate Cloud
+
+### Modified Performance Requirements (MVP-adjusted):
+- **NFR-001**: ~~Mobile page load time ≤ 200ms~~ → **UPDATED**: Mobile page load time ≤ 500ms (relaxed for MVP)
+- **NFR-002**: ~~API response time p95 ≤ 500ms~~ → **UPDATED**: API response time p95 ≤ 1000ms (MVP tolerance)
+- **NFR-003**: ~~Support 1000+ concurrent users~~ → **UPDATED**: Support 100+ concurrent users (MVP scale)
+- **NFR-004**: ~~Lighthouse performance score > 90~~ → **UPDATED**: Lighthouse performance score > 80 (MVP target)
+
+---
+
+**Document Version**: 1.1  
+**Last Updated**: 2025-07-01  
 **Next Review**: 2025-07-07  
 **Approved By**: [To be filled]
 
@@ -232,3 +275,4 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 1.0 | 2025-06-30 | Initial requirements specification with LLM analysis features | Claude |
+| 1.1 | 2025-07-01 | Added member voting features, updated database architecture to Airtable+Weaviate, relaxed MVP performance requirements | Claude |

@@ -4,16 +4,16 @@
 ## 📊 Progress Overview
 
 ### Current Status (as of July 1, 2025)
-- **EPIC 0: Infrastructure Foundations** ✅ **COMPLETED** (5/5 tickets)
-- **EPIC 1: Vertical Slice #1** 🚧 **PENDING** (0/6 tickets)  
-- **EPIC 2: Vertical Slice #2** ⏳ **WAITING** (0/3 tickets)
+- **EPIC 0: Infrastructure Foundations** ✅ **COMPLETED** (5/5 tickets) → 🔄 **UPDATE REQUIRED** for Airtable+Weaviate
+- **EPIC 1: Vertical Slice #1** 🚧 **PENDING** (0/8 tickets) → **UPDATED** +2 voting tickets (T16, T17)
+- **EPIC 2: Vertical Slice #2** ⏳ **WAITING** (0/4 tickets) → **UPDATED** +1 voting ticket (T23)
 - **EPIC 3: LLM Intelligence** ⏳ **WAITING** (0/3 tickets)
 - **EPIC 4: Production Readiness** ⏳ **WAITING** (0/4 tickets)
 
 ### Milestones
 - ✅ **Infrastructure Ready** (July 1, 2025) - 3 days ahead of schedule
-- 🎯 **Feature Freeze** (July 15, 2025) - 14 days remaining
-- 🎯 **MVP Launch** (July 22, 2025) - 21 days remaining
+- 🎯 **Feature Freeze** (July 8, 2025) - 7 days remaining
+- 🎯 **MVP Launch** (July 10, 2025) - 9 days remaining
 
 ### Next Priority
 **Start EPIC 1: Single Meeting Pipeline** - Begin with T10 (Diet Website Scraper)
@@ -105,8 +105,8 @@
 
 ---
 
-### EPIC 1: Vertical Slice #1 - "Single Meeting Pipeline"
-**Target: July 8, 2025**
+### EPIC 1: Vertical Slice #1 - "Single Meeting Pipeline" + Issue Management
+**Target: July 7, 2025**
 
 #### T10 - Diet Website Scraper (Single Meeting)
 **Priority:** P0 | **Estimate:** 8 hours
@@ -158,19 +158,60 @@
 - Mobile-responsive design foundation
 **DoD:** Users can search and view meeting content through web interface
 
+#### T16 - Member Voting Data Collection (House of Councillors)
+**Priority:** P1 | **Estimate:** 16 hours
+- HTML parser for House of Councillors voting result pages
+- Member data extraction with party affiliations
+- Vote result extraction (yes/no/absent) per bill
+- **Updated:** Store voting data in Airtable Members and Votes bases
+- Error handling for missing or malformed data
+**DoD:** Can automatically collect and store voting data from House of Councillors
+
+#### T17 - Member Voting Data Visualization
+**Priority:** P1 | **Estimate:** 4 hours
+- Vote result chips/badges in bill detail view
+- Member voting pattern visualization
+- Party-based voting statistics
+- **New:** Handle missing data cases with appropriate UI indicators
+**DoD:** Users can see who voted for/against each bill with clear visualization
+
+#### T18 - Issue Management Data Models ⭐ NEW
+**Priority:** P0 | **Estimate:** 3 hours
+- Add Issue and IssueTag models to shared package
+- Extend Airtable client with issue management methods
+- Create Airtable bases: Issues, IssueTags 
+- Add issue relationship fields to Bills model
+**DoD:** Issue data models integrated with Airtable backend
+
+#### T19 - LLM Issue Extraction System ⭐ NEW
+**Priority:** P0 | **Estimate:** 4 hours
+- Implement LLM-powered issue extraction from bill content
+- Create structured prompt for policy issue identification
+- Add admin review interface for LLM suggestions
+- Issue tag suggestion based on existing tags
+**DoD:** Admin can extract and review issues from bills with LLM assistance
+
+#### T20 - Issue Board UI Implementation ⭐ NEW
+**Priority:** P0 | **Estimate:** 4 hours
+- Create issue list page with filtering and categorization
+- Add issue tag display to bill cards (max 3 + more link)
+- Implement issue detail modal with related bills
+- Add header navigation to issue board
+**DoD:** Users can browse issues and see bill-issue relationships
+
 ---
 
 ### EPIC 2: Vertical Slice #2 - "Multi-Meeting Automation"
-**Target: July 12, 2025**
+**Target: July 9, 2025**
 
-#### T20 - Automated Ingestion Scheduler
+#### T21 - Automated Ingestion Scheduler
 **Priority:** P1 | **Estimate:** 6 hours
 - Cloud Scheduler → Pub/Sub → ingest-worker trigger
 - Nightly batch processing of new meetings
 - Status tracking and error notifications
 **DoD:** System automatically processes new Diet meetings daily
 
-#### T21 - Scraper Resilience & Optimization
+#### T22 - Scraper Resilience & Optimization
 **Priority:** P1 | **Estimate:** 6 hours
 - Duplicate detection and skipping
 - Exponential backoff for failures
@@ -178,17 +219,26 @@
 - Progress tracking for long-running jobs
 **DoD:** Scraper handles failures gracefully and respects site limits
 
-#### T22 - Batch Processing Queue
+#### T23 - Batch Processing Queue
 **Priority:** P1 | **Estimate:** 6 hours
 - Async task processing for embeddings
 - Job status tracking and retry logic
 - Resource optimization for batch operations
 **DoD:** Large volumes of content process efficiently without blocking
 
+#### T24 - House of Representatives Voting Data (Roll-call votes)
+**Priority:** P2 | **Estimate:** 12 hours
+- PDF collection from House of Representatives voting pages
+- PDF text extraction and OCR processing
+- Member name dictionary matching for verification
+- **Updated:** Store House of Representatives voting data in Airtable
+- Handle OCR recognition errors gracefully
+**DoD:** Can collect and store roll-call voting data from House of Representatives PDFs
+
 ---
 
 ### EPIC 3: LLM-Powered Intelligence (Light)
-**Target: July 15, 2025 (Feature Freeze)**
+**Target: July 8, 2025**
 
 #### T30 - Speech Summarization
 **Priority:** P1 | **Estimate:** 6 hours
@@ -214,7 +264,7 @@
 ---
 
 ### EPIC 4: Production Readiness & Launch
-**Target: July 22, 2025**
+**Target: July 10, 2025**
 
 #### T40 - End-to-End Testing
 **Priority:** P0 | **Estimate:** 8 hours
@@ -323,8 +373,64 @@ class VectorStoreService:
 
 ---
 
-**Total Estimated Hours:** ~140 hours (achievable in 3 weeks with focused effort)
+**Total Estimated Hours:** ~183 hours (achievable in 9 days with focused effort)
 **Critical Path:** EPIC 0 → EPIC 1 → EPIC 4
 **Parallel Development:** EPIC 2 and EPIC 3 can overlap with EPIC 1
+**New Features Added:** 
+- Member voting data collection and visualization (+32 hours)
+- Issue management system with LLM assistance (+11 hours)
+
+---
+
+## 📝 Additional Development Requirements - Member Voting Features
+**Added Date**: July 1, 2025  
+**Priority**: High  
+**Reason**: Product scope expansion based on feasibility study
+
+### EPIC 0 Team: Infrastructure Updates Required
+
+#### T02 Infrastructure Reconfiguration (4 hours, due July 2)
+**Status**: 🔄 **UPDATE REQUIRED** - Airtable + Weaviate Migration
+- Remove Cloud SQL configuration from Terraform
+- Add Airtable workspace with voting-related bases
+- Configure Weaviate Cloud cluster (Sandbox tier)
+- Update Secret Manager with new API keys
+
+#### T04 Data Models Extension (6 hours, due July 3)
+**Status**: 🔄 **UPDATE REQUIRED** - Voting Data Models
+- Extend existing models with Airtable ID fields
+- Add Member, Vote, VoteResult models
+- Create Airtable and Weaviate API clients
+- Update type definitions across services
+
+### EPIC 1 Team: New Voting Features
+
+#### T16 Member Voting Data Collection (16 hours, due July 10)
+**Status**: 🆕 **NEW REQUIREMENT**
+- HTML scraper for House of Councillors voting pages
+- Parse member votes (賛成/反対/欠席)
+- Store in Airtable Members, Votes, VoteResults bases
+- Error handling for HTML structure changes
+
+#### T17 Voting Data Visualization (4 hours, due July 11)
+**Status**: 🆕 **NEW REQUIREMENT**
+- Add voting results section to bill detail page
+- Party-wise vote breakdown charts
+- Member vote chips with color coding
+- Mobile-responsive and accessible design
+
+#### T23 House of Representatives PDF Processing (12 hours)
+**Status**: 🆕 **NEW REQUIREMENT** (Priority P2)
+- PDF collection from roll-call votes
+- OCR text extraction and member name matching
+- Handle missing data cases gracefully
+
+### Dependencies and Timeline
+- T16, T17 depend on T02, T04 completion
+- Critical path: July 2-3 (infrastructure) → July 4-11 (features)
+- Total additional effort: +32 hours
+
+---
 
 *Last Updated: July 1, 2025*
+*Voting Features Added: July 1, 2025*

@@ -2,8 +2,10 @@
 
 **Meeting Date**: July 1, 2025  
 **Participants**: Development Team  
-**Topic**: Database Architecture & Cost Optimization for MVP  
-**Decision**: Adopt Airtable + Weaviate Cloud approach
+**Topic**: Database Architecture & Cost Optimization for MVP + Member Voting Features  
+**Decisions**: 
+1. Adopt Airtable + Weaviate Cloud approach
+2. Add member voting data collection and visualization features
 
 ## Current Situation
 - **Current Setup**: Cloud SQL Enterprise HA
@@ -167,9 +169,11 @@
 ```
 Airtable Bases:
 ├── Bills Base (ID, title, status, category, submitter)
-├── Members Base (name, party, constituency) 
+├── Members Base (name, party, constituency, house) 
 ├── Speeches Base (content, speaker_id, bill_id, date)
-└── Sessions Base (date, type, participants)
+├── Sessions Base (date, type, participants)
+├── Votes Base (bill_id, session_id, vote_type, date)
+└── VoteResults Base (vote_id, member_id, position, party)
 
 Weaviate:
 └── Speech vectors (content embeddings + metadata)
@@ -261,3 +265,52 @@ Weaviate:
 5. Plan migration strategy for post-fundraising scaling
 
 This approach allows rapid MVP delivery within budget while maintaining a clear path to scale after successful fundraising.
+
+## Additional Feature Decision: Member Voting Data
+
+### Research Summary
+Based on internal investigation of Diet voting data availability:
+
+**Data Sources Available:**
+- **House of Councillors**: HTML voting result pages with member names and positions
+- **House of Representatives**: PDF name lists for roll-call votes only (standing votes excluded)
+- **Committee votes**: Not available through official sources
+
+**Implementation Feasibility:**
+- **House of Councillors PoC**: 2 person-days (16 hours)
+- **House of Representatives addition**: 1.5 person-days (12 hours)
+- **UI visualization**: 0.5 person-days (4 hours)
+- **Total additional effort**: 32 hours
+
+**Technical Approach:**
+1. HTML scraping for House of Councillors voting pages
+2. PDF text extraction for House of Representatives roll-call votes
+3. Member name dictionary matching for OCR error correction
+4. Airtable storage with Members, Votes, and VoteResults bases
+5. UI visualization with voting chips and pattern analysis
+
+**Risk Mitigation:**
+- XPath backup rules for HTML structure changes
+- OCR verification through member name dictionaries
+- Clear UI indicators for missing data cases (standing votes, etc.)
+
+**Decision**: Proceed with member voting feature implementation as part of MVP, focusing on House of Councillors data with House of Representatives as secondary priority.
+
+---
+
+## 📝 Implementation Tasks - Member Voting Features
+**Added Date**: July 1, 2025
+
+### Infrastructure Team Actions Required:
+**T02 Update**: Cloud SQL → Airtable + Weaviate migration (4 hours, due July 2)
+**T04 Update**: Data models extension for voting (6 hours, due July 3)
+
+### Development Team Actions Required:
+**T16 New**: House of Councillors voting scraper (16 hours, due July 10)
+**T17 New**: Voting visualization UI (4 hours, due July 11)
+**T23 New**: House of Representatives PDF processing (12 hours, P2 priority)
+
+### Modified Components:
+- ~~PostgreSQL + pgvector~~ → **Airtable + Weaviate Cloud** (cost reduction: $628→$155/month)
+- ~~High performance targets~~ → **MVP-adjusted performance** (realistic for timeline)
+- **Total additional effort**: +32 hours over 3-week timeline

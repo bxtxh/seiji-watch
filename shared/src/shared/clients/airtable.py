@@ -341,6 +341,120 @@ class AirtableClient:
         response = await self._rate_limited_request("GET", url, params=params)
         return response.get("records", [])
     
+    # Issue management operations
+    async def create_issue(self, issue_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new issue record."""
+        url = f"{self.base_url}/Issues"
+        data = {
+            "fields": {
+                "Title": issue_data["title"],
+                "Description": issue_data["description"],
+                "Priority": issue_data.get("priority", "medium"),
+                "Status": issue_data.get("status", "active"),
+                "Extraction_Confidence": issue_data.get("extraction_confidence"),
+                "Review_Notes": issue_data.get("review_notes"),
+                "Is_LLM_Generated": issue_data.get("is_llm_generated", False),
+                "Created_At": datetime.now().isoformat(),
+                "Updated_At": datetime.now().isoformat()
+            }
+        }
+        
+        # Handle relationships
+        if "related_bills" in issue_data and issue_data["related_bills"]:
+            data["fields"]["Related_Bills"] = issue_data["related_bills"]
+        if "issue_tags" in issue_data and issue_data["issue_tags"]:
+            data["fields"]["Issue_Tags"] = issue_data["issue_tags"]
+        
+        # Remove None values
+        data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
+        
+        response = await self._rate_limited_request("POST", url, json=data)
+        return response
+    
+    async def get_issue(self, record_id: str) -> Dict[str, Any]:
+        """Get an issue record by ID."""
+        url = f"{self.base_url}/Issues/{record_id}"
+        return await self._rate_limited_request("GET", url)
+    
+    async def list_issues(self, filter_formula: Optional[str] = None,
+                         max_records: int = 100) -> List[Dict[str, Any]]:
+        """List issue records with optional filtering."""
+        url = f"{self.base_url}/Issues"
+        params = {"maxRecords": max_records}
+        if filter_formula:
+            params["filterByFormula"] = filter_formula
+        
+        response = await self._rate_limited_request("GET", url, params=params)
+        return response.get("records", [])
+    
+    async def update_issue(self, record_id: str, issue_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an issue record."""
+        url = f"{self.base_url}/Issues/{record_id}"
+        data = {
+            "fields": {
+                "Updated_At": datetime.now().isoformat(),
+                **{k: v for k, v in issue_data.items() if v is not None}
+            }
+        }
+        
+        response = await self._rate_limited_request("PATCH", url, json=data)
+        return response
+    
+    # Issue Tag operations
+    async def create_issue_tag(self, tag_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new issue tag record."""
+        url = f"{self.base_url}/IssueTags"
+        data = {
+            "fields": {
+                "Name": tag_data["name"],
+                "Color_Code": tag_data.get("color_code", "#3B82F6"),
+                "Category": tag_data["category"],
+                "Description": tag_data.get("description"),
+                "Created_At": datetime.now().isoformat(),
+                "Updated_At": datetime.now().isoformat()
+            }
+        }
+        
+        # Remove None values
+        data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
+        
+        response = await self._rate_limited_request("POST", url, json=data)
+        return response
+    
+    async def get_issue_tag(self, record_id: str) -> Dict[str, Any]:
+        """Get an issue tag record by ID."""
+        url = f"{self.base_url}/IssueTags/{record_id}"
+        return await self._rate_limited_request("GET", url)
+    
+    async def list_issue_tags(self, filter_formula: Optional[str] = None,
+                             max_records: int = 100) -> List[Dict[str, Any]]:
+        """List issue tag records with optional filtering."""
+        url = f"{self.base_url}/IssueTags"
+        params = {"maxRecords": max_records}
+        if filter_formula:
+            params["filterByFormula"] = filter_formula
+        
+        response = await self._rate_limited_request("GET", url, params=params)
+        return response.get("records", [])
+    
+    async def get_bills_with_issues(self, bill_id: str) -> Dict[str, Any]:
+        """Get bill with its related issues and tags."""
+        bill = await self.get_bill(bill_id)
+        
+        # If bill has related issues, fetch them
+        if "fields" in bill and "Related_Issues" in bill["fields"]:
+            issue_ids = bill["fields"]["Related_Issues"]
+            issues = []
+            for issue_id in issue_ids:
+                try:
+                    issue = await self.get_issue(issue_id)
+                    issues.append(issue)
+                except Exception as e:
+                    logger.warning(f"Failed to fetch issue {issue_id}: {e}")
+            bill["related_issues"] = issues
+        
+        return bill
+
     # Utility methods
     async def health_check(self) -> bool:
         """Check if Airtable connection is healthy."""

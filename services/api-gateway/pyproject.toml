@@ -8,15 +8,14 @@ authors = ["Diet Issue Tracker Team"]
 python = "^3.11"
 fastapi = "^0.104.0"
 uvicorn = "^0.24.0"
-psycopg2-binary = "^2.9.0"
-sqlalchemy = "^2.0.0"
-pgvector = "^0.2.0"
 pydantic = "^2.5.0"
 openai = "^1.0.0"
+aiohttp = "^3.9.0"
 redis = "^5.0.0"
 python-jose = "^3.3.0"
 passlib = "^1.7.0"
 python-multipart = "^0.0.6"
+shared = {path = "../../shared", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

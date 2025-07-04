@@ -5,6 +5,7 @@ from .bill import Bill, BillStatus, BillCategory
 from .meeting import Meeting, Speech
 from .member import Member, Party
 from .vote import Vote, VoteResult
+from .issue import Issue, IssueTag
 
 __all__ = [
     "BaseRecord",
@@ -18,4 +19,6 @@ __all__ = [
     "Party",
     "Vote",
     "VoteResult",
+    "Issue",
+    "IssueTag",
 ]

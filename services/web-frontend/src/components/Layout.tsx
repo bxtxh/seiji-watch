@@ -51,6 +51,22 @@ export default function Layout({
                     国会議事録検索
                   </h1>
                 </div>
+                
+                {/* Navigation */}
+                <nav className="ml-8 hidden md:flex space-x-8">
+                  <a
+                    href="/"
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    検索
+                  </a>
+                  <a
+                    href="/issues"
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    イシュー
+                  </a>
+                </nav>
               </div>
 
               {/* Accessibility controls */}
