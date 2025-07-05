@@ -2,32 +2,78 @@ import React, { useState, useEffect } from 'react';
 import { apiClient, handleApiError } from '@/lib/api';
 import { Bill, SearchResult } from '@/types';
 import BillCard from './BillCard';
+import { 
+  sanitizeInput, 
+  validateSearchQuery, 
+  RateLimiter,
+  sanitizeHtml,
+  INPUT_LIMITS 
+} from '@/utils/security';
+import { useSecureForm, useSecurityLogger } from '@/contexts/SecurityContext';
+
+// Rate limiter for search requests (10 requests per minute)
+const searchRateLimiter = new RateLimiter(60000, 10);
 
 export default function SearchInterface() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [searchStats, setSearchStats] = useState<{
     total: number;
     method: string;
     duration?: number;
   } | null>(null);
 
+  // Security hooks
+  const secureForm = useSecureForm();
+  const { logSecurityEvent } = useSecurityLogger();
+
   const handleSearch = async (searchQuery: string) => {
+    // Clear previous errors
+    setError(null);
+    setValidationError(null);
+
     if (!searchQuery.trim()) {
       setResults([]);
       setSearchStats(null);
       return;
     }
 
+    // Sanitize input
+    const sanitizedQuery = sanitizeInput(searchQuery, INPUT_LIMITS.SEARCH_QUERY);
+    
+    // Validate input
+    const validation = validateSearchQuery(sanitizedQuery);
+    if (!validation.isValid) {
+      setValidationError(validation.error || '無効な検索クエリです');
+      setResults([]);
+      setSearchStats(null);
+      logSecurityEvent('invalid_input', { query: sanitizedQuery, error: validation.error });
+      return;
+    }
+
+    // Rate limiting check
+    const clientId = 'search_' + (typeof window !== 'undefined' ? window.location.hostname : 'server');
+    if (!searchRateLimiter.isAllowed(clientId)) {
+      setError('検索回数の上限に達しました。しばらくお待ちください。');
+      logSecurityEvent('rate_limit_exceeded', { clientId });
+      return;
+    }
+
+    // Security check: ensure secure form is ready
+    if (!secureForm.isReady) {
+      setError('セキュリティの初期化中です。しばらくお待ちください。');
+      return;
+    }
+
     setLoading(true);
-    setError(null);
     
     const startTime = Date.now();
 
     try {
-      const response: SearchResult = await apiClient.searchBills(searchQuery, 20);
+      const response: SearchResult = await apiClient.searchBills(sanitizedQuery, 20);
       
       if (response.success) {
         setResults(response.results);
@@ -37,12 +83,12 @@ export default function SearchInterface() {
           duration: Date.now() - startTime,
         });
       } else {
-        setError(response.message || '検索に失敗しました');
+        setError(sanitizeHtml(response.message || '検索に失敗しました'));
         setResults([]);
         setSearchStats(null);
       }
     } catch (err) {
-      setError(handleApiError(err));
+      setError(sanitizeHtml(handleApiError(err)));
       setResults([]);
       setSearchStats(null);
     } finally {
@@ -80,11 +126,21 @@ export default function SearchInterface() {
                 id="search"
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => {
+                  const input = e.target.value;
+                  // Basic client-side length limiting
+                  if (input.length <= INPUT_LIMITS.SEARCH_QUERY) {
+                    setQuery(input);
+                    setValidationError(null);
+                  } else {
+                    setValidationError(`検索クエリは${INPUT_LIMITS.SEARCH_QUERY}文字以内で入力してください`);
+                  }
+                }}
                 placeholder="検索キーワードを入力してください..."
-                className="search-input"
+                className={`search-input ${validationError ? 'border-red-300 focus:border-red-500' : ''}`}
                 aria-describedby="search-help"
                 autoComplete="off"
+                maxLength={INPUT_LIMITS.SEARCH_QUERY}
               />
               {loading && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -96,14 +152,20 @@ export default function SearchInterface() {
                 </div>
               )}
             </div>
-            <p id="search-help" className="mt-2 text-sm text-gray-600">
-              例: 「税制改正」「社会保障」「予算」など
-            </p>
+            {validationError ? (
+              <p className="mt-2 text-sm text-red-600" role="alert">
+                {validationError}
+              </p>
+            ) : (
+              <p id="search-help" className="mt-2 text-sm text-gray-600">
+                例: 「税制改正」「社会保障」「予算」など（{INPUT_LIMITS.SEARCH_QUERY}文字まで）
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={loading || !query.trim()}
+            disabled={loading || !query.trim() || !!validationError}
             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? '検索中...' : '検索する'}

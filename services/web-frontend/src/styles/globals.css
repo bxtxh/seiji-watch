@@ -145,3 +145,127 @@
     @apply text-2xl sm:text-3xl;
   }
 }
+
+/* PWA and mobile optimizations */
+@layer components {
+  /* PWA-specific styles */
+  .pwa-update-notification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f44336;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    z-index: 1001;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  #pwa-install-button {
+    animation: bounceIn 0.5s ease-out;
+  }
+
+  .pwa-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+}
+
+/* PWA animations */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3) translateY(100px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+/* Standalone mode optimizations */
+@media (display-mode: standalone) {
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  .standalone-mode {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Performance optimizations */
+.card, .btn-primary, .btn-secondary, .btn-danger, .status-badge {
+  contain: layout style;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .pwa-update-notification,
+  .offline-indicator,
+  #pwa-install-button,
+  .pwa-loading,
+  .loading-dots > div {
+    animation: none;
+  }
+}
+
+/* Dark mode support for PWA */
+@media (prefers-color-scheme: dark) {
+  .pwa-update-notification {
+    @apply bg-gray-800 border-gray-600 text-gray-100;
+  }
+}
+
+/* Print styles */
+@media print {
+  .pwa-update-notification,
+  .offline-indicator,
+  #pwa-install-button {
+    display: none !important;
+  }
+}
