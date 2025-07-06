@@ -15,12 +15,29 @@ export interface Bill {
 
 export interface Speech {
   id: string;
-  text: string;
-  speaker: string;
   meeting_id: string;
-  duration: number;
-  language: string;
-  quality_passed: boolean;
+  speaker_id?: string;
+  related_bill_id?: string;
+  speech_order: number;
+  start_time?: string;
+  end_time?: string;
+  duration_seconds?: number;
+  speaker_name?: string;
+  speaker_title?: string;
+  speaker_type: string;
+  original_text: string;
+  cleaned_text?: string;
+  speech_type?: string;
+  summary?: string;
+  key_points?: string[];
+  topics?: string[];
+  sentiment?: string;
+  stance?: string;
+  word_count?: number;
+  confidence_score?: string;
+  is_interruption: boolean;
+  is_processed: boolean;
+  needs_review: boolean;
 }
 
 export interface SearchResult {

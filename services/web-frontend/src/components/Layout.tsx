@@ -58,7 +58,13 @@ export default function Layout({
                     href="/"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >
-                    検索
+                    法案検索
+                  </a>
+                  <a
+                    href="/speeches"
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    発言検索
                   </a>
                   <a
                     href="/issues"

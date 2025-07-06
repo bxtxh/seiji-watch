@@ -52,9 +52,10 @@ async def root():
     }
 
 # Include routers
-from .routes import issues
+from .routes import issues, speeches
 
 app.include_router(issues.router)
+app.include_router(speeches.router)
 
 # Global exception handler
 @app.exception_handler(Exception)
