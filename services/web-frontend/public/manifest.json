@@ -1,26 +1,87 @@
 {
-  "name": "国会議事録検索システム",
+  "name": "国会議事録検索システム - Diet Issue Tracker",
   "short_name": "国会検索",
-  "description": "国会の法案や議事録を検索できるシステム",
+  "description": "国会の法案や議事録をAI技術で検索できるアクセシブルなシステム。政治透明性向上と市民参加促進を目指します。",
   "lang": "ja",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#27AE60",
   "background_color": "#FFFFFF",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "/icon-192x192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-192x192.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-192x192.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["government", "politics", "productivity"]
+  "categories": ["government", "politics", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Diet Issue Tracker - Desktop view"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "360x640",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Diet Issue Tracker - Mobile view"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "検索",
+      "short_name": "検索",
+      "description": "法案や議事録を検索",
+      "url": "/?action=search",
+      "icons": [
+        {
+          "src": "/icon-192x192.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "課題一覧",
+      "short_name": "課題",
+      "description": "政治課題を閲覧",
+      "url": "/issues",
+      "icons": [
+        {
+          "src": "/icon-192x192.svg",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
