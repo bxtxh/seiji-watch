@@ -2,8 +2,9 @@
 
 import logging
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Depends, Query, Request, Header
+from pydantic import BaseModel, validator
+from ..security.validation import validate_and_sanitize_request, InputValidator
 
 # Import shared models and clients
 from shared.models import Issue, IssueTag
@@ -24,24 +25,86 @@ async def get_issue_extractor() -> IssueExtractor:
     """Get Issue Extractor instance."""
     return IssueExtractor()
 
-# Request/Response models
+# Request/Response models with validation
 class IssueCreateRequest(BaseModel):
     title: str
     description: str
     priority: str = "medium"
     related_bills: Optional[List[str]] = None
     issue_tags: Optional[List[str]] = None
+    
+    @validator('title')
+    def validate_title(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Title cannot be empty')
+        if len(v) > 200:
+            raise ValueError('Title too long (max 200 characters)')
+        return InputValidator.sanitize_string(v, 200)
+    
+    @validator('description')
+    def validate_description(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Description cannot be empty')
+        if len(v) > 2000:
+            raise ValueError('Description too long (max 2000 characters)')
+        return InputValidator.sanitize_string(v, 2000)
+    
+    @validator('priority')
+    def validate_priority(cls, v):
+        allowed_priorities = ['low', 'medium', 'high', 'urgent']
+        if v not in allowed_priorities:
+            raise ValueError(f'Priority must be one of: {", ".join(allowed_priorities)}')
+        return v
 
 class IssueExtractRequest(BaseModel):
     bill_content: str
     bill_title: str = ""
     bill_id: Optional[str] = None
+    
+    @validator('bill_content')
+    def validate_bill_content(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Bill content cannot be empty')
+        if len(v) > 50000:  # 50KB limit for bill content
+            raise ValueError('Bill content too long (max 50000 characters)')
+        return InputValidator.sanitize_string(v, 50000)
+    
+    @validator('bill_title')
+    def validate_bill_title(cls, v):
+        if v and len(v) > 500:
+            raise ValueError('Bill title too long (max 500 characters)')
+        return InputValidator.sanitize_string(v, 500) if v else v
 
 class IssueTagCreateRequest(BaseModel):
     name: str
     category: str
     color_code: str = "#3B82F6"
     description: Optional[str] = None
+    
+    @validator('name')
+    def validate_name(cls, v):
+        if not v or not v.strip():
+            raise ValueError('Tag name cannot be empty')
+        if len(v) > 100:
+            raise ValueError('Tag name too long (max 100 characters)')
+        return InputValidator.sanitize_string(v, 100)
+    
+    @validator('category')
+    def validate_category(cls, v):
+        allowed_categories = [
+            '予算・決算', '税制', '社会保障', '外交・国際', 
+            '経済・産業', '教育・文化', '環境・エネルギー', 'その他'
+        ]
+        if v not in allowed_categories:
+            raise ValueError(f'Category must be one of: {", ".join(allowed_categories)}')
+        return v
+    
+    @validator('color_code')
+    def validate_color_code(cls, v):
+        import re
+        if not re.match(r'^#[0-9A-Fa-f]{6}$', v):
+            raise ValueError('Color code must be a valid hex color (e.g., #3B82F6)')
+        return v
 
 # Issue endpoints
 @router.get("/", response_model=List[dict])

@@ -159,6 +159,22 @@ Temporary Items
 .gcloudignore
 gcp-credentials.json
 
+# API Keys and Secrets (CRITICAL - NEVER COMMIT)
+*.key
+*.pem
+*.p12
+*.pfx
+*api-key*
+*secret*
+*credentials*
+.env.secrets
+.secrets
+secrets.json
+config/secrets.yaml
+*service-account*.json
+gcp-service-account-key.json
+infra/gcp-service-account-key.json
+
 # Local development
 docker-compose.override.yml
 .env.local

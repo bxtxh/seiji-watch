@@ -1,9 +1,10 @@
 """
 Diet website scraper for bill and session data collection.
+Enhanced with resilience and optimization features.
 """
 import requests
 from bs4 import BeautifulSoup
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import re
 import time
 import logging
@@ -11,6 +12,9 @@ from datetime import datetime
 from dataclasses import dataclass
 from urllib.parse import urljoin, urlparse
 from urllib.robotparser import RobotFileParser
+import asyncio
+
+from .resilience import ResilientScraper, RateLimitConfig, CacheConfig
 
 
 @dataclass
@@ -28,12 +32,13 @@ class BillData:
 
 
 class DietScraper:
-    """Main scraper class for Diet website data collection"""
+    """Main scraper class for Diet website data collection with resilience features"""
     
     BASE_URL = "https://www.sangiin.go.jp"
     BILLS_URL = "https://www.sangiin.go.jp/japanese/joho1/kousei/gian/217/gian.htm"
     
-    def __init__(self, delay_seconds: float = 1.5):
+    def __init__(self, delay_seconds: float = 1.5, enable_resilience: bool = True):
+        # Traditional session for backward compatibility
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
@@ -43,6 +48,45 @@ class DietScraper:
         self._last_request_time = 0
         self._robots_parser = None
         self._init_robots_parser()
+        
+        # Enhanced resilience features
+        self.enable_resilience = enable_resilience
+        self._resilient_scraper: Optional[ResilientScraper] = None
+        if enable_resilience:
+            self._init_resilient_scraper()
+    
+    def _init_resilient_scraper(self):
+        """Initialize resilient scraper with optimized configuration"""
+        try:
+            # Configure rate limiting for Diet website
+            rate_config = RateLimitConfig(
+                requests_per_second=0.5,  # Conservative: 1 request per 2 seconds
+                burst_size=3,  # Small burst allowance
+                cooldown_seconds=15.0,  # Longer cooldown if rate limited
+                respect_retry_after=True
+            )
+            
+            # Configure caching for duplicate detection
+            cache_config = CacheConfig(
+                enabled=True,
+                cache_dir="/tmp/diet_scraper_cache",
+                max_age_hours=24,  # Cache for 24 hours
+                max_size_mb=50,  # Limit cache size
+                hash_algorithm="sha256"
+            )
+            
+            self._resilient_scraper = ResilientScraper(
+                rate_limit_config=rate_config,
+                cache_config=cache_config,
+                max_concurrent_requests=3,  # Conservative concurrency
+                request_timeout=30
+            )
+            
+            self.logger.info("Resilient scraper initialized with optimized settings")
+            
+        except Exception as e:
+            self.logger.warning(f"Failed to initialize resilient scraper: {e}")
+            self._resilient_scraper = None
     
     def _init_robots_parser(self):
         """Initialize robots.txt parser"""
@@ -280,6 +324,199 @@ class DietScraper:
             documents.append(doc_url)
         
         return documents
+    
+    # Enhanced resilience and optimization methods
+    
+    async def fetch_current_bills_async(self, force_refresh: bool = False) -> List[BillData]:
+        """
+        Async version of fetch_current_bills with resilience features
+        
+        Args:
+            force_refresh: Skip duplicate detection and force fresh fetch
+            
+        Returns:
+            List of BillData objects
+        """
+        if not self._resilient_scraper:
+            # Fall back to synchronous method if resilient scraper not available
+            self.logger.warning("Resilient scraper not available, falling back to sync method")
+            return self.fetch_current_bills()
+        
+        try:
+            async with self._resilient_scraper as scraper:
+                # Create job for tracking
+                job = scraper.create_job(
+                    job_type="fetch_bills",
+                    url=self.BILLS_URL,
+                    metadata={"force_refresh": force_refresh}
+                )
+                
+                # Fetch main bills page
+                content = await scraper.fetch_with_resilience(
+                    self.BILLS_URL,
+                    job=job,
+                    skip_duplicates=not force_refresh
+                )
+                
+                if content is None:
+                    self.logger.info("Bills page content skipped (duplicate)")
+                    return []
+                
+                # Parse bills
+                bills = self._parse_bills_from_html(content)
+                
+                # Fetch bill details in parallel if we have bills
+                if bills and not force_refresh:
+                    # Only fetch details for bills we haven't seen before
+                    detail_urls = []
+                    for bill in bills:
+                        if hasattr(bill, 'url') and bill.url:
+                            # Create detail URL
+                            detail_url = urljoin(self.BASE_URL, bill.url)
+                            detail_urls.append(detail_url)
+                    
+                    if detail_urls:
+                        self.logger.info(f"Fetching details for {len(detail_urls)} bills")
+                        
+                        # Fetch details with progress tracking
+                        def progress_callback(progress: float):
+                            self.logger.info(f"Bill details progress: {progress:.1%}")
+                        
+                        detail_results = await scraper.fetch_multiple_urls(
+                            detail_urls[:10],  # Limit to first 10 for performance
+                            job_type="fetch_bill_details",
+                            skip_duplicates=not force_refresh,
+                            progress_callback=progress_callback
+                        )
+                        
+                        # Process detail results and enhance bill data
+                        for i, bill in enumerate(bills[:10]):
+                            if i < len(detail_urls):
+                                detail_url = detail_urls[i]
+                                detail_content = detail_results.get(detail_url)
+                                if detail_content:
+                                    # Parse and enhance bill with details
+                                    try:
+                                        soup = BeautifulSoup(detail_content, 'html.parser')
+                                        enhanced_summary = self._extract_summary(soup)
+                                        if enhanced_summary and len(enhanced_summary) > len(bill.summary or ""):
+                                            bill.summary = enhanced_summary
+                                    except Exception as e:
+                                        self.logger.warning(f"Failed to parse details for {bill.bill_id}: {e}")
+                
+                self.logger.info(f"Successfully fetched {len(bills)} bills with resilience features")
+                return bills
+                
+        except Exception as e:
+            self.logger.error(f"Failed to fetch bills with resilient scraper: {e}")
+            # Fall back to synchronous method
+            return self.fetch_current_bills()
+    
+    def _parse_bills_from_html(self, html_content: str) -> List[BillData]:
+        """Parse bills from HTML content (extracted from fetch_current_bills)"""
+        bills = []
+        
+        try:
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # Look for various table structures
+            bill_tables = soup.find_all('table')
+            
+            for table in bill_tables:
+                rows = table.find_all('tr')
+                if len(rows) <= 1:  # Skip tables with no data rows
+                    continue
+                
+                # Skip header row if exists
+                data_rows = rows[1:] if rows[0].find('th') else rows
+                
+                for row in data_rows:
+                    cells = row.find_all(['td', 'th'])
+                    if len(cells) >= 3:  # Minimum required cells
+                        bill = self._parse_bill_row(cells)
+                        if bill:
+                            bills.append(bill)
+        
+        except Exception as e:
+            self.logger.error(f"Failed to parse bills from HTML: {e}")
+        
+        return bills
+    
+    async def fetch_bill_details_async(self, bill_url: str, force_refresh: bool = False) -> Dict[str, Any]:
+        """
+        Async version of fetch_bill_details with resilience features
+        
+        Args:
+            bill_url: URL of the bill detail page
+            force_refresh: Skip duplicate detection and force fresh fetch
+            
+        Returns:
+            Dictionary containing bill details
+        """
+        if not self._resilient_scraper:
+            # Fall back to synchronous method
+            return self.fetch_bill_details(bill_url)
+        
+        try:
+            async with self._resilient_scraper as scraper:
+                content = await scraper.fetch_with_resilience(
+                    bill_url,
+                    skip_duplicates=not force_refresh
+                )
+                
+                if content is None:
+                    self.logger.info(f"Bill details skipped (duplicate): {bill_url}")
+                    return {}
+                
+                soup = BeautifulSoup(content, 'html.parser')
+                
+                details = {
+                    'title': soup.title.string if soup.title else '',
+                    'summary': self._extract_summary(soup),
+                    'submission_date': self._extract_submission_date(soup),
+                    'committee': self._extract_committee(soup),
+                    'related_documents': self._extract_documents(soup)
+                }
+                
+                return details
+                
+        except Exception as e:
+            self.logger.error(f"Failed to fetch bill details with resilient scraper: {e}")
+            return self.fetch_bill_details(bill_url)
+    
+    def get_scraper_statistics(self) -> Dict[str, Any]:
+        """Get scraper performance statistics"""
+        stats = {
+            "traditional_scraper": {
+                "delay_seconds": self.delay_seconds,
+                "robots_parser_enabled": self._robots_parser is not None
+            }
+        }
+        
+        if self._resilient_scraper:
+            stats["resilient_scraper"] = self._resilient_scraper.get_statistics()
+        else:
+            stats["resilient_scraper"] = {"status": "disabled"}
+        
+        return stats
+    
+    def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
+        """Get status of a specific scraping job"""
+        if self._resilient_scraper:
+            return self._resilient_scraper.get_job_status(job_id)
+        return None
+    
+    def get_all_jobs(self) -> Dict[str, Any]:
+        """Get status of all scraping jobs"""
+        if self._resilient_scraper:
+            return self._resilient_scraper.get_all_jobs()
+        return {"message": "Resilient scraper not enabled"}
+    
+    def cleanup_old_jobs(self, max_age_hours: int = 24) -> int:
+        """Clean up old completed jobs and cache"""
+        if self._resilient_scraper:
+            return self._resilient_scraper.cleanup_completed_jobs(max_age_hours)
+        return 0
 
 
 if __name__ == "__main__":

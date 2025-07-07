@@ -10,6 +10,7 @@ import {
   INPUT_LIMITS 
 } from '@/utils/security';
 import { useSecureForm, useSecurityLogger } from '@/contexts/SecurityContext';
+import { useObservability } from '@/lib/observability';
 
 // Rate limiter for search requests (10 requests per minute)
 const searchRateLimiter = new RateLimiter(60000, 10);
@@ -29,8 +30,13 @@ export default function SearchInterface() {
   // Security hooks
   const secureForm = useSecureForm();
   const { logSecurityEvent } = useSecurityLogger();
+  
+  // Observability hooks
+  const { recordInteraction, recordError, recordMetric, startTimer } = useObservability();
 
   const handleSearch = async (searchQuery: string) => {
+    const stopTimer = startTimer('search_operation');
+    
     // Clear previous errors
     setError(null);
     setValidationError(null);
@@ -38,8 +44,12 @@ export default function SearchInterface() {
     if (!searchQuery.trim()) {
       setResults([]);
       setSearchStats(null);
+      recordInteraction({ type: 'search', element: 'search_input', value: '' });
       return;
     }
+
+    // Record search attempt
+    recordInteraction({ type: 'search', element: 'search_input', value: searchQuery });
 
     // Sanitize input
     const sanitizedQuery = sanitizeInput(searchQuery, INPUT_LIMITS.SEARCH_QUERY);
@@ -51,6 +61,16 @@ export default function SearchInterface() {
       setResults([]);
       setSearchStats(null);
       logSecurityEvent('invalid_input', { query: sanitizedQuery, error: validation.error });
+      
+      // Record validation error
+      recordError({
+        error: new Error(validation.error || 'Invalid search query'),
+        context: 'search_validation',
+        timestamp: Date.now(),
+        additionalData: { query: sanitizedQuery }
+      });
+      
+      stopTimer();
       return;
     }
 
@@ -59,12 +79,23 @@ export default function SearchInterface() {
     if (!searchRateLimiter.isAllowed(clientId)) {
       setError('検索回数の上限に達しました。しばらくお待ちください。');
       logSecurityEvent('rate_limit_exceeded', { clientId });
+      
+      // Record rate limit event
+      recordError({
+        error: new Error('Search rate limit exceeded'),
+        context: 'search_rate_limit',
+        timestamp: Date.now(),
+        additionalData: { clientId }
+      });
+      
+      stopTimer();
       return;
     }
 
     // Security check: ensure secure form is ready
     if (!secureForm.isReady) {
       setError('セキュリティの初期化中です。しばらくお待ちください。');
+      stopTimer();
       return;
     }
 
@@ -76,23 +107,66 @@ export default function SearchInterface() {
       const response: SearchResult = await apiClient.searchBills(sanitizedQuery, 20);
       
       if (response.success) {
+        const duration = Date.now() - startTime;
         setResults(response.results);
         setSearchStats({
           total: response.total_found,
           method: response.results[0]?.search_method || 'unknown',
-          duration: Date.now() - startTime,
+          duration,
         });
+
+        // Record successful search metrics
+        recordMetric({
+          name: 'search.success',
+          value: duration,
+          timestamp: Date.now(),
+          tags: {
+            result_count: response.total_found.toString(),
+            has_results: (response.total_found > 0).toString(),
+            search_method: response.results[0]?.search_method || 'unknown'
+          }
+        });
+
+        recordMetric({
+          name: 'search.result_count',
+          value: response.total_found,
+          timestamp: Date.now(),
+          tags: {
+            query_length: sanitizedQuery.length.toString()
+          }
+        });
+
       } else {
         setError(sanitizeHtml(response.message || '検索に失敗しました'));
         setResults([]);
         setSearchStats(null);
+        
+        // Record search failure
+        recordError({
+          error: new Error(response.message || 'Search failed'),
+          context: 'search_api_failure',
+          timestamp: Date.now(),
+          additionalData: { 
+            query: sanitizedQuery,
+            response: response.message
+          }
+        });
       }
     } catch (err) {
       setError(sanitizeHtml(handleApiError(err)));
       setResults([]);
       setSearchStats(null);
+      
+      // Record search error
+      recordError({
+        error: err as Error,
+        context: 'search_exception',
+        timestamp: Date.now(),
+        additionalData: { query: sanitizedQuery }
+      });
     } finally {
       setLoading(false);
+      stopTimer();
     }
   };
 

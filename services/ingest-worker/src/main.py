@@ -9,13 +9,32 @@ from typing import Dict, List, Optional, Union
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 import uvicorn
 
 from scraper.diet_scraper import DietScraper, BillData
 from scraper.voting_scraper import VotingScraper, VotingSession, VoteRecord
+from scraper.hr_voting_scraper import HouseOfRepresentativesVotingScraper
+from scraper.enhanced_hr_scraper import EnhancedHRProcessor
 from stt.whisper_client import WhisperClient, TranscriptionResult
 from embeddings.vector_client import VectorClient, EmbeddingResult
+from scheduler.scheduler import IngestionScheduler, SchedulerConfig
+from batch_queue.batch_processor import (
+    BatchProcessor, BatchConfig, TaskType, TaskPriority, TaskStatus,
+    EmbeddingTaskProcessor, TranscriptionTaskProcessor
+)
+from pipeline.hr_data_integration import run_hr_integration_pipeline
+
+# Import monitoring components
+from monitoring import (
+    get_dashboard_overview, get_pipeline_status, get_quality_metrics,
+    get_system_status, get_alerts_dashboard, get_performance_dashboard,
+    get_health_status, get_metrics_export, ingest_metrics
+)
+
+# Import limited scraping pipeline for T52
+from pipeline.limited_scraping import LimitedScrapeCoordinator, run_limited_scraping_pipeline
 
 # Configure logging
 logging.basicConfig(
@@ -27,14 +46,18 @@ logger = logging.getLogger(__name__)
 # Global instances
 diet_scraper: Optional[DietScraper] = None
 voting_scraper: Optional[VotingScraper] = None
+hr_voting_scraper: Optional[HouseOfRepresentativesVotingScraper] = None
 whisper_client: Optional[WhisperClient] = None
 vector_client: Optional[VectorClient] = None
+scheduler: Optional[IngestionScheduler] = None
+batch_processor: Optional[BatchProcessor] = None
+limited_scrape_coordinator: Optional[LimitedScrapeCoordinator] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler"""
-    global diet_scraper, voting_scraper, whisper_client, vector_client
+    global diet_scraper, voting_scraper, hr_voting_scraper, whisper_client, vector_client, scheduler, batch_processor, limited_scrape_coordinator
     
     # Startup
     logger.info("Starting ingest-worker service...")
@@ -47,6 +70,14 @@ async def lifespan(app: FastAPI):
         # Initialize Voting scraper
         voting_scraper = VotingScraper()
         logger.info("Voting scraper initialized")
+        
+        # Initialize House of Representatives voting scraper
+        try:
+            hr_voting_scraper = HouseOfRepresentativesVotingScraper()
+            logger.info("House of Representatives voting scraper initialized")
+        except Exception as e:
+            logger.warning(f"HR voting scraper not initialized: {e}")
+            hr_voting_scraper = None
         
         # Initialize Whisper client (only if API key is available)
         try:
@@ -64,6 +95,67 @@ async def lifespan(app: FastAPI):
             logger.warning(f"Vector client not initialized: {e}")
             vector_client = None
         
+        # Initialize Scheduler
+        try:
+            scheduler = IngestionScheduler()
+            logger.info("Ingestion scheduler initialized")
+        except Exception as e:
+            logger.warning(f"Scheduler not initialized: {e}")
+            scheduler = None
+        
+        # Initialize Batch Processor
+        try:
+            batch_config = BatchConfig(
+                max_concurrent_tasks=3,
+                max_queue_size=500,
+                batch_size=5,
+                enable_persistence=True,
+                persistence_backend="file"
+            )
+            batch_processor = BatchProcessor(batch_config)
+            
+            # Register task processors
+            if vector_client:
+                batch_processor.register_processor(
+                    TaskType.GENERATE_EMBEDDINGS,
+                    EmbeddingTaskProcessor(vector_client)
+                )
+            
+            if whisper_client:
+                batch_processor.register_processor(
+                    TaskType.TRANSCRIBE_AUDIO,
+                    TranscriptionTaskProcessor(whisper_client)
+                )
+            
+            # Start batch processing
+            asyncio.create_task(batch_processor.start_processing())
+            logger.info("Batch processor initialized and started")
+            
+        except Exception as e:
+            logger.warning(f"Batch processor not initialized: {e}")
+            batch_processor = None
+        
+        # Start system metrics collection
+        try:
+            async def collect_system_metrics():
+                while True:
+                    ingest_metrics.record_system_metrics()
+                    await asyncio.sleep(60)  # Collect every minute
+            
+            asyncio.create_task(collect_system_metrics())
+            logger.info("System metrics collection started")
+            
+        except Exception as e:
+            logger.warning(f"System metrics collection not started: {e}")
+        
+        # Initialize Limited Scraping Coordinator for T52
+        try:
+            limited_scrape_coordinator = LimitedScrapeCoordinator()
+            logger.info("Limited scraping coordinator initialized for T52")
+        except Exception as e:
+            logger.warning(f"Limited scraping coordinator not initialized: {e}")
+            limited_scrape_coordinator = None
+        
         yield
         
     except Exception as e:
@@ -72,6 +164,10 @@ async def lifespan(app: FastAPI):
     finally:
         # Shutdown
         logger.info("Shutting down ingest-worker service...")
+        
+        if batch_processor:
+            await batch_processor.stop_processing()
+            
         if vector_client:
             vector_client.close()
 
@@ -774,6 +870,825 @@ def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> D
         "bill_number": session.bill_number,
         "bill_title": session.bill_title,
         "is_final_vote": session.vote_stage == "最終" if session.vote_stage else False
+    }
+
+
+# Scheduler endpoints
+@app.get("/scheduler/status")
+async def get_scheduler_status() -> Dict[str, Any]:
+    """Get current scheduler status and task information"""
+    if not scheduler:
+        return {
+            "status": "unavailable",
+            "message": "Scheduler service not initialized"
+        }
+    
+    return {
+        "status": "available",
+        "config": {
+            "project_id": scheduler.config.project_id,
+            "location": scheduler.config.location,
+            "pubsub_topic": scheduler.config.pubsub_topic
+        },
+        "tasks": scheduler.get_task_status()
+    }
+
+
+@app.get("/scheduler/tasks")
+async def get_all_scheduled_tasks() -> Dict[str, Any]:
+    """Get all scheduled tasks configuration"""
+    if not scheduler:
+        raise HTTPException(
+            status_code=503,
+            detail="Scheduler service not available"
+        )
+    
+    return scheduler.get_task_status()
+
+
+@app.get("/scheduler/tasks/{task_id}")
+async def get_task_status(task_id: str) -> Dict[str, Any]:
+    """Get status of a specific scheduled task"""
+    if not scheduler:
+        raise HTTPException(
+            status_code=503,
+            detail="Scheduler service not available"
+        )
+    
+    task_status = scheduler.get_task_status(task_id)
+    if "error" in task_status:
+        raise HTTPException(status_code=404, detail=task_status["error"])
+    
+    return task_status
+
+
+@app.post("/scheduler/setup")
+async def setup_cloud_scheduler() -> Dict[str, Any]:
+    """Set up Google Cloud Scheduler jobs (admin only)"""
+    if not scheduler:
+        raise HTTPException(
+            status_code=503,
+            detail="Scheduler service not available"
+        )
+    
+    try:
+        success = await scheduler.setup_cloud_scheduler()
+        if success:
+            return {
+                "success": True,
+                "message": "Cloud Scheduler jobs set up successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to set up Cloud Scheduler jobs"
+            }
+    except Exception as e:
+        logger.error(f"Failed to set up Cloud Scheduler: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/scheduler/execute")
+async def execute_scheduled_task(
+    task_data: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Execute a scheduled task manually (for Pub/Sub integration)"""
+    if not scheduler:
+        raise HTTPException(
+            status_code=503,
+            detail="Scheduler service not available"
+        )
+    
+    try:
+        success = await scheduler.handle_pubsub_message(task_data)
+        return {
+            "success": success,
+            "message": "Task execution completed" if success else "Task execution failed"
+        }
+    except Exception as e:
+        logger.error(f"Failed to execute scheduled task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/scheduler/cleanup")
+async def cleanup_scheduler_history(
+    days_to_keep: int = 30
+) -> Dict[str, Any]:
+    """Clean up old scheduler execution history"""
+    if not scheduler:
+        raise HTTPException(
+            status_code=503,
+            detail="Scheduler service not available"
+        )
+    
+    try:
+        cleaned_count = scheduler.cleanup_old_executions(days_to_keep)
+        return {
+            "success": True,
+            "message": f"Cleaned up {cleaned_count} old execution records",
+            "cleaned_count": cleaned_count
+        }
+    except Exception as e:
+        logger.error(f"Failed to cleanup scheduler history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Enhanced scraper endpoints with resilience features
+@app.get("/scraper/statistics")
+async def get_scraper_statistics() -> Dict[str, Any]:
+    """Get scraper performance statistics and resilience metrics"""
+    if not diet_scraper:
+        raise HTTPException(
+            status_code=503,
+            detail="Diet scraper not available"
+        )
+    
+    return diet_scraper.get_scraper_statistics()
+
+
+@app.get("/scraper/jobs")
+async def get_scraper_jobs() -> Dict[str, Any]:
+    """Get all scraping jobs status"""
+    if not diet_scraper:
+        raise HTTPException(
+            status_code=503,
+            detail="Diet scraper not available"
+        )
+    
+    return diet_scraper.get_all_jobs()
+
+
+@app.get("/scraper/jobs/{job_id}")
+async def get_scraper_job_status(job_id: str) -> Dict[str, Any]:
+    """Get status of a specific scraping job"""
+    if not diet_scraper:
+        raise HTTPException(
+            status_code=503,
+            detail="Diet scraper not available"
+        )
+    
+    job_status = diet_scraper.get_job_status(job_id)
+    if job_status is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    return job_status
+
+
+@app.post("/scraper/cleanup")
+async def cleanup_scraper_cache(
+    max_age_hours: int = 24
+) -> Dict[str, Any]:
+    """Clean up old scraper jobs and cache"""
+    if not diet_scraper:
+        raise HTTPException(
+            status_code=503,
+            detail="Diet scraper not available"
+        )
+    
+    try:
+        cleaned_count = diet_scraper.cleanup_old_jobs(max_age_hours)
+        return {
+            "success": True,
+            "message": f"Cleaned up {cleaned_count} old scraper jobs",
+            "cleaned_count": cleaned_count
+        }
+    except Exception as e:
+        logger.error(f"Failed to cleanup scraper cache: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/scrape/async", response_model=ScrapeResponse)
+async def scrape_diet_data_async(
+    request: ScrapeRequest
+) -> ScrapeResponse:
+    """Scrape Diet data using enhanced async resilient scraper"""
+    
+    if not diet_scraper:
+        raise HTTPException(
+            status_code=500, 
+            detail="Service not properly initialized"
+        )
+    
+    try:
+        # Use the async resilient scraper
+        bills_data = await diet_scraper.fetch_current_bills_async(
+            force_refresh=request.force_refresh
+        )
+        
+        return ScrapeResponse(
+            success=True,
+            message=f"Successfully scraped {len(bills_data)} bills with resilience features",
+            bills_processed=len(bills_data)
+        )
+        
+    except Exception as e:
+        logger.error(f"Async scraping failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Batch processing endpoints
+@app.get("/batch/status")
+async def get_batch_status() -> Dict[str, Any]:
+    """Get batch processing queue status"""
+    if not batch_processor:
+        return {
+            "status": "unavailable",
+            "message": "Batch processor not initialized"
+        }
+    
+    return batch_processor.get_queue_status()
+
+
+@app.post("/batch/tasks")
+async def add_batch_task(
+    task_type: TaskType,
+    payload: Dict[str, Any],
+    priority: TaskPriority = TaskPriority.NORMAL,
+    max_retries: int = 3,
+    timeout_seconds: int = 300,
+    tags: Optional[List[str]] = None,
+    depends_on: Optional[List[str]] = None
+) -> Dict[str, str]:
+    """Add a new task to the batch processing queue"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    try:
+        task_id = await batch_processor.add_task(
+            task_type=task_type,
+            payload=payload,
+            priority=priority,
+            max_retries=max_retries,
+            timeout_seconds=timeout_seconds,
+            tags=tags,
+            depends_on=depends_on
+        )
+        
+        return {
+            "task_id": task_id,
+            "message": f"Task added to queue with priority {priority.value}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to add batch task: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/batch/tasks/{task_id}")
+async def get_batch_task_status(task_id: str) -> Dict[str, Any]:
+    """Get status of a specific batch task"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    task_status = batch_processor.get_task_status(task_id)
+    if task_status is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return task_status
+
+
+@app.post("/batch/tasks/{task_id}/cancel")
+async def cancel_batch_task(task_id: str) -> Dict[str, Any]:
+    """Cancel a queued or active batch task"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    try:
+        cancelled = await batch_processor.cancel_task(task_id)
+        if cancelled:
+            return {
+                "success": True,
+                "message": f"Task {task_id} cancelled"
+            }
+        else:
+            return {
+                "success": False,
+                "message": f"Task {task_id} not found or cannot be cancelled"
+            }
+    except Exception as e:
+        logger.error(f"Failed to cancel task {task_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/batch/cleanup")
+async def cleanup_batch_tasks(
+    max_age_hours: int = 24
+) -> Dict[str, Any]:
+    """Clean up old completed batch tasks"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    try:
+        cleaned_count = batch_processor.cleanup_completed_tasks(max_age_hours)
+        return {
+            "success": True,
+            "message": f"Cleaned up {cleaned_count} old batch tasks",
+            "cleaned_count": cleaned_count
+        }
+    except Exception as e:
+        logger.error(f"Failed to cleanup batch tasks: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Convenience endpoints for specific batch operations
+@app.post("/batch/embeddings")
+async def queue_embedding_generation(
+    texts: List[str],
+    metadata_list: Optional[List[Dict[str, Any]]] = None,
+    priority: TaskPriority = TaskPriority.NORMAL
+) -> Dict[str, str]:
+    """Queue embedding generation for multiple texts"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    payload = {
+        "texts": texts,
+        "metadata_list": metadata_list or [{}] * len(texts)
+    }
+    
+    try:
+        task_id = await batch_processor.add_task(
+            task_type=TaskType.GENERATE_EMBEDDINGS,
+            payload=payload,
+            priority=priority,
+            tags=["embeddings", "batch"]
+        )
+        
+        return {
+            "task_id": task_id,
+            "message": f"Queued embedding generation for {len(texts)} texts"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to queue embedding generation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/batch/transcriptions")
+async def queue_transcription_batch(
+    audio_urls: Optional[List[str]] = None,
+    video_urls: Optional[List[str]] = None,
+    language: str = "ja",
+    priority: TaskPriority = TaskPriority.NORMAL
+) -> Dict[str, str]:
+    """Queue transcription for multiple audio/video files"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    if not audio_urls and not video_urls:
+        raise HTTPException(
+            status_code=400,
+            detail="At least one of audio_urls or video_urls must be provided"
+        )
+    
+    payload = {
+        "audio_urls": audio_urls or [],
+        "video_urls": video_urls or [],
+        "language": language
+    }
+    
+    try:
+        task_id = await batch_processor.add_task(
+            task_type=TaskType.TRANSCRIBE_AUDIO,
+            payload=payload,
+            priority=priority,
+            timeout_seconds=1800,  # 30 minutes for transcription
+            tags=["transcription", "batch"]
+        )
+        
+        total_files = len(audio_urls or []) + len(video_urls or [])
+        return {
+            "task_id": task_id,
+            "message": f"Queued transcription for {total_files} files"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to queue transcription batch: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# House of Representatives voting endpoints
+@app.post("/voting/hr/collect")
+async def collect_hr_voting_data(
+    days_back: int = 30,
+    session_numbers: Optional[List[int]] = None
+) -> Dict[str, Any]:
+    """Collect voting data from House of Representatives PDFs"""
+    if not hr_voting_scraper:
+        raise HTTPException(
+            status_code=503,
+            detail="House of Representatives voting scraper not available"
+        )
+    
+    try:
+        logger.info(f"Starting HR voting data collection (days_back: {days_back})")
+        
+        voting_sessions = await hr_voting_scraper.fetch_recent_voting_sessions(
+            days_back=days_back,
+            session_numbers=session_numbers
+        )
+        
+        # Process results
+        total_sessions = len(voting_sessions)
+        total_votes = sum(len(session.vote_records) for session in voting_sessions)
+        
+        # Extract unique members and parties
+        unique_members = set()
+        unique_parties = set()
+        
+        for session in voting_sessions:
+            for vote_record in session.vote_records:
+                unique_members.add(vote_record.member_name)
+                unique_parties.add(vote_record.party_name)
+        
+        return {
+            "success": True,
+            "message": f"Successfully collected HR voting data",
+            "sessions_processed": total_sessions,
+            "votes_processed": total_votes,
+            "unique_members": len(unique_members),
+            "unique_parties": len(unique_parties),
+            "sessions": [
+                {
+                    "session_id": session.session_id,
+                    "bill_number": session.bill_number,
+                    "bill_title": session.bill_title,
+                    "vote_date": session.vote_date.isoformat(),
+                    "vote_summary": session.vote_summary,
+                    "total_members": session.total_members,
+                    "pdf_url": session.pdf_url
+                }
+                for session in voting_sessions
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to collect HR voting data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/voting/hr/statistics")
+async def get_hr_voting_statistics() -> Dict[str, Any]:
+    """Get House of Representatives voting scraper statistics"""
+    if not hr_voting_scraper:
+        raise HTTPException(
+            status_code=503,
+            detail="House of Representatives voting scraper not available"
+        )
+    
+    return hr_voting_scraper.get_scraper_statistics()
+
+
+@app.post("/batch/hr-voting")
+async def queue_hr_voting_collection(
+    days_back: int = 30,
+    session_numbers: Optional[List[int]] = None,
+    priority: TaskPriority = TaskPriority.HIGH
+) -> Dict[str, str]:
+    """Queue House of Representatives voting data collection as batch task"""
+    if not batch_processor:
+        raise HTTPException(
+            status_code=503,
+            detail="Batch processor not available"
+        )
+    
+    payload = {
+        "days_back": days_back,
+        "session_numbers": session_numbers or [],
+        "task_type": "hr_voting_collection"
+    }
+    
+    try:
+        task_id = await batch_processor.add_task(
+            task_type=TaskType.PROCESS_VOTING_DATA,
+            payload=payload,
+            priority=priority,
+            timeout_seconds=3600,  # 1 hour for PDF processing
+            tags=["hr-voting", "pdf-processing", "batch"]
+        )
+        
+        return {
+            "task_id": task_id,
+            "message": f"Queued HR voting data collection for {days_back} days"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to queue HR voting collection: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class HRProcessingRequest(BaseModel):
+    """Request model for HR PDF processing"""
+    days_back: int = 7
+    session_numbers: Optional[List[int]] = None
+    max_concurrent: int = 2
+    dry_run: bool = False
+
+
+class HRProcessingResponse(BaseModel):
+    """Response model for HR PDF processing"""
+    success: bool
+    message: str
+    sessions_processed: int
+    processing_time: float
+    bills_created: int
+    bills_updated: int
+    members_created: int
+    members_updated: int
+    votes_created: int
+    vote_records_created: int
+    conflicts_detected: int
+    errors: List[str] = []
+
+
+@app.post("/hr/process", response_model=HRProcessingResponse)
+async def process_hr_pdfs(
+    request: HRProcessingRequest,
+    background_tasks: BackgroundTasks
+) -> HRProcessingResponse:
+    """Process House of Representatives PDF voting data with enhanced extraction"""
+    
+    logger.info(f"Starting HR PDF processing: days_back={request.days_back}, dry_run={request.dry_run}")
+    
+    try:
+        # Run the complete HR integration pipeline
+        pipeline_result = await run_hr_integration_pipeline(
+            days_back=request.days_back,
+            dry_run=request.dry_run,
+            max_concurrent=request.max_concurrent
+        )
+        
+        # Extract results
+        integration_result = pipeline_result.get('integration_results')
+        
+        if integration_result:
+            return HRProcessingResponse(
+                success=pipeline_result['success'],
+                message="HR PDF processing completed successfully" if pipeline_result['success'] else "HR PDF processing completed with errors",
+                sessions_processed=integration_result.sessions_processed,
+                processing_time=pipeline_result['total_time'],
+                bills_created=integration_result.bills_created,
+                bills_updated=integration_result.bills_updated,
+                members_created=integration_result.members_created,
+                members_updated=integration_result.members_updated,
+                votes_created=integration_result.votes_created,
+                vote_records_created=integration_result.vote_records_created,
+                conflicts_detected=integration_result.conflicts_detected,
+                errors=pipeline_result.get('errors', [])
+            )
+        else:
+            return HRProcessingResponse(
+                success=False,
+                message="HR PDF processing failed - no results generated",
+                sessions_processed=0,
+                processing_time=pipeline_result['total_time'],
+                bills_created=0,
+                bills_updated=0,
+                members_created=0,
+                members_updated=0,
+                votes_created=0,
+                vote_records_created=0,
+                conflicts_detected=0,
+                errors=pipeline_result.get('errors', ['No integration results generated'])
+            )
+    
+    except Exception as e:
+        logger.error(f"HR PDF processing failed: {e}")
+        return HRProcessingResponse(
+            success=False,
+            message=f"HR PDF processing failed: {str(e)}",
+            sessions_processed=0,
+            processing_time=0.0,
+            bills_created=0,
+            bills_updated=0,
+            members_created=0,
+            members_updated=0,
+            votes_created=0,
+            vote_records_created=0,
+            conflicts_detected=0,
+            errors=[str(e)]
+        )
+
+
+@app.get("/hr/status")
+async def get_hr_processing_status() -> Dict[str, Any]:
+    """Get House of Representatives processing status and statistics"""
+    
+    try:
+        # Initialize processor to get current statistics
+        processor = EnhancedHRProcessor()
+        processing_stats = processor.get_processing_statistics()
+        
+        # Get base scraper statistics
+        base_stats = {}
+        if hr_voting_scraper:
+            base_stats = hr_voting_scraper.get_scraper_statistics()
+        
+        return {
+            "status": "ready",
+            "service": "enhanced_hr_processor",
+            "version": "1.0.0",
+            "capabilities": [
+                "pdf_text_extraction",
+                "ocr_fallback",
+                "member_name_matching",
+                "quality_assessment",
+                "data_validation",
+                "conflict_resolution"
+            ],
+            "processing_statistics": processing_stats,
+            "base_scraper_statistics": base_stats,
+            "last_check": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"Failed to get HR status: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get HR processing status: {str(e)}"
+        )
+
+
+# Monitoring and Observability Endpoints
+@app.get("/monitoring/overview")
+async def monitoring_overview() -> Dict[str, Any]:
+    """Get comprehensive monitoring overview"""
+    return get_dashboard_overview()
+
+
+@app.get("/monitoring/pipeline")
+async def monitoring_pipeline() -> Dict[str, Any]:
+    """Get processing pipeline status"""
+    return get_pipeline_status()
+
+
+@app.get("/monitoring/quality")
+async def monitoring_quality() -> Dict[str, Any]:
+    """Get data quality metrics"""
+    return get_quality_metrics()
+
+
+@app.get("/monitoring/system")
+async def monitoring_system() -> Dict[str, Any]:
+    """Get system resource metrics"""
+    return get_system_status()
+
+
+@app.get("/monitoring/alerts")
+async def monitoring_alerts() -> Dict[str, Any]:
+    """Get alerts dashboard"""
+    return get_alerts_dashboard()
+
+
+@app.get("/monitoring/performance")
+async def monitoring_performance(hours: int = 24) -> Dict[str, Any]:
+    """Get performance trends"""
+    return get_performance_dashboard(hours)
+
+
+@app.get("/monitoring/health")
+async def monitoring_health() -> Dict[str, Any]:
+    """Get comprehensive health status"""
+    return get_health_status()
+
+
+@app.get("/metrics")
+async def get_metrics(format: str = "json") -> Union[Dict[str, Any], str]:
+    """Get metrics in specified format (json or prometheus)"""
+    if format == "prometheus":
+        return PlainTextResponse(
+            content=get_metrics_export("prometheus"),
+            media_type="text/plain; version=0.0.4; charset=utf-8"
+        )
+    else:
+        return get_metrics_export("json")
+
+
+# T52 Limited Scraping Endpoints
+class T52ScrapeRequest(BaseModel):
+    """Request model for T52 limited scraping"""
+    dry_run: bool = True
+    force_refresh: bool = False
+    enable_stt: bool = False  # Disabled for cost control
+    enable_embeddings: bool = True
+    max_bills: int = 30
+    max_voting_sessions: int = 10
+
+
+class T52ScrapeResponse(BaseModel):
+    """Response model for T52 limited scraping"""
+    success: bool
+    message: str
+    total_time: float
+    bills_collected: int
+    voting_sessions_collected: int
+    speeches_processed: int
+    embeddings_generated: int
+    transcriptions_completed: int
+    errors: List[str]
+    performance_metrics: Dict[str, Any]
+
+
+@app.post("/t52/scrape", response_model=T52ScrapeResponse)
+async def execute_t52_limited_scraping(
+    request: T52ScrapeRequest
+) -> T52ScrapeResponse:
+    """Execute T52 limited scope scraping for June 2025 first week"""
+    
+    if not limited_scrape_coordinator:
+        raise HTTPException(
+            status_code=503,
+            detail="Limited scraping coordinator not available"
+        )
+    
+    logger.info(f"Starting T52 limited scraping (dry_run: {request.dry_run})")
+    
+    try:
+        # Get target configuration
+        target = limited_scrape_coordinator.get_june_first_week_target()
+        
+        # Apply request parameters
+        target.enable_stt = request.enable_stt
+        target.enable_embeddings = request.enable_embeddings
+        target.max_bills = request.max_bills
+        target.max_voting_sessions = request.max_voting_sessions
+        
+        # Execute pipeline
+        result = await limited_scrape_coordinator.execute_limited_scraping(
+            target=target,
+            dry_run=request.dry_run
+        )
+        
+        return T52ScrapeResponse(
+            success=result.success,
+            message="T52 limited scraping completed successfully" if result.success else "T52 limited scraping completed with errors",
+            total_time=result.total_time,
+            bills_collected=result.bills_collected,
+            voting_sessions_collected=result.voting_sessions_collected,
+            speeches_processed=result.speeches_processed,
+            embeddings_generated=result.embeddings_generated,
+            transcriptions_completed=result.transcriptions_completed,
+            errors=result.errors,
+            performance_metrics=result.performance_metrics
+        )
+        
+    except Exception as e:
+        logger.error(f"T52 limited scraping failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/t52/status")
+async def get_t52_status() -> Dict[str, Any]:
+    """Get T52 limited scraping pipeline status"""
+    
+    if not limited_scrape_coordinator:
+        return {
+            "status": "unavailable",
+            "message": "Limited scraping coordinator not initialized"
+        }
+    
+    return limited_scrape_coordinator.get_pipeline_status()
+
+
+@app.get("/t52/target")
+async def get_t52_target() -> Dict[str, Any]:
+    """Get T52 target configuration"""
+    
+    if not limited_scrape_coordinator:
+        raise HTTPException(
+            status_code=503,
+            detail="Limited scraping coordinator not available"
+        )
+    
+    target = limited_scrape_coordinator.get_june_first_week_target()
+    
+    return {
+        "start_date": target.start_date.isoformat(),
+        "end_date": target.end_date.isoformat(),
+        "max_bills": target.max_bills,
+        "max_voting_sessions": target.max_voting_sessions,
+        "max_speeches": target.max_speeches,
+        "enable_stt": target.enable_stt,
+        "enable_embeddings": target.enable_embeddings,
+        "description": "Limited scraping for June 2025 first week (2025-06-02 to 2025-06-08)"
     }
 
 

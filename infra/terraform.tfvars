@@ -1,0 +1,26 @@
+# Terraform variables example file
+# Copy this file to terraform.tfvars and update with your actual values
+
+# GCP Project Configuration
+project_id = "gen-lang-client-0458605339"
+region     = "asia-northeast1"
+zone       = "asia-northeast1-a"
+
+# Environment Configuration
+environment = "dev"
+app_name    = "seiji-watch"
+
+# Database Configuration
+db_tier             = "db-f1-micro"    # For development - use db-custom-2-4096 for production
+db_disk_size        = 20               # GB
+db_backup_enabled   = true
+
+# Cloud Run Configuration
+cloud_run_cpu            = "1"         # CPU units
+cloud_run_memory         = "512Mi"     # Memory allocation
+cloud_run_min_instances  = 0           # Minimum instances (0 for cost optimization)
+cloud_run_max_instances  = 10          # Maximum instances
+
+# Storage Configuration
+storage_location = "ASIA-NORTHEAST1"   # Storage location
+storage_class    = "STANDARD"          # Storage class

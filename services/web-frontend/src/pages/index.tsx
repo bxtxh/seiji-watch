@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import SearchInterface from '@/components/SearchInterface';
 import PWADebugPanel from '@/components/PWADebugPanel';
+import ObservabilityDashboard from '@/components/ObservabilityDashboard';
 import { apiClient, handleApiError } from '@/lib/api';
+import { useObservability } from '@/lib/observability';
 
 export default function Home() {
   const [systemStatus, setSystemStatus] = useState<{
@@ -15,52 +17,91 @@ export default function Home() {
   }>({ isHealthy: false, message: '接続確認中...' });
   
   const [showPWADebug, setShowPWADebug] = useState(false);
+  const [showObservabilityDashboard, setShowObservabilityDashboard] = useState(false);
+  
+  // Observability hooks
+  const { recordPageView, recordError, recordMetric, measureAsync } = useObservability();
 
   useEffect(() => {
+    // Record page view
+    recordPageView('home');
+    
     const checkSystemHealth = async () => {
       try {
-        // Check API health
-        const health = await apiClient.checkHealth();
-        
-        // Get embedding stats
-        const stats = await apiClient.getEmbeddingStats();
+        // Measure system health check performance
+        const healthResult = await measureAsync('system_health_check', async () => {
+          // Check API health
+          const health = await apiClient.checkHealth();
+          
+          // Get embedding stats
+          const stats = await apiClient.getEmbeddingStats();
+          
+          return { health, stats };
+        });
         
         setSystemStatus({
           isHealthy: true,
           message: 'システムは正常に動作しています',
           stats: {
-            bills: stats.bills,
-            speeches: stats.speeches,
+            bills: healthResult.stats.bills,
+            speeches: healthResult.stats.speeches,
           },
         });
+
+        // Record successful health check
+        recordMetric({
+          name: 'system.health_check.success',
+          value: 1,
+          timestamp: Date.now(),
+          tags: {
+            bills_count: healthResult.stats.bills.toString(),
+            speeches_count: healthResult.stats.speeches.toString()
+          }
+        });
+
       } catch (error) {
         console.error('System health check failed:', error);
+        
+        // Record health check failure
+        recordError({
+          error: error as Error,
+          context: 'system_health_check',
+          timestamp: Date.now()
+        });
+        
         setSystemStatus({
           isHealthy: false,
           message: 'システムへの接続に失敗しました',
+        });
+
+        recordMetric({
+          name: 'system.health_check.failure',
+          value: 1,
+          timestamp: Date.now(),
+          tags: { error_type: 'connection_failed' }
         });
       }
     };
 
     checkSystemHealth();
-  }, []);
+  }, [recordPageView, recordError, recordMetric, measureAsync]);
 
   return (
     <Layout>
       <div className="space-y-8">
         {/* Hero Section */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl japanese-text">
+        <div className="hero-section text-center rounded-2xl p-8 mb-8 fade-in-up">
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl japanese-heading animate-slide-down">
             国会議事録検索システム
           </h1>
-          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto japanese-text">
+          <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto japanese-body animate-fade-in" style={{animationDelay: '0.2s'}}>
             国会の法案や議事録をAIとキーワード検索で素早く見つけることができます。
             アクセシブルで使いやすいインターフェースで、重要な政治情報にアクセスできます。
           </p>
         </div>
 
         {/* System Status */}
-        <div className={`card ${systemStatus.isHealthy ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+        <div className={`card-elevated ${systemStatus.isHealthy ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               {systemStatus.isHealthy ? (
@@ -87,9 +128,9 @@ export default function Home() {
         </div>
 
         {/* Features Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="card text-center">
-            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 stagger-children">
+          <div className="card-interactive text-center">
+            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center interactive-scale">
               <svg className="w-6 h-6 text-primary-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -100,8 +141,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="card text-center">
-            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center">
+          <div className="card-interactive text-center">
+            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center interactive-scale">
               <svg className="w-6 h-6 text-primary-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
@@ -112,8 +153,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="card text-center">
-            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center">
+          <div className="card-interactive text-center">
+            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center interactive-scale">
               <svg className="w-6 h-6 text-primary-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -167,18 +208,35 @@ export default function Home() {
         onClose={() => setShowPWADebug(false)} 
       />
       
-      {/* PWA Debug Button (development only) */}
+      {/* Observability Dashboard */}
+      <ObservabilityDashboard 
+        isOpen={showObservabilityDashboard} 
+        onClose={() => setShowObservabilityDashboard(false)} 
+      />
+      
+      {/* Development Tools Buttons */}
       {process.env.NODE_ENV === 'development' && (
-        <button
-          onClick={() => setShowPWADebug(true)}
-          className="fixed bottom-4 left-4 bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors z-40"
-          title="PWAデバッグパネルを開く"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
+        <div className="fixed bottom-4 left-4 flex flex-col space-y-3 z-40">
+          <button
+            onClick={() => setShowPWADebug(true)}
+            className="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors"
+            title="PWAデバッグパネルを開く"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setShowObservabilityDashboard(true)}
+            className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+            title="可観測性ダッシュボードを開く"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </button>
+        </div>
       )}
     </Layout>
   );

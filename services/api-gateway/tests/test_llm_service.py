@@ -3,7 +3,7 @@
 import pytest
 import asyncio
 from unittest.mock import AsyncMock, patch
-from services.llm_service import LLMService
+from src.services.llm_service import LLMService
 
 
 class TestLLMService:
@@ -19,7 +19,7 @@ class TestLLMService:
     @pytest.mark.asyncio
     async def test_generate_speech_summary_success(self):
         """Test successful speech summary generation."""
-        with patch("services.llm_service.openai.AsyncOpenAI") as mock_openai:
+        with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.return_value = self.mock_openai_response
             mock_openai.return_value = mock_client
@@ -46,7 +46,7 @@ class TestLLMService:
     @pytest.mark.asyncio
     async def test_generate_speech_summary_api_error(self):
         """Test speech summary with API error."""
-        with patch("services.llm_service.openai.AsyncOpenAI") as mock_openai:
+        with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.side_effect = Exception("API Error")
             mock_openai.return_value = mock_client
@@ -68,7 +68,7 @@ class TestLLMService:
             AsyncMock(message=AsyncMock(content="予算・決算、社会保障、その他"))
         ]
         
-        with patch("services.llm_service.openai.AsyncOpenAI") as mock_openai:
+        with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.return_value = mock_topics_response
             mock_openai.return_value = mock_client
@@ -104,7 +104,7 @@ class TestLLMService:
             AsyncMock(message=AsyncMock(content="トピック1、トピック2、トピック3"))
         ]
         
-        with patch("services.llm_service.openai.AsyncOpenAI") as mock_openai:
+        with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.side_effect = [
                 mock_summary_response, mock_topics_response
@@ -133,7 +133,7 @@ class TestLLMService:
     @pytest.mark.asyncio
     async def test_health_check_success(self):
         """Test successful health check."""
-        with patch("services.llm_service.openai.AsyncOpenAI") as mock_openai:
+        with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.return_value = self.mock_openai_response
             mock_openai.return_value = mock_client
@@ -147,7 +147,7 @@ class TestLLMService:
     @pytest.mark.asyncio
     async def test_health_check_failure(self):
         """Test health check failure."""
-        with patch("services.llm_service.openai.AsyncOpenAI") as mock_openai:
+        with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.side_effect = Exception("API Error")
             mock_openai.return_value = mock_client
