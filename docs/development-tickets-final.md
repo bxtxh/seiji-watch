@@ -550,10 +550,10 @@ class VectorStoreService:
 
 ---
 
-### EPIC 5: External Service Integration & Production Hardening
-**Target: July 12, 2025** | **Priority: P0** | **Status: 🚧 PENDING**
+### EPIC 5: Staged Production Deployment & UI Enhancement
+**Target: July 15, 2025** | **Priority: P0** | **Status: 🚧 IN PROGRESS** (2/12 tickets)
 
-*Based on Release Testing Results - Critical items identified for production deployment*
+*Phased approach: Pilot Testing → Quality Validation → UI Enhancement → Full Production*
 
 #### T50 - GCP Cloud Service Integration ✅ COMPLETED
 **Priority:** P0 | **Estimate:** 8 hours | **Actual:** 8 hours
@@ -575,89 +575,97 @@ class VectorStoreService:
 **DoD:** All external APIs properly integrated with robust error handling
 **Implementation:** Complete external service integration with OpenAI, Airtable, Weaviate, and GCP
 
-#### T52 - Production Security Configuration
+#### T52 - Data Pipeline Coordination (Scraping Team)
+**Priority:** P0 | **Estimate:** 6 hours | **Assigned to:** Scraping Team
+- **Parallel Development**: Configure scraper for specific date range (2025年6月第1週)
+- **Coordination**: Implement data volume controls and monitoring  
+- **Pipeline Testing**: Execute limited scraping with full pipeline testing
+- **Data Delivery**: Generate pilot dataset for quality validation
+- **Documentation**: Document scraping performance and any issues encountered
+**DoD:** Complete 1-week dataset available for quality assessment and UI testing
+**Note:** UI development (T55-T58) proceeds in parallel without dependency on this task
+
+#### T53 - Data Quality Validation & Report
 **Priority:** P0 | **Estimate:** 4 hours
-- Configure security headers (X-Frame-Options, CSP, HSTS) in Cloud Run
-- Implement proper CORS configuration for production domains
-- Set up JWT authentication with secure token handling
-- Configure rate limiting at infrastructure level
-- Enable DDoS protection and web application firewall
-**DoD:** Security audit passes, all security headers properly configured
+- Validate speech-to-text accuracy (WER < 15% target)
+- Assess LLM issue extraction relevance and accuracy
+- Test semantic search quality with pilot dataset
+- Generate comprehensive quality assessment report
+- Document recommendations for parameter tuning
+**DoD:** Quality validation report completed with data-driven recommendations
 
-#### T53 - Production Monitoring & Alerting
-**Priority:** P1 | **Estimate:** 6 hours
-- Set up Cloud Monitoring dashboards for all services
-- Configure alerting for service failures, high error rates, and API quota limits
-- Implement health check endpoints for all services
-- Set up log aggregation and error tracking
-- Configure uptime monitoring for critical user journeys
-**DoD:** Complete observability stack operational with alerting configured
+#### T54 - UI/UX Testing with Real Data
+**Priority:** P0 | **Estimate:** 5 hours
+- Test search interface with pilot dataset
+- Validate issue board functionality and usability
+- Assess mobile responsiveness with real content
+- Conduct user journey testing across all features
+- Document UI/UX improvement recommendations
+**DoD:** Complete UI/UX assessment with actionable improvement plan
 
-#### T54 - Database Migration & Data Integrity
-**Priority:** P1 | **Estimate:** 8 hours
-- Execute Airtable to PostgreSQL migration scripts
-- Implement data backup and recovery procedures
-- Set up database connection pooling and read replicas
-- Validate data consistency across migration
-- Test disaster recovery procedures
-**DoD:** Database migration completed successfully with data integrity verified
-
-#### T55 - CDN & Performance Optimization
-**Priority:** P2 | **Estimate:** 4 hours
-- Configure Cloud CDN for static assets
-- Implement image optimization and lazy loading
-- Set up compression and caching strategies
-- Optimize Core Web Vitals (LCP, FID, CLS)
-- Implement service worker for PWA caching
-**DoD:** Performance targets met (LCP < 2.5s, FID < 100ms, CLS < 0.1)
-
-#### T56 - Production Domain & SSL Configuration
-**Priority:** P1 | **Estimate:** 3 hours
-- Configure custom domain mapping in Cloud Run
-- Set up SSL certificates with automatic renewal
-- Configure DNS records for production domain
-- Test HTTPS redirects and certificate validation
-- Implement subdomain routing for different services
-**DoD:** Production domain accessible via HTTPS with valid SSL certificate
-
-#### T57 - Backup & Disaster Recovery
-**Priority:** P1 | **Estimate:** 5 hours
-- Implement automated database backups with point-in-time recovery
-- Set up Cloud Storage backup for file assets
-- Create disaster recovery runbook and procedures
-- Test backup restoration procedures
-- Implement cross-region backup replication
-**DoD:** Complete backup strategy implemented and tested
-
-#### T58 - Load Testing & Capacity Planning
-**Priority:** P2 | **Estimate:** 6 hours
-- Conduct load testing with expected user volumes (100+ concurrent users)
-- Test auto-scaling behavior under load
-- Validate database performance under stress
-- Test API rate limiting under high load
-- Optimize resource allocation and cost efficiency
-**DoD:** System performance validated under expected production load
-
-#### T59 - Legal Compliance & Data Governance
+#### T55 - Logo & Branding Implementation
 **Priority:** P1 | **Estimate:** 4 hours
-- Implement data retention policies for user data and logs
-- Configure privacy-compliant analytics tracking
-- Set up GDPR compliance measures (data export, deletion)
-- Document data processing and storage procedures
-- Implement audit logging for compliance requirements
-**DoD:** Legal compliance requirements met with proper documentation
+- Design and implement application logo (SVG format)
+- Create favicon and PWA icons for all devices
+- Update PWA manifest with proper branding
+- Implement logo in header navigation and splash screen
+- Ensure brand consistency across all pages
+**DoD:** Complete branding package implemented with consistent visual identity
+
+#### T56 - Background Images & Visual Enhancement
+**Priority:** P1 | **Estimate:** 3 hours
+- Design and implement appropriate background images/patterns
+- Create visual hierarchy with subtle background elements
+- Implement responsive background images for different screen sizes
+- Ensure accessibility compliance with background contrast ratios
+- Optimize image formats and loading performance
+**DoD:** Enhanced visual design with appropriate background imagery
+
+#### T57 - UI Animations & Interactions
+**Priority:** P1 | **Estimate:** 5 hours
+- Implement smooth page transitions and loading animations
+- Add hover effects and micro-interactions for better UX
+- Create animated search result loading and filtering
+- Implement smooth scroll animations and page navigation
+- Ensure animations respect accessibility preferences (prefers-reduced-motion)
+**DoD:** Polished interactive experience with smooth animations throughout
+
+#### T58 - Design System Refinement
+**Priority:** P1 | **Estimate:** 6 hours
+- Standardize color palette with accessible contrast ratios
+- Refine typography scale and implement consistent spacing system
+- Create reusable component library with proper variants
+- Implement consistent button styles and form elements
+- Document design system guidelines for future development
+**DoD:** Cohesive design system implemented across all components
+
+#### T59 - Production Security & Performance
+**Priority:** P0 | **Estimate:** 8 hours
+- Configure security headers (X-Frame-Options, CSP, HSTS) in Cloud Run
+- Set up production monitoring and alerting
+- Implement CDN and performance optimization
+- Configure production domain with SSL certificates
+- Execute load testing and capacity planning
+**DoD:** Production environment secured and performance-optimized
 
 **EPIC 5 Summary:**
-- **Total Estimated:** 54 hours 
-- **Critical Path:** T50 → T51 → T52 → T53 (Infrastructure → APIs → Security → Monitoring)
-- **Parallel Development:** T54, T55, T56 can be developed in parallel
-- **Target Completion:** July 12, 2025 (5 days before production launch)
+- **Total Estimated:** 53 hours 
+- **Critical Path:** T50 → T51 ✅ → **UI Development** (T55-T58) **|| Scraping** (T52) → Integration (T53-T54)
+- **Parallel Development:** T55, T56, T57, T58 (UI Enhancement) + T52 (Scraping Team)
+- **UI Priority:** Immediate start on visual enhancements without data dependency
+- **Target Completion:** July 15, 2025 (7 days before public launch)
 
 **Dependencies:**
-- Valid GCP production environment with all services provisioned
-- Production API keys for OpenAI, Airtable, Weaviate
-- Production domain registration and DNS access
-- Legal review completion for compliance requirements
+- Valid GCP production environment with all services provisioned ✅
+- Production API keys for OpenAI, Airtable, Weaviate ✅
+- **UI Team**: Design assets for logo and background images (T55-T58)
+- **Scraping Team**: Diet website access for limited pilot scraping (T52)
+
+**Phased Approach Benefits:**
+- **Risk Mitigation**: Small-scale testing before full deployment
+- **Quality Assurance**: Data-driven validation of AI features
+- **User Experience**: Real content testing ensures UI makes sense
+- **Incremental Development**: UI improvements based on actual usage patterns
 
 **Risk Mitigation:**
 - Each ticket includes rollback procedures
@@ -675,7 +683,7 @@ class VectorStoreService:
 - **EPIC 2: Vertical Slice #2** ✅ **COMPLETED** (4/4 tickets)
 - **EPIC 3: LLM Intelligence** ✅ **COMPLETED** (3/3 tickets)
 - **EPIC 4: Production Readiness** ✅ **COMPLETED** (4/4 tickets)
-- **EPIC 5: External Service Integration** 🚧 **IN PROGRESS** (2/10 tickets)
+- **EPIC 5: Staged Production Deployment** 🚧 **IN PROGRESS** (2/12 tickets)
 
 ### Updated Milestones
 - ✅ **Infrastructure Ready** (July 1, 2025)
@@ -692,7 +700,7 @@ class VectorStoreService:
 4. **Performance Validation**: Load testing with realistic traffic patterns
 5. **Monitoring Setup**: Complete observability before production launch
 
-**Next Priority:** Begin EPIC 5 immediately - external service integration is critical for production readiness
+**Next Priority:** Begin UI Enhancement (T55-T58) immediately - parallel development with scraping team coordination
 
 ---
 
