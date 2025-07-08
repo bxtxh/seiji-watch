@@ -65,6 +65,9 @@ export interface HealthStatus {
   status: string;
   service: string;
   version: string;
+  timestamp?: number;
+  checks?: Record<string, any>;
+  metrics_summary?: Record<string, any>;
 }
 
 export interface Issue {

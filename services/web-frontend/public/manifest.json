@@ -36,22 +36,6 @@
     }
   ],
   "categories": ["government", "politics", "productivity", "utilities"],
-  "screenshots": [
-    {
-      "src": "/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Diet Issue Tracker - Desktop view"
-    },
-    {
-      "src": "/screenshot-narrow.png",
-      "sizes": "360x640",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Diet Issue Tracker - Mobile view"
-    }
-  ],
   "shortcuts": [
     {
       "name": "検索",

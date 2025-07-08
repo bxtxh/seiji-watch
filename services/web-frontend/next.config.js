@@ -29,11 +29,11 @@ const nextConfig = {
   poweredByHeader: false,
   generateEtags: false,
   
-  // Internationalization for Japanese
-  i18n: {
-    locales: ['ja', 'en'],
-    defaultLocale: 'ja',
-  },
+  // Internationalization - disabled for initial release
+  // i18n: {
+  //   locales: ['ja', 'en'],
+  //   defaultLocale: 'ja',
+  // },
   
   // Comprehensive Security headers
   async headers() {
@@ -76,18 +76,19 @@ const nextConfig = {
       // Control browser features and APIs
       {
         key: 'Permissions-Policy',
-        value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), speaker=(), fullscreen=(self), sync-xhr=()',
+        value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), fullscreen=(self), sync-xhr=()',
       },
-      // Content Security Policy - Comprehensive XSS protection
+      // Content Security Policy - Development-friendly with Google Fonts
       {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
           "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-          "style-src 'self' 'unsafe-inline'",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https: blob:",
-          "font-src 'self' data:",
-          "connect-src 'self' https://www.sangiin.go.jp",
+          "font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com",
+          "connect-src 'self' http://localhost:8080 https://www.sangiin.go.jp",
           "media-src 'self'",
           "object-src 'none'",
           "child-src 'none'",

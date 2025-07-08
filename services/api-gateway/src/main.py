@@ -197,14 +197,17 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Add rate limiting (development: 1000 req/min for testing)
 app.add_middleware(RateLimitMiddleware, requests_per_minute=1000)
 
-# CORS middleware - Temporary permissive configuration for debugging
-# allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+# CORS middleware - Step 2: Specific origin and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Temporarily allow all origins
-    allow_credentials=False,  # Must be False when allow_origins=["*"]
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    allow_origins=["http://localhost:3000"],  # Specific frontend origin
+    allow_credentials=False,  # Keep False for security
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "accept", "accept-language", "authorization", 
+        "content-language", "content-type", "x-requested-with",
+        "x-csrf-token", "x-request-id"  # Add our custom headers
+    ],
     expose_headers=["X-Total-Count"],
     max_age=600
 )

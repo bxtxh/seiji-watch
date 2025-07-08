@@ -643,25 +643,56 @@ class VectorStoreService:
 **DoD:** Cohesive design system implemented across all components
 **Implementation:** Complete design system with 40+ Tailwind extensions, Japanese typography optimization, and accessibility-compliant color palette
 
-#### T59 - Production Security & Performance
-**Priority:** P0 | **Estimate:** 8 hours
+#### T59A - Domain Acquisition & DNS Setup
+**Priority:** P0 | **Estimate:** 2 hours | **Status:** 🚨 **CRITICAL - IMMEDIATE ACTION REQUIRED**
+- **URGENT**: Acquire production domain (seiji-watch.com or alternative)
+- Configure DNS settings with domain registrar
+- Set up DNS records for main domain and subdomains:
+  - `seiji-watch.com` (main site)
+  - `www.seiji-watch.com` (WWW variant)
+  - `staging.seiji-watch.com` (staging environment)
+  - `api.seiji-watch.com` (API Gateway, optional)
+- Configure DNS to point to Cloud Run services
+- Verify DNS propagation and accessibility
+**DoD:** Domain acquired, DNS configured, all subdomains accessible
+**Timeline:** Must be completed by July 10, 2025 (blocks T59B and T60)
+**Dependencies:** None - can be started immediately
+**Risk:** HIGH - Blocks production deployment if delayed
+
+#### T59B - Cloud Run Domain Integration & SSL
+**Priority:** P0 | **Estimate:** 4 hours
+**Dependencies:** T59A (Domain Acquisition) must be completed first
+- Configure custom domain mapping in Cloud Run for all services
+- Set up automatic SSL certificate provisioning via Google-managed certificates
+- Test HTTPS access for all production domains
+- Configure domain verification for Cloud Run
+- Implement HTTP to HTTPS redirects
+- Validate SSL certificate chain and security ratings
+**DoD:** All services accessible via HTTPS with valid SSL certificates
+**Timeline:** July 10-11, 2025
+
+#### T59C - Production Security & Performance
+**Priority:** P0 | **Estimate:** 4 hours  
+**Dependencies:** T59B (SSL Setup) must be completed first
 - Configure security headers (X-Frame-Options, CSP, HSTS) in Cloud Run
 - Set up production monitoring and alerting
 - Implement CDN and performance optimization
-- Configure production domain with SSL certificates
 - Execute load testing and capacity planning
+- Configure Web Application Firewall (if needed)
 **DoD:** Production environment secured and performance-optimized
 
 **EPIC 5 Summary:**
-- **Total Estimated:** 53 hours | **Total Actual:** 31 hours (8/10 tickets completed)
-- **Critical Path:** T50 → T51 ✅ → **UI Development** ✅ (T56, T57, T58) **|| Scraping** (T52) → Integration (T53-T54)
-- **Parallel Development:** T55 (pending assets), T56 ✅, T57 ✅, T58 ✅ + T52 (Scraping Team)
+- **Total Estimated:** 57 hours | **Total Actual:** 31 hours (8/12 tickets completed)
+- **Critical Path:** T50 → T51 ✅ → **T59A (Domain)** → **T59B (SSL)** → **T59C (Security)** → **T60 (CORS)**
+- **Parallel Development:** T55 (pending assets), T56 ✅, T57 ✅, T58 ✅ + T52 (Scraping Team) 
 - **UI Priority:** ✅ UI Enhancement Phase Complete - Visual enhancements delivered
+- **🚨 IMMEDIATE ACTION REQUIRED:** T59A (Domain Acquisition) - blocks all production deployment
 - **Target Completion:** July 15, 2025 (6 days before public launch)
 
 **Dependencies:**
 - Valid GCP production environment with all services provisioned ✅
 - Production API keys for OpenAI, Airtable, Weaviate ✅
+- **🚨 CRITICAL**: Production domain acquisition (T59A) - **MUST BE COMPLETED BY JULY 10**
 - **UI Team**: Design assets for logo and background images (T55-T58)
 - **Scraping Team**: Diet website access for limited pilot scraping (T52)
 
@@ -708,8 +739,80 @@ class VectorStoreService:
 
 ---
 
+## 🔧 Production CORS Configuration Recommendations
+
+### Current Development Configuration (Implemented July 8, 2025)
+During CORS debugging, we temporarily implemented permissive settings:
+```python
+# TEMPORARY: Development CORS configuration
+allow_origins=["*"]
+allow_credentials=False
+allow_headers=["*"]
+```
+
+### ⚠️ Security Hardening Required for Production
+
+#### T60 - CORS Security Hardening
+**Priority:** P0 | **Estimate:** 2 hours
+**Dependencies:** T59A (Domain Acquisition) must be completed first
+**Issue**: Current CORS configuration is overly permissive for production use
+**Risk Level**: High - Potential security vulnerability in production
+
+**Required Changes:**
+1. **Specific Origin Configuration** (using acquired domain):
+   ```python
+   allow_origins=[
+       "https://seiji-watch.com",           # Production domain (from T59A)
+       "https://www.seiji-watch.com",       # WWW variant (from T59A)
+       "https://staging.seiji-watch.com",   # Staging environment (from T59A)
+       "http://localhost:3000"              # Development only
+   ]
+   ```
+
+2. **Credentials Management**:
+   ```python
+   allow_credentials=True  # Only if session cookies/auth required
+   ```
+
+3. **Header Restriction**:
+   ```python
+   allow_headers=[
+       "accept", "accept-language", "authorization",
+       "content-type", "x-csrf-token", "x-request-id"
+   ]
+   ```
+
+4. **Environment-Based Configuration**:
+   ```python
+   # config/cors.py
+   CORS_SETTINGS = {
+       "development": {
+           "allow_origins": ["http://localhost:3000"],
+           "allow_credentials": False,
+           "allow_headers": ["*"]
+       },
+       "production": {
+           "allow_origins": ["https://seiji-watch.com"],
+           "allow_credentials": True,
+           "allow_headers": ["accept", "authorization", "content-type"]
+       }
+   }
+   ```
+
+**Implementation Notes:**
+- Add environment detection in `main.py`
+- Remove wildcard permissions before production deployment
+- Test CORS configuration in staging environment
+- Document browser compatibility testing requirements
+
+**Security Impact**: Critical for preventing cross-origin attacks in production
+**Timeline**: Must be completed before production launch (July 15, 2025)
+
+---
+
 *Final Update: July 8, 2025*
 *All Development Completed: July 7, 2025*
 *MVP Launch Ready: July 7, 2025*
 *EPIC 5 Added: July 7, 2025 - Production Integration Required*
 *UI Enhancement Phase Completed: July 8, 2025 - T56, T57, T58 delivered*
+*CORS Security Requirements Added: July 8, 2025 - T60 production hardening*

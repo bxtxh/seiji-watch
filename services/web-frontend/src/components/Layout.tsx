@@ -13,6 +13,8 @@ export default function Layout({
   title = '国会議事録検索システム',
   description = '国会の法案や議事録を簡単に検索・閲覧できるシステムです。',
 }: LayoutProps) {
+  // Furigana state - feature disabled for initial release
+  // To enable: Set NEXT_PUBLIC_ENABLE_FURIGANA=true in .env.local
   const [furiganaEnabled, setFuriganaEnabled] = useState(false);
 
   return (
@@ -79,18 +81,21 @@ export default function Layout({
 
               {/* Accessibility controls */}
               <div className="flex items-center space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setFuriganaEnabled(!furiganaEnabled)}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                    furiganaEnabled
-                      ? 'bg-primary-green text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  aria-label={`ふりがな表示を${furiganaEnabled ? 'オフ' : 'オン'}にする`}
-                >
-                  ふりがな
-                </button>
+                {/* Furigana toggle - disabled for initial release */}
+                {process.env.NEXT_PUBLIC_ENABLE_FURIGANA === 'true' && (
+                  <button
+                    type="button"
+                    onClick={() => setFuriganaEnabled(!furiganaEnabled)}
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                      furiganaEnabled
+                        ? 'bg-primary-green text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                    aria-label={`ふりがな表示を${furiganaEnabled ? 'オフ' : 'オン'}にする`}
+                  >
+                    ふりがな
+                  </button>
+                )}
               </div>
             </div>
           </div>

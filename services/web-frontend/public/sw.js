@@ -95,6 +95,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // Skip external API requests (API Gateway on different port)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+  
   event.respondWith(
     (async () => {
       try {
@@ -133,10 +138,13 @@ self.addEventListener('fetch', (event) => {
 
 // Helper functions for request classification
 function isApiRequest(url) {
-  return url.pathname.startsWith('/api/') || 
-         url.pathname.startsWith('/search') ||
-         url.pathname.startsWith('/voting/') ||
-         url.pathname.startsWith('/health');
+  // Only handle internal API routes, exclude external API Gateway
+  return url.origin === self.location.origin && (
+    url.pathname.startsWith('/api/') || 
+    url.pathname.startsWith('/search') ||
+    url.pathname.startsWith('/voting/') ||
+    url.pathname.startsWith('/health')
+  );
 }
 
 function isStaticResource(url) {

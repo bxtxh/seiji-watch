@@ -12,8 +12,8 @@ import {
 import { useSecureForm, useSecurityLogger } from '@/contexts/SecurityContext';
 import { useObservability } from '@/lib/observability';
 
-// Rate limiter for search requests (10 requests per minute)
-const searchRateLimiter = new RateLimiter(60000, 10);
+// Rate limiter for search requests (development: 100 requests per minute)
+const searchRateLimiter = new RateLimiter(60000, 100);
 
 export default function SearchInterface() {
   const [query, setQuery] = useState('');
