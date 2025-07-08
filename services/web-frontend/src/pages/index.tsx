@@ -23,68 +23,96 @@ export default function Home() {
   const { recordPageView, recordError, recordMetric, measureAsync } = useObservability();
 
   useEffect(() => {
-    // Record page view
-    recordPageView('home');
-    
+    let abortController = new AbortController();
+    let mounted = true;
+
     const checkSystemHealth = async () => {
       try {
-        // Measure system health check performance
-        const healthResult = await measureAsync('system_health_check', async () => {
-          // Check API health
-          const health = await apiClient.checkHealth();
-          
-          // Get embedding stats
-          const stats = await apiClient.getEmbeddingStats();
-          
-          return { health, stats };
-        });
+        // Record page view only once
+        recordPageView('home');
         
-        setSystemStatus({
-          isHealthy: true,
-          message: 'システムは正常に動作しています',
-          stats: {
-            bills: healthResult.stats.bills,
-            speeches: healthResult.stats.speeches,
-          },
-        });
+        // Check API health with abort signal
+        const health = await apiClient.checkHealth();
+        const stats = await apiClient.getEmbeddingStats();
+        
+        // Only update state if component is still mounted
+        if (mounted && !abortController.signal.aborted) {
+          setSystemStatus(prevStatus => {
+            const newStatus = {
+              isHealthy: true,
+              message: 'システムは正常に動作しています',
+              stats: {
+                bills: stats.bills,
+                speeches: stats.speeches,
+              },
+            };
+            
+            // Avoid unnecessary re-renders by comparing previous state
+            if (prevStatus.isHealthy === newStatus.isHealthy && 
+                prevStatus.message === newStatus.message &&
+                prevStatus.stats?.bills === newStatus.stats?.bills &&
+                prevStatus.stats?.speeches === newStatus.stats?.speeches) {
+              return prevStatus;
+            }
+            
+            return newStatus;
+          });
 
-        // Record successful health check
-        recordMetric({
-          name: 'system.health_check.success',
-          value: 1,
-          timestamp: Date.now(),
-          tags: {
-            bills_count: healthResult.stats.bills.toString(),
-            speeches_count: healthResult.stats.speeches.toString()
-          }
-        });
+          // Record successful health check
+          recordMetric({
+            name: 'system.health_check.success',
+            value: 1,
+            timestamp: Date.now(),
+            tags: {
+              bills_count: stats.bills.toString(),
+              speeches_count: stats.speeches.toString()
+            }
+          });
+        }
 
       } catch (error) {
-        console.error('System health check failed:', error);
-        
-        // Record health check failure
-        recordError({
-          error: error as Error,
-          context: 'system_health_check',
-          timestamp: Date.now()
-        });
-        
-        setSystemStatus({
-          isHealthy: false,
-          message: 'システムへの接続に失敗しました',
-        });
+        if (mounted && !abortController.signal.aborted) {
+          console.error('System health check failed:', error);
+          
+          // Record health check failure
+          recordError({
+            error: error as Error,
+            context: 'system_health_check',
+            timestamp: Date.now()
+          });
+          
+          setSystemStatus(prevStatus => {
+            const newStatus = {
+              isHealthy: false,
+              message: 'システムへの接続に失敗しました',
+            };
+            
+            // Avoid unnecessary re-renders
+            if (prevStatus.isHealthy === false && prevStatus.message === newStatus.message) {
+              return prevStatus;
+            }
+            
+            return newStatus;
+          });
 
-        recordMetric({
-          name: 'system.health_check.failure',
-          value: 1,
-          timestamp: Date.now(),
-          tags: { error_type: 'connection_failed' }
-        });
+          recordMetric({
+            name: 'system.health_check.failure',
+            value: 1,
+            timestamp: Date.now(),
+            tags: { error_type: 'connection_failed' }
+          });
+        }
       }
     };
 
     checkSystemHealth();
-  }, [recordPageView, recordError, recordMetric, measureAsync]);
+
+    // Cleanup function
+    return () => {
+      mounted = false;
+      abortController.abort();
+    };
+  }, []); // Empty dependency array - run only once
 
   return (
     <Layout>
@@ -214,25 +242,25 @@ export default function Home() {
         onClose={() => setShowObservabilityDashboard(false)} 
       />
       
-      {/* Development Tools Buttons */}
+      {/* Development Tools Buttons - Subtle styling */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 left-4 flex flex-col space-y-3 z-40">
+        <div className="fixed bottom-4 right-4 flex flex-col space-y-2 z-10 opacity-30 hover:opacity-100 transition-opacity duration-300">
           <button
             onClick={() => setShowPWADebug(true)}
-            className="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors"
+            className="bg-gray-600 text-gray-300 p-2 rounded-md shadow-sm hover:bg-gray-500 hover:text-white transition-all duration-200 text-xs"
             title="PWAデバッグパネルを開く"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
           <button
             onClick={() => setShowObservabilityDashboard(true)}
-            className="bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+            className="bg-gray-600 text-gray-300 p-2 rounded-md shadow-sm hover:bg-gray-500 hover:text-white transition-all duration-200 text-xs"
             title="可観測性ダッシュボードを開く"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </button>
