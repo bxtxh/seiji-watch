@@ -810,9 +810,122 @@ allow_headers=["*"]
 
 ---
 
+## EPIC 6: 国会議員データベース & 個別ページ
+**Target: September 30, 2025** | **Priority: P1** | **Status: 🆕 NEW**
+
+*Based on member database requirements analysis - Critical gap identified in MVP*
+
+現在のMVPでは議員の投票データは収集されているものの、議員個別のプロファイルページや包括的な議員データベース機能が不足している。要件定義に基づき、議員中心の情報アクセスを実現する。
+
+### Background & Justification
+- **Current State**: 議案詳細ページから議員名を確認できるのみ
+- **User Need**: 議員個別の政策スタンス・投票履歴の包括的把握
+- **Strategic Value**: 政治透明性向上の核となる機能
+- **Technical Readiness**: データモデル・収集システム既実装済み
+
+#### T61 - 議員基本情報収集システム拡張
+**Priority:** P1 | **Estimate:** 6 hours
+- 衆参公式サイトからの議員名簿自動収集
+- 基本プロフィール情報（生年月日、選挙区、当選回数、経歴）の構造化
+- Airtableへの議員データ自動同期とupsert処理
+- 重複排除・データ品質管理・validation
+- 議員写真占位システム（将来の写真統合準備）
+**DoD:** 現職議員の基本情報が自動収集・更新され、データ品質95%以上を維持
+
+#### T62 - 議員-イシューポジション分析エンジン
+**Priority:** P1 | **Estimate:** 8 hours  
+- 投票記録からの政策立場分析システム構築
+- `member_issue_stances` materialized view相当の集計ロジック
+- イシュータグ別の賛成率・反対率・棄権率算出
+- 政策領域別スタンス分類（推進派/保守派/中立/データ不足）
+- パフォーマンス最適化（クエリ≤100ms、更新は日次バッチ）
+**DoD:** 全議員のイシュー別政策ポジションが定量的に算出・可視化可能
+
+#### T63 - 議員個別ページUI実装
+**Priority:** P1 | **Estimate:** 10 hours
+- `/members/[id]` 動的ルーティング実装
+- **ヘッダカード**: 氏名（ふりがな）、写真占位サークル、所属院・選挙区、政党バッジ
+- **基本プロファイル**: 生年月日、当選回数、委員会所属、学歴、前職、公式リンク
+- **投票履歴タブ**: 議案フィルタリング（会期/イシュータグ/賛否）、テーブル表示
+- **イシュー別スタンス可視化**: スタックドバー（賛成vs反対）、サマリーテキスト
+- Japanese typography optimization, accessibility compliance (WCAG 2.1 AA)
+**DoD:** 議員の包括的プロファイルが直感的に把握でき、モバイル対応完了
+
+#### T64 - 議員一覧・検索システム
+**Priority:** P1 | **Estimate:** 8 hours
+- `/members` 議員一覧ページ実装
+- **フィルタリング**: 政党別、選挙区別、議院別（衆/参）、現職/元職
+- **検索機能**: 氏名・キーワード検索（ひらがな/カタカナ対応）
+- **ソート機能**: 氏名順、当選回数順、所属政党順
+- **レスポンシブグリッド表示**: カード形式、pagination（20件/ページ）
+- **パフォーマンス**: 検索結果表示≤200ms、lazy loading
+**DoD:** 700+議員を効率的に検索・ブラウジング可能、UX優秀
+
+#### T65 - 議員API統合・拡張
+**Priority:** P0 | **Estimate:** 6 hours
+- API Gateway議員関連エンドポイント拡張
+  - `GET /members` - 一覧取得（フィルタ・ページネーション）
+  - `GET /members/{id}` - 議員詳細取得
+  - `GET /members/{id}/votes` - 投票履歴取得
+  - `GET /members/{id}/stances` - イシュー別スタンス取得
+- **パフォーマンス最適化**: レスポンス≤200ms (p95)、適切なキャッシング
+- **エラーハンドリング**: 404/500の適切な処理
+- **OpenAPI仕様書更新**: 完全なAPI文書化
+**DoD:** 議員データへの高速・安定アクセスが保証され、API仕様が明確
+
+#### T66 - 既存システム統合・ナビゲーション
+**Priority:** P1 | **Estimate:** 4 hours
+- **法案詳細ページ**: 投票結果から議員個別ページへのリンク
+- **投票可視化**: 議員名クリックで個別ページ遷移
+- **ヘッダーナビゲーション**: 「議員」メニュー項目追加
+- **パンくずリスト**: 議員ページでの適切なナビゲーション
+- **SEO対応**: 議員ページのmeta tags、structured data
+- **ソーシャルシェア**: OGP設定
+**DoD:** 既存システムから議員情報へのシームレスな導線確保
+
+#### T67 - 品質保証・パフォーマンス最適化
+**Priority:** P0 | **Estimate:** 4 hours
+- **E2Eテスト**: 議員ページの主要ユーザージャーニー
+- **パフォーマンステスト**: Core Web Vitals、ページロード速度
+- **アクセシビリティ監査**: WCAG 2.1 AA準拠確認
+- **モバイル対応検証**: iOS/Android実機テスト
+- **データ整合性チェック**: 議員データ・投票データの一貫性
+- **Load testing**: 同時アクセス耐性確認
+**DoD:** 品質・パフォーマンス・アクセシビリティ要件をすべて満たす
+
+**EPIC 6 Summary:**
+- **Total Estimated:** 46 hours
+- **Target Completion:** September 30, 2025 (Phase 1.2)
+- **Critical Path:** T61 → T62 → T63 → T65 (データ基盤 → 分析 → UI → API)
+- **Parallel Development:** T64 (一覧), T66 (統合), T67 (QA)
+- **Key Features Delivered:**
+  - 議員個別プロファイルページ
+  - 政策ポジション分析・可視化
+  - 包括的な議員検索・ブラウジング
+  - 既存システムとの完全統合
+
+**Dependencies:**
+- T16, T17 (議員投票データ収集) 完了済み ✅
+- Member, Party, Vote data models 実装済み ✅  
+- Airtable基盤・API Gateway ready ✅
+
+**Success Metrics:**
+- 現職議員100%プロファイル化
+- ページロード≤200ms (p95)
+- 3クリック以内で議員詳細到達
+- アクセシビリティスコア≥95
+
+**Risk Mitigation:**
+- データ収集の法的コンプライアンス確保
+- パフォーマンス要件の段階的検証
+- 段階的リリース（フィーチャーフラグ活用）
+
+---
+
 *Final Update: July 8, 2025*
 *All Development Completed: July 7, 2025*
 *MVP Launch Ready: July 7, 2025*
 *EPIC 5 Added: July 7, 2025 - Production Integration Required*
 *UI Enhancement Phase Completed: July 8, 2025 - T56, T57, T58 delivered*
 *CORS Security Requirements Added: July 8, 2025 - T60 production hardening*
+*EPIC 6 Added: July 8, 2025 - Member Database Critical Gap Addressed*
