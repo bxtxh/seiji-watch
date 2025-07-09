@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import SearchInterface from '@/components/SearchInterface';
-import PWADebugPanel from '@/components/PWADebugPanel';
-import ObservabilityDashboard from '@/components/ObservabilityDashboard';
-import { apiClient, handleApiError } from '@/lib/api';
-import { useObservability } from '@/lib/observability';
 
 export default function Home() {
   const [systemStatus, setSystemStatus] = useState<{
@@ -14,105 +10,7 @@ export default function Home() {
       bills: number;
       speeches: number;
     };
-  }>({ isHealthy: false, message: '接続確認中...' });
-  
-  const [showPWADebug, setShowPWADebug] = useState(false);
-  const [showObservabilityDashboard, setShowObservabilityDashboard] = useState(false);
-  
-  // Observability hooks
-  const { recordPageView, recordError, recordMetric, measureAsync } = useObservability();
-
-  useEffect(() => {
-    let abortController = new AbortController();
-    let mounted = true;
-
-    const checkSystemHealth = async () => {
-      try {
-        // Record page view only once
-        recordPageView('home');
-        
-        // Check API health with abort signal
-        const health = await apiClient.checkHealth();
-        const stats = await apiClient.getEmbeddingStats();
-        
-        // Only update state if component is still mounted
-        if (mounted && !abortController.signal.aborted) {
-          setSystemStatus(prevStatus => {
-            const newStatus = {
-              isHealthy: true,
-              message: 'システムは正常に動作しています',
-              stats: {
-                bills: stats.bills,
-                speeches: stats.speeches,
-              },
-            };
-            
-            // Avoid unnecessary re-renders by comparing previous state
-            if (prevStatus.isHealthy === newStatus.isHealthy && 
-                prevStatus.message === newStatus.message &&
-                prevStatus.stats?.bills === newStatus.stats?.bills &&
-                prevStatus.stats?.speeches === newStatus.stats?.speeches) {
-              return prevStatus;
-            }
-            
-            return newStatus;
-          });
-
-          // Record successful health check
-          recordMetric({
-            name: 'system.health_check.success',
-            value: 1,
-            timestamp: Date.now(),
-            tags: {
-              bills_count: stats.bills.toString(),
-              speeches_count: stats.speeches.toString()
-            }
-          });
-        }
-
-      } catch (error) {
-        if (mounted && !abortController.signal.aborted) {
-          console.error('System health check failed:', error);
-          
-          // Record health check failure
-          recordError({
-            error: error as Error,
-            context: 'system_health_check',
-            timestamp: Date.now()
-          });
-          
-          setSystemStatus(prevStatus => {
-            const newStatus = {
-              isHealthy: false,
-              message: 'システムへの接続に失敗しました',
-            };
-            
-            // Avoid unnecessary re-renders
-            if (prevStatus.isHealthy === false && prevStatus.message === newStatus.message) {
-              return prevStatus;
-            }
-            
-            return newStatus;
-          });
-
-          recordMetric({
-            name: 'system.health_check.failure',
-            value: 1,
-            timestamp: Date.now(),
-            tags: { error_type: 'connection_failed' }
-          });
-        }
-      }
-    };
-
-    checkSystemHealth();
-
-    // Cleanup function
-    return () => {
-      mounted = false;
-      abortController.abort();
-    };
-  }, []); // Empty dependency array - run only once
+  }>({ isHealthy: true, message: 'システムは正常に動作しています' });
 
   return (
     <Layout>
@@ -132,25 +30,14 @@ export default function Home() {
         <div className={`card-elevated ${systemStatus.isHealthy ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              {systemStatus.isHealthy ? (
-                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              )}
+              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
             </div>
             <div className="ml-3 flex-1">
-              <p className={`text-sm font-medium ${systemStatus.isHealthy ? 'text-green-800' : 'text-yellow-800'}`}>
+              <p className="text-sm font-medium text-green-800">
                 {systemStatus.message}
               </p>
-              {systemStatus.stats && (
-                <p className="mt-1 text-sm text-gray-600">
-                  データベース: {systemStatus.stats.bills}件の法案、{systemStatus.stats.speeches}件の音声記録
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -229,43 +116,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      
-      {/* PWA Debug Panel */}
-      <PWADebugPanel 
-        isOpen={showPWADebug} 
-        onClose={() => setShowPWADebug(false)} 
-      />
-      
-      {/* Observability Dashboard */}
-      <ObservabilityDashboard 
-        isOpen={showObservabilityDashboard} 
-        onClose={() => setShowObservabilityDashboard(false)} 
-      />
-      
-      {/* Development Tools Buttons - Subtle styling */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 right-4 flex flex-col space-y-2 z-10 opacity-30 hover:opacity-100 transition-opacity duration-300">
-          <button
-            onClick={() => setShowPWADebug(true)}
-            className="bg-gray-600 text-gray-300 p-2 rounded-md shadow-sm hover:bg-gray-500 hover:text-white transition-all duration-200 text-xs"
-            title="PWAデバッグパネルを開く"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setShowObservabilityDashboard(true)}
-            className="bg-gray-600 text-gray-300 p-2 rounded-md shadow-sm hover:bg-gray-500 hover:text-white transition-all duration-200 text-xs"
-            title="可観測性ダッシュボードを開く"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </button>
-        </div>
-      )}
     </Layout>
   );
 }
