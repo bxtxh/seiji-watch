@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import SearchInterface from '@/components/SearchInterface';
+import KanbanBoard from '@/components/KanbanBoard';
 
 export default function Home() {
   const [systemStatus, setSystemStatus] = useState<{
@@ -43,7 +44,7 @@ export default function Home() {
         </div>
 
         {/* Features Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 stagger-children">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stagger-children">
           <div className="card-interactive text-center">
             <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center interactive-scale">
               <svg className="w-6 h-6 text-primary-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,6 +72,22 @@ export default function Home() {
           <div className="card-interactive text-center">
             <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center interactive-scale">
               <svg className="w-6 h-6 text-primary-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <a href="/issues/categories" className="hover:text-primary-green transition-colors">
+                政策分野
+              </a>
+            </h3>
+            <p className="text-sm text-gray-600 japanese-text">
+              CAP基準の国際標準政策分類で、関心のある分野から法案を効率的に探せます。
+            </p>
+          </div>
+
+          <div className="card-interactive text-center">
+            <div className="w-12 h-12 mx-auto mb-4 bg-primary-green bg-opacity-10 rounded-lg flex items-center justify-center interactive-scale">
+              <svg className="w-6 h-6 text-primary-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
@@ -80,6 +97,11 @@ export default function Home() {
               色覚バリアフリー対応、ふりがな表示、キーボード操作対応などの配慮があります。
             </p>
           </div>
+        </div>
+
+        {/* Kanban Board Section */}
+        <div className="space-y-6">
+          <KanbanBoard className="animate-fade-in" />
         </div>
 
         {/* Main Search Interface */}

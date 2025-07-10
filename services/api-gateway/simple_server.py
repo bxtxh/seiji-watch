@@ -8,6 +8,8 @@ import json
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -485,6 +487,121 @@ async def get_member_policy_analysis(member_id: str):
         "success": True,
         "analysis": mock_analysis
     }
+
+# Kanban API endpoint for TOP page
+@app.get("/api/issues/kanban")
+async def get_issues_kanban(
+    range: str = Query("30d", description="Date range: 7d, 30d, or 90d"),
+    max_per_stage: int = Query(8, ge=1, le=50, description="Max items per stage")
+):
+    """Get issues organized by Kanban stages for TOP page"""
+    
+    if not production_data:
+        raise HTTPException(status_code=503, detail="Production data not loaded")
+    
+    # Parse date range
+    range_days = {"7d": 7, "30d": 30, "90d": 90}.get(range, 30)
+    cutoff_date = datetime.now() - timedelta(days=range_days)
+    
+    bills = production_data.get('production_dataset', {}).get('bills', [])
+    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    
+    # Create a mapping of bills to voting sessions
+    bill_vote_map = {}
+    for session in voting_sessions:
+        bill_number = session.get('bill_number', '')
+        if bill_number:
+            bill_vote_map[bill_number] = session
+    
+    # Convert bills to Kanban issues
+    kanban_issues = []
+    for i, bill in enumerate(bills):
+        # Determine stage based on bill and voting data
+        bill_id = bill.get('bill_id', f'bill_{i}')
+        voting_session = bill_vote_map.get(bill_id)
+        
+        # Stage determination logic
+        if voting_session:
+            vote_date = voting_session.get('vote_date')
+            if vote_date:
+                stage = "成立"  # Bills with voting sessions are considered passed
+            else:
+                stage = "採決待ち"  # Voting session exists but no date
+        else:
+            # No voting session - determine by bill status or default to 審議中
+            stage = "審議中"  # Default for bills without voting data
+        
+        # Create schedule information
+        schedule_from = cutoff_date.strftime("%Y-%m-%d")
+        schedule_to = datetime.now().strftime("%Y-%m-%d")
+        
+        # Extract category tags
+        category = bill.get('category', 'その他')
+        tags = [category]
+        if len(bill.get('title', '')) > 50:
+            tags.append('長期審議')
+        
+        # Create related bills list
+        related_bills = [{
+            "bill_id": bill_id,
+            "title": bill.get('title', ''),
+            "stage": stage,
+            "bill_number": bill_id
+        }]
+        
+        # Generate issue title (shortened bill title)
+        full_title = bill.get('title', '')
+        issue_title = full_title[:20] + '...' if len(full_title) > 20 else full_title
+        
+        kanban_issue = {
+            "id": f"ISS-{i+1:03d}",
+            "title": issue_title,
+            "stage": stage,
+            "schedule": {
+                "from": schedule_from,
+                "to": schedule_to
+            },
+            "tags": tags[:3],  # Max 3 tags
+            "related_bills": related_bills[:5],  # Max 5 related bills
+            "updated_at": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        kanban_issues.append(kanban_issue)
+    
+    # Group issues by stage
+    stages = {
+        "審議前": [],
+        "審議中": [],
+        "採決待ち": [],
+        "成立": []
+    }
+    
+    for issue in kanban_issues:
+        stage = issue["stage"]
+        if stage in stages:
+            stages[stage].append(issue)
+    
+    # Limit issues per stage and sort by title
+    for stage in stages:
+        stages[stage] = sorted(stages[stage], key=lambda x: x["title"])[:max_per_stage]
+    
+    # Calculate metadata
+    total_issues = sum(len(stage_issues) for stage_issues in stages.values())
+    date_range = {
+        "from": cutoff_date.strftime("%Y-%m-%d"),
+        "to": datetime.now().strftime("%Y-%m-%d")
+    }
+    
+    response = {
+        "metadata": {
+            "total_issues": total_issues,
+            "last_updated": datetime.now().isoformat() + "Z",
+            "date_range": date_range
+        },
+        "stages": stages
+    }
+    
+    return response
 
 if __name__ == "__main__":
     import uvicorn

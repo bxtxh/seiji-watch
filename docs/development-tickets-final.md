@@ -922,10 +922,277 @@ allow_headers=["*"]
 
 ---
 
-*Final Update: July 8, 2025*
+## EPIC 7: 3-Layer Issue Categorization System
+**Target: August 31, 2025** | **Priority: P0** | **Status: 🆕 NEW**
+
+*Enhanced issue management with hierarchical categorization for policy-focused navigation*
+
+### Background & Strategic Value
+- **Current Limitation**: Single-layer issue tagging (社会保障, 経済・産業)
+- **User Need**: "What social issues is the Diet addressing?" vs "specific bills"
+- **Solution**: CAP-based 3-layer structure (L1: Major Topics, L2: Sub-Topics, L3: Specific Issues)
+- **Strategic Impact**: Issue-first information architecture
+
+#### T71 - IssueCategories テーブル設計・実装
+**Priority:** P0 | **Estimate:** 4 hours
+- Airtableに新テーブル `IssueCategories` 作成
+- フィールド設計:
+  - `CAP_Code` (Single line text): "13", "1305" 等
+  - `Layer` (Single select): L1, L2, L3
+  - `Title_JA` (Single line text): 日本語タイトル
+  - `Title_EN` (Single line text): 英語タイトル
+  - `Summary_150JA` (Long text): 詳細説明（Phase 0では空）
+  - `Parent_Category` (Link to IssueCategories): 階層関係
+  - `Is_Seed` (Checkbox): CAP由来データフラグ
+- リレーション設定: 自己参照で親子関係
+**DoD:** 階層構造を持つカテゴリテーブルがAirtableに完成
+
+#### T72 - CAP Major Topics (L1) データ準備・翻訳
+**Priority:** P0 | **Estimate:** 6 hours
+- CAP Major Topics リスト取得（~25項目）
+- 英語→日本語専門翻訳:
+  ```csv
+  cap_code,layer,title_en,title_ja
+  1,L1,Macroeconomics,マクロ経済政策
+  13,L1,Social Welfare,社会保障
+  16,L1,Defense,防衛・安全保障
+  ```
+- 政治専門家による妥当性レビュー
+- 日本の政治文脈での適用性確認
+**DoD:** L1カテゴリ25項目の高品質日本語対訳完成
+
+#### T73 - CAP Sub-Topics (L2) データ準備・マッピング
+**Priority:** P0 | **Estimate:** 8 hours
+- CAP Sub-Topics 翻訳（~200項目）
+- 親子関係マッピング（L1→L2）
+- データ整合性チェック・重複排除
+- 日本独自政策領域の追加検討
+- 品質保証（専門用語統一、表記ルール）
+**DoD:** L2カテゴリ200項目の階層構造データ完成
+
+#### T74 - Airtable Seedスクリプト実装
+**Priority:** P0 | **Estimate:** 6 hours
+- `scripts/seed_issue_categories.py` 実装
+- CSV読み込み → Airtable API投入ロジック
+- 親子関係の正しいリンク設定
+- Idempotent実行（重複実行安全）
+- エラーハンドリング・ロールバック機能
+- 実行ログ・進捗表示機能
+**DoD:** 信頼性の高いデータ投入スクリプト完成
+
+#### T75 - 階層構造API実装
+**Priority:** P1 | **Estimate:** 4 hours
+- `/api/issues/categories` エンドポイント群実装:
+  - `GET /categories?layer=L1` - レイヤー別取得
+  - `GET /categories/{id}/children` - 子カテゴリ取得
+  - `GET /categories/tree` - 全階層ツリー取得
+  - `GET /categories/search?q={query}` - カテゴリ検索
+- AirtableClient拡張（カテゴリ操作メソッド）
+- レスポンスキャッシュ（階層データの効率化）
+**DoD:** 階層構造を効率的に扱うAPI完成
+
+#### T76 - データモデル拡張・統合
+**Priority:** P1 | **Estimate:** 3 hours
+- `shared/models/issue.py` 拡張:
+  ```python
+  class IssueCategory(BaseRecord):
+      cap_code: str
+      layer: str  # L1, L2, L3
+      title_ja: str
+      title_en: Optional[str]
+      summary_150ja: Optional[str] = ""
+      parent_category_id: Optional[str]
+      is_seed: bool = False
+  ```
+- 既存 Issue モデルに `category_id` 追加
+- BillとIssueCategoryの間接リレーション設計
+**DoD:** 拡張データモデルが全サービスで利用可能
+
+#### T77 - フロントエンド階層ナビゲーション実装
+**Priority:** P1 | **Estimate:** 8 hours
+- Issue-first ナビゲーション実装:
+  - `/issues/categories` - カテゴリ一覧ページ
+  - `/issues/categories/{id}` - カテゴリ詳細ページ
+- 階層ドリルダウンUI (L1 → L2 → 関連法案)
+- パンくずナビゲーション
+- カテゴリ別統計（関連法案数、最新活動）
+- モバイル対応・アクセシビリティ準拠
+**DoD:** 直感的なIssue-firstナビゲーション完成
+
+#### T78 - 既存システム統合・UI更新
+**Priority:** P1 | **Estimate:** 4 hours
+- 法案カードにカテゴリ表示追加
+- 検索フィルターにカテゴリ追加
+- Issue管理画面にカテゴリ選択機能
+- ヘッダーナビゲーションに「政策分野」追加
+- SEO対応（カテゴリページmetadata）
+**DoD:** 全UI要素でカテゴリ機能が一貫して利用可能
+
+#### T79 - E2Eテスト・品質保証
+**Priority:** P0 | **Estimate:** 3 hours
+- 階層ナビゲーションのE2Eテスト
+- APIエンドポイントのパフォーマンステスト
+- データ整合性チェック（親子関係）
+- アクセシビリティ監査
+- モバイル対応検証
+**DoD:** 全機能が品質要件を満たし本番運用可能
+
+**EPIC 7 Summary:**
+- **Total Estimated:** 46 hours
+- **Target Completion:** August 31, 2025 (Phase 1.1)
+- **Critical Path:** T71 → T72 → T73 → T74 → T75 (データ基盤構築)
+- **Parallel Development:** T76, T77, T78 (統合・UI実装)
+- **Key Features Delivered:**
+  - CAP準拠3レイヤーイシューカテゴリシステム
+  - Issue-firstナビゲーション体験
+  - 政策分野別法案グルーピング
+  - 国際比較可能な政策分類基盤
+
+**Dependencies:**
+- T18, T19, T20 (基本イシュー管理) 完了済み ✅
+- Airtable API統合・Issues テーブル ready ✅
+- フロントエンドナビゲーション基盤 ready ✅
+
+**Success Metrics:**
+- L1: 25項目, L2: 200項目完全投入
+- API レスポンス ≤ 200ms (階層クエリ)
+- ユーザー:「特定政策分野から関連法案発見」3クリック以内
+- カテゴリページ直帰率 ≤ 40%
+
+**Risk Mitigation:**
+- CAP翻訳品質: 政治専門家ダブルチェック
+- Airtableパフォーマンス: 段階的負荷テスト
+- ユーザビリティ: UI/UXプロトタイプ事前検証
+
+---
+
+## EPIC 8: TOPページ改修 - 国会争点Kanbanボード
+**Target: August 15, 2025** | **Priority: P0** | **Status: 🆕 NEW**
+
+*TOPページの空白問題解決 - 直近の国会争点を一覧表示で初回訪問者エンゲージメント向上*
+
+### Background & Critical Issue
+- **Problem**: 空白TOPページによる初回訪問者即離脱 (推定離脱率70%)
+- **User Need**: 検索前に「今国会で何が起きているか」を把握したい
+- **Solution**: 直近30日の争点をKanban形式で表示
+- **Impact**: TOPページ滞在時間 10秒→60秒、詳細遷移率 5%→25% 目標
+
+#### T81 - Kanban API エンドポイント実装
+**Priority:** P0 | **Estimate:** 6 hours
+- `/api/issues/kanban?range=30d` エンドポイント実装
+- ステージ別データ整理（審議前/審議中/採決待ち/成立）
+- レスポンス形式設計:
+  ```json
+  {
+    "metadata": {"total_issues": 24, "date_range": {...}},
+    "stages": {
+      "審議前": [{"id": "ISS-001", "title": "夫婦別姓制度導入", ...}],
+      "審議中": [...], "採決待ち": [...], "成立": [...]
+    }
+  }
+  ```
+- パフォーマンス最適化（レスポンス≤200ms）
+- 30日間フィルタリング・ソート機能
+**DoD:** 高速かつ構造化されたKanbanデータAPIが利用可能
+
+#### T82 - KanbanBoard コンポーネント基盤実装
+**Priority:** P0 | **Estimate:** 8 hours
+- `components/KanbanBoard.tsx` 基盤コンポーネント
+- `StageColumn.tsx` - 4列レイアウト（審議前→成立）
+- 横スクロール機能（`overflow-x-auto` + スナップ）
+- レスポンシブ設計（デスクトップ4列、モバイル横スクロール）
+- Skeleton ローディング状態
+- エラーハンドリング UI
+**DoD:** Kanbanレイアウトが全デバイスで正常動作
+
+#### T83 - IssueCard UI コンポーネント実装
+**Priority:** P0 | **Estimate:** 10 hours
+- `IssueCard.tsx` 詳細実装
+- 必須表示項目:
+  - イシュー名（20文字以内、2行省略）
+  - ステージバッジ（色分け: 審議前=gray, 審議中=indigo, 採決待ち=yellow, 成立=green）
+  - スケジュールチップ（審議期間表示）
+  - カテゴリタグ（最大3個）
+  - 関連法案リスト（最大5件、ステージバッジ付き）
+  - 最終更新日・詳細リンク
+- アクセシビリティ準拠（ARIA labels, キーボードナビ）
+- ホバーエフェクト・アニメーション
+**DoD:** 情報豊富で直感的なイシューカード完成
+
+#### T84 - データ統合・変換レイヤー実装
+**Priority:** P1 | **Estimate:** 4 hours
+- 既存IssueデータをKanban形式に変換
+- ステージ判定ロジック（関連法案の状態から推定）
+- スケジュール情報生成（法案審議日程から算出）
+- データ品質保証（欠損値処理、一貫性チェック）
+- キャッシング戦略（30分TTL）
+**DoD:** 既存データが適切にKanban表示用に変換される
+
+#### T85 - TOPページ統合・ナビゲーション実装
+**Priority:** P1 | **Estimate:** 6 hours
+- `pages/index.tsx` にKanbanBoard統合
+- セクション見出し「直近1ヶ月の議論」
+- 横スクロールヒント表示
+- 検索セクションとのレイアウト調整
+- SEO対応（meta tags, structured data）
+- パフォーマンス最適化（SSG事前生成）
+**DoD:** TOPページがKanban+検索の統合体験を提供
+
+#### T86 - パフォーマンス最適化・プリフェッチ
+**Priority:** P1 | **Estimate:** 4 hours
+- ホバー時詳細ページプリフェッチ（`prefetch="hover"`）
+- 画像遅延読み込み
+- CDN最適化設定
+- Core Web Vitals チューニング（LCP≤2.5s, FID≤100ms）
+- モバイルパフォーマンス最適化
+**DoD:** 全パフォーマンス指標が目標値を達成
+
+#### T87 - E2E テスト・品質保証
+**Priority:** P0 | **Estimate:** 4 hours
+- Kanban横スクロール機能テスト
+- イシューカードクリック→詳細遷移テスト
+- モバイル対応検証
+- アクセシビリティ監査（Lighthouse ≥95）
+- 負荷テスト（同時接続100ユーザー）
+- ブラウザ互換性テスト
+**DoD:** 全品質要件を満たし本番デプロイ可能
+
+**EPIC 8 Summary:**
+- **Total Estimated:** 42 hours
+- **Target Completion:** August 15, 2025 (Post-MVP Phase 1)
+- **Critical Path:** T81 → T82 → T83 → T85 (API → UI基盤 → カード → 統合)
+- **Parallel Development:** T84 (データ), T86 (パフォーマンス), T87 (QA)
+
+**Key Features Delivered:**
+- 国会争点を一覧できるKanbanボード
+- 4ステージワークフロー可視化
+- 直感的な横スクロールナビゲーション
+- 検索前エンゲージメント向上
+
+**Dependencies:**
+- T18, T19, T20 (Issue管理システム) 完了済み ✅
+- `/api/issues` エンドポイント基盤 ready ✅
+- Next.js フロントエンド基盤 ready ✅
+
+**Success Metrics:**
+- TOPページ滞在時間: 10秒 → 60秒+
+- 詳細ページ遷移率: 5% → 25%+
+- 検索前離脱率: 70% → 40%以下
+- モバイル利用率: 60%+
+
+**Risk Mitigation:**
+- データ不足: 段階的表示（最低8件保証）
+- パフォーマンス: 段階的最適化・監視
+- ユーザビリティ: プロトタイプ事前検証
+
+---
+
+*Final Update: July 11, 2025*
 *All Development Completed: July 7, 2025*
 *MVP Launch Ready: July 7, 2025*
 *EPIC 5 Added: July 7, 2025 - Production Integration Required*
 *UI Enhancement Phase Completed: July 8, 2025 - T56, T57, T58 delivered*
 *CORS Security Requirements Added: July 8, 2025 - T60 production hardening*
 *EPIC 6 Added: July 8, 2025 - Member Database Critical Gap Addressed*
+*EPIC 7 Added: July 10, 2025 - 3-Layer Issue Categorization for Enhanced Policy Navigation*
+*EPIC 8 Added: July 11, 2025 - TOP Page Kanban Board for Initial User Engagement*
