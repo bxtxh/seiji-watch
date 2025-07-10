@@ -9,16 +9,43 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 # Import monitoring utilities
-from .monitoring.logger import (
-    structured_logger, RequestContextMiddleware,
-    log_api_request, log_error, log_security_event
-)
-from .monitoring.metrics import (
-    metrics_collector, health_checker, RequestTracker
-)
+try:
+    from .monitoring.logger import (
+        structured_logger, RequestContextMiddleware,
+        log_api_request, log_error, log_security_event
+    )
+    from .monitoring.metrics import (
+        metrics_collector, health_checker, RequestTracker
+    )
+except ImportError:
+    # Fallback for standalone execution
+    from monitoring.logger import (
+        structured_logger, RequestContextMiddleware,
+        log_api_request, log_error, log_security_event
+    )
+    from monitoring.metrics import (
+        metrics_collector, health_checker, RequestTracker
+    )
+
+# Import cache and services
+try:
+    from .cache.redis_client import RedisCache
+    from .services.member_service import MemberService
+    from .services.policy_analysis_service import PolicyAnalysisService
+    from .batch.task_queue import task_queue, batch_processor
+    from .batch.member_tasks import MemberTaskManager
+    from shared.clients.airtable import AirtableClient
+except ImportError:
+    # Fallback for standalone execution
+    from cache.redis_client import RedisCache
+    from services.member_service import MemberService
+    from services.policy_analysis_service import PolicyAnalysisService
+    from batch.task_queue import task_queue, batch_processor
+    from batch.member_tasks import MemberTaskManager
+    from shared.clients.airtable import AirtableClient
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +56,22 @@ logger = logging.getLogger(__name__)
 
 # Rate limiting storage
 rate_limit_storage: Dict[str, List[float]] = defaultdict(list)
+
+# Initialize services
+redis_cache = RedisCache()
+airtable_client = AirtableClient()
+member_service = MemberService(airtable_client, redis_cache)
+policy_analysis_service = PolicyAnalysisService(airtable_client, redis_cache)
+
+# Initialize batch processing
+airtable_config = {
+    "api_key": os.getenv("AIRTABLE_API_KEY"),
+    "base_id": os.getenv("AIRTABLE_BASE_ID")
+}
+redis_config = {
+    "url": os.getenv("REDIS_URL", "redis://localhost:6379")
+}
+member_task_manager = MemberTaskManager(task_queue, airtable_config, redis_config)
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
@@ -131,6 +174,35 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Application lifecycle events
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup."""
+    try:
+        # Initialize Redis connection
+        await redis_cache.connect()
+        logger.info("Redis cache connected successfully")
+        
+        # Warm up member cache
+        warmup_result = await member_service.warmup_member_cache()
+        if warmup_result["success"]:
+            logger.info(f"Member cache warmed up with {warmup_result['cached_members']} members")
+        else:
+            logger.warning(f"Member cache warmup failed: {warmup_result.get('error', 'Unknown error')}")
+            
+    except Exception as e:
+        logger.error(f"Startup initialization failed: {e}")
+        # Continue startup even if cache fails (graceful degradation)
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup services on shutdown."""
+    try:
+        await redis_cache.disconnect()
+        logger.info("Redis cache disconnected")
+    except Exception as e:
+        logger.error(f"Shutdown cleanup failed: {e}")
+
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging and monitoring requests."""
     
@@ -200,7 +272,7 @@ app.add_middleware(RateLimitMiddleware, requests_per_minute=1000)
 # CORS middleware - Step 2: Specific origin and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Specific frontend origin
+    allow_origins=["http://localhost:3000", "http://localhost:8080"],  # Support both frontend ports
     allow_credentials=False,  # Keep False for security
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
@@ -221,6 +293,11 @@ async def health_check():
         health_results = await health_checker.run_checks()
         overall_status = health_checker.get_overall_status(health_results)
         
+        # Add Redis and member service health checks
+        redis_health = await redis_cache.health_check()
+        airtable_health = await airtable_client.health_check()
+        member_cache_health = await member_service.get_cache_health()
+        
         response_data = {
             "status": overall_status,
             "service": "api-gateway",
@@ -233,6 +310,11 @@ async def health_check():
                     "details": result.details
                 }
                 for name, result in health_results.items()
+            },
+            "external_services": {
+                "redis": {"healthy": redis_health},
+                "airtable": {"healthy": airtable_health},
+                "member_cache": member_cache_health
             },
             "metrics_summary": metrics_collector.get_summary_stats()
         }
@@ -371,6 +453,488 @@ async def search_bills(request: Request):
             "message": f"検索に失敗しました: {str(e)}",
             "results": [],
             "total_found": 0
+        }
+
+# Member data collection endpoints
+@app.post("/admin/members/collect")
+async def collect_member_profiles(request: Request):
+    """Manually trigger member profile collection."""
+    try:
+        body = await request.json()
+        house = body.get('house', 'both')
+        
+        # Trigger member profile collection
+        collection_result = await member_service.collect_member_profiles(house)
+        
+        log_api_request(request, 200, 0, f"Member collection: {collection_result['collected']} collected")
+        
+        return {
+            "success": True,
+            "result": collection_result,
+            "message": f"Collected {collection_result['collected']} members, updated {collection_result['updated']} members"
+        }
+        
+    except Exception as e:
+        log_error("Member profile collection failed", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "議員プロフィール収集に失敗しました"
+        }
+
+@app.post("/admin/cache/warmup")
+async def warmup_cache():
+    """Manually trigger cache warmup."""
+    try:
+        warmup_result = await member_service.warmup_member_cache()
+        
+        return {
+            "success": warmup_result["success"],
+            "cached_members": warmup_result.get("cached_members", 0),
+            "message": "キャッシュウォームアップが完了しました" if warmup_result["success"] else "キャッシュウォームアップに失敗しました"
+        }
+        
+    except Exception as e:
+        log_error("Cache warmup failed", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "キャッシュウォームアップに失敗しました"
+        }
+
+@app.get("/admin/cache/stats")
+async def get_cache_stats():
+    """Get cache statistics."""
+    try:
+        cache_health = await member_service.get_cache_health()
+        return {
+            "success": True,
+            "cache_health": cache_health
+        }
+        
+    except Exception as e:
+        log_error("Failed to get cache stats", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "キャッシュ統計の取得に失敗しました"
+        }
+
+# Batch processing endpoints
+@app.post("/admin/batch/member-statistics")
+async def schedule_member_statistics_batch(request: Request):
+    """Schedule batch calculation of member statistics."""
+    try:
+        body = await request.json()
+        member_ids = body.get('member_ids', [])
+        priority = body.get('priority', 'normal')
+        
+        if not member_ids:
+            return {
+                "success": False,
+                "error": "member_ids is required",
+                "message": "議員IDリストが必要です"
+            }
+        
+        job_id = member_task_manager.schedule_member_statistics_batch(member_ids, priority)
+        
+        return {
+            "success": True,
+            "job_id": job_id,
+            "member_count": len(member_ids),
+            "priority": priority,
+            "message": f"{len(member_ids)}人の議員統計計算をスケジュールしました"
+        }
+        
+    except Exception as e:
+        log_error("Failed to schedule member statistics batch", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "議員統計バッチ処理のスケジュールに失敗しました"
+        }
+
+@app.post("/admin/batch/policy-stance")
+async def schedule_policy_stance_analysis(request: Request):
+    """Schedule policy stance analysis for a member."""
+    try:
+        body = await request.json()
+        member_id = body.get('member_id')
+        issue_tags = body.get('issue_tags', [])
+        priority = body.get('priority', 'normal')
+        
+        if not member_id:
+            return {
+                "success": False,
+                "error": "member_id is required",
+                "message": "議員IDが必要です"
+            }
+        
+        job_id = member_task_manager.schedule_policy_stance_analysis(member_id, issue_tags, priority)
+        
+        return {
+            "success": True,
+            "job_id": job_id,
+            "member_id": member_id,
+            "issue_count": len(issue_tags),
+            "priority": priority,
+            "message": f"議員{member_id}の政策スタンス分析をスケジュールしました"
+        }
+        
+    except Exception as e:
+        log_error("Failed to schedule policy stance analysis", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "政策スタンス分析のスケジュールに失敗しました"
+        }
+
+@app.get("/admin/batch/job/{job_id}")
+async def get_batch_job_status(job_id: str):
+    """Get batch job status."""
+    try:
+        job_status = task_queue.get_job_status(job_id)
+        return {
+            "success": True,
+            "job_status": job_status
+        }
+        
+    except Exception as e:
+        log_error(f"Failed to get job status for {job_id}", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "ジョブステータスの取得に失敗しました"
+        }
+
+@app.get("/admin/batch/queues")
+async def get_queue_stats():
+    """Get queue statistics."""
+    try:
+        queue_stats = task_queue.get_queue_stats()
+        return {
+            "success": True,
+            "queue_stats": queue_stats
+        }
+        
+    except Exception as e:
+        log_error("Failed to get queue stats", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "キュー統計の取得に失敗しました"
+        }
+
+@app.get("/admin/batch/failed-jobs")
+async def get_failed_jobs():
+    """Get failed jobs."""
+    try:
+        failed_jobs = task_queue.get_failed_jobs(limit=50)
+        return {
+            "success": True,
+            "failed_jobs": failed_jobs,
+            "count": len(failed_jobs)
+        }
+        
+    except Exception as e:
+        log_error("Failed to get failed jobs", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "失敗したジョブの取得に失敗しました"
+        }
+
+# Policy analysis endpoints
+@app.get("/api/policy/issues")
+async def get_available_issues():
+    """Get list of available policy issues."""
+    try:
+        issues = await policy_analysis_service.get_available_issues()
+        return {
+            "success": True,
+            "issues": issues,
+            "count": len(issues)
+        }
+        
+    except Exception as e:
+        log_error("Failed to get available issues", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "政策イシューの取得に失敗しました"
+        }
+
+@app.get("/api/policy/member/{member_id}/analysis")
+async def get_member_policy_analysis(member_id: str, force_refresh: bool = False):
+    """Get comprehensive policy analysis for a member."""
+    try:
+        analysis = await policy_analysis_service.get_analysis_summary(member_id)
+        return {
+            "success": True,
+            "analysis": analysis
+        }
+        
+    except Exception as e:
+        log_error(f"Failed to get policy analysis for member {member_id}", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "政策分析の取得に失敗しました"
+        }
+
+@app.get("/api/policy/member/{member_id}/stance/{issue_tag}")
+async def get_member_issue_stance(member_id: str, issue_tag: str):
+    """Get member's stance on a specific issue."""
+    try:
+        position = await policy_analysis_service.get_member_issue_stance(member_id, issue_tag)
+        
+        if position:
+            return {
+                "success": True,
+                "position": {
+                    "member_id": member_id,
+                    "issue_tag": position.issue_tag,
+                    "stance": position.stance.value,
+                    "confidence": position.confidence,
+                    "vote_count": position.vote_count,
+                    "supporting_evidence": position.supporting_evidence,
+                    "last_updated": position.last_updated.isoformat()
+                }
+            }
+        else:
+            return {
+                "success": False,
+                "message": f"議員{member_id}の{issue_tag}に関するスタンスが見つかりません"
+            }
+        
+    except Exception as e:
+        log_error(f"Failed to get stance for member {member_id} on {issue_tag}", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "政策スタンスの取得に失敗しました"
+        }
+
+@app.post("/api/policy/compare")
+async def compare_members_on_issue(request: Request):
+    """Compare multiple members on a specific issue."""
+    try:
+        body = await request.json()
+        member_ids = body.get('member_ids', [])
+        issue_tag = body.get('issue_tag')
+        
+        if not member_ids:
+            return {
+                "success": False,
+                "error": "member_ids is required",
+                "message": "議員IDリストが必要です"
+            }
+        
+        if not issue_tag:
+            return {
+                "success": False,
+                "error": "issue_tag is required",
+                "message": "イシュータグが必要です"
+            }
+        
+        comparison = await policy_analysis_service.compare_members_on_issue(member_ids, issue_tag)
+        
+        return {
+            "success": True,
+            "comparison": comparison
+        }
+        
+    except Exception as e:
+        log_error("Failed to compare members on issue", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "議員比較の実行に失敗しました"
+        }
+
+@app.get("/api/policy/member/{member_id}/similar")
+async def get_similar_members(member_id: str, issue_tags: Optional[str] = None):
+    """Get members with similar policy positions."""
+    try:
+        issue_list = issue_tags.split(',') if issue_tags else None
+        similar_members = await policy_analysis_service.get_similar_members(member_id, issue_list)
+        
+        return {
+            "success": True,
+            "member_id": member_id,
+            "similar_members": similar_members,
+            "count": len(similar_members)
+        }
+        
+    except Exception as e:
+        log_error(f"Failed to get similar members for {member_id}", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "類似議員の取得に失敗しました"
+        }
+
+@app.get("/api/policy/trends/{issue_tag}")
+async def get_policy_trends(issue_tag: str, days: int = 30):
+    """Get policy trends for an issue."""
+    try:
+        trends = await policy_analysis_service.get_policy_trends(issue_tag, days)
+        
+        return {
+            "success": True,
+            "trends": trends
+        }
+        
+    except Exception as e:
+        log_error(f"Failed to get policy trends for {issue_tag}", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "政策トレンドの取得に失敗しました"
+        }
+
+# Member profile endpoints
+@app.get("/api/members/{member_id}")
+async def get_member_profile(member_id: str):
+    """Get member profile information."""
+    try:
+        member_data = await member_service.get_member_with_cache(member_id)
+        
+        if not member_data:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Member not found",
+                    "message": "指定された議員が見つかりません"
+                }
+            )
+        
+        return {
+            "success": True,
+            "member_id": member_id,
+            "name": member_data.get("Name", "名前不明"),
+            "name_kana": member_data.get("Name_Kana", ""),
+            "house": member_data.get("House", "house_of_representatives"),
+            "party": member_data.get("Party_Name", "無所属"),
+            "constituency": member_data.get("Constituency", "選挙区不明"),
+            "terms_served": member_data.get("Terms_Served", 1),
+            "committees": member_data.get("Committees", []),
+            "profile_image": member_data.get("Profile_Image"),
+            "official_url": member_data.get("Official_URL"),
+            "elected_date": member_data.get("Elected_Date"),
+            "birth_date": member_data.get("Birth_Date"),
+            "education": member_data.get("Education"),
+            "career": member_data.get("Career")
+        }
+        
+    except Exception as e:
+        log_error(f"Failed to get member profile for {member_id}", error=e)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": str(e),
+                "message": "議員プロフィールの取得に失敗しました"
+            }
+        )
+
+@app.get("/api/members/{member_id}/voting-stats")
+async def get_member_voting_stats(member_id: str):
+    """Get member's voting statistics."""
+    try:
+        # For MVP, return mock data
+        # In production, this would call a voting statistics service
+        mock_stats = {
+            "total_votes": 156,
+            "attendance_rate": 0.92,
+            "party_alignment_rate": 0.87,
+            "voting_pattern": {
+                "yes_votes": 128,
+                "no_votes": 18,
+                "abstentions": 6,
+                "absences": 4
+            }
+        }
+        
+        return {
+            "success": True,
+            "member_id": member_id,
+            "stats": mock_stats
+        }
+        
+    except Exception as e:
+        log_error(f"Failed to get voting stats for {member_id}", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "投票統計の取得に失敗しました"
+        }
+
+@app.get("/api/members")
+async def get_members_list(
+    page: int = 1, 
+    limit: int = 50,
+    house: Optional[str] = None,
+    party: Optional[str] = None,
+    search: Optional[str] = None
+):
+    """Get paginated list of members with optional filters."""
+    try:
+        # Calculate offset
+        offset = (page - 1) * limit
+        
+        # For MVP, return mock data
+        # In production, this would call member service with filters
+        mock_members = [
+            {
+                "member_id": f"member_{i:03d}",
+                "name": f"議員{i}",
+                "name_kana": f"ぎいん{i}",
+                "house": "house_of_representatives" if i % 2 == 0 else "house_of_councillors",
+                "party": "自由民主党" if i % 3 == 0 else "立憲民主党" if i % 3 == 1 else "日本維新の会",
+                "constituency": f"東京都第{(i % 10) + 1}区",
+                "terms_served": (i % 5) + 1
+            }
+            for i in range(1, 51)
+        ]
+        
+        # Apply filters
+        filtered_members = mock_members
+        if house:
+            filtered_members = [m for m in filtered_members if m["house"] == house]
+        if party:
+            filtered_members = [m for m in filtered_members if m["party"] == party]
+        if search:
+            filtered_members = [m for m in filtered_members if search.lower() in m["name"].lower()]
+        
+        # Apply pagination
+        total_count = len(filtered_members)
+        paginated_members = filtered_members[offset:offset + limit]
+        
+        return {
+            "success": True,
+            "members": paginated_members,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total_count,
+                "has_next": offset + limit < total_count,
+                "has_prev": page > 1
+            },
+            "filters": {
+                "house": house,
+                "party": party,
+                "search": search
+            }
+        }
+        
+    except Exception as e:
+        log_error("Failed to get members list", error=e)
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "議員一覧の取得に失敗しました"
         }
 
 # CORS preflight handled automatically by CORSMiddleware

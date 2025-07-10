@@ -11,7 +11,7 @@ import {
 } from '@/utils/security';
 import { observability } from '@/lib/observability';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
 
 // Rate limiter for API requests (development: increased for frequent health checks)
 const apiRateLimiter = new RateLimiter(60000, 1000);
@@ -26,7 +26,7 @@ class ApiClient {
       this.baseUrl = baseUrl;
     } catch (error) {
       console.warn(`Invalid API base URL: ${baseUrl}, using default`);
-      this.baseUrl = 'http://localhost:8080';
+      this.baseUrl = 'http://localhost:8001';
     }
   }
 
@@ -166,14 +166,42 @@ class ApiClient {
     const sanitizedCertainty = Math.min(Math.max(0, min_certainty), 1); // Certainty between 0-1
 
     try {
-      const result = await this.request<SearchResult>('/search', {
-        method: 'POST',
-        body: JSON.stringify({
-          query: sanitizedQuery,
-          limit: sanitizedLimit,
-          min_certainty: sanitizedCertainty,
-        }),
+      const queryParams = new URLSearchParams({
+        q: sanitizedQuery,
+        limit: sanitizedLimit.toString(),
+        offset: '0'
       });
+      
+      // Define the actual API response type
+      interface ApiSearchResponse {
+        results: any[];
+        query: string;
+        total: number;
+        limit: number;
+        offset: number;
+        has_more: boolean;
+      }
+
+      const apiResponse = await this.request<ApiSearchResponse>(`/search?${queryParams}`, {
+        method: 'GET',
+      });
+
+      // Convert API response to expected SearchResult format
+      const result: SearchResult = {
+        success: true,
+        message: `Found ${apiResponse.total} results for "${sanitizedQuery}"`,
+        results: apiResponse.results.map((item: any) => ({
+          bill_number: item.id || '',
+          title: item.title || '',
+          summary: item.type === 'voting_session' ? `投票日: ${item.vote_date || 'N/A'}, 総投票数: ${item.total_votes || 0}` : '',
+          category: item.category || '',
+          status: item.type === 'voting_session' ? '採決済み' : '審議中',
+          diet_url: item.url || '',
+          relevance_score: item.relevance || 1.0,
+          search_method: 'api'
+        })),
+        total_found: apiResponse.total
+      };
 
       // Record search metrics
       observability.recordSearch(sanitizedQuery, result.results?.length);
