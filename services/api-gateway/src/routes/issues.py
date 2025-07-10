@@ -7,7 +7,7 @@ from pydantic import BaseModel, validator
 from ..security.validation import validate_and_sanitize_request, InputValidator
 
 # Import shared models and clients
-from shared.models import Issue, IssueTag
+from shared.models import Issue, IssueTag, IssueCategory
 from shared.clients import AirtableClient
 from shared.utils import IssueExtractor
 
@@ -277,3 +277,118 @@ async def get_bill_issues(
     except Exception as e:
         logger.error(f"Failed to get issues for bill {bill_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch bill issues")
+
+# Issue Categories endpoints
+@router.get("/categories", response_model=List[dict])
+async def list_issue_categories(
+    layer: Optional[str] = Query(None, description="Filter by layer (L1/L2/L3)"),
+    parent_id: Optional[str] = Query(None, description="Filter by parent category"),
+    max_records: int = Query(1000, le=1000),
+    airtable: AirtableClient = Depends(get_airtable_client)
+):
+    """List issue categories with hierarchical filtering."""
+    try:
+        if layer:
+            # Filter by layer
+            categories = await airtable.get_categories_by_layer(layer)
+        elif parent_id:
+            # Filter by parent
+            categories = await airtable.get_category_children(parent_id)
+        else:
+            # Get all categories
+            categories = await airtable.list_issue_categories(max_records=max_records)
+        
+        return categories
+        
+    except Exception as e:
+        logger.error(f"Failed to list issue categories: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch issue categories")
+
+@router.get("/categories/tree")
+async def get_category_tree(
+    airtable: AirtableClient = Depends(get_airtable_client)
+):
+    """Get full category tree structure."""
+    try:
+        tree = await airtable.get_category_tree()
+        return tree
+    except Exception as e:
+        logger.error(f"Failed to get category tree: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch category tree")
+
+@router.get("/categories/{category_id}")
+async def get_issue_category(
+    category_id: str,
+    airtable: AirtableClient = Depends(get_airtable_client)
+):
+    """Get a specific issue category by ID."""
+    try:
+        category = await airtable.get_issue_category(category_id)
+        return category
+    except Exception as e:
+        logger.error(f"Failed to get issue category {category_id}: {e}")
+        raise HTTPException(status_code=404, detail="Issue category not found")
+
+@router.get("/categories/{category_id}/children")
+async def get_category_children(
+    category_id: str,
+    airtable: AirtableClient = Depends(get_airtable_client)
+):
+    """Get child categories for a specific category."""
+    try:
+        children = await airtable.get_category_children(category_id)
+        return children
+    except Exception as e:
+        logger.error(f"Failed to get children for category {category_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch category children")
+
+@router.get("/categories/search")
+async def search_categories(
+    q: str = Query(..., description="Search query"),
+    layer: Optional[str] = Query(None, description="Filter by layer"),
+    max_records: int = Query(100, le=1000),
+    airtable: AirtableClient = Depends(get_airtable_client)
+):
+    """Search issue categories by title."""
+    try:
+        # Build search filter
+        search_filters = []
+        
+        # Search in both Japanese and English titles
+        search_filters.append(f"SEARCH('{q}', {{Title_JA}}) > 0")
+        search_filters.append(f"SEARCH('{q}', {{Title_EN}}) > 0")
+        
+        # Combine search filters with OR
+        search_formula = "OR(" + ", ".join(search_filters) + ")"
+        
+        # Add layer filter if specified
+        if layer:
+            filter_formula = f"AND({search_formula}, {{Layer}} = '{layer}')"
+        else:
+            filter_formula = search_formula
+        
+        categories = await airtable.list_issue_categories(
+            filter_formula=filter_formula,
+            max_records=max_records
+        )
+        
+        return categories
+        
+    except Exception as e:
+        logger.error(f"Failed to search categories: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search categories")
+
+@router.get("/categories/cap/{cap_code}")
+async def get_category_by_cap_code(
+    cap_code: str,
+    airtable: AirtableClient = Depends(get_airtable_client)
+):
+    """Get category by CAP code."""
+    try:
+        category = await airtable.find_category_by_cap_code(cap_code)
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        return category
+    except Exception as e:
+        logger.error(f"Failed to get category by CAP code {cap_code}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch category")

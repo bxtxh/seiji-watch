@@ -1,0 +1,22 @@
+cap_code,layer,title_en,title_ja
+1,L1,Macroeconomics,マクロ経済政策
+2,L1,Civil Rights and Liberties,市民権・自由権
+3,L1,Health,保健・医療
+4,L1,Agriculture,農業・農政
+5,L1,Labor and Employment,労働・雇用
+6,L1,Education,教育・文化
+7,L1,Environment,環境・エネルギー
+8,L1,Energy,エネルギー政策
+10,L1,Transportation,交通・運輸
+12,L1,Law and Crime,法務・犯罪対策
+13,L1,Social Welfare,社会保障
+14,L1,Community Development,地域開発・都市政策
+15,L1,Banking and Finance,金融・銀行
+16,L1,Defense,防衛・安全保障
+17,L1,Space Science and Technology,宇宙・科学技術
+18,L1,Foreign Trade,外国貿易
+19,L1,International Affairs,外交・国際関係
+20,L1,Government Operations,政府運営・行政
+21,L1,Public Lands and Water,公有地・水資源管理
+23,L1,Culture and Arts,文化・芸術
+99,L1,Other,その他

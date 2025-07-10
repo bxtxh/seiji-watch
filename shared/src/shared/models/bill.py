@@ -107,7 +107,7 @@ class Bill(BaseRecord):
         return self.status in [BillStatus.BACKLOG, BillStatus.UNDER_REVIEW, BillStatus.PENDING_VOTE]
     
     @property
-    def days_since_submission(self) -> int | None:
+    def days_since_submission(self) -> Optional[int]:
         """Calculate days since bill submission."""
         if not self.submitted_date:
             return None

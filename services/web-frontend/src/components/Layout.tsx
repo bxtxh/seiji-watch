@@ -71,6 +71,18 @@ export default function Layout({
                     発言検索
                   </a>
                   <a
+                    href="/members"
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    議員一覧
+                  </a>
+                  <a
+                    href="/issues/categories"
+                    className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    政策分野
+                  </a>
+                  <a
                     href="/issues"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >

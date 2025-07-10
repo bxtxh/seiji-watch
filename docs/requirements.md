@@ -263,9 +263,46 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 
 ---
 
-**Document Version**: 1.1  
-**Last Updated**: 2025-07-01  
-**Next Review**: 2025-07-07  
+## 📝 Additional Requirements - 3-Layer Issue Categorization System
+**Added Date**: July 10, 2025
+
+### Enhanced Issue Management Requirements:
+- **FR-061**: **[NEW]** Hierarchical issue categorization system with L1/L2/L3 structure
+- **FR-062**: **[NEW]** CAP (Comparative Agendas Project) integration for standardized policy classification
+- **FR-063**: **[NEW]** Issue category seed data management with automated updates
+- **FR-064**: **[NEW]** Enhanced issue-to-bill linking with category inheritance
+- **FR-065**: **[NEW]** Category-based issue filtering and navigation in UI
+- **FR-066**: **[NEW]** Issue category tree API endpoints with hierarchical queries
+- **FR-067**: **[NEW]** Multilingual issue category support (Japanese/English)
+
+### New Issue Categorization Schema:
+```
+L1 (Major Topics): ~25 categories (e.g., 社会保障, 経済・産業, 外交・国際)
+L2 (Sub-Topics): ~200 categories (e.g., 健康保険制度改革, 高齢者介護サービス)
+L3 (Specific Issues): 500-1,000 items (e.g., 介護保険の自己負担率見直し)
+```
+
+### Modified Data Architecture:
+- **TR-020**: **NEW**: IssueCategories table in Airtable with hierarchical relationships
+- **TR-021**: **NEW**: CAP code mapping system for international policy comparison
+- **TR-022**: **NEW**: Issue-to-category linking with multiple assignment support
+
+### Enhanced API Requirements:
+- **IR-020**: **NEW**: `/api/issues/categories` - Hierarchical category management
+- **IR-021**: **NEW**: `/api/issues/categories/tree` - Full category tree retrieval
+- **IR-022**: **NEW**: `/api/issues/categories/{id}/children` - Child category queries
+- **IR-023**: **NEW**: Category-filtered bill and speech search endpoints
+
+### User Experience Enhancements:
+- **UX-010**: **NEW**: Issue-first navigation with category drill-down
+- **UX-011**: **NEW**: Category-based bill grouping and visualization
+- **UX-012**: **NEW**: Policy area overview with category statistics
+
+---
+
+**Document Version**: 1.2  
+**Last Updated**: 2025-07-10  
+**Next Review**: 2025-08-10  
 **Approved By**: [To be filled]
 
 ---
@@ -276,3 +313,4 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 |---------|------|---------|--------|
 | 1.0 | 2025-06-30 | Initial requirements specification with LLM analysis features | Claude |
 | 1.1 | 2025-07-01 | Added member voting features, updated database architecture to Airtable+Weaviate, relaxed MVP performance requirements | Claude |
+| 1.2 | 2025-07-10 | Added 3-layer issue categorization system with CAP integration, enhanced issue management requirements | Claude |

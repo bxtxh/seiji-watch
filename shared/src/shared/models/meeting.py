@@ -106,7 +106,7 @@ class Speech(BaseRecord):
             return "不明"
     
     @property
-    def duration_minutes(self) -> float | None:
+    def duration_minutes(self) -> Optional[float]:
         """Get speech duration in minutes."""
         if self.duration_seconds:
             return round(self.duration_seconds / 60, 1)

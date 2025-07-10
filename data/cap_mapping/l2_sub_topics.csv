@@ -1,0 +1,77 @@
+cap_code,layer,parent_cap_code,title_en,title_ja
+101,L2,1,General Economics,一般経済政策
+103,L2,1,Interest Rates and Monetary Policy,金利・金融政策
+104,L2,1,Unemployment,失業対策
+105,L2,1,Inflation and Prices,インフレ・物価対策
+107,L2,1,Budget and Debt,予算・債務管理
+108,L2,1,Taxes,税制
+200,L2,2,General Civil Rights,一般市民権
+201,L2,2,Freedom of Speech and Press,言論・報道の自由
+202,L2,2,Privacy Rights,プライバシー権
+300,L2,3,General Health and Medical Issues,一般保健・医療問題
+301,L2,3,Drug Industry and Regulation,医薬品産業・規制
+302,L2,3,Medical Facilities Construction,医療施設建設
+303,L2,3,Medical Research and Development,医療研究・開発
+304,L2,3,Disease Prevention,疾病予防
+305,L2,3,Mental Health and Developmental Disabilities,精神保健・発達障害
+306,L2,3,Health Insurance,健康保険
+400,L2,4,General Agriculture,一般農業政策
+401,L2,4,Agricultural Trade,農産物貿易
+402,L2,4,Food Safety,食品安全
+500,L2,5,General Labor Issues,一般労働問題
+501,L2,5,Worker Safety and Protection,労働安全・保護
+502,L2,5,Employment Training,雇用訓練
+600,L2,6,Elementary and Secondary Education,初等・中等教育
+601,L2,6,Higher Education,高等教育
+602,L2,6,Vocational Education,職業教育
+700,L2,7,General Environmental Issues,一般環境問題
+701,L2,7,Air and Water Quality,大気・水質
+702,L2,7,Climate Change,気候変動
+800,L2,8,General Energy Policy,一般エネルギー政策
+801,L2,8,Renewable Energy,再生可能エネルギー
+802,L2,8,Nuclear Energy,原子力エネルギー
+1000,L2,10,General Transportation,一般交通政策
+1001,L2,10,Highway and Road Construction,道路・高速道路建設
+1002,L2,10,Public Transportation,公共交通
+1200,L2,12,General Law and Crime,一般法務・犯罪
+1201,L2,12,Police and Law Enforcement,警察・法執行
+1202,L2,12,Judicial System,司法制度
+1300,L2,13,General Social Welfare,一般社会保障
+1301,L2,13,Elderly Issues and Social Security,高齢者問題・年金
+1302,L2,13,Poverty and Social Services,貧困・社会サービス
+1303,L2,13,Child and Family Services,児童・家族サービス
+1304,L2,13,Disability Issues,障害者問題
+1305,L2,13,Social Insurance,社会保険
+1400,L2,14,Urban Development,都市開発
+1401,L2,14,Rural Development,地方開発
+1402,L2,14,Housing Policy,住宅政策
+1500,L2,15,General Banking,一般銀行業
+1501,L2,15,Financial Regulation,金融規制
+1502,L2,15,Insurance,保険
+1600,L2,16,General Defense Issues,一般防衛問題
+1601,L2,16,Military Personnel and Dependents,軍事人事・家族
+1602,L2,16,Military Procurement,軍事調達
+1603,L2,16,Military Readiness,軍事即応体制
+1605,L2,16,National Security,国家安全保障
+1700,L2,17,Space Research,宇宙研究
+1701,L2,17,Technology Development,技術開発
+1702,L2,17,Information Technology,情報技術
+1800,L2,18,General Trade Policy,一般貿易政策
+1801,L2,18,Trade Agreements,貿易協定
+1802,L2,18,Import and Export,輸出入
+1900,L2,19,General International Affairs,一般国際問題
+1901,L2,19,Foreign Aid,対外援助
+1902,L2,19,International Resources Disputes,国際資源紛争
+1910,L2,19,Europe,欧州関係
+1920,L2,19,Asia,アジア関係
+1925,L2,19,Middle East,中東関係
+2000,L2,20,General Government Operations,一般政府運営
+2001,L2,20,Public Administration,行政管理
+2002,L2,20,Government Procurement,政府調達
+2100,L2,21,Natural Resource Management,天然資源管理
+2101,L2,21,Water Resources,水資源
+2102,L2,21,National Parks,国立公園
+2300,L2,23,Cultural Policy,文化政策
+2301,L2,23,Arts Funding,芸術支援
+2302,L2,23,Cultural Heritage,文化遺産
+9900,L2,99,Miscellaneous Issues,その他の課題

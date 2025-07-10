@@ -107,6 +107,21 @@ export default function KanbanBoard({ className = '' }: KanbanBoardProps) {
     document.head.appendChild(link);
   }, []);
 
+  // Memoize stage columns rendering - always call this hook
+  const stageColumns = useMemo(() => {
+    if (!kanbanData) return null;
+    
+    return Object.keys(kanbanData.stages).map((stageKey) => (
+      <StageColumn
+        key={stageKey}
+        stageKey={stageKey}
+        issues={kanbanData.stages[stageKey as keyof typeof kanbanData.stages] || []}
+        onCardClick={handleCardClick}
+        onCardHover={handleCardHover}
+      />
+    ));
+  }, [kanbanData, handleCardClick, handleCardHover]);
+
   if (error) {
     return (
       <div className={`${className}`}>
@@ -143,19 +158,9 @@ export default function KanbanBoard({ className = '' }: KanbanBoardProps) {
       <div className="overflow-x-auto pb-8" role="list" aria-label="ステージ別イシュー一覧">
         {loading ? (
           <KanbanSkeleton />
-        ) : kanbanData ? (
+        ) : stageColumns ? (
           <div className="grid grid-flow-col auto-cols-[300px] md:auto-cols-[320px] gap-6 snap-x snap-mandatory">
-            {useMemo(() => 
-              Object.keys(kanbanData.stages).map((stageKey) => (
-                <StageColumn
-                  key={stageKey}
-                  stageKey={stageKey}
-                  issues={kanbanData.stages[stageKey as keyof typeof kanbanData.stages] || []}
-                  onCardClick={handleCardClick}
-                  onCardHover={handleCardHover}
-                />
-              )), [kanbanData.stages, handleCardClick, handleCardHover]
-            )}
+            {stageColumns}
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">

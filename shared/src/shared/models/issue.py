@@ -6,6 +6,31 @@ from pydantic import Field
 from .base import BaseRecord
 
 
+class IssueCategory(BaseRecord):
+    """Issue category model for hierarchical classification (CAP-based)."""
+    
+    cap_code: str = Field(..., description="CAP classification code (e.g., '13', '1305')")
+    layer: str = Field(..., description="Hierarchy layer (L1/L2/L3)")
+    title_ja: str = Field(..., description="Japanese title")
+    title_en: Optional[str] = Field(None, description="English title")
+    summary_150ja: Optional[str] = Field("", description="Japanese summary (150 chars max)")
+    parent_category_id: Optional[str] = Field(None, description="Parent category record ID")
+    is_seed: bool = Field(False, description="CAP-derived seed data flag")
+    
+    def __repr__(self) -> str:
+        return f"<IssueCategory(cap_code='{self.cap_code}', layer='{self.layer}', title_ja='{self.title_ja}')>"
+    
+    @property
+    def is_root_level(self) -> bool:
+        """Check if this is a root-level category (L1)."""
+        return self.layer == "L1"
+    
+    @property
+    def hierarchy_depth(self) -> int:
+        """Get the hierarchy depth (1 for L1, 2 for L2, 3 for L3)."""
+        return int(self.layer[1]) if self.layer.startswith("L") else 0
+
+
 class IssueTag(BaseRecord):
     """Issue tag model for categorizing policy issues."""
     
@@ -29,6 +54,7 @@ class Issue(BaseRecord):
     # Relationships
     related_bills: Optional[List[str]] = Field(None, description="List of related Bill record IDs")
     issue_tags: Optional[List[str]] = Field(None, description="List of related IssueTag record IDs")
+    category_id: Optional[str] = Field(None, description="Related IssueCategory record ID")
     
     # Metadata
     extraction_confidence: Optional[float] = Field(None, description="LLM extraction confidence score")

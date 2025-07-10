@@ -1,6 +1,7 @@
 // Diet Issue Tracker - Frontend Types
 
 export interface Bill {
+  id: string;
   bill_number: string;
   title: string;
   summary: string;

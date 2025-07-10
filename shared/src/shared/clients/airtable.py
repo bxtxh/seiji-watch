@@ -159,6 +159,19 @@ class AirtableClient:
         url = f"{self.base_url}/Members/{record_id}"
         return await self._rate_limited_request("GET", url)
     
+    async def update_member(self, record_id: str, member_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update a member record."""
+        url = f"{self.base_url}/Members/{record_id}"
+        data = {
+            "fields": {
+                "Updated_At": datetime.now().isoformat(),
+                **{k: v for k, v in member_data.items() if v is not None}
+            }
+        }
+        
+        response = await self._rate_limited_request("PATCH", url, json=data)
+        return response
+    
     async def list_members(self, filter_formula: Optional[str] = None,
                           max_records: int = 100) -> List[Dict[str, Any]]:
         """List member records with optional filtering."""
@@ -364,6 +377,8 @@ class AirtableClient:
             data["fields"]["Related_Bills"] = issue_data["related_bills"]
         if "issue_tags" in issue_data and issue_data["issue_tags"]:
             data["fields"]["Issue_Tags"] = issue_data["issue_tags"]
+        if "category_id" in issue_data and issue_data["category_id"]:
+            data["fields"]["Category"] = [issue_data["category_id"]]
         
         # Remove None values
         data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
@@ -553,3 +568,96 @@ class AirtableClient:
         bills = await self.list_bills(filter_formula=filter_formula, max_records=1)
         
         return bills[0] if bills else None
+
+    # Issue Category operations
+    async def create_issue_category(self, category_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new issue category record."""
+        url = f"{self.base_url}/IssueCategories"
+        data = {
+            "fields": {
+                "CAP_Code": category_data["cap_code"],
+                "Layer": category_data["layer"],
+                "Title_JA": category_data["title_ja"],
+                "Title_EN": category_data.get("title_en"),
+                "Summary_150JA": category_data.get("summary_150ja", ""),
+                "Is_Seed": category_data.get("is_seed", False),
+                "Created_At": datetime.now().isoformat(),
+                "Updated_At": datetime.now().isoformat()
+            }
+        }
+        
+        # Handle parent relationship
+        if "parent_category_id" in category_data and category_data["parent_category_id"]:
+            data["fields"]["Parent_Category"] = [category_data["parent_category_id"]]
+        
+        # Remove None values
+        data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
+        
+        response = await self._rate_limited_request("POST", url, json=data)
+        return response
+
+    async def get_issue_category(self, record_id: str) -> Dict[str, Any]:
+        """Get an issue category record by ID."""
+        url = f"{self.base_url}/IssueCategories/{record_id}"
+        return await self._rate_limited_request("GET", url)
+
+    async def list_issue_categories(self, filter_formula: Optional[str] = None,
+                                   max_records: int = 100) -> List[Dict[str, Any]]:
+        """List issue category records with optional filtering."""
+        url = f"{self.base_url}/IssueCategories"
+        params = {"maxRecords": max_records}
+        if filter_formula:
+            params["filterByFormula"] = filter_formula
+        
+        response = await self._rate_limited_request("GET", url, params=params)
+        return response.get("records", [])
+
+    async def update_issue_category(self, record_id: str, category_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an issue category record."""
+        url = f"{self.base_url}/IssueCategories/{record_id}"
+        data = {
+            "fields": {
+                "Updated_At": datetime.now().isoformat(),
+                **{k: v for k, v in category_data.items() if v is not None}
+            }
+        }
+        
+        response = await self._rate_limited_request("PATCH", url, json=data)
+        return response
+
+    async def get_categories_by_layer(self, layer: str) -> List[Dict[str, Any]]:
+        """Get all categories for a specific layer (L1/L2/L3)."""
+        filter_formula = f"{{Layer}} = '{layer}'"
+        return await self.list_issue_categories(filter_formula=filter_formula, max_records=1000)
+
+    async def get_category_children(self, parent_id: str) -> List[Dict[str, Any]]:
+        """Get child categories for a specific parent category."""
+        filter_formula = f"FIND('{parent_id}', ARRAYJOIN({{Parent_Category}})) > 0"
+        return await self.list_issue_categories(filter_formula=filter_formula, max_records=1000)
+
+    async def find_category_by_cap_code(self, cap_code: str) -> Optional[Dict[str, Any]]:
+        """Find category by CAP code."""
+        filter_formula = f"{{CAP_Code}} = '{cap_code}'"
+        categories = await self.list_issue_categories(filter_formula=filter_formula, max_records=1)
+        
+        return categories[0] if categories else None
+
+    async def get_category_tree(self) -> Dict[str, Any]:
+        """Get full category tree structure."""
+        # Get all categories
+        all_categories = await self.list_issue_categories(max_records=1000)
+        
+        # Organize by layer
+        tree = {"L1": [], "L2": [], "L3": []}
+        
+        for category in all_categories:
+            fields = category.get("fields", {})
+            layer = fields.get("Layer")
+            if layer in tree:
+                tree[layer].append(category)
+        
+        # Sort by CAP code for consistent ordering
+        for layer in tree:
+            tree[layer].sort(key=lambda x: x.get("fields", {}).get("CAP_Code", ""))
+        
+        return tree
