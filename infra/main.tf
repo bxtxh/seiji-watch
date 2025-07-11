@@ -39,7 +39,7 @@ resource "google_project_service" "required_apis" {
     "cloudresourcemanager.googleapis.com",
     "iam.googleapis.com",
     "pubsub.googleapis.com",
-    "scheduler.googleapis.com"
+    "vpcaccess.googleapis.com"
   ])
 
   service = each.value
