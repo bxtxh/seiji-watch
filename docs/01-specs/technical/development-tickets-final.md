@@ -664,13 +664,14 @@ class VectorStoreService:
 **Dependencies:** T59A (Domain Acquisition) ✅ COMPLETED
 - ✅ **COMPLETED**: Configure custom domain mapping in Cloud Run (`politics-watch.jp`)
 - ✅ **COMPLETED**: Set up automatic SSL certificate provisioning via Google-managed certificates
-- ⏳ **PENDING**: Test HTTPS access (requires DNS propagation)
+- ✅ **COMPLETED**: Test HTTPS access (successful) ✅ **July 11, 2025**
 - ✅ **COMPLETED**: Configure domain verification for Cloud Run
 - ✅ **COMPLETED**: Implement HTTP to HTTPS redirects (auto-configured)
-- ⏳ **PENDING**: Validate SSL certificate chain (pending DNS)
-**DoD:** Infrastructure ready ✅, SSL configured ✅, HTTPS access pending DNS
-**Timeline:** Infrastructure completed July 11, 2025 - ahead of schedule
+- ✅ **COMPLETED**: Validate SSL certificate chain (Google-managed cert active)
+**DoD:** Infrastructure ready ✅, SSL configured ✅, HTTPS access verified ✅
+**Timeline:** Fully completed July 11, 2025 - ahead of schedule
 **Implementation:** Cloud Run service `seiji-watch-api-gateway-dev` with domain mapping `politics-watch.jp`
+**✅ PRODUCTION READY:** https://politics-watch.jp accessible with valid SSL certificate
 
 #### T59C - Production Security & Performance
 **Priority:** P0 | **Estimate:** 4 hours  
@@ -1628,3 +1629,120 @@ EPIC 7 (3-Layer Issue Categorization System) の全実装が完了したが、ma
 *T88-T89 Added: July 11, 2025 - EPIC 7 UI Verification Critical Issues*
 *EPIC 10 Added: July 11, 2025 - Issue Individual Page API Implementation - Critical Gap Resolution*
 *EPIC 11 Added: July 11, 2025 - Real Data Integration & Production Readiness - Critical Data Pipeline Completion*
+
+---
+
+## EPIC 12: TOPページ Active Issues 横ストリップ実装 - UX改善
+**Target: July 14, 2025** | **Priority: P0** | **Status: 🆕 NEW**
+
+*TOPページKanbanボードから横スクロールストリップへの仕様変更による初回訪問者エンゲージメント最適化*
+
+### Background & Design Rationale
+- **Current Problem**: 4列Kanbanボードが初回ユーザーには情報過多、離脱率高い
+- **UX Goal**: 5秒で「いま何が議論されているか」を把握できる直感的UI
+- **Design Decision**: 横スクロール1行ストリップ（Netflix/App Store UI pattern）
+- **Target Audience**: 政治に詳しくない一般ユーザーのエンゲージメント向上
+
+### Technical Specifications
+- **表示対象**: ステータス `deliberating` + `vote_pending` のみ（緊急性の高いイシューに特化）
+- **レイアウト**: 横スクロール1行、280px固定幅カード、scroll-snap対応
+- **表示件数**: 8-12件（API制限）
+- **色覚バリアフリー**: Green #27AE60 (審議中), Yellow #F1C40F (採決待ち)
+
+#### T101 - Active Issues API エンドポイント実装
+**Priority:** P0 | **Estimate:** 2 hours | **Status:** NEW
+- **新API実装**: `GET /api/issues?status=in_view&limit=12`
+- **ステータスフィルタリング**: `deliberating`, `vote_pending` のみ返却
+- **レスポンス最適化**: フロントエンド要求仕様に合わせたデータ構造
+- **既存API保持**: `/api/issues/kanban` は他ページで利用継続
+- **パフォーマンス**: レスポンス時間 ≤200ms, キャッシング30分TTL
+**DoD:** 横ストリップ用の最適化されたAPIエンドポイントが利用可能
+
+#### T102 - ActiveIssuesStrip コンポーネント実装
+**Priority:** P0 | **Estimate:** 4 hours | **Status:** NEW
+- **新コンポーネント**: `components/ActiveIssuesStrip.tsx` 
+- **横スクロール実装**: `overflow-x-auto`, `scroll-snap-type: x mandatory`
+- **280px固定幅カード**: レスポンシブ対応（モバイルでも固定幅維持）
+- **グラデーションフェード**: 左右端での視覚的ヒント
+- **アクセシビリティ**: キーボードナビゲーション、ARIA labels対応
+**DoD:** Netflix風横スクロールUIが全デバイスで正常動作
+
+#### T103 - IssueCard リデザイン実装  
+**Priority:** P0 | **Estimate:** 3 hours | **Status:** NEW
+- **カード仕様**: 280px × auto height, コンパクトデザイン
+- **ステータスバッジ**: 右上角に色分けバッジ（審議中/採決待ち）
+- **情報密度最適化**: 
+  - タイトル（2行省略, 16px bold）
+  - 日期間ピル（YYYY年M月D日-形式）
+  - タグチップ（最大3個、グレー背景）
+  - 関連法案カプセル（件数表示 + 詳細リンク）
+  - 最終更新タイムスタンプ（12px グレー）
+- **インタラクション**: ホバーで詳細プレビュー、クリックで個別ページ遷移
+**DoD:** 情報豊富で直感的な280px横カード完成
+
+#### T104 - TOPページ統合・KanbanからStrip置換
+**Priority:** P1 | **Estimate:** 2 hours | **Status:** NEW  
+- **pages/index.tsx 修正**: KanbanBoard → ActiveIssuesStrip 置換
+- **セクション見出し変更**: 「直近1ヶ月の議論」→「いま議論されている問題」
+- **レイアウト調整**: 検索セクションとの縦間隔最適化
+- **SEO対応**: セマンティックHTML, structured data更新
+- **パフォーマンス**: SSG事前生成対応
+**DoD:** TOPページで新しい横ストリップが正常表示され、UX流れが自然
+
+#### T105 - インタラクション・アニメーション実装
+**Priority:** P1 | **Estimate:** 2 hours | **Status:** NEW
+- **初回訪問アニメーション**: 最初のカードがslide-inで注意喚起
+- **スクロールヒント**: 横スクロール可能であることの視覚的示唆
+- **ホバーエフェクト**: デスクトップでのカードホバー時詳細プレビュー
+- **タッチジェスチャー**: モバイルでのスワイプ操作最適化
+- **トランジション**: カード間移動のスムーズアニメーション
+**DoD:** 直感的で魅力的なインタラクション体験が実現
+
+#### T106 - E2E テスト・品質保証
+**Priority:** P0 | **Estimate:** 1 hour | **Status:** NEW
+- **横スクロール機能テスト**: マウス、タッチ、キーボード操作
+- **レスポンシブ検証**: 375px→1440px全デバイス確認  
+- **アクセシビリティ監査**: WCAG 2.1 AA準拠、Lighthouse ≥95
+- **パフォーマンステスト**: Core Web Vitals, 初期表示速度
+- **ブラウザ互換性**: Chrome, Safari, Firefox, Edge
+**DoD:** 全品質要件を満たし本番デプロイ可能
+
+**EPIC 12 Summary:**
+- **Total Estimated:** 14 hours
+- **Target Completion:** July 14, 2025 (3日間)
+- **Critical Path:** T101 → T102 → T103 → T104 (API → UI基盤 → カード → 統合)
+- **Parallel Development:** T105 (アニメーション), T106 (QA)
+
+**Key Features Delivered:**
+- Netflix風横スクロール「いま議論されている問題」ストリップ
+- 初回ユーザー向け5秒理解可能なUI
+- 緊急性の高いイシューに特化した情報表示
+- 全デバイス対応のスムーズインタラクション
+
+**Dependencies:**
+- EPIC 10 (個別イシューAPI) 完了済み ✅ 
+- EPIC 11 (実データ統合) 完了必須 🔄
+- 既存 `/api/issues` エンドポイント基盤 ready ✅
+
+**Success Metrics:**
+- TOPページ滞在時間: 10秒 → 45秒+
+- イシュー詳細遷移率: 5% → 20%+
+- 初回訪問離脱率: 70% → 45%以下
+- 横スクロール利用率: 80%+
+
+**Risk Mitigation:**
+- 既存Kanban機能保持: 他ページでは従来UI継続利用
+- 段階的リリース: フィーチャーフラグによるA/Bテスト可能
+- パフォーマンス監視: Core Web Vitals リアルタイム測定
+- ユーザビリティテスト: リリース前のユーザー検証
+
+**Design Rationale:**
+- **認知負荷軽減**: 4列→1行により情報処理負荷削減
+- **緊急性の可視化**: アクティブなイシューのみ表示で重要度明確化  
+- **親和性向上**: 一般的なWebアプリUIパターン採用
+- **エンゲージメント促進**: スクロール行動による探索意欲向上
+
+---
+
+*Final Update: July 11, 2025*
+*EPIC 12 Added: July 11, 2025 - TOP Page Active Issues Horizontal Strip Implementation - UX Enhancement for Initial User Engagement*

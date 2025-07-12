@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import SearchInterface from '@/components/SearchInterface';
 import KanbanBoard from '@/components/KanbanBoard';
+import ActiveIssuesStrip from '@/components/ActiveIssuesStrip';
 
 export default function Home() {
   const [systemStatus, setSystemStatus] = useState<{
@@ -19,11 +20,13 @@ export default function Home() {
         {/* Hero Section */}
         <div className="hero-section text-center rounded-2xl p-8 mb-8 fade-in-up">
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl japanese-heading animate-slide-down">
-            国会議事録検索システム
+            政治ウォッチ！
           </h1>
+          <h3 className="mt-3 text-xl font-semibold text-gray-700 japanese-heading animate-fade-in" style={{animationDelay: '0.1s'}}>
+            <em>国会で議論されていることを見つめる</em>
+          </h3>
           <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto japanese-body animate-fade-in" style={{animationDelay: '0.2s'}}>
-            国会の法案や議事録をAIとキーワード検索で素早く見つけることができます。
-            アクセシブルで使いやすいインターフェースで、重要な政治情報にアクセスできます。
+            国会で議論されていることをAIによって分析・整理します。いま、国が取り扱っている社会課題（イシュー）を誰の目にもわかりやすく届けます。
           </p>
         </div>
 
@@ -42,6 +45,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Active Issues Strip - EPIC 12 T102 */}
+        <ActiveIssuesStrip />
 
         {/* Features Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stagger-children">

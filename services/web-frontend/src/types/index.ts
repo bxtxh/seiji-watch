@@ -1,17 +1,28 @@
 // Diet Issue Tracker - Frontend Types
 
+export interface PolicyCategory {
+  id: string;
+  cap_code?: string;
+  layer: string;
+  title_ja: string;
+  parent_category?: PolicyCategory;
+}
+
 export interface Bill {
   id: string;
   bill_number: string;
   title: string;
   summary: string;
-  category: string;
+  policy_category?: PolicyCategory;  // PolicyCategory (政策分野) - CAP基準の政策分類
   status: string;
   diet_url: string;
   relevance_score?: number;
   search_method?: string;
   related_issues?: string[];
   issue_tags?: string[];
+  
+  // 後方互換性のため (段階的移行)
+  category?: string;
 }
 
 export interface Speech {
@@ -77,13 +88,20 @@ export interface Issue {
   description: string;
   priority: 'high' | 'medium' | 'low';
   status: 'active' | 'reviewed' | 'archived';
+  stage?: string;  // 審議ステージ (審議前, 審議中, 採決待ち, 成立)
+  policy_category?: PolicyCategory;  // PolicyCategory (政策分野) - CAP基準の政策分類
+  issue_tags?: IssueTag[];  // IssueTag (イシュータグ) - Issue特有の分類タグ
   related_bills?: string[];
-  issue_tags?: string[];
-  created_at?: string;
-  updated_at?: string;
+  related_bills_count?: number;
   extraction_confidence?: number;
   review_notes?: string;
   is_llm_generated?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  schedule?: {
+    from: string;
+    to: string;
+  };
 }
 
 export interface IssueTag {
