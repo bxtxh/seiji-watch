@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import IssueCard, { KanbanIssue } from './IssueCard';
 import StageColumn from './StageColumn';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
@@ -91,21 +92,19 @@ export default function KanbanBoard({ className = '' }: KanbanBoardProps) {
     fetchKanbanData();
   }, [hasIntersected]);
 
+  const router = useRouter();
+
   // Handle card click with prefetching
   const handleCardClick = useCallback((issue: KanbanIssue) => {
-    // Navigate to issue detail page
-    window.location.href = `/issues/${issue.id}`;
-  }, []);
+    // Navigate to issue detail page using Next.js router
+    router.push(`/issues/${issue.id}`);
+  }, [router]);
 
   // Prefetch issue details on hover
   const handleCardHover = useCallback((issue: KanbanIssue) => {
-    // Prefetch issue detail page
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = `/issues/${issue.id}`;
-    link.as = 'document';
-    document.head.appendChild(link);
-  }, []);
+    // Prefetch issue detail page using Next.js router
+    router.prefetch(`/issues/${issue.id}`);
+  }, [router]);
 
   // Memoize stage columns rendering - always call this hook
   const stageColumns = useMemo(() => {

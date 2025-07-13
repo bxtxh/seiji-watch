@@ -41,7 +41,8 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
     return statusMap[status.toLowerCase()] || status;
   };
 
-  const formatCategory = (category: string) => {
+  const formatCategory = (category: string | undefined) => {
+    if (!category) return 'その他';
     const categoryMap: { [key: string]: string } = {
       'budget': '予算・決算',
       'taxation': '税制',

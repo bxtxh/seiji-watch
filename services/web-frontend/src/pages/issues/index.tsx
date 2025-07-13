@@ -1,34 +1,38 @@
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Layout from '../../components/Layout'
+import IssueSearchFilters from '../../components/IssueSearchFilters'
+import IssueListCard from '../../components/IssueListCard'
 import { Issue, IssueTag } from '../../types'
 
-interface IssueWithTags extends Issue {
-  tags?: IssueTag[]
-}
-
 const IssuesPage = () => {
-  const [issues, setIssues] = useState<IssueWithTags[]>([])
+  const router = useRouter()
+  const [issues, setIssues] = useState<Issue[]>([])
   const [issueTags, setIssueTags] = useState<IssueTag[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [selectedStatus, setSelectedStatus] = useState<string>('')
+  const [selectedPriority, setSelectedPriority] = useState<string>('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [sortBy, setSortBy] = useState<string>('updated_desc')
 
   const categories = [
     '環境・エネルギー',
     '経済・産業', 
-    '社会保障・福祉',
-    '外交・安全保障',
+    '社会保障',
+    '外交・国際',
     '教育・文化',
     '司法・法務',
-    '行政・公務員',
-    'インフラ・交通',
+    '行政改革',
+    '国土・交通',
     'その他'
   ]
 
   useEffect(() => {
     fetchIssues()
     fetchIssueTags()
-  }, [selectedCategory, selectedStatus])
+  }, [selectedCategory, selectedStatus, selectedPriority])
 
   const fetchIssues = async () => {
     try {
@@ -36,26 +40,21 @@ const IssuesPage = () => {
       const params = new URLSearchParams()
       if (selectedCategory) params.append('category', selectedCategory)
       if (selectedStatus) params.append('status', selectedStatus)
+      if (selectedPriority) params.append('priority', selectedPriority)
+      params.append('limit', '100')  // Get more results
 
       const response = await fetch(`/api/issues?${params}`)
       const data = await response.json()
       
-      // Transform Airtable response to our format
-      const transformedIssues: IssueWithTags[] = data.map((record: any) => ({
-        id: record.id,
-        title: record.fields?.Title || '',
-        description: record.fields?.Description || '',
-        priority: record.fields?.Priority || 'medium',
-        status: record.fields?.Status || 'active',
-        related_bills: record.fields?.Related_Bills || [],
-        issue_tags: record.fields?.Issue_Tags || [],
-        created_at: record.fields?.Created_At,
-        updated_at: record.fields?.Updated_At
-      }))
-      
-      setIssues(transformedIssues)
+      if (data.success && data.issues) {
+        setIssues(data.issues)
+      } else {
+        console.error('API response error:', data)
+        setIssues([])
+      }
     } catch (error) {
       console.error('Failed to fetch issues:', error)
+      setIssues([])
     } finally {
       setLoading(false)
     }
@@ -63,44 +62,59 @@ const IssuesPage = () => {
 
   const fetchIssueTags = async () => {
     try {
-      const response = await fetch('/api/issues/tags/')
+      const response = await fetch('/api/issues/tags')
       const data = await response.json()
       
-      const transformedTags: IssueTag[] = data.map((record: any) => ({
-        id: record.id,
-        name: record.fields?.Name || '',
-        color_code: record.fields?.Color_Code || '#3B82F6',
-        category: record.fields?.Category || '',
-        description: record.fields?.Description
-      }))
-      
-      setIssueTags(transformedTags)
+      if (data.success && data.tags) {
+        setIssueTags(data.tags)
+      } else {
+        console.error('API response error:', data)
+        setIssueTags([])
+      }
     } catch (error) {
       console.error('Failed to fetch issue tags:', error)
+      setIssueTags([])
     }
   }
 
-  const getTagsForIssue = (issue: IssueWithTags): IssueTag[] => {
+  const getTagsForIssue = (issue: Issue): IssueTag[] => {
     if (!issue.issue_tags) return []
-    return issueTags.filter(tag => issue.issue_tags!.includes(tag.id))
+    // For now, return the tags directly from the issue since they're already formatted
+    return issue.issue_tags
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+
+  const handleIssueClick = (issue: Issue) => {
+    router.push(`/issues/${issue.id}`)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-blue-100 text-blue-800'
-      case 'reviewed': return 'bg-purple-100 text-purple-800'
-      case 'archived': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
+  // Filter and sort issues
+  const filteredAndSortedIssues = issues
+    .filter(issue =>
+      issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      issue.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'updated_desc':
+          return new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()
+        case 'created_desc':
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        case 'priority_desc':
+          const priorityOrder = { high: 3, medium: 2, low: 1 }
+          return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - 
+                 (priorityOrder[a.priority as keyof typeof priorityOrder] || 0)
+        case 'title_asc':
+          return a.title.localeCompare(b.title, 'ja')
+        default:
+          return 0
+      }
+    })
+
+  const handleClearFilters = () => {
+    setSelectedCategory('')
+    setSelectedStatus('')
+    setSelectedPriority('')
   }
 
   if (loading) {
@@ -126,116 +140,61 @@ const IssuesPage = () => {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="mb-6 flex flex-wrap gap-4">
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-              カテゴリ
-            </label>
-            <select
-              id="category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">すべて</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
+        {/* Search and Filters Component */}
+        <IssueSearchFilters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
+          selectedPriority={selectedPriority}
+          setSelectedPriority={setSelectedPriority}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          categories={categories}
+          onClearFilters={handleClearFilters}
+        />
 
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-              ステータス
-            </label>
-            <select
-              id="status"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">すべて</option>
-              <option value="active">アクティブ</option>
-              <option value="reviewed">レビュー済み</option>
-              <option value="archived">アーカイブ</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Issues Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {issues.map((issue) => {
+        {/* Issues Display */}
+        <div className={viewMode === 'grid' ? 'grid gap-6 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}>
+          {filteredAndSortedIssues.map((issue) => {
             const tags = getTagsForIssue(issue)
             return (
-              <div
+              <IssueListCard
                 key={issue.id}
-                className="bg-white rounded-lg shadow border border-gray-200 p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                    {issue.title}
-                  </h3>
-                  <div className="flex flex-col gap-1 ml-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(issue.priority)}`}>
-                      {issue.priority === 'high' ? '高' : issue.priority === 'medium' ? '中' : '低'}
-                    </span>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(issue.status)}`}>
-                      {issue.status === 'active' ? 'アクティブ' : issue.status === 'reviewed' ? 'レビュー済み' : 'アーカイブ'}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {issue.description}
-                </p>
-
-                {/* Issue Tags */}
-                {tags.length > 0 && (
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                          style={{
-                            backgroundColor: tag.color_code + '20',
-                            color: tag.color_code
-                          }}
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
-                      {tags.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                          +{tags.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Related Bills Count */}
-                <div className="flex justify-between items-center text-sm text-gray-500">
-                  <span>
-                    関連法案: {issue.related_bills?.length || 0}件
-                  </span>
-                  {issue.created_at && (
-                    <span>
-                      {new Date(issue.created_at).toLocaleDateString('ja-JP')}
-                    </span>
-                  )}
-                </div>
-              </div>
+                issue={issue}
+                tags={tags}
+                viewMode={viewMode}
+                onClick={handleIssueClick}
+              />
             )
           })}
         </div>
 
         {/* Empty state */}
-        {issues.length === 0 && !loading && (
+        {filteredAndSortedIssues.length === 0 && !loading && (
           <div className="text-center py-12">
-            <div className="text-gray-400 text-lg mb-2">イシューが見つかりませんでした</div>
-            <p className="text-gray-600">別の条件で検索してみてください</p>
+            <div className="text-gray-400 text-lg mb-2">
+              {searchQuery ? '検索結果が見つかりませんでした' : 'イシューが見つかりませんでした'}
+            </div>
+            <p className="text-gray-600">
+              {searchQuery ? '別のキーワードで検索してみてください' : '別の条件で検索してみてください'}
+            </p>
+          </div>
+        )}
+
+        {/* Results count */}
+        {!loading && filteredAndSortedIssues.length > 0 && (
+          <div className="mt-8 text-center text-sm text-gray-500">
+            {filteredAndSortedIssues.length}件のイシューを表示中
+            {searchQuery && (
+              <span className="ml-2">
+                (「{searchQuery}」で検索)
+              </span>
+            )}
           </div>
         )}
       </div>

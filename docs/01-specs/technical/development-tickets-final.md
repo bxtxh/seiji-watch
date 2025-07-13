@@ -897,6 +897,171 @@ allow_headers=["*"]
 
 **EPIC 6 Summary:**
 - **Total Estimated:** 46 hours
+
+---
+
+## EPIC 13: データ品質保証・リリース準備システム
+**Target: July 22, 2025** | **Priority: P0** | **Status: 🆕 NEW**
+
+*Comprehensive data quality assurance for production readiness - All tables quality enhancement*
+
+現在のデータベース全体で品質問題が検出されており、MVP本格運用前に全テーブルの品質を完璧な水準まで向上させる必要がある。テーブル入れ替わりが緩やかな特性を考慮し、品質テスト・改修・検証の包括的なプロセスを確立する。
+
+### Background & Justification
+- **Current State**: 複数テーブルで品質問題（議員DB: 50.3%スコア）
+- **Business Risk**: 本格運用開始時のデータ信頼性問題
+- **User Impact**: 不正確な情報による政治分析の信頼性低下
+- **Technical Debt**: 品質問題の後修正はコスト高・リスク高
+- **Strategic Priority**: MVP成功には完璧なデータ品質が必須
+
+#### T131 - 包括的データ品質評価システム
+**Priority:** P0 | **Estimate:** 8 hours
+- **全テーブル品質監査**:
+  - `Members (議員)`: 744レコード → 目標品質95%以上
+  - `Bills (法案)`: 全レコード → 目標品質90%以上  
+  - `Sessions (会議)`: 全レコード → 目標品質95%以上
+  - `Speeches (発言)`: 全レコード → 目標品質85%以上
+  - `Parties (政党)`: 全レコード → 目標品質98%以上
+  - `Issues (イシュー)`: 全レコード → 目標品質90%以上
+- **品質メトリクス定義**:
+  - 完全性（Completeness）: 必須フィールド充足率
+  - 一意性（Uniqueness）: 重複・冗長データ検出率
+  - 妥当性（Validity）: データ形式・範囲の正確性
+  - 一貫性（Consistency）: テーブル間参照整合性
+  - 正確性（Accuracy）: 情報源との一致度
+  - 鮮度（Timeliness）: データ更新頻度・最新性
+- **自動品質評価エンジン構築**
+- **品質レポート・ダッシュボード生成**
+**DoD:** 全テーブルの詳細品質評価が完了し、改善点が明確化
+
+#### T132 - テーブル別品質改善計画実行
+**Priority:** P0 | **Estimate:** 12 hours
+- **Members (議員) 品質改善**:
+  - 重複レコード手動レビュー・統合（自動化は行わない）
+  - 政党名・選挙区表記の標準化
+  - 必須フィールド（Name, House, Is_Active）100%充足確認
+  - 議員プロフィール情報の信頼性向上
+- **Bills (法案) 品質改善**:
+  - 法案番号の重複・欠損チェック
+  - 法案ステータスの一貫性確認
+  - 提出者・所管省庁情報の正規化
+  - 法案カテゴリ分類の精度向上
+- **Sessions (会議) 品質改善**:
+  - 会議日時の正確性検証
+  - 会議種別・委員会名の標準化
+  - 議事録との整合性確認
+- **Speeches (発言) 品質改善**:
+  - 発言者の議員テーブルとの整合性
+  - 音声文字起こし精度の検証
+  - 発言時刻・順序の正確性確認
+- **Parties (政党) 品質改善**:
+  - 政党名の表記統一・略称整理
+  - 政党合併・分裂履歴の正確性
+  - 議員テーブルとの参照整合性100%確保
+- **Issues (イシュー) 品質改善**:
+  - イシュータグの重複・類似チェック
+  - 3層分類システムの整合性確認
+  - 法案との関連付け精度向上
+**DoD:** 各テーブルが目標品質水準に到達し、改善効果が測定可能
+
+#### T133 - データ整合性・参照整合性強化
+**Priority:** P0 | **Estimate:** 6 hours
+- **テーブル間整合性チェック**:
+  - Members ⇔ Parties 参照関係の100%整合性
+  - Bills ⇔ Members（提出者）の整合性確認
+  - Speeches ⇔ Members（発言者）の整合性確認
+  - Sessions ⇔ Speeches の時系列整合性
+  - Issues ⇔ Bills の関連付け妥当性
+- **外部キー制約の論理的実装**（Airtable環境）
+- **循環参照・デッドリンクの検出・修正**
+- **データ型・フォーマットの統一化**
+- **NULL値・空文字列の適切な処理**
+**DoD:** 全テーブル間の整合性が保証され、データ整合性エラーゼロ達成
+
+#### T134 - 本格運用向けデータガバナンス
+**Priority:** P1 | **Estimate:** 6 hours
+- **データ更新プロセスの標準化**:
+  - 新規データ投入時の品質チェック自動化
+  - データ更新権限・承認フローの確立
+  - 更新履歴・監査ログの記録システム
+- **データ品質SLA定義**:
+  - 各テーブルの最低品質水準設定
+  - 品質劣化時のアラート・対応手順
+  - 定期品質監査スケジュール（週次・月次）
+- **データバックアップ・復旧計画**:
+  - 毎日の自動バックアップ実装
+  - 品質劣化時の迅速な復旧手順
+  - データ破損・喪失のリスク軽減策
+- **ユーザー向け品質情報公開**:
+  - データ品質メトリクスの透明性確保
+  - 品質向上取り組みの定期レポート
+  - ユーザーからの品質問題報告受付窓口
+**DoD:** 持続可能なデータ品質管理体制が確立され、運用準備完了
+
+#### T135 - リリース前品質検証・承認プロセス
+**Priority:** P0 | **Estimate:** 8 hours
+- **最終品質監査実施**:
+  - 全テーブル品質スコア95%以上の確認
+  - 重要データポイントの手動検証
+  - ステークホルダーによる品質レビュー
+- **本格運用シミュレーション**:
+  - 実際のユーザーシナリオでのデータ精度テスト
+  - 高負荷時のデータ整合性維持確認
+  - エラーケースでの優雅な劣化テスト
+- **品質承認チェックリスト**:
+  - ✅ 全テーブル品質目標達成
+  - ✅ テーブル間整合性100%確保
+  - ✅ API応答精度・速度要件満足
+  - ✅ フロントエンド表示品質確認
+  - ✅ ユーザーテスト完了・問題なし
+- **品質保証レポート作成**:
+  - 品質改善の定量的効果測定
+  - 残存リスク・制限事項の明文化
+  - 運用開始後の品質維持計画
+**DoD:** 全品質要件をクリアし、本格運用開始の最終承認取得
+
+#### T136 - パフォーマンス最適化・スケーラビリティ確保
+**Priority:** P1 | **Estimate:** 4 hours
+- **大容量データでの性能確認**:
+  - 744名議員データでの検索・表示速度
+  - 数千件法案データでのフィルタリング性能
+  - 同時アクセス時のレスポンス時間維持
+- **クエリ最適化・インデックス戦略**:
+  - 頻繁なクエリパターンの最適化
+  - Airtable APIリクエスト効率化
+  - フロントエンドキャッシュ戦略
+- **将来拡張への対応**:
+  - データ量増加に対する性能予測
+  - スケールアウト戦略の準備
+  - リソース使用量モニタリング
+**DoD:** 現在・将来のデータ量に対する性能要件をクリア
+
+#### T137 - 品質保証自動化・CI/CD統合
+**Priority:** P1 | **Estimate:** 4 hours
+- **継続的品質監視システム**:
+  - データ品質の自動テスト・CI/CD統合
+  - 品質劣化の即座検出・アラート
+  - 品質レポートの自動生成・配信
+- **回帰テスト・品質ゲート**:
+  - データ更新時の品質回帰防止
+  - デプロイ前の必須品質チェック
+  - 品質基準未達時の自動デプロイ阻止
+- **長期品質トレンド分析**:
+  - 品質メトリクスの時系列追跡
+  - 品質改善・劣化トレンドの可視化
+  - 予防的品質管理の実現
+**DoD:** 品質保証プロセスが完全自動化され、持続的改善サイクル確立
+
+**EPIC 13 Summary:**
+- **Total Estimated:** 48 hours
+- **Critical Path:** T131→T132→T133→T135 (評価→改善→整合性→最終検証)
+- **Success Metrics:** 
+  - 全テーブル品質スコア90%以上達成
+  - データ整合性エラーゼロ
+  - API応答時間<200ms維持
+  - ユーザーテスト満足度95%以上
+- **Quality Gates:** 各チケット完了時の品質基準クリア必須
+- **Risk Mitigation:** 段階的改善、バックアップ保持、ロールバック準備
 - **Target Completion:** September 30, 2025 (Phase 1.2)
 - **Critical Path:** T61 → T62 → T63 → T65 (データ基盤 → 分析 → UI → API)
 - **Parallel Development:** T64 (一覧), T66 (統合), T67 (QA)
@@ -1744,5 +1909,288 @@ EPIC 7 (3-Layer Issue Categorization System) の全実装が完了したが、ma
 
 ---
 
-*Final Update: July 11, 2025*
+## EPIC 13: データ品質管理・権限修正対応
+**Target: July 12-14, 2025** | **Priority: P0** | **Status: 🚧 NEW**
+
+### Background
+データ診断により以下の重要な問題が判明：
+- Airtableアクセス権限問題（複数テーブルで403エラー）
+- 議員データ：0件（必須データ欠損）
+- 発言データ：0件（AI分析機能停止）
+- イシューデータ：0件（コア機能停止）
+- 法案データ：100件（目標150件に対し66%）
+
+### Target State
+- 全コアテーブルにデータが存在し、MVP機能が正常動作
+- データ品質管理体制の確立
+
+#### T107 - Airtable権限確認・テスト実行 🚨 IMMEDIATE
+**Priority:** P0 | **Estimate:** 1 hour | **Status:** NEW
+- **権限修正後検証**:
+  - 全9テーブルへのアクセス確認（Members, Speeches, Issues等）
+  - API経由でのCRUD操作テスト
+  - データ診断スクリプト再実行
+- **データベース接続テスト**:
+  - AirtableClientの初期化成功確認
+  - 各テーブルからのサンプルデータ取得
+  - エラーログ・レスポンス時間記録
+**DoD:** 全テーブルに正常アクセス可能、403エラー解決確認
+
+#### T108 - 議員データ収集・投入実行 📊 CRITICAL
+**Priority:** P0 | **Estimate:** 4 hours | **Status:** NEW
+- **スクレイピング実行**:
+  - 既存のDietScraperを使用した議員データ収集
+  - 目標：現職議員50件以上の基本情報
+  - 政党情報・選挙区情報の包括的収集
+- **Airtable投入**:
+  - AirtableClientを使用した自動投入
+  - 重複排除・データ正規化処理
+  - Members/Partiesテーブルへの構造化データ格納
+- **データ品質検証**:
+  - 必須フィールド充足率95%以上
+  - 政党・選挙区データの整合性確認
+**DoD:** 50件以上の議員データがAirtableに正常格納され、API経由で取得可能
+
+#### T109 - 発言データ初期収集・STT処理 🎤 FOUNDATION
+**Priority:** P1 | **Estimate:** 6 hours | **Status:** NEW
+- **議事録データ収集**:
+  - 最新の委員会・本会議議事録収集（限定スコープ）
+  - 音声データのダウンロード・前処理
+  - 発言者情報とのマッピング
+- **STT処理実行**:
+  - OpenAI Whisperを使用した音声→テキスト変換
+  - 目標：100件の発言データ生成
+  - 信頼度・品質メトリクス記録
+- **Airtable投入**:
+  - Speechesテーブルへの構造化データ格納
+  - Meeting/Member関連付け
+  - AI分析用メタデータ設定
+**DoD:** 100件の発言データが高品質でAirtableに格納され、AI分析基盤準備完了
+
+#### T110 - イシューデータ生成・LLM抽出 🧠 AI-POWERED
+**Priority:** P1 | **Estimate:** 4 hours | **Status:** NEW
+- **法案からのイシュー抽出**:
+  - 既存100件の法案データを対象
+  - OpenAI/Claude APIを使用したイシュー抽出
+  - 政策分野・緊急度・影響度の自動分類
+- **3層カテゴリシステム適用**:
+  - CAP分類に基づくL1/L2/L3カテゴリ割り当て
+  - イシュータグの自動生成・関連付け
+  - 階層構造データの整合性確保
+- **Airtable投入・関連付け**:
+  - Issues/IssueCategories/IssueTagsテーブル投入
+  - 法案データとの双方向リンク設定
+  - 検索・フィルタリング用インデックス作成
+**DoD:** 法案データから50件以上のイシューが自動抽出され、3層分類システムで管理可能
+
+#### T111 - データ品質管理体制確立 📈 MONITORING
+**Priority:** P2 | **Estimate:** 3 hours | **Status:** NEW
+- **定期診断システム**:
+  - データ品質診断スクリプトの自動化
+  - 日次/週次でのデータ完全性チェック
+  - アラート・レポート機能実装
+- **データバリデーション強化**:
+  - 投入前データの自動検証ルール
+  - 異常値・欠損値の検出・処理
+  - データ整合性チェック（リレーション）
+- **運用ダッシュボード**:
+  - データ収集状況の可視化
+  - 品質メトリクスのリアルタイム監視
+  - 問題発生時の迅速対応手順
+**DoD:** 持続可能なデータ品質管理システムが稼働し、高品質データが保証される
+
+#### T112 - API・フロントエンド実データ確認 ✅ VALIDATION
+**Priority:** P0 | **Estimate:** 2 hours | **Status:** NEW
+- **API エンドポイント確認**:
+  - 全APIで実データが正常に返却されることを確認
+  - レスポンス形式・パフォーマンスの検証
+  - エラーハンドリングの動作確認
+- **フロントエンド表示確認**:
+  - 法案・議員・イシュー情報の正常表示
+  - 検索・フィルタリング機能の動作確認
+  - レスポンシブデザインでの表示品質
+- **統合テスト**:
+  - エンドツーエンドのユーザージャーニー確認
+  - データ整合性・表示一貫性の検証
+  - パフォーマンス・ユーザビリティ確認
+**DoD:** 全機能で実データが正常表示され、MVP品質要件を満たす
+
+**EPIC 13 Summary:**
+- **Total Estimated:** 20 hours
+- **Target Completion:** July 14, 2025 (3日間)
+- **Critical Path:** T107 → T108 → T109 → T110 → T112 (権限確認 → 議員データ → 発言データ → イシューデータ → 統合確認)
+- **Parallel Development:** T111 (データ品質管理)
+
+**Key Objectives:**
+- 全コアテーブルのデータ充実（法案150件、議員50件、発言100件、イシュー50件）
+- データ品質管理体制の確立
+- MVP機能の完全動作確認
+
+**Success Criteria:**
+- Airtable全テーブルアクセス可能
+- 議員データ50件以上収集・投入完了
+- 発言データ100件STT処理完了
+- イシューデータ50件LLM抽出完了
+- フロントエンドでの実データ正常表示
+- データ品質95%以上維持
+
+**Dependencies:**
+- Airtable API権限修正（完了済み）
+- EPIC 11（実データ統合）基盤
+- 既存スクレイピング・AI処理パイプライン
+
+---
+
+## EPIC 14: Hybrid Ingestion Pipeline - NDL API × Whisper
+
+**Goal**: Implement cost-optimized hybrid data ingestion combining NDL Minutes API for historical data (第217回国会まで) and Whisper STT for real-time processing.
+
+**Timeline**: 4 weeks  
+**Estimated Effort**: 32 hours  
+**Priority**: Medium (Post-MVP enhancement)
+
+### Background
+Current STT-only approach for all historical meetings incurs high costs (~$85/month). NDL API provides free access to structured meeting minutes for sessions up to 第217回国会 (≤ 2025-06-21), enabling 75% cost reduction.
+
+### Technical Approach
+- **Historical Path**: NDL Minutes API → JSON processing → Airtable
+- **Real-time Path**: Diet TV → Whisper STT → Airtable  
+- **Decision Logic**: Date-based routing (≤ 2025-06-21 vs ≥ 2025-06-22)
+
+#### T120 - NDL API Client Development ⏳ PENDING
+**Objective**: Build rate-limited HTTP client for NDL Minutes API  
+**Acceptance Criteria**:
+- [ ] NDL API client with ≤3 req/s rate limiting
+- [ ] JSON response parser for meeting minutes
+- [ ] Error handling with exponential backoff
+- [ ] Unit tests for API integration
+
+**Files**: `services/ingest-worker/src/collectors/ndl_api_client.py`  
+**Estimate**: 8 hours  
+**Dependencies**: None
+
+#### T121 - Data Mapping & Schema Unification ⏳ PENDING  
+**Objective**: Map NDL API data format to existing Airtable schema
+**Acceptance Criteria**:
+- [ ] NDL meeting format → Airtable Speeches/Meetings mapping
+- [ ] Speaker identification & party affiliation matching
+- [ ] Bill discussion extraction from speech content
+- [ ] Unified data interface for both NDL + Whisper sources
+
+**Files**: `services/ingest-worker/src/pipeline/ndl_data_mapper.py`  
+**Estimate**: 10 hours  
+**Dependencies**: T120
+
+#### T122 - Historical Data Batch Processing ⏳ PENDING
+**Objective**: Ingest all 第217回国会 meetings via NDL API  
+**Acceptance Criteria**:
+- [ ] Batch ingestion script for meeting range (2025-01-24 〜 2025-06-21)
+- [ ] Progress tracking with resume capability
+- [ ] Data validation & quality checks
+- [ ] Performance monitoring & cost tracking
+
+**Files**: `services/ingest-worker/src/batch/historical_ingestion.py`  
+**Estimate**: 8 hours  
+**Dependencies**: T120, T121
+
+#### T123 - Pipeline Routing Logic ⏳ PENDING
+**Objective**: Implement date-based routing between NDL API and Whisper STT  
+**Acceptance Criteria**:
+- [ ] Meeting date analysis (≤ 2025-06-21 vs ≥ 2025-06-22)
+- [ ] Automatic pipeline selection logic
+- [ ] Fallback mechanisms for edge cases
+- [ ] Manual override for specific meetings
+
+**Files**: `services/ingest-worker/src/pipeline/ingestion_router.py`  
+**Estimate**: 6 hours  
+**Dependencies**: T120, T121, T122
+
+**EPIC 14 Summary:**
+- **Total Tickets**: 4
+- **Total Effort**: 32 hours
+- **Success Metrics**: 75% cost reduction, 100% historical data coverage
+- **Risk Mitigation**: Phased rollout, fallback to existing STT pipeline
+
+---
+
+## EPIC 15: Issue Notification System — MVP
+
+**Goal**: Enable users to monitor legislative progress through email notifications
+
+**Timeline**: 3 weeks  
+**Estimated Effort**: 32 hours  
+**Priority**: High (User engagement enhancement)
+
+### Background
+Transform passive browsing into active political monitoring. Users can "watch" specific issues and receive daily digest emails when bills progress through legislative stages or related committee meetings are scheduled.
+
+### Technical Approach
+- **Event Detection**: Poll Airtable for bill stage changes and new meetings
+- **Notification Service**: Cloud Run service triggered by Cloud Scheduler
+- **Email Delivery**: SendGrid for reliable email delivery with tracking
+- **Frontend**: Watch button on issue pages + header quick-watch modal
+
+#### T124 - Database Schema & Event Detection ⏳ PENDING
+**Objective**: Create subscription and event tracking tables with change detection
+**Acceptance Criteria**:
+- [ ] `subscriptions` table with email validation and confirmation flow
+- [ ] `issue_events` table with fingerprint-based deduplication
+- [ ] Event detection logic for bill stage changes and meeting creation
+- [ ] Idempotency handling to prevent duplicate notifications
+
+**Files**: `services/api-gateway/src/models/notifications.py`  
+**Estimate**: 8 hours  
+**Dependencies**: Existing Airtable schema
+
+#### T125 - Notifications Worker Service ⏳ PENDING  
+**Objective**: Build scheduled service for daily notification processing
+**Acceptance Criteria**:
+- [ ] Cloud Run service with Cloud Scheduler integration
+- [ ] Event aggregation and user grouping logic
+- [ ] SendGrid integration with rate limiting (≤100 emails/min)
+- [ ] Email template system using MJML → HTML compilation
+- [ ] Error handling and retry logic with exponential backoff
+
+**Files**: `services/notifications-worker/`, CI/CD pipeline  
+**Estimate**: 10 hours  
+**Dependencies**: T124
+
+#### T126 - Frontend Watch Components ⏳ PENDING
+**Objective**: Implement watch button and quick-watch modal with accessibility
+**Acceptance Criteria**:
+- [ ] Watch button component with multiple states (not watching/loading/watching/error)
+- [ ] Email input modal with validation and confirmation flow
+- [ ] Header quick-watch modal with issue search functionality
+- [ ] Toast notifications for user feedback
+- [ ] ARIA labels and focus management for accessibility compliance
+
+**Files**: `services/web-frontend/src/components/WatchButton.tsx`, modal components  
+**Estimate**: 8 hours  
+**Dependencies**: T124 API endpoints
+
+#### T127 - E2E Testing & Email Templates ⏳ PENDING
+**Objective**: Comprehensive testing and email template implementation
+**Acceptance Criteria**:
+- [ ] Playwright E2E tests for complete watch flow
+- [ ] Email template testing with preview generation
+- [ ] SendGrid webhook integration for delivery tracking
+- [ ] Performance testing for daily batch processing
+- [ ] Accessibility testing with automated tools
+
+**Files**: `tests/e2e/notification-flow.spec.ts`, email templates  
+**Estimate**: 6 hours  
+**Dependencies**: T124, T125, T126
+
+**EPIC 15 Summary:**
+- **Total Tickets**: 4
+- **Total Effort**: 32 hours
+- **Success Metrics**: >15% watch button click rate, >25% email open rate
+- **Risk Mitigation**: Email deliverability testing, graceful degradation for API failures
+
+---
+
+*Final Update: July 13, 2025*
 *EPIC 12 Added: July 11, 2025 - TOP Page Active Issues Horizontal Strip Implementation - UX Enhancement for Initial User Engagement*
+*EPIC 13 Added: July 12, 2025 - Data Quality Management & Permission Resolution - Critical Foundation for MVP*
+*EPIC 14 Added: July 13, 2025 - Hybrid Ingestion Pipeline - Cost-optimized historical data processing with NDL API integration*
+*EPIC 15 Added: July 13, 2025 - Issue Notification System MVP - Transform passive browsing into active political monitoring with email alerts*

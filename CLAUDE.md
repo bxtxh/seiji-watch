@@ -29,13 +29,29 @@ Architecture Decisions
 	•	Authentication: JWT tokens via api-gateway
 	•	Infrastructure: GCP (Cloud Run, Cloud SQL, Cloud Storage)
 
+### Notification Service (added 2025-07-13)
+	•	Scope: Issue progress alerts (bill stage change, committee meeting created)
+	•	Trigger Sources:
+	  • (A) bills.stage UPDATE (審議中→採決待ち/成立/否決)
+	  • (B) meetings INSERT matching issue_id
+	•	Delivery: Daily batch (22:00 JST) via SendGrid
+	•	UX: Watch button on issue page & header quick-watch modal
+	•	Future: (C) speech volume spike detection (Roadmap Phase 2)
+
 Service-Specific Guidelines
 
 diet-scraper
 	•	Purpose: Data collection from Diet websites
 	•	Tech Stack: Python + requests + BeautifulSoup + Scrapy
-	•	Data Sources: Diet bill pages (HTML), transcripts (TXT/PDF), Diet TV (HLS)
-	•	Rate Limiting: Respect robots.txt, 1-2 second delays between requests
+	•	Data Sources:
+	  • Diet bill pages (HTML), transcripts (TXT/PDF), Diet TV (HLS)
+	  • **National Diet Library Minutes API** for 第217回国会まで
+	    • Scope: meetings ≤ 2025-06-21
+	    • Rationale: STT コスト圧縮、メタ情報完備
+	  • Whisper/STT for meetings ≥ 2025-06-22 (≤24 h latency)
+	•	Rate Limiting: 
+	  • (1) NDL Minutes API—JSON download, polite rate-limit (≤3 req/s)
+	  • (2) Diet bill pages / transcripts / Diet TV (従来通り): 1-2 second delays, respect robots.txt
 	•	Error Handling: Retry logic with exponential backoff
 	•	Data Validation: WER ≤15% for speech recognition
 
@@ -107,6 +123,16 @@ web-frontend
 	•	Semantic search interface for bill and debate content
 	•	Personalized bill recommendations based on user interests
 	•	Real-time political agenda tracking and alerts
+
+notifications-worker
+	•	Purpose: Aggregate daily issue events & send emails  
+	•	Tech Stack: Python + SendGrid SDK  
+	•	Schedule: Cloud Scheduler → Cloud Run (`0 13 * * *` UTC)  
+	•	Data:
+	  • subscriptions(id, user_email, issue_id, confirmed_at, unsubscribed)  
+	  • issue_events(id, issue_id, event_type, event_payload, happened_at)  
+	•	Idempotency: fingerprint(event_type, payload) stored in issue_events  
+	•	Rate Limit: ≤100 emails/min (SendGrid free tier safe)
 
 Data & Legal Compliance
 	•	Copyright: Speech under Article 40, link to videos, code under MIT
@@ -252,7 +278,7 @@ Quick References
 
 ⸻
 
-Last updated: 2025-07-10
+Last updated: 2025-07-13
 Added Playwright MCP E2E testing section
 Added 3-Layer Issue Categorization System (CAP integration, hierarchical navigation)
 Update this file when making significant changes to project structure or decisions

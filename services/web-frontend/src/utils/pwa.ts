@@ -22,6 +22,20 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     return null;
   }
 
+  // Skip Service Worker registration in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Service Worker registration skipped in development mode');
+    
+    // Unregister any existing Service Worker in development
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for (const registration of registrations) {
+      await registration.unregister();
+      console.log('Unregistered Service Worker:', registration.scope);
+    }
+    
+    return null;
+  }
+
   try {
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/'

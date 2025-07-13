@@ -25,7 +25,7 @@ class PartyBase(BaseSchema):
     abbreviation: Optional[str] = Field(None, max_length=10)
     description: Optional[str] = None
     website_url: Optional[str] = Field(None, max_length=500)
-    color_code: Optional[str] = Field(None, regex=r"^#[0-9A-Fa-f]{6}$")
+    color_code: Optional[str] = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
 
 
 class PartyCreate(PartyBase):
@@ -48,12 +48,12 @@ class MemberBase(BaseSchema):
     name: str = Field(..., min_length=1, max_length=100)
     name_kana: Optional[str] = Field(None, max_length=200)
     name_en: Optional[str] = Field(None, max_length=200)
-    house: str = Field(..., regex=r"^(衆議院|参議院)$")
+    house: str = Field(..., pattern=r"^(衆議院|参議院)$")
     constituency: Optional[str] = Field(None, max_length=100)
     diet_member_id: Optional[str] = Field(None, max_length=50)
-    birth_date: Optional[str] = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
+    birth_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
     gender: Optional[str] = Field(None, max_length=10)
-    first_elected: Optional[str] = Field(None, regex=r"^\d{4}$")
+    first_elected: Optional[str] = Field(None, pattern=r"^\d{4}$")
     terms_served: Optional[int] = Field(None, ge=0)
     previous_occupations: Optional[str] = None
     education: Optional[str] = None
@@ -68,7 +68,7 @@ class MemberCreate(MemberBase):
 
 class MemberUpdate(MemberBase):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    house: Optional[str] = Field(None, regex=r"^(衆議院|参議院)$")
+    house: Optional[str] = Field(None, pattern=r"^(衆議院|参議院)$")
     party_id: Optional[int] = None
 
 
@@ -94,8 +94,8 @@ class BillBase(BaseSchema):
     category: Optional[BillCategory] = None
     bill_type: Optional[str] = Field(None, max_length=50)
     diet_session: Optional[str] = Field(None, max_length=20)
-    house_of_origin: Optional[str] = Field(None, regex=r"^(衆議院|参議院)$")
-    submitter_type: Optional[str] = Field(None, regex=r"^(government|member)$")
+    house_of_origin: Optional[str] = Field(None, pattern=r"^(衆議院|参議院)$")
+    submitter_type: Optional[str] = Field(None, pattern=r"^(government|member)$")
     sponsoring_ministry: Optional[str] = Field(None, max_length=100)
     diet_url: Optional[str] = Field(None, max_length=500)
     pdf_url: Optional[str] = Field(None, max_length=500)
@@ -125,7 +125,7 @@ class BillUpdate(BillBase):
     tags: Optional[List[str]] = None
     impact_assessment: Optional[Dict[str, Any]] = None
     is_controversial: Optional[bool] = None
-    priority_level: Optional[str] = Field(None, regex=r"^(high|normal|low)$")
+    priority_level: Optional[str] = Field(None, pattern=r"^(high|normal|low)$")
 
 
 class BillResponse(BillBase):
@@ -159,7 +159,7 @@ class MeetingBase(BaseSchema):
     meeting_type: str = Field(..., max_length=50)
     committee_name: Optional[str] = Field(None, max_length=200)
     diet_session: str = Field(..., max_length=20)
-    house: str = Field(..., regex=r"^(衆議院|参議院)$")
+    house: str = Field(..., pattern=r"^(衆議院|参議院)$")
     session_number: Optional[int] = Field(None, ge=1)
     meeting_date: datetime
     start_time: Optional[datetime] = None
@@ -184,7 +184,7 @@ class MeetingUpdate(MeetingBase):
     title: Optional[str] = Field(None, min_length=1, max_length=500)
     meeting_type: Optional[str] = Field(None, max_length=50)
     diet_session: Optional[str] = Field(None, max_length=20)
-    house: Optional[str] = Field(None, regex=r"^(衆議院|参議院)$")
+    house: Optional[str] = Field(None, pattern=r"^(衆議院|参議院)$")
     meeting_date: Optional[datetime] = None
     agenda: Optional[List[str]] = None
     documents_urls: Optional[List[str]] = None
@@ -214,7 +214,7 @@ class SpeechBase(BaseSchema):
     duration_seconds: Optional[int] = Field(None, ge=0)
     speaker_name: Optional[str] = Field(None, max_length=200)
     speaker_title: Optional[str] = Field(None, max_length=200)
-    speaker_type: str = Field(default="member", regex=r"^(member|minister|official|other)$")
+    speaker_type: str = Field(default="member", pattern=r"^(member|minister|official|other)$")
     original_text: str = Field(..., min_length=1)
     cleaned_text: Optional[str] = None
     speech_type: Optional[str] = Field(None, max_length=50)
@@ -237,7 +237,7 @@ class SpeechUpdate(SpeechBase):
     summary: Optional[str] = None
     key_points: Optional[List[str]] = None
     topics: Optional[List[str]] = None
-    sentiment: Optional[str] = Field(None, regex=r"^(positive|negative|neutral)$")
+    sentiment: Optional[str] = Field(None, pattern=r"^(positive|negative|neutral)$")
     stance: Optional[str] = Field(None, max_length=50)
     is_processed: Optional[bool] = None
     needs_review: Optional[bool] = None
@@ -265,9 +265,9 @@ class SpeechResponse(SpeechBase):
 
 # Vote schemas
 class VoteBase(BaseSchema):
-    vote_result: str = Field(..., regex=r"^(yes|no|abstain|absent|present)$")
+    vote_result: str = Field(..., pattern=r"^(yes|no|abstain|absent|present)$")
     vote_date: datetime
-    house: str = Field(..., regex=r"^(衆議院|参議院)$")
+    house: str = Field(..., pattern=r"^(衆議院|参議院)$")
     vote_type: str = Field(..., max_length=50)
     vote_stage: Optional[str] = Field(None, max_length=50)
     committee_name: Optional[str] = Field(None, max_length=200)

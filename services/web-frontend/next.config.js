@@ -14,7 +14,7 @@ const nextConfig = {
       return [
         {
           source: '/api/:path*',
-          destination: 'http://127.0.0.1:8001/api/:path*',
+          destination: 'http://127.0.0.1:8000/api/:path*',
         },
       ];
     }
@@ -38,7 +38,7 @@ const nextConfig = {
   
   // Environment variables
   env: {
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001',
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000',
   },
   
   // Performance optimization
@@ -143,7 +143,7 @@ const nextConfig = {
           "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https: blob:",
           "font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com",
-          "connect-src 'self' http://localhost:8001 http://localhost:8080 https://www.sangiin.go.jp",
+          "connect-src 'self' http://localhost:8000 http://localhost:8080 https://www.sangiin.go.jp",
           "media-src 'self'",
           "object-src 'none'",
           "child-src 'none'",

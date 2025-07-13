@@ -11,7 +11,7 @@ import {
 } from '@/utils/security';
 import { observability } from '@/lib/observability';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // Rate limiter for API requests (development: increased for frequent health checks)
 const apiRateLimiter = new RateLimiter(60000, 1000);
@@ -26,7 +26,7 @@ class ApiClient {
       this.baseUrl = baseUrl;
     } catch (error) {
       console.warn(`Invalid API base URL: ${baseUrl}, using default`);
-      this.baseUrl = 'http://localhost:8001';
+      this.baseUrl = 'http://localhost:8080';
     }
   }
 
@@ -174,33 +174,41 @@ class ApiClient {
       
       // Define the actual API response type
       interface ApiSearchResponse {
+        success: boolean;
         results: any[];
         query: string;
-        total: number;
-        limit: number;
-        offset: number;
-        has_more: boolean;
+        total_found: number;
+        search_method: string;
       }
 
-      const apiResponse = await this.request<ApiSearchResponse>(`/search?${queryParams}`, {
-        method: 'GET',
+      const apiResponse = await this.request<ApiSearchResponse>(`/search`, {
+        method: 'POST',
+        body: JSON.stringify({
+          query: sanitizedQuery,
+          limit: sanitizedLimit,
+          offset: 0
+        }),
       });
 
       // Convert API response to expected SearchResult format
       const result: SearchResult = {
         success: true,
-        message: `Found ${apiResponse.total} results for "${sanitizedQuery}"`,
-        results: apiResponse.results.map((item: any) => ({
-          bill_number: item.id || '',
-          title: item.title || '',
-          summary: item.type === 'voting_session' ? `投票日: ${item.vote_date || 'N/A'}, 総投票数: ${item.total_votes || 0}` : '',
-          category: item.category || '',
-          status: item.type === 'voting_session' ? '採決済み' : '審議中',
-          diet_url: item.url || '',
-          relevance_score: item.relevance || 1.0,
-          search_method: 'api'
-        })),
-        total_found: apiResponse.total
+        message: `Found ${apiResponse.total_found} results for "${sanitizedQuery}"`,
+        results: apiResponse.results.map((item: any) => {
+          console.log('Mapping API item:', item);
+          return {
+            id: item.bill_id || '',  // Use bill_id from airtable response
+            bill_number: item.bill_id || '',
+            title: item.title || '',
+            summary: item.summary || '',
+            category: item.category || '',
+            status: item.status || '審議中',
+            diet_url: item.url || '',
+            relevance_score: item.relevance_score || 1.0,
+            search_method: item.search_method || 'airtable'
+          };
+        }),
+        total_found: apiResponse.total_found
       };
 
       // Record search metrics
@@ -417,6 +425,90 @@ class ApiClient {
         regenerate
       }),
     });
+  }
+
+  // Get bills list
+  async getBills(
+    maxRecords: number = 100,
+    category?: string
+  ): Promise<{
+    success: boolean;
+    data: any[];
+    count: number;
+    source: string;
+    message?: string;
+  }> {
+    try {
+      const params = new URLSearchParams({
+        max_records: Math.min(Math.max(1, Math.floor(maxRecords)), 1000).toString()
+      });
+      
+      if (category) {
+        params.append('category', sanitizeInput(category, 100));
+      }
+      
+      return await this.request(`/api/bills?${params}`);
+    } catch (error) {
+      console.warn('API Gateway bills failed, using mock response:', error);
+      // Development fallback
+      return {
+        success: true,
+        data: [
+          {
+            id: 'mock-1',
+            fields: {
+              Name: 'Mock Bill 1 - API Gateway接続待ち',
+              Notes: 'Real data integration test pending',
+              Status: 'API接続確認中',
+              Category: 'テストデータ',
+              Title: 'Mock Bill 1',
+              Summary: 'This is mock data while API Gateway connection is being established.'
+            }
+          }
+        ],
+        count: 1,
+        source: 'mock_fallback',
+        message: 'API Gateway connection failed - using mock data'
+      };
+    }
+  }
+
+  // Get bill detail
+  async getBillDetail(billId: string): Promise<{
+    success: boolean;
+    data: any;
+    source: string;
+    message?: string;
+  }> {
+    try {
+      const sanitizedId = sanitizeInput(billId, 50);
+      return await this.request(`/api/bills/${sanitizedId}`);
+    } catch (error) {
+      console.warn('API Gateway bill detail failed, using mock response:', error);
+      // Development fallback
+      return {
+        success: true,
+        data: {
+          id: billId,
+          fields: {
+            Name: 'Mock Bill Detail - API Gateway接続待ち',
+            Notes: 'Real data integration test pending for bill details',
+            Status: 'API接続確認中',
+            Category: 'テストデータ',
+            Title: 'Mock Bill Detail',
+            Summary: 'This is mock data while API Gateway connection is being established.',
+            Full_Content: 'Complete bill content would appear here once API Gateway connection is established.'
+          },
+          metadata: {
+            source: 'mock_fallback',
+            last_updated: new Date().toISOString(),
+            record_id: billId
+          }
+        },
+        source: 'mock_fallback',
+        message: 'API Gateway connection failed - using mock data'
+      };
+    }
   }
 }
 

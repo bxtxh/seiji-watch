@@ -5,7 +5,11 @@ from .bill import Bill, BillStatus, BillCategory
 from .meeting import Meeting, Speech
 from .member import Member, Party
 from .vote import Vote, VoteResult
-from .issue import Issue, IssueTag
+from .issue import Issue, IssueTag, IssueCategory
+
+# Legacy aliases for backward compatibility
+Base = BaseRecord
+TimestampMixin = BaseRecord
 
 __all__ = [
     "BaseRecord",
@@ -21,4 +25,8 @@ __all__ = [
     "VoteResult",
     "Issue",
     "IssueTag",
+    "IssueCategory",
+    # Legacy aliases
+    "Base",
+    "TimestampMixin",
 ]

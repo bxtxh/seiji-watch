@@ -5,7 +5,7 @@ from typing import Generator
 from sqlalchemy import create_engine as sa_create_engine, Engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from ..models.base import Base
+from ..models.base import BaseRecord as Base
 
 
 def get_database_url() -> str:

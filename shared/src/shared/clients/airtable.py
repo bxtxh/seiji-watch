@@ -14,16 +14,16 @@ logger = logging.getLogger(__name__)
 class AirtableClient:
     """Async Airtable client for Diet Issue Tracker data management."""
     
-    def __init__(self, api_key: Optional[str] = None, base_id: Optional[str] = None):
-        self.api_key = api_key or os.getenv("AIRTABLE_API_KEY")
+    def __init__(self, pat: Optional[str] = None, base_id: Optional[str] = None):
+        self.pat = pat or os.getenv("AIRTABLE_PAT")
         self.base_id = base_id or os.getenv("AIRTABLE_BASE_ID")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         
-        if not self.api_key or not self.base_id:
-            raise ValueError("Airtable API key and base ID are required")
+        if not self.pat or not self.base_id:
+            raise ValueError("Airtable PAT and base ID are required")
         
         self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.pat}",
             "Content-Type": "application/json"
         }
         
@@ -186,7 +186,7 @@ class AirtableClient:
     # Bills table operations
     async def create_bill(self, bill_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new bill record."""
-        url = f"{self.base_url}/Bills"
+        url = f"{self.base_url}/Bills (法案)"
         data = {
             "fields": {
                 "Bill_Number": bill_data["bill_number"],
@@ -229,13 +229,13 @@ class AirtableClient:
     
     async def get_bill(self, record_id: str) -> Dict[str, Any]:
         """Get a bill record by ID."""
-        url = f"{self.base_url}/Bills/{record_id}"
+        url = f"{self.base_url}/Bills (法案)/{record_id}"
         return await self._rate_limited_request("GET", url)
     
     async def list_bills(self, filter_formula: Optional[str] = None,
                         max_records: int = 100) -> List[Dict[str, Any]]:
         """List bill records with optional filtering."""
-        url = f"{self.base_url}/Bills"
+        url = f"{self.base_url}/Bills (法案)"
         params = {"maxRecords": max_records}
         if filter_formula:
             params["filterByFormula"] = filter_formula
@@ -494,7 +494,7 @@ class AirtableClient:
     # Votes table operations
     async def create_vote(self, vote_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new vote record."""
-        url = f"{self.base_url}/Votes"
+        url = f"{self.base_url}/Votes (投票)"
         data = {
             "fields": {
                 "Vote_Result": vote_data["vote_result"],
@@ -529,13 +529,13 @@ class AirtableClient:
     
     async def get_vote(self, record_id: str) -> Dict[str, Any]:
         """Get a vote record by ID."""
-        url = f"{self.base_url}/Votes/{record_id}"
+        url = f"{self.base_url}/Votes (投票)/{record_id}"
         return await self._rate_limited_request("GET", url)
     
     async def list_votes(self, filter_formula: Optional[str] = None,
                         max_records: int = 100) -> List[Dict[str, Any]]:
         """List vote records with optional filtering."""
-        url = f"{self.base_url}/Votes"
+        url = f"{self.base_url}/Votes (投票)"
         params = {"maxRecords": max_records}
         if filter_formula:
             params["filterByFormula"] = filter_formula

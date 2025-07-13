@@ -89,6 +89,21 @@ class LimitedScrapeCoordinator:
             enable_embeddings=True  # Enable embeddings for search testing
         )
     
+    def get_june_full_month_target(self) -> ScrapeTarget:
+        """Get target configuration for June 2025 full month (production)"""
+        start_date = datetime(2025, 6, 1)  # June 1st
+        end_date = datetime(2025, 6, 30)   # June 30th
+        
+        return ScrapeTarget(
+            start_date=start_date,
+            end_date=end_date,
+            max_bills=200,          # Increased for full month
+            max_voting_sessions=50, # Increased for full month
+            max_speeches=500,       # Increased for full month
+            enable_stt=True,        # Enable STT for production
+            enable_embeddings=True  # Enable embeddings for search
+        )
+    
     async def execute_limited_scraping(
         self, 
         target: Optional[ScrapeTarget] = None,

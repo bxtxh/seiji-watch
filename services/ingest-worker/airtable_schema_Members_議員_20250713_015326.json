@@ -1,0 +1,176 @@
+{
+  "table_name": "Members (議員)",
+  "inspection_date": "2025-07-13T01:53:26.636851",
+  "schema_info": {
+    "total_records_analyzed": 5,
+    "total_fields": 11,
+    "fields": {
+      "Constituency": {
+        "appears_in_records": 5,
+        "sample_values": [
+          "愛知県第8区",
+          "群馬県第3区",
+          "比例代表"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 6
+      },
+      "Attachment Summary": {
+        "appears_in_records": 5,
+        "sample_values": [
+          {
+            "state": "error",
+            "errorType": "emptyDependency",
+            "value": null,
+            "isStale": false
+          },
+          {
+            "state": "error",
+            "errorType": "emptyDependency",
+            "value": null,
+            "isStale": false
+          },
+          {
+            "state": "error",
+            "errorType": "emptyDependency",
+            "value": null,
+            "isStale": false
+          }
+        ],
+        "value_types": [
+          "object"
+        ],
+        "is_empty_count": 0,
+        "max_length": 0
+      },
+      "Party": {
+        "appears_in_records": 5,
+        "sample_values": [
+          [
+            "recCDHiYIQyryxD6n"
+          ],
+          [
+            "recCDHiYIQyryxD6n"
+          ],
+          [
+            "rec3oFn6eoeceEWIp"
+          ]
+        ],
+        "value_types": [
+          "attachment",
+          "array"
+        ],
+        "is_empty_count": 0,
+        "max_length": 0
+      },
+      "Name": {
+        "appears_in_records": 5,
+        "sample_values": [
+          "池田三郎",
+          "西村誠4",
+          "畑野君枝"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 4
+      },
+      "Is_Active": {
+        "appears_in_records": 5,
+        "sample_values": [
+          true,
+          true,
+          true
+        ],
+        "value_types": [
+          "number"
+        ],
+        "is_empty_count": 0,
+        "max_length": 0
+      },
+      "Updated_At": {
+        "appears_in_records": 5,
+        "sample_values": [
+          "2025-07-12T15:56:59.586Z",
+          "2025-07-12T15:58:37.332Z",
+          "2025-07-12T16:21:25.599Z"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 24
+      },
+      "Name_Kana": {
+        "appears_in_records": 4,
+        "sample_values": [
+          "たなかたろう",
+          "たなかたろう",
+          "たなかたろう"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 6
+      },
+      "Created_At": {
+        "appears_in_records": 5,
+        "sample_values": [
+          "2025-07-12T15:56:59.586Z",
+          "2025-07-12T15:58:37.332Z",
+          "2025-07-12T16:21:25.599Z"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 24
+      },
+      "House": {
+        "appears_in_records": 5,
+        "sample_values": [
+          "衆議院",
+          "衆議院",
+          "参議院"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 3
+      },
+      "Terms_Served": {
+        "appears_in_records": 5,
+        "sample_values": [
+          5,
+          6,
+          1
+        ],
+        "value_types": [
+          "number"
+        ],
+        "is_empty_count": 0,
+        "max_length": 0
+      },
+      "First_Elected": {
+        "appears_in_records": 4,
+        "sample_values": [
+          "2009",
+          "2022",
+          "2006"
+        ],
+        "value_types": [
+          "string"
+        ],
+        "is_empty_count": 0,
+        "max_length": 4
+      }
+    }
+  },
+  "test_results": {}
+}

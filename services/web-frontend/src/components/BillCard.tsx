@@ -58,7 +58,8 @@ export default function BillCard({ bill }: BillCardProps) {
     }
   };
 
-  const getCategoryBadgeClass = (category: string) => {
+  const getCategoryBadgeClass = (category: string | undefined) => {
+    if (!category) return 'bg-gray-100 text-gray-800';
     switch (category.toLowerCase()) {
       case 'budget':
       case '予算・決算':
@@ -91,7 +92,8 @@ export default function BillCard({ bill }: BillCardProps) {
     return statusMap[status.toLowerCase()] || status;
   };
 
-  const formatCategory = (category: string) => {
+  const formatCategory = (category: string | undefined) => {
+    if (!category) return 'その他';
     const categoryMap: { [key: string]: string } = {
       'budget': '予算・決算',
       'taxation': '税制',

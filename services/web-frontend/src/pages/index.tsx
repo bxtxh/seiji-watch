@@ -2,17 +2,31 @@ import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import SearchInterface from '@/components/SearchInterface';
 import KanbanBoard from '@/components/KanbanBoard';
-import ActiveIssuesStrip from '@/components/ActiveIssuesStrip';
 
 export default function Home() {
-  const [systemStatus, setSystemStatus] = useState<{
-    isHealthy: boolean;
-    message: string;
-    stats?: {
-      bills: number;
-      speeches: number;
+  const [showSystemError, setShowSystemError] = useState(false);
+
+  useEffect(() => {
+    const checkSystemHealth = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/health', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          setShowSystemError(true);
+        }
+      } catch (error) {
+        console.error('System health check failed:', error);
+        setShowSystemError(true);
+      }
     };
-  }>({ isHealthy: true, message: 'システムは正常に動作しています' });
+
+    checkSystemHealth();
+    const interval = setInterval(checkSystemHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Layout>
@@ -30,24 +44,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* System Status */}
-        <div className={`card-elevated ${systemStatus.isHealthy ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-green-800">
-                {systemStatus.message}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Active Issues Strip - EPIC 12 T102 */}
-        <ActiveIssuesStrip />
 
         {/* Features Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stagger-children">
@@ -143,6 +140,37 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* System Error Popup */}
+        {showSystemError && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+              <div className="flex items-center mb-4">
+                <svg className="h-6 w-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.966-.833-2.736 0L3.077 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-900">システム通知</h3>
+              </div>
+              <p className="text-gray-700 mb-4">
+                システムが一時的に動作しておりません。しばらく時間をおいてから再度お試しください。
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowSystemError(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  閉じる
+                </button>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  再読み込み
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

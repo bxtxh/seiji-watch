@@ -1,0 +1,157 @@
+{
+  "backup_date": "2025-07-13T16:48:50.250547",
+  "perfection_phase": "final",
+  "records_to_fix": 15,
+  "fixes": [
+    {
+      "id": "rec9Wrkn2yrpwadmt",
+      "name": "舞立昇治",
+      "current_kana": "まいりつしょうじ",
+      "correct_kana": "まいたてしょうじ",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'まいたてしょうじ', currently 'まいりつしょうじ'",
+      "house": "参議院",
+      "constituency": "鳥取県"
+    },
+    {
+      "id": "recE0GvbEelX3f8N1",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "correct_kana": "たなかたろう",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "衆議院",
+      "constituency": "東京都第6区"
+    },
+    {
+      "id": "recHekrrCRSgNnEnz",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "correct_kana": "たなかたろう",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "衆議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recQmBBlLpiPpiyvd",
+      "name": "朝日健太郎",
+      "current_kana": "けんたろう",
+      "correct_kana": "あさひけんたろう",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'あさひけんたろう', currently 'けんたろう'",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recSgc697clje1vSt",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "correct_kana": "たなかたろう",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "衆議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recSsnZyLq4UMWsZl",
+      "name": "塩田博昭",
+      "current_kana": "しおだひろあき",
+      "correct_kana": "しおたひろあき",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'しおたひろあき', currently 'しおだひろあき'",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recYPEeoySMwaOSV2",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "correct_kana": "たなかたろう",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "衆議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recZTo6hNTkYqlQpw",
+      "name": "羽生田俊",
+      "current_kana": "たなかたろう",
+      "correct_kana": "はにゅうだたかし",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recgMG7QHXZqsSVyZ",
+      "name": "片山虎之助",
+      "current_kana": "ゆきすけ",
+      "correct_kana": "かたやまとらのすけ",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'かたやまとらのすけ', currently 'ゆきすけ'",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "rechOCkymSYPimpHR",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "correct_kana": "たなかたろう",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "衆議院",
+      "constituency": "鹿児島県第11区"
+    },
+    {
+      "id": "recjNvOjUEByySSqL",
+      "name": "熊野正士",
+      "current_kana": "のただし",
+      "correct_kana": "くまのまさし",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'くまのまさし', currently 'のただし'",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "rectpAyNtw5yyUJpT",
+      "name": "岩本剛人",
+      "current_kana": "もとつよし",
+      "correct_kana": "いわもとたけと",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'いわもとたけと', currently 'もとつよし'",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recuxNzL4TnXkedtc",
+      "name": "藤川政人",
+      "current_kana": "たなかたろう",
+      "correct_kana": "ふじかわまさひと",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "参議院",
+      "constituency": "愛知県"
+    },
+    {
+      "id": "recvnJZKL1fwyU7na",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "correct_kana": "たなかたろう",
+      "issue_type": "placeholder",
+      "reason": "Contains placeholder pattern: たなかたろう",
+      "house": "衆議院",
+      "constituency": "長野県第11区"
+    },
+    {
+      "id": "reczpry3O4BUdC2g3",
+      "name": "魚住裕一郎",
+      "current_kana": "いちろう",
+      "correct_kana": "うおずみゆういちろう",
+      "issue_type": "needs_correction",
+      "reason": "Should be 'うおずみゆういちろう', currently 'いちろう'",
+      "house": "参議院",
+      "constituency": "比例代表"
+    }
+  ]
+}

@@ -27,9 +27,9 @@ export default function SearchInterface() {
     duration?: number;
   } | null>(null);
 
-  // Security hooks
-  const secureForm = useSecureForm();
-  const { logSecurityEvent } = useSecurityLogger();
+  // Security hooks (client-side only)
+  const secureForm = typeof window !== 'undefined' ? useSecureForm() : null;
+  const { logSecurityEvent } = typeof window !== 'undefined' ? useSecurityLogger() : { logSecurityEvent: () => {} };
   
   // Observability hooks
   const { recordInteraction, recordError, recordMetric, startTimer } = useObservability();
@@ -93,7 +93,7 @@ export default function SearchInterface() {
     }
 
     // Security check: ensure secure form is ready
-    if (!secureForm.isReady) {
+    if (!secureForm || !secureForm.isReady) {
       setError('セキュリティの初期化中です。しばらくお待ちください。');
       stopTimer();
       return;
@@ -105,6 +105,8 @@ export default function SearchInterface() {
 
     try {
       const response: SearchResult = await apiClient.searchBills(sanitizedQuery, 20);
+      
+      console.log('Search response:', response);
       
       if (response.success) {
         const duration = Date.now() - startTime;

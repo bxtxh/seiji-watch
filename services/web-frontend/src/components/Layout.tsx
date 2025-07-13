@@ -10,8 +10,8 @@ interface LayoutProps {
 
 export default function Layout({
   children,
-  title = '国会議事録検索システム',
-  description = '国会の法案や議事録を簡単に検索・閲覧できるシステムです。',
+  title = '政治ウォッチ！',
+  description = '国会で議論されていることをAIによって分析・整理し、社会課題をわかりやすく届けます。',
 }: LayoutProps) {
   // Furigana state - feature disabled for initial release
   // To enable: Set NEXT_PUBLIC_ENABLE_FURIGANA=true in .env.local
@@ -35,7 +35,7 @@ export default function Layout({
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:site_name" content="国会議事録検索システム" />
+        <meta property="og:site_name" content="政治ウォッチ！" />
         
         {/* Accessibility */}
         <meta name="color-scheme" content="light" />
@@ -52,7 +52,7 @@ export default function Layout({
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <h1 className="text-xl font-bold text-gray-900">
-                    国会議事録検索
+                    政治ウォッチ！
                   </h1>
                 </div>
                 
@@ -88,6 +88,45 @@ export default function Layout({
                   >
                     イシュー
                   </a>
+                  
+                  {/* Legal dropdown */}
+                  <div className="relative group">
+                    <button
+                      type="button"
+                      className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium inline-flex items-center"
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                    >
+                      法的情報
+                      <svg
+                        className="ml-1 h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    <div className="absolute left-0 mt-1 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                      <div className="bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                        <div className="py-1">
+                          <a
+                            href="/terms"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                          >
+                            利用規約
+                          </a>
+                          <a
+                            href="/privacy"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                          >
+                            プライバシーポリシー
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </nav>
               </div>
 
@@ -119,23 +158,95 @@ export default function Layout({
         </main>
 
         {/* Footer */}
-        <footer className="bg-white border-t border-gray-200 mt-16">
+        <footer className="bg-gray-50 border-t border-gray-200 mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center text-sm text-gray-600">
-              <p>
-                &copy; 2025 国会議事録検索システム. オープンソースプロジェクト.
-              </p>
-              <p className="mt-2">
-                データは{' '}
+            {/* Header with Logo */}
+            <div className="flex items-center mb-6">
+              <div className="flex items-center">
+                {/* Logo placeholder - デザイン未定 */}
+                <div className="w-8 h-8 mr-3">
+                  {/* 将来のロゴがここに入ります */}
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  政治ウォッチ
+                </h2>
+              </div>
+            </div>
+
+            {/* Navigation Links */}
+            <div className="mb-6">
+              <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
                 <a
-                  href="https://www.sangiin.go.jp/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-green hover:underline"
+                  href="/"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
-                  参議院ウェブサイト
-                </a>{' '}
-                から取得しています。
+                  法案検索
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/speeches"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  発言検索
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/members"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  議員一覧
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/issues/categories"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  政策分野
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/issues"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  イシュー
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/terms"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  利用規約
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/privacy"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  プライバシーポリシー
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="/about-data"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  データについて
+                </a>
+              </nav>
+            </div>
+
+            {/* Description */}
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 leading-relaxed max-w-4xl">
+                政治ウォッチは、国会議案の透明性向上と市民の政治参加促進を目的とした情報プラットフォームです。<br />
+                正確で詳細な政治情報をわかりやすく提供し、民主主義の発展に貢献します。<br />
+                システムに関するお問い合わせ、改善要望は、{' '}
+                <a
+                  href="mailto:contact@politics-watch.jp"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  contact@politics-watch.jp
+                </a>
+                {' '}までお願いします。
               </p>
             </div>
           </div>

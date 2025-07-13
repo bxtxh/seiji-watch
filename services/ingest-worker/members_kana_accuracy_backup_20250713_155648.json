@@ -1,0 +1,258 @@
+{
+  "backup_date": "2025-07-13T15:56:48.370340",
+  "records_to_fix": 28,
+  "corrections": [
+    {
+      "id": "rec5FZ1Do4VRjghky",
+      "name": "杉尾秀哉",
+      "current_kana": "すぎおしゅうや",
+      "new_kana": "すぎおひでや",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "長野県"
+    },
+    {
+      "id": "rec6Y9evIbxcqFS2Z",
+      "name": "西村康稔",
+      "current_kana": "にしむらやすしみのる",
+      "new_kana": "にしむらやすとし",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "兵庫県"
+    },
+    {
+      "id": "rec7gH72DFdrvmCPf",
+      "name": "中村明",
+      "current_kana": "なかむらめい",
+      "new_kana": "なかむらあきら",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "愛媛県第8区"
+    },
+    {
+      "id": "rec9jbCCmumRi5VbN",
+      "name": "森次郎",
+      "current_kana": "もりつぐろう",
+      "new_kana": "もりじろう",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "新潟県第2区"
+    },
+    {
+      "id": "recARwnpMCuSsmVs4",
+      "name": "斎藤正",
+      "current_kana": "さいとうせい",
+      "new_kana": "さいとうただし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "秋田県第9区"
+    },
+    {
+      "id": "recAVy1B1awXg4sdJ",
+      "name": "木村明",
+      "current_kana": "きむらめい",
+      "new_kana": "きむらあきら",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "熊本県第2区"
+    },
+    {
+      "id": "recAYTh828lTtR5BV",
+      "name": "斎藤正",
+      "current_kana": "さいとうせい",
+      "new_kana": "さいとうただし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "宮崎県第4区"
+    },
+    {
+      "id": "recBoBCsbBbGf9SrI",
+      "name": "森山裕",
+      "current_kana": "もりやまひろし",
+      "new_kana": "もりやまゆたか",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "鹿児島県"
+    },
+    {
+      "id": "recD4g9Mbg26qJgaL",
+      "name": "森次郎",
+      "current_kana": "もりつぐろう",
+      "new_kana": "もりじろう",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "大阪府第7区"
+    },
+    {
+      "id": "recD7y8xiXr1VD5SH",
+      "name": "木村明",
+      "current_kana": "きむらめい",
+      "new_kana": "きむらあきら",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "新潟県第12区"
+    },
+    {
+      "id": "recEFV272dbCg3YUs",
+      "name": "斎藤正",
+      "current_kana": "さいとうせい",
+      "new_kana": "さいとうただし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "群馬県第9区"
+    },
+    {
+      "id": "recIDOcmzkgAaDWSb",
+      "name": "木村明",
+      "current_kana": "きむらめい",
+      "new_kana": "きむらあきら",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recJHxQ2GNjRymImp",
+      "name": "斎藤正",
+      "current_kana": "さいとうせい",
+      "new_kana": "さいとうただし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "山梨県第4区"
+    },
+    {
+      "id": "recKRt5Dlze0kfyTU",
+      "name": "斎藤正",
+      "current_kana": "さいとうせい",
+      "new_kana": "さいとうただし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "鳥取県第9区"
+    },
+    {
+      "id": "recLgvu4kAxRYY4y8",
+      "name": "森次郎",
+      "current_kana": "もりつぐろう",
+      "new_kana": "もりじろう",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "静岡県第7区"
+    },
+    {
+      "id": "recM7ev2fNiaFM367",
+      "name": "甘利明",
+      "current_kana": "あまりめい",
+      "new_kana": "あまりあきら",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "神奈川県"
+    },
+    {
+      "id": "recU88KcCMGwF0Xqh",
+      "name": "木村明",
+      "current_kana": "きむらめい",
+      "new_kana": "きむらあきら",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recXbRw5Z1xB0QTXl",
+      "name": "西村誠",
+      "current_kana": "やまだ",
+      "new_kana": "にしむらまこと",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "石川県第8区"
+    },
+    {
+      "id": "recXdRPyDsyR2KJ0i",
+      "name": "羽田雄一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はたゆういちろう",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "長野県"
+    },
+    {
+      "id": "reccbMZGPcj0DjtWW",
+      "name": "西村誠",
+      "current_kana": "やまだ",
+      "new_kana": "にしむらまこと",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "徳島県第3区"
+    },
+    {
+      "id": "recfGGb4wUMDs6mIn",
+      "name": "山口茂",
+      "current_kana": "やまだ",
+      "new_kana": "やまぐちしげる",
+      "fix_type": "placeholder_fix",
+      "house": "衆議院",
+      "constituency": "大分県第4区"
+    },
+    {
+      "id": "recfUiuD7QjQRykuf",
+      "name": "今井絵理子",
+      "current_kana": "たなかたろう",
+      "new_kana": "いまいえりこ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "沖縄県"
+    },
+    {
+      "id": "recn8CTB00arIU9I8",
+      "name": "西村誠",
+      "current_kana": "やまだ",
+      "new_kana": "にしむらまこと",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "鳥取県第3区"
+    },
+    {
+      "id": "recrHqTlBrlB4EHbF",
+      "name": "稲田朋美",
+      "current_kana": "たなかたろう",
+      "new_kana": "いなだともみ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "福井県"
+    },
+    {
+      "id": "rectr5XG229FZGUP8",
+      "name": "西村誠",
+      "current_kana": "やまだ",
+      "new_kana": "にしむらまこと",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "愛媛県第8区"
+    },
+    {
+      "id": "recwOHJ9i1xowZhgH",
+      "name": "橋本聖子",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもとせいこ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recwkHT8iPUiEpHAy",
+      "name": "高市早苗",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかいちさなえ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "奈良県"
+    },
+    {
+      "id": "reczqXYoNu6HuqRJO",
+      "name": "山口茂",
+      "current_kana": "やまだ",
+      "new_kana": "やまぐちしげる",
+      "fix_type": "placeholder_fix",
+      "house": "衆議院",
+      "constituency": "大阪府第4区"
+    }
+  ]
+}

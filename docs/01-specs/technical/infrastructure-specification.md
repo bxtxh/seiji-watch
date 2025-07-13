@@ -28,9 +28,16 @@ The system follows a microservices architecture with three core services:
 ### Data Architecture
 
 **Structured Data (Airtable)**
-- Bills, Members, Sessions, Votes
-- Relational queries and structured data management
-- REST API integration
+- Bills (法案): Legislative bills and proposals
+- Members (議員): Diet members with political affiliations
+- Speeches (発言): Parliamentary speeches and statements
+- Issues (課題): Policy issues extracted via LLM analysis
+- Votes (投票): Voting records and outcomes
+- Parties (政党): Political party information
+- Meetings (会議): Parliamentary session data
+- IssueTags (課題タグ): Issue classification tags
+- IssueCategories (課題カテゴリ): 3-layer CAP-based categorization
+- REST API integration with Personal Access Token (PAT) authentication
 
 **Vector Data (Weaviate Cloud)**
 - Speech embeddings and semantic search
@@ -53,7 +60,7 @@ The system follows a microservices architecture with three core services:
   - CPU: 1 vCPU
   - Memory: 512Mi
 - **Environment Variables**:
-  - `AIRTABLE_API_KEY` (from Secret Manager)
+  - `AIRTABLE_PAT` (Personal Access Token, from Secret Manager)
   - `AIRTABLE_BASE_ID` (from Secret Manager)
   - `OPENAI_API_KEY` (from Secret Manager)
   - `WEAVIATE_API_KEY` (from Secret Manager)
@@ -89,7 +96,7 @@ All sensitive configuration managed through Secret Manager:
 
 | Secret Name | Purpose |
 |-------------|---------|
-| `seiji-watch-airtable-api-key-dev` | Airtable API authentication |
+| `seiji-watch-airtable-pat-dev` | Airtable Personal Access Token authentication |
 | `seiji-watch-airtable-base-id-dev` | Airtable base identifier |
 | `seiji-watch-openai-api-key-dev` | OpenAI API authentication |
 | `seiji-watch-weaviate-api-key-dev` | Weaviate Cloud authentication |
@@ -191,9 +198,20 @@ All sensitive configuration managed through Secret Manager:
 
 ### Airtable Integration
 - **API Version**: v0
+- **Authentication**: Personal Access Token (PAT) - replacing deprecated API keys
 - **Base ID**: Stored in Secret Manager
-- **Tables**: Bills, Members, Sessions, Speeches, Votes
-- **Rate Limiting**: 5 requests/second per base
+- **Tables**: 
+  - Bills (法案): 20+ records with legislative proposals
+  - Members (議員): 50+ records with complete political profiles
+  - Speeches (発言): 100+ records with AI analysis metadata
+  - Issues (課題): 70+ records with LLM-extracted policy issues
+  - Votes (投票): Voting record data
+  - Parties (政党): 8 active political parties
+  - Meetings (会議): Parliamentary session metadata
+  - IssueTags (課題タグ): Issue classification system
+  - IssueCategories (課題カテゴリ): 3-layer CAP-based categorization
+- **Rate Limiting**: 5 requests/second per base with 300ms spacing
+- **Schema Management**: Custom fields added programmatically via metadata API
 
 ### Weaviate Cloud
 - **Cluster URL**: Stored in Secret Manager
@@ -285,9 +303,10 @@ All sensitive configuration managed through Secret Manager:
 ## Maintenance
 
 ### Regular Tasks
-- **Monthly**: Review and rotate secrets
-- **Quarterly**: Update container base images
-- **Bi-annually**: Review IAM permissions
+- **Weekly**: Monitor data collection pipeline health
+- **Monthly**: Review and rotate secrets, analyze data quality metrics
+- **Quarterly**: Update container base images, review Airtable schema changes
+- **Bi-annually**: Review IAM permissions, optimize LLM analysis workflows
 - **Annually**: Architecture review and optimization
 
 ### Update Procedures
@@ -299,16 +318,28 @@ All sensitive configuration managed through Secret Manager:
 
 ## Future Improvements
 
+### Data Pipeline Enhancements
+- Implement real-time Diet website scraping
+- Add automated bill content analysis via LLM
+- Integrate with national archives for historical data
+- Develop speech-to-text pipeline for Diet TV audio
+
 ### Scalability Enhancements
-- Migrate to PostgreSQL for complex queries
-- Implement Redis caching layer
+- Migrate to PostgreSQL for complex queries and analytics
+- Implement Redis caching layer for frequently accessed data
 - Add load balancing for high availability
-- Consider multi-region deployment
+- Consider multi-region deployment for global access
+
+### AI/ML Capabilities
+- Implement GPT-4 integration for advanced content analysis
+- Add automated issue categorization refinement
+- Develop political sentiment analysis algorithms
+- Create predictive models for legislative outcomes
 
 ### Security Hardening
 - Implement network policies
 - Add vulnerability scanning for containers
-- Enable audit logging
+- Enable audit logging for data access
 - Implement secret rotation automation
 
 ### Performance Optimization
@@ -317,9 +348,28 @@ All sensitive configuration managed through Secret Manager:
 - Optimize container images
 - Implement service mesh for observability
 
+### MVP Completion Tasks
+- Deploy web frontend to Cloud Run
+- Implement API authentication and rate limiting
+- Add comprehensive error handling and monitoring
+- Create data quality validation workflows
+
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: July 11, 2025  
+**Document Version**: 1.1  
+**Last Updated**: July 12, 2025  
 **Maintained By**: Engineering Team  
 **Review Cycle**: Monthly
+
+## Recent Updates (v1.1)
+
+### EPIC 13 Completion (July 12, 2025)
+- **Authentication Migration**: Updated from deprecated Airtable API keys to Personal Access Tokens (PAT)
+- **Database Schema Established**: All 9 Airtable tables created with proper field schemas
+- **Data Population Completed**:
+  - 50 member records with complete political profiles
+  - 100 speech records with AI analysis metadata
+  - 70 issue records extracted via LLM analysis from legislative bills
+  - 8 political party records with relationship mapping
+- **Infrastructure Validation**: All table access permissions verified (100% success rate)
+- **MVP Data Foundation**: Core database ready for frontend integration and API deployment

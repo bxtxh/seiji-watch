@@ -1,4 +1,57 @@
 import { Page, Locator, expect } from '@playwright/test';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+/**
+ * Test server management utilities
+ */
+export async function startTestServer() {
+  // In a real implementation, this would start the backend API server
+  // For now, we'll just ensure the environment is ready
+  console.log('Starting test server...');
+  
+  // Set up test environment variables (read-only properties handled safely)
+  if (process.env.NODE_ENV !== 'test') {
+    Object.defineProperty(process.env, 'NODE_ENV', { value: 'test', writable: false });
+  }
+  if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
+    process.env.NEXT_PUBLIC_API_BASE_URL = 'http://localhost:8001';
+  }
+  
+  // Wait a bit for server to be ready
+  await new Promise(resolve => setTimeout(resolve, 1000));
+}
+
+export async function stopTestServer() {
+  // In a real implementation, this would stop the backend API server
+  console.log('Stopping test server...');
+  
+  // Clean up test environment (only if safe to do so)
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    delete process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+}
+
+export async function waitForServer(url: string, timeout: number = 30000) {
+  const startTime = Date.now();
+  
+  while (Date.now() - startTime < timeout) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return true;
+      }
+    } catch (error) {
+      // Server not ready yet
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  
+  throw new Error(`Server at ${url} did not start within ${timeout}ms`);
+}
 
 /**
  * Test helper utilities for Diet Issue Tracker E2E tests

@@ -1,0 +1,3603 @@
+{
+  "backup_date": "2025-07-13T15:46:16.107690",
+  "records_to_fix": 513,
+  "analysis": {
+    "empty": 96,
+    "placeholder": 417,
+    "too_short": 0,
+    "good": 54
+  },
+  "records": [
+    {
+      "id": "rec00Cke10DIemeay",
+      "name": "池田三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけださぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec0FVvZbTw0dykPD",
+      "name": "畑野君枝",
+      "current_kana": "たなかたろう",
+      "new_kana": "はたのきみえ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec0gX5PpONH4KtQ9",
+      "name": "松山政司",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつやままさし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec12NBRcy7FWUWjE",
+      "name": "山口那津男",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちなつお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec1EY8Q2xsS51MxW",
+      "name": "松下新平",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつしたしんぺい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec1KcEiywJTzAuuv",
+      "name": "島村大",
+      "current_kana": "たなかたろう",
+      "new_kana": "しまむらだい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec1PBhU7EtA5ixv9",
+      "name": "山田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec2GbXiZeFKmAA2t",
+      "name": "舟山康江",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふなやまやすえ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec2X2ce4AJkN6N9O",
+      "name": "吉良佳子",
+      "current_kana": "たなかたろう",
+      "new_kana": "きらけいこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec2dIY1j7JAOdoti",
+      "name": "清水清",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずきよし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec2yCl6bMib0J27i",
+      "name": "大塚耕平",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおつかこうへい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec3Hn11tq5JZrf9Q",
+      "name": "藤巻健太",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじまきけんた",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec45UIgZjSJ0GQA2",
+      "name": "宮沢洋一",
+      "current_kana": "たなかたろう",
+      "new_kana": "みやざわよういち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec4BOg9AHsSL5dWE",
+      "name": "山口茂",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちしげる",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec4oYvXspUrgycKg",
+      "name": "宮本徹",
+      "current_kana": "たなかたろう",
+      "new_kana": "みやもととおる",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec4p0g98b2p6s2To",
+      "name": "高橋はるみ",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしはるみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec4s1dFC12ubnmRT",
+      "name": "福山哲郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくやまてつろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec4urS373rBw7Jlk",
+      "name": "礒崎哲史",
+      "current_kana": "たなかたろう",
+      "new_kana": "いそざきてつし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec54XoJTFAczprNd",
+      "name": "佐々木さやか",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさやか",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec5F0wV4EdnqN5an",
+      "name": "金子道仁",
+      "current_kana": "たなかたろう",
+      "new_kana": "かねこどうじん",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec5FZ1Do4VRjghky",
+      "name": "杉尾秀哉",
+      "current_kana": "たなかたろう",
+      "new_kana": "すぎおしゅうや",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec5RSigVpbyGSR30",
+      "name": "松川るい",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつかわるい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec61W1iYByygfyw4",
+      "name": "那谷屋正義",
+      "current_kana": "たなかたろう",
+      "new_kana": "なたやせいぎ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec66ltyrJyvTRleT",
+      "name": "井上哲士",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえてつし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec6QNeodu5RDbArK",
+      "name": "浜田昌良",
+      "current_kana": "たなかたろう",
+      "new_kana": "はまだまさよし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec6Y9evIbxcqFS2Z",
+      "name": "西村康稔",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしむらやすしみのる",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec6alx3xuSW3qGiJ",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec6xAzqpO2eBLS6y",
+      "name": "高橋一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec7GYYhAi4PbldMw",
+      "name": "広田一",
+      "current_kana": "たなかたろう",
+      "new_kana": "ひろたいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec7Gtv0Zh7gr5J1d",
+      "name": "山崎敏",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきとし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec7WStVf9CbjHl1q",
+      "name": "北側一雄",
+      "current_kana": "たなかたろう",
+      "new_kana": "きたがわかずお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec7fIgyQWELW8fPY",
+      "name": "太田昭宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたあきひろ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec7gH72DFdrvmCPf",
+      "name": "中村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec7rEaTuhM3UpR4d",
+      "name": "佐々木秀",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきしゅう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec801RtmCvMrtQGJ",
+      "name": "海老原真二",
+      "current_kana": "たなかたろう",
+      "new_kana": "えびはらしんじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec84boIq8Dz6DEZX",
+      "name": "清水宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec85vTwLLkqYhB6Y",
+      "name": "川田龍平",
+      "current_kana": "たなかたろう",
+      "new_kana": "かわだりゅうへい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8EXK4mF6T04JBG",
+      "name": "倉林明子",
+      "current_kana": "たなかたろう",
+      "new_kana": "くらばやしあきこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8Jtj6It1ROlPT1",
+      "name": "坂本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さかもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8LCYloO0Ne8aEV",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8YNSDn1gvxlG0u",
+      "name": "清水清",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずきよし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8aDtwn5Z8o8fFw",
+      "name": "萩生田光一",
+      "current_kana": "たなかたろう",
+      "new_kana": "はぎうだこういち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8jzWzJkj7HEojR",
+      "name": "宮沢由佳",
+      "current_kana": "たなかたろう",
+      "new_kana": "みやざわゆか",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8kVXvhmKatSLK0",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec8wq5TLxQqHxbWW",
+      "name": "小川智",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわさとる",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec91dPKflEuNU4Xq",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec96pmKcAKjEWrtk",
+      "name": "嘉田由紀子",
+      "current_kana": "たなかたろう",
+      "new_kana": "かだゆきこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec98khudeG5W37dE",
+      "name": "岡田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9Auz7L8vapBs4g",
+      "name": "水岡俊一",
+      "current_kana": "たなかたろう",
+      "new_kana": "みずおかとしかず",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9BhbvcNOzUOdiC",
+      "name": "元榮太一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "もとえいたいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9Lt4jzvv3SyNIo",
+      "name": "吉田忠智",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだただとも",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9WOPJqgoBrSV4Y",
+      "name": "加藤宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9Wrkn2yrpwadmt",
+      "name": "舞立昇治",
+      "current_kana": "たなかたろう",
+      "new_kana": "まいりつしょうじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9YPa0KMoJeBUKu",
+      "name": "吉田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9astFyZtov1t99",
+      "name": "丸川珠代",
+      "current_kana": "たなかたろう",
+      "new_kana": "まるかわたまよ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9bGU8RDHQwawD7",
+      "name": "志位和夫",
+      "current_kana": "たなかたろう",
+      "new_kana": "しいかずお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9jbCCmumRi5VbN",
+      "name": "森次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりつぐろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9tYCnz342TgRZP",
+      "name": "山田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rec9zVkdWAnh6gHT1",
+      "name": "吉田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recA5ZTFYjeFbDmNC",
+      "name": "高橋千鶴子",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしちづこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recA65XsRIECcPmNt",
+      "name": "井上博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAEfFIneyYiaxYW",
+      "name": "立花孝志",
+      "current_kana": "たなかたろう",
+      "new_kana": "たちばなたかし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recARX06ELFzioWKY",
+      "name": "足立康史",
+      "current_kana": "たなかたろう",
+      "new_kana": "あだちやすし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recARwnpMCuSsmVs4",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAULP0NHElwwzzn",
+      "name": "山口一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAVy1B1awXg4sdJ",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAYTh828lTtR5BV",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAbOcuFteTst9Dr",
+      "name": "辻元清美",
+      "current_kana": "たなかたろう",
+      "new_kana": "つじもときよみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAcZSEuGWA5qeng",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAhuKnwETuwbVIZ",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAnNAigSKvN9LEM",
+      "name": "三浦信祐",
+      "current_kana": "たなかたろう",
+      "new_kana": "みうらしんすけ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recAyu9CutR0WbDoy",
+      "name": "古賀之士",
+      "current_kana": "たなかたろう",
+      "new_kana": "こがゆきさむらい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recB6WhADCdOsiszm",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recB7AmbN7KrUXmQN",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recBIQZhRzJSUAFYm",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recBb04X3BJYOxEdk",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recBoBCsbBbGf9SrI",
+      "name": "森山裕",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりやまひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recBr89BREnDUIdSU",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recCGVdWidIc1P6jK",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recCIFcPoWp3tngJD",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recCgm21ITQAITfaz",
+      "name": "長浜博行",
+      "current_kana": "たなかたろう",
+      "new_kana": "ながはまひろゆき",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recCuPTyY0UWo5Gu0",
+      "name": "安江伸夫",
+      "current_kana": "たなかたろう",
+      "new_kana": "やすえのぶお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recD15mrcneWL5rKd",
+      "name": "伊藤健",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうたけし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recD4g9Mbg26qJgaL",
+      "name": "森次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりつぐろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recD55aBI4Qidb964",
+      "name": "吉川ゆうみ",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしかわゆうみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recD5xtmg7lMIBDBu",
+      "name": "寺田学",
+      "current_kana": "たなかたろう",
+      "new_kana": "てらだがく",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recD7y8xiXr1VD5SH",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recD9MFzFSLeQIvw2",
+      "name": "穀田恵二",
+      "current_kana": "たなかたろう",
+      "new_kana": "こくたけいじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDEv0QDlP1LDNC4",
+      "name": "田中裕一",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかゆういち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDJpqNKBgo5TJ7X",
+      "name": "佐々木三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDcXZ64bnAj5nKk",
+      "name": "秋野公造",
+      "current_kana": "たなかたろう",
+      "new_kana": "あきのこうぞう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDcZOBLL4Ean6V3",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDiGiei0TRxGoC7",
+      "name": "橋本隆",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもとたかし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDiMwMn1ccYKPhO",
+      "name": "西田実仁",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしださねひと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDpVHiOg1Yf6it5",
+      "name": "西村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDqRyh7X3UH2ES3",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDssqc6GOcucq6r",
+      "name": "井上博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recDzG4HuXEpTqwyT",
+      "name": "岡田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recE0GvbEelX3f8N1",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recE0s6vm8wqOJzGc",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEDJScKWE8JcJzf",
+      "name": "佐々木三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEFV272dbCg3YUs",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEIq3gEXfzVMUgu",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEJfmUG9QceJYBc",
+      "name": "加藤宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEKpYvkTtIBmxT1",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEY3JtpywElC7Ed",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEf5cf5uw5ANtXv",
+      "name": "金子恵美",
+      "current_kana": "たなかたろう",
+      "new_kana": "かねこえみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEnWVfRzR0WY0an",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recErMSpYGMX8BEZa",
+      "name": "長谷川宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "はせがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEsOCBpXXa2YL8j",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEucNJ0bipWa72e",
+      "name": "石川健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEyQM80SkogWVVi",
+      "name": "中曽根弘文",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかそねひろふみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recEzLmyBBf1Jbww5",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recF31m0BgcremW9f",
+      "name": "井上博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recF3j0E9FEpqi1VV",
+      "name": "加藤宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recF6EX0Gk04tv2ac",
+      "name": "井上勝",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえかち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recFAUbTrCtEhyA31",
+      "name": "前田誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえだまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recFBLPEWcza0Fmw4",
+      "name": "池田三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけださぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recFFNz5eMNDqY2OT",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recFMpn0oeYHTTost",
+      "name": "前原誠司",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえはらせいじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recFhdqpVQ3VhKomg",
+      "name": "山谷えり子",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまたにえりこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recFn6psORimO4Bcp",
+      "name": "山添拓",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぞえたく",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recG5ly4ED3JtkHxr",
+      "name": "宮崎勝",
+      "current_kana": "たなかたろう",
+      "new_kana": "みやざきかち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recG8gccre8kjXJPM",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recGANuMQS1N7zqpE",
+      "name": "佐々木三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recGKbo9Z5UvaAPcR",
+      "name": "石井章",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしいしょう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recGd6KIKz1aiNoKX",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recGgHGaVARScRqkT",
+      "name": "音喜多駿",
+      "current_kana": "たなかたろう",
+      "new_kana": "おときたしゅん",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recGqLkQVOyzBjHaU",
+      "name": "平木大作",
+      "current_kana": "たなかたろう",
+      "new_kana": "ひらきたいさく",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recGt9EXGVwsWE25G",
+      "name": "山田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recH066yG0kR60Evk",
+      "name": "大門実紀史",
+      "current_kana": "たなかたろう",
+      "new_kana": "だいもんみきし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recH2VKif8mXDWNKb",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recH3Aq7fc5azBteO",
+      "name": "松本健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHIvuQYaYfqndpz",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHQVdoibsnAFdfI",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHejnfsEU7Wq4RF",
+      "name": "太田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHekrrCRSgNnEnz",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHg02PUplD7nAFL",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHhHJhGfX3QI7Z3",
+      "name": "青木博",
+      "current_kana": "たなかたろう",
+      "new_kana": "あおきひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHlPUONJFmOCIXI",
+      "name": "滝波宏文",
+      "current_kana": "たなかたろう",
+      "new_kana": "たきなみひろふみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHx6yPn8fGl2EaA",
+      "name": "野田佳彦",
+      "current_kana": "たなかたろう",
+      "new_kana": "のだよしひこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recHzzquPeFBULSbq",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recI9CiLA31IzeoEZ",
+      "name": "池田三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけださぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recIDOcmzkgAaDWSb",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recIGkVs07lgmhT6q",
+      "name": "高木啓",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかぎけい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recINCM1xpP7xHSDJ",
+      "name": "林芳正",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしよしまさ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recINUWLzYihjmQiK",
+      "name": "小川智",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわさとる",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJ1ZX1yHHek2CrC",
+      "name": "野田国義",
+      "current_kana": "たなかたろう",
+      "new_kana": "のだくによし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJ3mkGGcmXSbx9k",
+      "name": "小林博",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJAzJ5uC5MjJuh7",
+      "name": "藤田文武",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじたぶんぶ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJC16MfZJ2G0Td6",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJHxQ2GNjRymImp",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJJHIF5ehB2W9cj",
+      "name": "山田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJL0bl9tMT8lZW8",
+      "name": "斉藤鉄夫",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうてつお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJO9n7XovHutusR",
+      "name": "坂本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さかもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJadw67tbPjUcFC",
+      "name": "馬場伸幸",
+      "current_kana": "たなかたろう",
+      "new_kana": "ばばのぶゆき",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJhQGv5vzosZo9Y",
+      "name": "森裕子",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりゆうこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJnnClwwEq4nNgM",
+      "name": "佐藤正久",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうただひさ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJr8Agqjqdg7brE",
+      "name": "和田政宗",
+      "current_kana": "たなかたろう",
+      "new_kana": "わだまさむね",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJsbTfviZWW5DW9",
+      "name": "山本明",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまもとめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJwclz12ghW5vsF",
+      "name": "石井啓一",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしいけいいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recJyBanj3I7QMAFM",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recK9IJVVrZPUXSlf",
+      "name": "高橋一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recKREUqcAjDIJb7A",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recKRt5Dlze0kfyTU",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recKRyURmy3OICA2B",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recKkFJUYO6RHoPcS",
+      "name": "赤池誠章",
+      "current_kana": "たなかたろう",
+      "new_kana": "あかいけのぶあき",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recKqoKiZCWmeCVBA",
+      "name": "清水宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recLEDuddHr9E5Z6M",
+      "name": "増子輝彦",
+      "current_kana": "たなかたろう",
+      "new_kana": "ましこてるひこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recLXFSU8LChCG5mn",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recLdzuPvLExsbtiv",
+      "name": "伊藤孝江",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうたかえ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recLgvu4kAxRYY4y8",
+      "name": "森次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりつぐろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recLie64HVOQyVk6S",
+      "name": "吉田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recLtEkyicluYyFxp",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recM7ev2fNiaFM367",
+      "name": "甘利明",
+      "current_kana": "たなかたろう",
+      "new_kana": "あまりめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recM8oPpnFil3jbkE",
+      "name": "菅直人",
+      "current_kana": "たなかたろう",
+      "new_kana": "かんなおと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recMBW7Sm2Fao1vAZ",
+      "name": "小川明",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recMczcngBwMAcpJD",
+      "name": "坂本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さかもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recMdzrcY7bavgATM",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recMnLGft0n887lUU",
+      "name": "徳永エリ",
+      "current_kana": "たなかたろう",
+      "new_kana": "とくながエリ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recMxn4tSi8e8zFa3",
+      "name": "枝野幸男",
+      "current_kana": "たなかたろう",
+      "new_kana": "えだのゆきお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recMxtuOKQiccXLPs",
+      "name": "青木博",
+      "current_kana": "たなかたろう",
+      "new_kana": "あおきひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recN5G1eiGp5saex8",
+      "name": "長谷川宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "はせがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recN6m22enlY8rG7E",
+      "name": "河野太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こうのたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recN81Bqka0mNKWvg",
+      "name": "高橋一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recN8R7SxGQCfnqws",
+      "name": "山口一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNB9LFUmJTBNTvW",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNBEJTvBDP9YUcn",
+      "name": "岡田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNCjYUKOAyv3wV8",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNREqdA89KQX51P",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNTgSjnMfQ0PB18",
+      "name": "高瀬弘美",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかせひろみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNd8H7m5CWNPm7s",
+      "name": "太田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNlRBrI4gjaz8S3",
+      "name": "佐々木三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNn7UI9rvEfKtGu",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNrlNt83YhP8ZMf",
+      "name": "吉田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recNygeSe4rBAGiWi",
+      "name": "赤嶺政賢",
+      "current_kana": "たなかたろう",
+      "new_kana": "あかみねせいけん",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recO0hZF3weAkwkId",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recO3WTP2oLv4K6GV",
+      "name": "山口一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOGtf4g9osKLSVh",
+      "name": "加藤宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOIEBRcDv5m79X6",
+      "name": "小川淳也",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわあつや",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOMCHTnnLgNvuCR",
+      "name": "高橋一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOO6MmYdEpQ3yED",
+      "name": "木村勇",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらいさみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOceTh1k78LdBzV",
+      "name": "石川浩",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOfrC4Xe6pdk00K",
+      "name": "茂木敏充",
+      "current_kana": "たなかたろう",
+      "new_kana": "もてぎとしみつ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOksDCXz7woGkJJ",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOnLqvzPZhPWcBa",
+      "name": "伊藤健",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうたけし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOoyvdDerXCbKQl",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recOsTfhKRNGsV9rt",
+      "name": "松井一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "まついいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPMgnni4xA470nY",
+      "name": "加藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPQruvbTadBOj8A",
+      "name": "加田裕之",
+      "current_kana": "たなかたろう",
+      "new_kana": "かだひろゆき",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPTxXS855faI4H4",
+      "name": "斎藤進",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうすすむ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPeN5w5LRa3oH0v",
+      "name": "石川浩",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPemHTYS1DvP6yx",
+      "name": "横沢高徳",
+      "current_kana": "たなかたろう",
+      "new_kana": "よこざわたかのり",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPo5Z5kzLpsJudn",
+      "name": "山崎太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまざきたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPsZ7dYHUX8J0AO",
+      "name": "小川克巳",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわかつみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recPyTDFQtMmcCvx6",
+      "name": "森本真治",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりもとしんじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQ1lm4p0PQ8zRv0",
+      "name": "石橋通宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしばしとおりひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQBs7OLAWYGZiEU",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQPZlwOyI5NIpN7",
+      "name": "青木博",
+      "current_kana": "たなかたろう",
+      "new_kana": "あおきひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQSM7P2vnfyBKUH",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQXeJ5wNK4KTaC4",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQmBBlLpiPpiyvd",
+      "name": "朝日健太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "あさひけんたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recQnjNrRONUPrvSg",
+      "name": "高橋一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recR2tzZZhYrGpyK0",
+      "name": "浅田均",
+      "current_kana": "たなかたろう",
+      "new_kana": "あさだひとし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recR9qBWiCZFYHx2o",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recRGQFEVLH8nZZu9",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recRGZbI2E8Olzx2z",
+      "name": "里見隆治",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとみりゅうじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recRLT7EvwTl7zXVd",
+      "name": "加藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recRMUQjeJ6bxSsi9",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recRQwfwl6cTBoIeI",
+      "name": "太田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recRbFVUsUdhSilK1",
+      "name": "野田聖子",
+      "current_kana": "たなかたろう",
+      "new_kana": "のだせいこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recS8w4MctxURvRfb",
+      "name": "前田誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえだまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSSZeBx4M12Qu32",
+      "name": "山本明",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまもとめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSgc697clje1vSt",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSiwhIn7B8Cem8r",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSjSfMjWb3mSKdi",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSmu5nuEHRwdyK5",
+      "name": "有村治子",
+      "current_kana": "たなかたろう",
+      "new_kana": "ありむらはるこ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSsnZyLq4UMWsZl",
+      "name": "塩田博昭",
+      "current_kana": "たなかたろう",
+      "new_kana": "しおだひろあき",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSvfXlS2SuEBxh6",
+      "name": "池田弘",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけだひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recSyZ4sBOQN9ayX3",
+      "name": "加藤勝信",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうかつのぶ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recT2gRRLwYlxj9oO",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recT4d8Z142QpupoQ",
+      "name": "山本明",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまもとめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recT8lDuYBfwnA6bd",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTEg56oQFPaZING",
+      "name": "宮本周司",
+      "current_kana": "たなかたろう",
+      "new_kana": "みやもとしゅうじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTKJoM1lVHFKere",
+      "name": "山田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTS2CdLnjhA7fjS",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTfYY3DodlC5BKh",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTlf22Bvq9IkqVB",
+      "name": "太田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTmXIhOi98hj28f",
+      "name": "藤井明",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじいめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTpc7iaBE1lQxnL",
+      "name": "後藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ごとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTuM1PHZPvD5QjX",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTxL7VhAsZCtkxP",
+      "name": "岡田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recTzwFcF2cYTuinQ",
+      "name": "松本豊",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとゆたか",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recU59pFWR52QwHI2",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recU88KcCMGwF0Xqh",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recU9MMvxYDjlhIXT",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUK7RLVZYPZvISB",
+      "name": "赤尾由美",
+      "current_kana": "たなかたろう",
+      "new_kana": "あかおゆみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUKxXTTs2Q4yj8Y",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUUUOT5k5C81kJs",
+      "name": "石川健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUXkzMmRylBFmPK",
+      "name": "森和",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりわ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUcMZ2MikvZweey",
+      "name": "北村経夫",
+      "current_kana": "たなかたろう",
+      "new_kana": "きたむらつねお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUi0onfu5EZgshh",
+      "name": "池田三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけださぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recUqLJXsVsEw7TCa",
+      "name": "櫛渕万里",
+      "current_kana": "たなかたろう",
+      "new_kana": "くしふちばんり",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recV6sY6q8OiqPvmg",
+      "name": "木戸口英司",
+      "current_kana": "たなかたろう",
+      "new_kana": "きどぐちえいじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVAKqgcFEq7EO44",
+      "name": "浜口誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はまぐちまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVHzUiLY2TpOj9O",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVIMzrWMHjn2KHT",
+      "name": "山本明",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまもとめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVIPFMg9zuqRHnP",
+      "name": "荒井聰",
+      "current_kana": "たなかたろう",
+      "new_kana": "あらいさとし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVR6Cdsq8t2YHo1",
+      "name": "伊藤岳",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうがく",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVTiwnnfp8o4htc",
+      "name": "井上勝",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえかち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVWLSxLBKbZy5oK",
+      "name": "小林博",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVZgZk0IHC28WNB",
+      "name": "小沼巧",
+      "current_kana": "たなかたろう",
+      "new_kana": "こぬまこう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVhEy3MZmDsBWcI",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVp4y49T4wW4QwH",
+      "name": "岡田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recVpbO0SxR1q0eFo",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recWDbOq7jZPhV3iU",
+      "name": "高橋一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recWHtgdyiRIV7yCt",
+      "name": "山田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recWQb8MwwCPp3oN2",
+      "name": "小川明",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recWWusM7rf7dICKf",
+      "name": "佐々木三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recWoOqanud90n57O",
+      "name": "山田修",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだおさむ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recWrHmjifCHMbTUH",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXbRw5Z1xB0QTXl",
+      "name": "西村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXd0y2MkkRM7yel",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXdRPyDsyR2KJ0i",
+      "name": "羽田雄一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はねだゆういちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXdxO4K8qgCzba8",
+      "name": "藤野保史",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじのほし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXm21nTM7KSdrQu",
+      "name": "仁比聡平",
+      "current_kana": "たなかたろう",
+      "new_kana": "にいそうへい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXmorqyUBehej8L",
+      "name": "松本豊",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとゆたか",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXsSWEGjDPQmWOB",
+      "name": "山口一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recXw6O6ODny9LSji",
+      "name": "武蔵野市議",
+      "current_kana": "たなかたろう",
+      "new_kana": "むさしのしぎ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recY0sGniUextdY5n",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recY7HthYaNe0h5aC",
+      "name": "山田修",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだおさむ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recY7MiIu7Xftl2po",
+      "name": "石川健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYDrZoi97gJm8cU",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYPEeoySMwaOSV2",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYRpA44yxMF3bPh",
+      "name": "青木博",
+      "current_kana": "たなかたろう",
+      "new_kana": "あおきひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYTvfeXZ30xrKWe",
+      "name": "太田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYZ4r1OgGKRjtHz",
+      "name": "吉田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYZIYk1Z8RIZuZP",
+      "name": "岡田克也",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだかつや",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYhT4k0NiFSp1Lz",
+      "name": "麻生太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "あそうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYjm0mANSQgWfL1",
+      "name": "藤井明",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじいめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYjrgzULryH9dOl",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYnD4rfyqPJQSn8",
+      "name": "山口一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recYpEJtcZpAmrQLs",
+      "name": "高野光二郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかのこうじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZ7eHZ38k2iSrXX",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZ9FBGP2jfp1aT1",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZA7I3RtYEOjp2q",
+      "name": "山本明",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまもとめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZF9xEnUQ1uPABs",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZMaCrcVfTAkoEf",
+      "name": "中川貴",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわたかし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZTo6hNTkYqlQpw",
+      "name": "羽生田俊",
+      "current_kana": "たなかたろう",
+      "new_kana": "はにゅうだしゅん",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZUZ3InZKVO8KSv",
+      "name": "渡辺喜美",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべきみ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZYnbSdXEvHr934",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZfSqJX5wV6qF22",
+      "name": "青木博",
+      "current_kana": "たなかたろう",
+      "new_kana": "あおきひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZrN66DNpct7zi7",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZrTZg8BGk96RkJ",
+      "name": "高橋光男",
+      "current_kana": "たなかたろう",
+      "new_kana": "たかはしみつお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZsNxs5ltmolcjJ",
+      "name": "山田修",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだおさむ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recZxRXgJ2CffOCVj",
+      "name": "前田誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえだまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reca7jqRfZC4hSIHF",
+      "name": "若松謙維",
+      "current_kana": "たなかたろう",
+      "new_kana": "わかまつかねしげ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recaFxMmnYXN2NSXj",
+      "name": "吉田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recaHl6F7OzNVCLaY",
+      "name": "海江田万里",
+      "current_kana": "たなかたろう",
+      "new_kana": "かいえだばんり",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recar7Mug5aN0bNXM",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recaxxkL48kYUazMl",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recaxxo1OSeuhofWO",
+      "name": "松本健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recayjRmlSN6OhTaJ",
+      "name": "坂本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さかもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recbAUzEycSkx2uGH",
+      "name": "山田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまだじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recbpP5NjHf7INSmL",
+      "name": "谷川弥一",
+      "current_kana": "たなかたろう",
+      "new_kana": "たにがわやいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recbxlAgVqGbIXEel",
+      "name": "小泉進次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こいずみしんじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recc7edWQ2RfSd0Oy",
+      "name": "濱田通裕",
+      "current_kana": "たなかたろう",
+      "new_kana": "はまだとおりひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reccAVT8zonlh9foD",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reccPnCQpqzpNxdJx",
+      "name": "森次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりつぐろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reccW4yPwamQe07sH",
+      "name": "三木亨",
+      "current_kana": "たなかたろう",
+      "new_kana": "みきとおる",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reccaQUFFGR6ydLJ8",
+      "name": "西田昌司",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしだしょうじ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reccbMZGPcj0DjtWW",
+      "name": "西村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recd1IbiKaGfjytnh",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recd1rvN4AtbuoLOJ",
+      "name": "岡田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "おかだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recd5VQx48Fx7wf2X",
+      "name": "山本明",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまもとめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recd5yDs8Y5EkaOhg",
+      "name": "神谷宗幣",
+      "current_kana": "たなかたろう",
+      "new_kana": "かみやしゅうへい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recd63xSRDUO4lAhu",
+      "name": "岸信夫",
+      "current_kana": "たなかたろう",
+      "new_kana": "きしのぶお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recd7Dv04JL57yNVw",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recdGu7CG8jZxMYS1",
+      "name": "藤井明",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじいめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recdKjDZMXbZj61Yg",
+      "name": "長谷川宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "はせがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recdQjPFTWwGDREPw",
+      "name": "太田房江",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたふさえ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recdUFt5g7jRJJIxQ",
+      "name": "松本豊",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとゆたか",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recdf1tVs5zfQS5XP",
+      "name": "岸田文雄",
+      "current_kana": "たなかたろう",
+      "new_kana": "きしだふみお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "receF9Sdo9S9xdviV",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "receVDN5YG3JMf4Lt",
+      "name": "古賀千景",
+      "current_kana": "たなかたろう",
+      "new_kana": "こがちかげ",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "receVXO4kqdsWVEoP",
+      "name": "林誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "はやしまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recegsoXhV5iXkMOT",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recepNFZG1j1xrDch",
+      "name": "矢倉克夫",
+      "current_kana": "たなかたろう",
+      "new_kana": "やぐらかつお",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "receu8arrJAJxslnv",
+      "name": "加藤正",
+      "current_kana": "",
+      "new_kana": "かとうせい",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recez78eY58TuGnEb",
+      "name": "前田誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえだまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recf7MKK8kKxg7gsD",
+      "name": "前田仁",
+      "current_kana": "",
+      "new_kana": "まえだひとし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recfGGb4wUMDs6mIn",
+      "name": "山口茂",
+      "current_kana": "",
+      "new_kana": "やまぐちしげる",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recfPqlhiX9yKqqzs",
+      "name": "鹿島淳二",
+      "current_kana": "",
+      "new_kana": "かしまじゅんじ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recfUiuD7QjQRykuf",
+      "name": "今井絵理子",
+      "current_kana": "",
+      "new_kana": "いまいえりこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recfWtv9NjhFOF5bO",
+      "name": "吉田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recfdKYzj3xT3IpkJ",
+      "name": "井上博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recg140C6CVFh1hig",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recgEcewE2gdn4Tww",
+      "name": "金子原二郎",
+      "current_kana": "",
+      "new_kana": "かねこげんじろう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recgMG7QHXZqsSVyZ",
+      "name": "片山虎之助",
+      "current_kana": "",
+      "new_kana": "かたやまとらのすけ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recgV7Ie6En6Ca9bD",
+      "name": "古川元久",
+      "current_kana": "",
+      "new_kana": "ふるかわもとひさ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recgaUykJ2TFVkLa2",
+      "name": "石田昌宏",
+      "current_kana": "",
+      "new_kana": "いしだまさひろ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recgl6LrSNCqCznB8",
+      "name": "泉健太",
+      "current_kana": "",
+      "new_kana": "いずみけんた",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recgplWexnxmH0kfl",
+      "name": "小川明",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rech1o80HXRqTNOWj",
+      "name": "林実",
+      "current_kana": "",
+      "new_kana": "はやしみ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rechOCkymSYPimpHR",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rechQGaS2FrlAqtty",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rechZeQMYvYZnCmj4",
+      "name": "中村明",
+      "current_kana": "",
+      "new_kana": "なかむらめい",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rechsN7hjnMLGSe1k",
+      "name": "松本健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reci4bmq3BLpEJnR3",
+      "name": "伊藤健",
+      "current_kana": "",
+      "new_kana": "いとうたけし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reciMTSg5kwu5Ir08",
+      "name": "中川貴",
+      "current_kana": "",
+      "new_kana": "なかがわたかし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reciNBOLqtFlu7wGb",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recidemKA031OQD8D",
+      "name": "山本誠",
+      "current_kana": "",
+      "new_kana": "やまもとまこと",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reciiztm6kd64AxXZ",
+      "name": "小川明",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recixW9i3BJl6gawd",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recixtRs8l6zsFuvs",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recjKaDOmGpiVcQ6x",
+      "name": "河野義博",
+      "current_kana": "",
+      "new_kana": "こうのよしひろ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recjNvOjUEByySSqL",
+      "name": "熊野正士",
+      "current_kana": "",
+      "new_kana": "くまのせいし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recjPDNHvNw8i2y4u",
+      "name": "大家敏志",
+      "current_kana": "",
+      "new_kana": "おおやさとし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recjXoyvNeOzXYap4",
+      "name": "岡田義",
+      "current_kana": "",
+      "new_kana": "おかだぎ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reck4fiVIeAvexRHq",
+      "name": "室井邦彦",
+      "current_kana": "",
+      "new_kana": "むろいくにひこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reck57jkicxdZLb0C",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reckTVKkDXQhGdAh7",
+      "name": "佐々木秀",
+      "current_kana": "",
+      "new_kana": "ささきしゅう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reckZ9FuVmp9QySIm",
+      "name": "藤井明",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじいめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reckks2h5X7lWDf5O",
+      "name": "斎藤正",
+      "current_kana": "たなかたろう",
+      "new_kana": "さいとうせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recklXH2fL2SsR24K",
+      "name": "木村勇",
+      "current_kana": "",
+      "new_kana": "きむらいさみ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recl1vD7CR41xmDO6",
+      "name": "藤井明",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじいめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recl3LWADDqRkkql9",
+      "name": "小林博",
+      "current_kana": "",
+      "new_kana": "こばやしひろし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recl9JyPlSrHXhFpB",
+      "name": "長谷川宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "はせがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reclLgiG0QY14NexU",
+      "name": "渡辺二郎",
+      "current_kana": "",
+      "new_kana": "わたなべじろう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reclV8a985QTr9iHw",
+      "name": "長谷川信",
+      "current_kana": "",
+      "new_kana": "はせがわしん",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recllA5ptMSGJVn46",
+      "name": "長妻昭",
+      "current_kana": "",
+      "new_kana": "ながつまあきら",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reclma65tWKADeBiz",
+      "name": "滝沢求",
+      "current_kana": "",
+      "new_kana": "たきざわきゅう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reclnEXN0lhrl29R8",
+      "name": "大椿裕子",
+      "current_kana": "",
+      "new_kana": "だいつばきゆうこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reclrJTeFWn0sEyMz",
+      "name": "井上博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recltMM6ADpmXhaXx",
+      "name": "佐々木三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "ささきさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recluuGzC92Qlzvkk",
+      "name": "三浦靖",
+      "current_kana": "",
+      "new_kana": "みうらやすし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recm82Yplf6dfIwGd",
+      "name": "井上勝",
+      "current_kana": "",
+      "new_kana": "いのうえかち",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recmLykGUZp3kjruq",
+      "name": "中村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recmWUkDJIdqi4ZaG",
+      "name": "塩川鉄也",
+      "current_kana": "",
+      "new_kana": "しおかわてつや",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recmWZXp2FfPYe7Jz",
+      "name": "加藤宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recmfsEIf7ByDx6k7",
+      "name": "前田仁",
+      "current_kana": "",
+      "new_kana": "まえだひとし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recmlanFu54dNKfen",
+      "name": "打越さく良",
+      "current_kana": "",
+      "new_kana": "うちこしさくりょう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recmqNDax1wTwJ5fA",
+      "name": "串田誠一",
+      "current_kana": "",
+      "new_kana": "くしだせいいち",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recn3sjzRr6veSWSd",
+      "name": "玉木雄一郎",
+      "current_kana": "",
+      "new_kana": "たまきゆういちろう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recn8CTB00arIU9I8",
+      "name": "西村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recnCMT5oLeU0Y161",
+      "name": "鈴木次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "すずきじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recnHzAoTO1o3HUId",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recnWiEASV8n4OBOz",
+      "name": "加藤宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "かとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recnZKTdIs7fjfEmW",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recnfkpBcDbm4r3hA",
+      "name": "池田弘",
+      "current_kana": "",
+      "new_kana": "いけだひろし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recnjZOFsuXRZl649",
+      "name": "小川明",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reco2yogynGWyVigz",
+      "name": "松本健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "reco586YCGzyFkgbf",
+      "name": "関口昌一",
+      "current_kana": "",
+      "new_kana": "せきぐちしょういち",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recoJutC972HA42ss",
+      "name": "小林正",
+      "current_kana": "たなかたろう",
+      "new_kana": "こばやしせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recoUnsE2qXvQANXo",
+      "name": "福田正",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふくだせい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recoXroYmj8OqSdM3",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recoaLLvX4P0aMvyC",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recos33KTzM7zyDEC",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recp05vLo6UAg1BCs",
+      "name": "川合孝典",
+      "current_kana": "",
+      "new_kana": "かわいたかのり",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recp3AbiHgiFFFVjz",
+      "name": "松沢成文",
+      "current_kana": "",
+      "new_kana": "まつざわせいぶん",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recp9Lw5LajNIaNh7",
+      "name": "清水宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recpCukKlVXbXoLcE",
+      "name": "石川健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recpSy6F66dgacr9s",
+      "name": "細田博之",
+      "current_kana": "",
+      "new_kana": "ほそだひろゆき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recpTgMDnukmBoGHl",
+      "name": "石川健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "いしかわけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recpWl8gAK04v5HjN",
+      "name": "芳賀道也",
+      "current_kana": "",
+      "new_kana": "はがみちや",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recpif1nDY5O1l3Fe",
+      "name": "前田誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえだまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recpkIeH0K13Ony7b",
+      "name": "伊藤博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いとうひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recqeijV8LVFNaaIf",
+      "name": "中西健治",
+      "current_kana": "",
+      "new_kana": "なかにしけんじ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recqfeBPTAIvpZ1Mh",
+      "name": "山本誠",
+      "current_kana": "",
+      "new_kana": "やまもとまこと",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recqjC2eaZYv4EAqh",
+      "name": "武田良介",
+      "current_kana": "",
+      "new_kana": "たけだりょうすけ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recqpbUNByUlPGgeE",
+      "name": "伊藤孝恵",
+      "current_kana": "",
+      "new_kana": "いとうたかえ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recqur9YnwkKZkbB7",
+      "name": "清水宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recr5UvuQAgOKO0Ke",
+      "name": "原口一博",
+      "current_kana": "",
+      "new_kana": "はらぐちかずひろ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recr9itcECyDnLMVB",
+      "name": "太田宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "おおたひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recrHqTlBrlB4EHbF",
+      "name": "稲田朋美",
+      "current_kana": "",
+      "new_kana": "いねだともみ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recrQugRRZHMNagmk",
+      "name": "吉田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recrf0ffpcvwuOQ5w",
+      "name": "渡辺健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "わたなべけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recrikyVqMaan1Haw",
+      "name": "林実",
+      "current_kana": "",
+      "new_kana": "はやしみ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recroEV2CxNXuNZtX",
+      "name": "清水貴之",
+      "current_kana": "",
+      "new_kana": "しみずたかゆき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recrqFzXt62fTTezI",
+      "name": "井上博",
+      "current_kana": "たなかたろう",
+      "new_kana": "いのうえひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recrrAxo26wKdxdA7",
+      "name": "下野六太",
+      "current_kana": "",
+      "new_kana": "しもつけろくた",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recs7A8KHVawRdO4p",
+      "name": "長峯誠",
+      "current_kana": "",
+      "new_kana": "ながみねまこと",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recsEDb6ECoAljKTj",
+      "name": "山下雄平",
+      "current_kana": "",
+      "new_kana": "やましたゆうへい",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recsMLJg9XJdUHjY8",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recsTfpSrSYdaKzsl",
+      "name": "水野素雄",
+      "current_kana": "",
+      "new_kana": "みずのもとお",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recseaWQ2AzESxHY7",
+      "name": "橋本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "はしもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recsqET293uPNbuIO",
+      "name": "舩後靖彦",
+      "current_kana": "",
+      "new_kana": "ふねのちやすひこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rect0PKoL57YJMngV",
+      "name": "木村英子",
+      "current_kana": "",
+      "new_kana": "きむらえいこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rect21gQkQpvqQddi",
+      "name": "佐藤信秋",
+      "current_kana": "",
+      "new_kana": "さとうのぶあき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rectIo4LmreJ5mnbB",
+      "name": "池田三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけださぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rectbLMjVpmqpr9tN",
+      "name": "竹内真二",
+      "current_kana": "",
+      "new_kana": "たけうちしんじ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rectfxj0EjpS7gE1O",
+      "name": "池田三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "いけださぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "rectolPUoctqycF0W",
+      "name": "谷合正明",
+      "current_kana": "",
+      "new_kana": "たにあいまさあき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rectpAyNtw5yyUJpT",
+      "name": "岩本剛人",
+      "current_kana": "",
+      "new_kana": "いわもとつよしにん",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rectpTMTLz39jXYBX",
+      "name": "森まさこ",
+      "current_kana": "",
+      "new_kana": "もりまさこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rectr5XG229FZGUP8",
+      "name": "西村誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "にしむらまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recttHcBLtRYRYXXs",
+      "name": "天畠大輔",
+      "current_kana": "",
+      "new_kana": "てんはたけだいすけ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "rectwF7Ncp17UpsaD",
+      "name": "遠藤敬",
+      "current_kana": "",
+      "new_kana": "えんどうたかし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recu2r8Fd1NZ2mPe7",
+      "name": "山口一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "やまぐちいちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recu394pAC5SEe5kv",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recuIANBANKWcwi33",
+      "name": "小池晃",
+      "current_kana": "",
+      "new_kana": "こいけあきら",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recuJXLc4IWrucy4e",
+      "name": "中村明",
+      "current_kana": "",
+      "new_kana": "なかむらめい",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recuQ1NEMqMTlD3M7",
+      "name": "自見はなこ",
+      "current_kana": "",
+      "new_kana": "じけんはなこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recuT08FWlr9Sg5LQ",
+      "name": "長谷川宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "はせがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recuZkpaeuC0CM2w4",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recuaUyhMHznvGTr7",
+      "name": "柴田巧",
+      "current_kana": "",
+      "new_kana": "しばたこう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recucNXW3gcgK81Ep",
+      "name": "佐藤茂樹",
+      "current_kana": "",
+      "new_kana": "さとうしげき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recuipx94ncH1X34M",
+      "name": "渡辺二郎",
+      "current_kana": "",
+      "new_kana": "わたなべじろう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recujcwSeCM5M2Ocl",
+      "name": "田島麻衣子",
+      "current_kana": "",
+      "new_kana": "たじままいこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reculvwnnsC970wYD",
+      "name": "木村勇",
+      "current_kana": "",
+      "new_kana": "きむらいさみ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recusrt587bgdCdEJ",
+      "name": "松本健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "まつもとけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recuxNzL4TnXkedtc",
+      "name": "藤川政人",
+      "current_kana": "",
+      "new_kana": "ふじかわまさと",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recv80wE8AEFvFlW5",
+      "name": "石破茂",
+      "current_kana": "",
+      "new_kana": "いしばしげる",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recvMqIwBknogTkr2",
+      "name": "齊藤　健一郎",
+      "current_kana": "",
+      "new_kana": "さいとう　けんいちろう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recvYpLChzQx2uraH",
+      "name": "中川博",
+      "current_kana": "たなかたろう",
+      "new_kana": "なかがわひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recvZjEAXPuyYbPlO",
+      "name": "小野田紀美",
+      "current_kana": "",
+      "new_kana": "おのだきみ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recvehhOmYB5SvnAa",
+      "name": "前田誠",
+      "current_kana": "たなかたろう",
+      "new_kana": "まえだまこと",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recvnJZKL1fwyU7na",
+      "name": "田中太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "たなかたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recvswRkpQdICYWfA",
+      "name": "佐々木秀",
+      "current_kana": "",
+      "new_kana": "ささきしゅう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recvujh9mjR1hZraI",
+      "name": "梅村みずほ",
+      "current_kana": "",
+      "new_kana": "うめむらみずほ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recvwwKSykyBDNp5b",
+      "name": "猪瀬直樹",
+      "current_kana": "",
+      "new_kana": "いのせなおき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recvzZ8rHHcwHnkqY",
+      "name": "新妻秀規",
+      "current_kana": "",
+      "new_kana": "にいづまひでき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recw5W2KB2dfI6y2B",
+      "name": "藤井明",
+      "current_kana": "たなかたろう",
+      "new_kana": "ふじいめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recw83iClbcbKPxk9",
+      "name": "森次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "もりつぐろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recwBRHcV05WT5og9",
+      "name": "坂本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さかもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recwFOByikQCImJ5t",
+      "name": "清水宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recwFV6adavU6H9sy",
+      "name": "杉　　　久武",
+      "current_kana": "",
+      "new_kana": "すぎ　　　ひさたけ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recwHcWaKFg0mBw4o",
+      "name": "小川明",
+      "current_kana": "たなかたろう",
+      "new_kana": "おがわめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recwOHJ9i1xowZhgH",
+      "name": "橋本聖子",
+      "current_kana": "",
+      "new_kana": "はしもとせいこ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recwdAmDU19NZqsCX",
+      "name": "熊谷裕人",
+      "current_kana": "",
+      "new_kana": "くまがやひろと",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recwkHT8iPUiEpHAy",
+      "name": "高市早苗",
+      "current_kana": "",
+      "new_kana": "たかいちさなえ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recwtR3y7SaZz9Mug",
+      "name": "佐藤三郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さとうさぶろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recwwHx3556QaeqXG",
+      "name": "小沼　　　巧",
+      "current_kana": "",
+      "new_kana": "こぬま　　　こう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recx5Q9VpTUVdy9vn",
+      "name": "坂本一郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "さかもといちろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recx84FlaOcPxDaEt",
+      "name": "村田次郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "むらたじろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recxCyhCg4rlYOPsS",
+      "name": "遠藤健一",
+      "current_kana": "たなかたろう",
+      "new_kana": "えんどうけんいち",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recxE8jhjQg7LdTYP",
+      "name": "片山さつき",
+      "current_kana": "",
+      "new_kana": "かたやまさつき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recxED3sMJDJ1DiME",
+      "name": "北村　　経夫",
+      "current_kana": "",
+      "new_kana": "きたむら　　つねお",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recxEznfW3wsNqUCw",
+      "name": "館野竜三",
+      "current_kana": "",
+      "new_kana": "たてのりゅうぞう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recxaIK2hIqLUbrPh",
+      "name": "赤池　　誠章",
+      "current_kana": "",
+      "new_kana": "あかいけ　　のぶあき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recxnvopj62ZtaVcz",
+      "name": "古庄　　玄知",
+      "current_kana": "",
+      "new_kana": "ふるしょう　　げんち",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recxuYvgsHUHIpRiE",
+      "name": "木村明",
+      "current_kana": "たなかたろう",
+      "new_kana": "きむらめい",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recyaBtDuaBIpKLaw",
+      "name": "上月良祐",
+      "current_kana": "",
+      "new_kana": "こうづきりょうすけ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recyf0PGEc3g3n7PW",
+      "name": "清水宏",
+      "current_kana": "たなかたろう",
+      "new_kana": "しみずひろし",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recyjZ3S6GS0EhVDK",
+      "name": "浅田　　　均",
+      "current_kana": "",
+      "new_kana": "あさだ　　　ひとし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recyoiJGYLGixzpLz",
+      "name": "吉田太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "よしだたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recyq5IVsnWRrAOwZ",
+      "name": "近藤太郎",
+      "current_kana": "たなかたろう",
+      "new_kana": "こんどうたろう",
+      "fix_type": "placeholder"
+    },
+    {
+      "id": "recyswf2VXNIjQzfL",
+      "name": "柳田稔",
+      "current_kana": "",
+      "new_kana": "やなぎだみのる",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recyxdnotyntnSEOJ",
+      "name": "河村たかし",
+      "current_kana": "",
+      "new_kana": "かわむらたかし",
+      "fix_type": "empty"
+    },
+    {
+      "id": "recz6dw53Y7BKv3SU",
+      "name": "足立敏之",
+      "current_kana": "",
+      "new_kana": "あだちとしゆき",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reczaQmCdZxPrGkNL",
+      "name": "森和",
+      "current_kana": "",
+      "new_kana": "もりわ",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reczpry3O4BUdC2g3",
+      "name": "魚住裕一郎",
+      "current_kana": "",
+      "new_kana": "うおずみゆういちろう",
+      "fix_type": "empty"
+    },
+    {
+      "id": "reczqXYoNu6HuqRJO",
+      "name": "山口茂",
+      "current_kana": "",
+      "new_kana": "やまぐちしげる",
+      "fix_type": "empty"
+    }
+  ]
+}
