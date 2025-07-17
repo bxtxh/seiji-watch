@@ -1,0 +1,159 @@
+{
+  "backup_date": "2025-07-13T16:09:53.788517",
+  "records_to_fix": 17,
+  "corrections": [
+    {
+      "id": "rec2X2ce4AJkN6N9O",
+      "name": "吉良佳子",
+      "current_kana": "きらけいこ",
+      "new_kana": "きらよしこ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "rec61W1iYByygfyw4",
+      "name": "那谷屋正義",
+      "current_kana": "なたやせいぎ",
+      "new_kana": "なたやまさよし",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recJnnClwwEq4nNgM",
+      "name": "佐藤正久",
+      "current_kana": "さとうただひさ",
+      "new_kana": "さとうまさひさ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recXmorqyUBehej8L",
+      "name": "松本豊",
+      "current_kana": "まつもと",
+      "new_kana": "まつもとゆたか",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "新潟県第5区"
+    },
+    {
+      "id": "recYZIYk1Z8RIZuZP",
+      "name": "岡田克也",
+      "current_kana": "おかだ",
+      "new_kana": "おかだかつや",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "三重県第3区"
+    },
+    {
+      "id": "recZMaCrcVfTAkoEf",
+      "name": "中川貴",
+      "current_kana": "なかがわ",
+      "new_kana": "なかがわたかし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "栃木県第6区"
+    },
+    {
+      "id": "recZUZ3InZKVO8KSv",
+      "name": "渡辺喜美",
+      "current_kana": "わたなべ",
+      "new_kana": "わたなべよしみ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "栃木県"
+    },
+    {
+      "id": "recZrTZg8BGk96RkJ",
+      "name": "高橋光男",
+      "current_kana": "たかはし",
+      "new_kana": "たかはしみつお",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recdQjPFTWwGDREPw",
+      "name": "太田房江",
+      "current_kana": "おおた",
+      "new_kana": "おおたふさえ",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "大阪府"
+    },
+    {
+      "id": "recdUFt5g7jRJJIxQ",
+      "name": "松本豊",
+      "current_kana": "まつもと",
+      "new_kana": "まつもとゆたか",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "兵庫県第5区"
+    },
+    {
+      "id": "recgEcewE2gdn4Tww",
+      "name": "金子原二郎",
+      "current_kana": "かねこはら",
+      "new_kana": "かねこげんじろう",
+      "fix_type": "known_correction",
+      "house": "参議院",
+      "constituency": "長崎県"
+    },
+    {
+      "id": "reciMTSg5kwu5Ir08",
+      "name": "中川貴",
+      "current_kana": "なかがわ",
+      "new_kana": "なかがわたかし",
+      "fix_type": "known_correction",
+      "house": "衆議院",
+      "constituency": "京都府第6区"
+    },
+    {
+      "id": "recmWUkDJIdqi4ZaG",
+      "name": "塩川鉄也",
+      "current_kana": "たなかたろう",
+      "new_kana": "かわてつ",
+      "fix_type": "placeholder",
+      "house": "衆議院",
+      "constituency": "埼玉県第3区"
+    },
+    {
+      "id": "recroEV2CxNXuNZtX",
+      "name": "清水貴之",
+      "current_kana": "しみず",
+      "new_kana": "しみずたかし",
+      "fix_type": "too_short",
+      "house": "参議院",
+      "constituency": "兵庫県"
+    },
+    {
+      "id": "rect21gQkQpvqQddi",
+      "name": "佐藤信秋",
+      "current_kana": "さとう",
+      "new_kana": "さとうあき",
+      "fix_type": "too_short",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "rectbLMjVpmqpr9tN",
+      "name": "竹内真二",
+      "current_kana": "たけうち",
+      "new_kana": "うちしんじ",
+      "fix_type": "too_short",
+      "house": "参議院",
+      "constituency": "比例代表"
+    },
+    {
+      "id": "recvZjEAXPuyYbPlO",
+      "name": "小野田紀美",
+      "current_kana": "おのた",
+      "new_kana": "しょうのた",
+      "fix_type": "too_short",
+      "house": "参議院",
+      "constituency": "岡山県"
+    }
+  ]
+}

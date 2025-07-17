@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "total_time": 50.580326,
+  "bills_analyzed": 20,
+  "issues_generated": 70,
+  "issues_inserted": 70,
+  "errors": [],
+  "start_time": "2025-07-12T23:46:51.384702",
+  "end_time": "2025-07-12T23:47:41.965028"
+}

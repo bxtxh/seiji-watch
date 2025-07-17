@@ -1,8 +1,9 @@
-# イシュータグ & イシュー詳細機能 — Phase 0: Seed 設計書
+# PolicyCategory & Issue分類機能 — Phase 0: Seed 設計書
 
 ## 0. TL;DR
 - **目的**: 「社会課題→関連国会アクション」を一発でたどれる Issue-first 情報設計を仕込む  
-- **範囲**: 3 レイヤータグ体系の L1/L2 を外部コードブックから日本語対訳して Airtable に Seed するところまで  
+- **範囲**: CAP準拠の3層PolicyCategory体系のL1/L2を外部コードブックから日本語対訳してAirtableにSeedするところまで  
+- **概念区分**: PolicyCategory（構造的分類）とIssue（動的抽出）の明確な分離  
 - **締切**: 2025-08-31（Phase 0 完了）
 
 ---
@@ -13,24 +14,32 @@
 erDiagram
   ISSUE_CATEGORIES ||--o{ ISSUE_CATEGORIES : "parent"
   ISSUE_CATEGORIES ||--o{ ISSUES : ""
+  BILLS ||--o{ BILLS_ISSUE_CATEGORIES : ""
+  ISSUE_CATEGORIES ||--o{ BILLS_ISSUE_CATEGORIES : ""
   BILLS ||--o{ BILLS_ISSUES : ""
   ISSUES ||--o{ BILLS_ISSUES : ""
   
   ISSUE_CATEGORIES {
-    string record_id PK
-    string cap_code
+    string record_id PK "PolicyCategory (CAP準拠)"
+    string cap_code "CAP分類コード"
     string layer "L1|L2|L3"
-    string title_ja
-    string title_en
+    string title_ja "政策分野名"
+    string title_en "英語名"
     text summary_150ja
-    boolean is_seed
+    boolean is_seed "CAP由来フラグ"
     string parent_category_id FK
   }
   ISSUES {
-    string record_id PK
-    string title
-    text description
-    string category_id FK
+    string record_id PK "動的政策イシュー"
+    string title "イシュータイトル"
+    text description "詳細説明"
+    string category_id FK "関連PolicyCategory"
+  }
+  BILLS_ISSUE_CATEGORIES {
+    string bill_id FK "PostgreSQL Bills"
+    string issue_category_id FK "Airtable PolicyCategory"
+    float confidence_score "信頼度"
+    boolean is_manual "手動設定フラグ"
   }
   BILLS_ISSUES {
     string bill_id FK
@@ -39,7 +48,12 @@ erDiagram
   }
 ```
 
-> **Phase 0 scope**: `ISSUE_CATEGORIES` テーブルに L1/L2 のシードデータを投入し、`is_seed=true` フラグを立てるだけ。`BILLS_ISSUES` はまだ空で OK。
+> **Phase 0 scope**: `ISSUE_CATEGORIES` テーブル（PolicyCategory）に L1/L2 のCAP準拠シードデータを投入し、`is_seed=true` フラグを立てる。`BILLS_ISSUE_CATEGORIES` と `BILLS_ISSUES` は後続フェーズで実装。
+
+> **概念説明**: 
+> - `ISSUE_CATEGORIES` = PolicyCategory（CAP準拠の構造的政策分野分類）
+> - `ISSUES` = 動的に抽出される具体的政策イシュー
+> - `BILLS_ISSUE_CATEGORIES` = Bills ↔ PolicyCategory の関連付け（新規追加予定）
 
 ---
 

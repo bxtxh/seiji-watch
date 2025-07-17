@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Layout from "@/components/Layout";
 
 interface IssueCategory {
   id: string;
@@ -31,11 +31,15 @@ interface CategoryTreeResponse {
 }
 
 const IssueCategoriesPage = () => {
-  const [categoryTree, setCategoryTree] = useState<CategoryTreeResponse | null>(null);
+  const [categoryTree, setCategoryTree] = useState<CategoryTreeResponse | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedL1, setSelectedL1] = useState<string | null>(null);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(),
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -45,11 +49,11 @@ const IssueCategoriesPage = () => {
   // Helper functions
   const getCategoryIcon = (capCode: string) => {
     const icons: { [key: string]: string } = {
-      '1': '🏥', // Social Welfare & Healthcare
-      '2': '💼', // Economic & Industrial Policy
-      '3': '🌏', // Foreign Affairs & International Relations
+      "1": "🏥", // Social Welfare & Healthcare
+      "2": "💼", // Economic & Industrial Policy
+      "3": "🌏", // Foreign Affairs & International Relations
     };
-    return icons[capCode] || '📋';
+    return icons[capCode] || "📋";
   };
 
   const handleCategoryClick = (category: CategoryTreeNode) => {
@@ -69,22 +73,22 @@ const IssueCategoriesPage = () => {
   const fetchCategoryTree = async () => {
     try {
       setLoading(true);
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081';
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
       const response = await fetch(`${apiBaseUrl}/api/issues/categories/tree`);
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch category tree');
+        throw new Error("Failed to fetch category tree");
       }
-      
+
       const data = await response.json();
       setCategoryTree(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -93,7 +97,9 @@ const IssueCategoriesPage = () => {
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-center items-center py-16">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              <span className="ml-3 text-lg text-gray-600">カテゴリを読み込み中...</span>
+              <span className="ml-3 text-lg text-gray-600">
+                カテゴリを読み込み中...
+              </span>
             </div>
           </div>
         </div>
@@ -107,7 +113,9 @@ const IssueCategoriesPage = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
           <div className="container mx-auto px-4 py-8">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-red-800 mb-2">エラーが発生しました</h2>
+              <h2 className="text-xl font-semibold text-red-800 mb-2">
+                エラーが発生しました
+              </h2>
               <p className="text-red-700">{error}</p>
               <button
                 onClick={fetchCategoryTree}
@@ -153,7 +161,9 @@ const IssueCategoriesPage = () => {
             </div>
             <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
               <div className="text-2xl font-bold text-purple-600 mb-2">
-                {categoryTree ? categoryTree.total_l1 + categoryTree.total_l2 : 0}
+                {categoryTree
+                  ? categoryTree.total_l1 + categoryTree.total_l2
+                  : 0}
               </div>
               <div className="text-gray-600">総カテゴリ数</div>
             </div>
@@ -167,9 +177,13 @@ const IssueCategoriesPage = () => {
               const childCount = l2Children.length;
 
               return (
-                <div key={l1Category.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden" data-testid="l1-category">
+                <div
+                  key={l1Category.id}
+                  className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden"
+                  data-testid="l1-category"
+                >
                   {/* L1 Category Header */}
-                  <div 
+                  <div
                     className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => handleCategoryClick(l1Category)}
                   >
@@ -188,7 +202,7 @@ const IssueCategoriesPage = () => {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             CAP-{l1Category.cap_code}
@@ -200,7 +214,7 @@ const IssueCategoriesPage = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       {childCount > 0 && (
                         <button
                           onClick={(e) => {
@@ -211,13 +225,18 @@ const IssueCategoriesPage = () => {
                         >
                           <svg
                             className={`w-5 h-5 text-gray-500 transition-transform ${
-                              isExpanded ? 'transform rotate-180' : ''
+                              isExpanded ? "transform rotate-180" : ""
                             }`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
                           </svg>
                         </button>
                       )}
@@ -258,10 +277,14 @@ const IssueCategoriesPage = () => {
 
           {/* Help Section */}
           <div className="mt-16 bg-blue-50 rounded-xl p-8 border border-blue-100">
-            <h2 className="text-2xl font-bold text-blue-800 mb-4">政策分類について</h2>
+            <h2 className="text-2xl font-bold text-blue-800 mb-4">
+              政策分類について
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-blue-700">
               <div>
-                <h3 className="font-semibold mb-2">CAP（Comparative Agendas Project）</h3>
+                <h3 className="font-semibold mb-2">
+                  CAP（Comparative Agendas Project）
+                </h3>
                 <p>
                   国際的な政策研究プロジェクトの分類基準を採用し、
                   世界各国の政策と比較可能な形で整理しています。

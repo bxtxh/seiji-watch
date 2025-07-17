@@ -1,0 +1,72 @@
+{
+  "bills_categories": {
+    "その他": 77,
+    "予算・決算": 1,
+    "社会保障": 6,
+    "経済・産業": 5,
+    "税制": 3,
+    "外交・国際": 3
+  },
+  "issue_categories_total": 6,
+  "issue_categories_by_layer": {
+    "L1": 6
+  },
+  "bills_to_issue_mapping": {
+    "その他": {
+      "category_id": "FALLBACK_OTHER",
+      "title_ja": "その他",
+      "title_en": "Other",
+      "layer": "L1",
+      "cap_code": "99",
+      "match_type": "fallback",
+      "bills_count": 77
+    },
+    "予算・決算": {
+      "category_id": "FALLBACK_BUDGET",
+      "title_ja": "予算・決算",
+      "title_en": "Budget and Finance",
+      "layer": "L1",
+      "cap_code": "1",
+      "match_type": "fallback",
+      "bills_count": 1
+    },
+    "社会保障": {
+      "category_id": "FALLBACK_SOCIAL",
+      "title_ja": "社会保障",
+      "title_en": "Social Security",
+      "layer": "L1",
+      "cap_code": "3",
+      "match_type": "fallback",
+      "bills_count": 6
+    },
+    "経済・産業": {
+      "category_id": "FALLBACK_ECONOMY",
+      "title_ja": "経済・産業",
+      "title_en": "Economy and Industry",
+      "layer": "L1",
+      "cap_code": "4",
+      "match_type": "fallback",
+      "bills_count": 5
+    },
+    "税制": {
+      "category_id": "FALLBACK_TAX",
+      "title_ja": "税制",
+      "title_en": "Taxation",
+      "layer": "L1",
+      "cap_code": "2",
+      "match_type": "fallback",
+      "bills_count": 3
+    },
+    "外交・国際": {
+      "category_id": "FALLBACK_FOREIGN",
+      "title_ja": "外交・国際",
+      "title_en": "Foreign Affairs",
+      "layer": "L1",
+      "cap_code": "19",
+      "match_type": "fallback",
+      "bills_count": 3
+    }
+  },
+  "is_fallback": true,
+  "note": "IssueCategories table not accessible - using fallback mapping"
+}

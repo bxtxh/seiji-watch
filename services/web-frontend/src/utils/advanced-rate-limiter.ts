@@ -27,7 +27,10 @@ export interface RateLimitConfig {
 }
 
 export class AdvancedRateLimiter {
-  private requests: Map<string, Array<{ timestamp: number; success: boolean }>> = new Map();
+  private requests: Map<
+    string,
+    Array<{ timestamp: number; success: boolean }>
+  > = new Map();
   private blockedUntil: Map<string, number> = new Map();
   protected config: RateLimitConfig;
 
@@ -69,9 +72,9 @@ export class AdvancedRateLimiter {
    * Check if a request is allowed
    */
   isAllowed(
-    identifier: string, 
-    type: keyof RateLimitConfig = 'general',
-    requestInfo?: { userAgent?: string; ip?: string }
+    identifier: string,
+    type: keyof RateLimitConfig = "general",
+    requestInfo?: { userAgent?: string; ip?: string },
   ): RateLimitInfo {
     const rule = this.config[type];
     const now = Date.now();
@@ -99,7 +102,7 @@ export class AdvancedRateLimiter {
     const windowStart = now - rule.windowMs;
 
     // Filter requests in current window
-    const recentRequests = requests.filter(req => {
+    const recentRequests = requests.filter((req) => {
       if (req.timestamp <= windowStart) return false;
       if (rule.skipSuccessfulRequests && req.success) return false;
       if (rule.skipFailedRequests && !req.success) return false;
@@ -107,7 +110,9 @@ export class AdvancedRateLimiter {
     });
 
     const remaining = Math.max(0, rule.maxRequests - recentRequests.length);
-    const resetTime = Math.max(...recentRequests.map(r => r.timestamp), now - rule.windowMs) + rule.windowMs;
+    const resetTime =
+      Math.max(...recentRequests.map((r) => r.timestamp), now - rule.windowMs) +
+      rule.windowMs;
 
     // Check if over limit
     if (recentRequests.length >= rule.maxRequests) {
@@ -120,7 +125,9 @@ export class AdvancedRateLimiter {
         limit: rule.maxRequests,
         remaining: 0,
         resetTime,
-        retryAfter: rule.blockDurationMs ? Math.ceil(rule.blockDurationMs / 1000) : Math.ceil((resetTime - now) / 1000),
+        retryAfter: rule.blockDurationMs
+          ? Math.ceil(rule.blockDurationMs / 1000)
+          : Math.ceil((resetTime - now) / 1000),
         blocked: true,
       };
     }
@@ -137,9 +144,9 @@ export class AdvancedRateLimiter {
    * Record a request
    */
   recordRequest(
-    identifier: string, 
-    type: keyof RateLimitConfig = 'general',
-    success: boolean = true
+    identifier: string,
+    type: keyof RateLimitConfig = "general",
+    success: boolean = true,
   ): void {
     const key = `${type}:${identifier}`;
     const now = Date.now();
@@ -151,7 +158,9 @@ export class AdvancedRateLimiter {
     // Clean old requests
     const rule = this.config[type];
     const windowStart = now - rule.windowMs;
-    const filteredRequests = requests.filter(req => req.timestamp > windowStart);
+    const filteredRequests = requests.filter(
+      (req) => req.timestamp > windowStart,
+    );
 
     this.requests.set(key, filteredRequests);
   }
@@ -159,22 +168,25 @@ export class AdvancedRateLimiter {
   /**
    * Get rate limit statistics
    */
-  getStats(identifier: string, type: keyof RateLimitConfig = 'general') {
+  getStats(identifier: string, type: keyof RateLimitConfig = "general") {
     const key = `${type}:${identifier}`;
     const requests = this.requests.get(key) || [];
     const rule = this.config[type];
     const now = Date.now();
     const windowStart = now - rule.windowMs;
 
-    const recentRequests = requests.filter(req => req.timestamp > windowStart);
-    const successfulRequests = recentRequests.filter(req => req.success);
-    const failedRequests = recentRequests.filter(req => !req.success);
+    const recentRequests = requests.filter(
+      (req) => req.timestamp > windowStart,
+    );
+    const successfulRequests = recentRequests.filter((req) => req.success);
+    const failedRequests = recentRequests.filter((req) => !req.success);
 
     return {
       totalRequests: recentRequests.length,
       successfulRequests: successfulRequests.length,
       failedRequests: failedRequests.length,
-      isBlocked: this.blockedUntil.has(key) && now < (this.blockedUntil.get(key) || 0),
+      isBlocked:
+        this.blockedUntil.has(key) && now < (this.blockedUntil.get(key) || 0),
       limit: rule.maxRequests,
       remaining: Math.max(0, rule.maxRequests - recentRequests.length),
     };
@@ -190,7 +202,7 @@ export class AdvancedRateLimiter {
       this.blockedUntil.delete(key);
     } else {
       // Reset all types for this identifier
-      Object.keys(this.config).forEach(t => {
+      Object.keys(this.config).forEach((t) => {
         const key = `${t}:${identifier}`;
         this.requests.delete(key);
         this.blockedUntil.delete(key);
@@ -203,16 +215,18 @@ export class AdvancedRateLimiter {
    */
   cleanup(): void {
     const now = Date.now();
-    
+
     // Clean up old requests
     for (const [key, requests] of this.requests.entries()) {
-      const type = key.split(':')[0] as keyof RateLimitConfig;
+      const type = key.split(":")[0] as keyof RateLimitConfig;
       const rule = this.config[type];
       if (!rule) continue;
 
       const windowStart = now - rule.windowMs;
-      const filteredRequests = requests.filter(req => req.timestamp > windowStart);
-      
+      const filteredRequests = requests.filter(
+        (req) => req.timestamp > windowStart,
+      );
+
       if (filteredRequests.length === 0) {
         this.requests.delete(key);
       } else {
@@ -233,13 +247,16 @@ export class AdvancedRateLimiter {
    */
   getAllStats(): { [key: string]: any } {
     const stats: { [key: string]: any } = {};
-    
+
     for (const [key] of this.requests.entries()) {
-      const [type, identifier] = key.split(':');
+      const [type, identifier] = key.split(":");
       if (!stats[identifier]) {
         stats[identifier] = {};
       }
-      stats[identifier][type] = this.getStats(identifier, type as keyof RateLimitConfig);
+      stats[identifier][type] = this.getStats(
+        identifier,
+        type as keyof RateLimitConfig,
+      );
     }
 
     return stats;
@@ -250,10 +267,13 @@ export class AdvancedRateLimiter {
 export const globalRateLimiter = new AdvancedRateLimiter();
 
 // Auto cleanup every 5 minutes
-if (typeof window !== 'undefined') {
-  setInterval(() => {
-    globalRateLimiter.cleanup();
-  }, 5 * 60 * 1000);
+if (typeof window !== "undefined") {
+  setInterval(
+    () => {
+      globalRateLimiter.cleanup();
+    },
+    5 * 60 * 1000,
+  );
 }
 
 /**
@@ -281,23 +301,29 @@ export class AdaptiveRateLimiter extends AdvancedRateLimiter {
     }
   }
 
-  isAllowed(identifier: string, type: keyof RateLimitConfig = 'general', requestInfo?: any): RateLimitInfo {
+  isAllowed(
+    identifier: string,
+    type: keyof RateLimitConfig = "general",
+    requestInfo?: any,
+  ): RateLimitInfo {
     // Temporarily modify config based on adaptive multiplier
     const originalRule = this.config[type];
     const adaptedRule = {
       ...originalRule,
-      maxRequests: Math.floor(originalRule.maxRequests * this.adaptiveMultiplier),
+      maxRequests: Math.floor(
+        originalRule.maxRequests * this.adaptiveMultiplier,
+      ),
     };
 
     // Temporarily replace config
     const originalConfig = this.config[type];
     this.config[type] = adaptedRule;
-    
+
     const result = super.isAllowed(identifier, type, requestInfo);
-    
+
     // Restore original config
     this.config[type] = originalConfig;
-    
+
     return result;
   }
 }
@@ -305,18 +331,20 @@ export class AdaptiveRateLimiter extends AdvancedRateLimiter {
 /**
  * Rate limit middleware for components
  */
-export function useRateLimit(type: keyof RateLimitConfig = 'general') {
+export function useRateLimit(type: keyof RateLimitConfig = "general") {
   const getIdentifier = (): string => {
-    if (typeof window === 'undefined') return 'server';
-    
+    if (typeof window === "undefined") return "server";
+
     // Create identifier from multiple factors
     const factors = [
       window.location.hostname,
-      navigator.userAgent ? btoa(navigator.userAgent).slice(0, 10) : 'unknown',
-      sessionStorage.getItem('session_id') || localStorage.getItem('user_id') || 'anonymous'
+      navigator.userAgent ? btoa(navigator.userAgent).slice(0, 10) : "unknown",
+      sessionStorage.getItem("session_id") ||
+        localStorage.getItem("user_id") ||
+        "anonymous",
     ];
-    
-    return factors.join('_');
+
+    return factors.join("_");
   };
 
   const checkLimit = (): RateLimitInfo => {

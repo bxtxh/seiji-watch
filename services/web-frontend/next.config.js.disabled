@@ -1,0 +1,20 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: false,
+  swcMinify: false,
+  
+  // Minimal configuration for testing
+  experimental: {},
+  
+  // No security headers
+  async headers() {
+    return [];
+  },
+  
+  // No rewrites
+  async rewrites() {
+    return [];
+  },
+};
+
+module.exports = nextConfig;

@@ -1,36 +1,36 @@
-import React from 'react';
-import IssueCard, { KanbanIssue } from './IssueCard';
+import React from "react";
+import IssueCard, { KanbanIssue } from "./IssueCard";
 
 // Stage configuration
 const STAGE_CONFIG = {
   審議前: {
-    label: '審議前',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
-    description: '未審議・タグ付け済み',
-    icon: '📋'
+    label: "審議前",
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-700",
+    description: "未審議・タグ付け済み",
+    icon: "📋",
   },
   審議中: {
-    label: '審議中',
-    bgColor: 'bg-indigo-50',
-    textColor: 'text-indigo-700', 
-    description: '委員会・本会議審議中',
-    icon: '⚖️'
+    label: "審議中",
+    bgColor: "bg-indigo-50",
+    textColor: "text-indigo-700",
+    description: "委員会・本会議審議中",
+    icon: "⚖️",
   },
   採決待ち: {
-    label: '採決待ち',
-    bgColor: 'bg-yellow-50',
-    textColor: 'text-yellow-700',
-    description: '審議完了・採決日程待ち',
-    icon: '⏳'
+    label: "採決待ち",
+    bgColor: "bg-yellow-50",
+    textColor: "text-yellow-700",
+    description: "審議完了・採決日程待ち",
+    icon: "⏳",
   },
   成立: {
-    label: '成立',
-    bgColor: 'bg-green-50',
-    textColor: 'text-green-700',
-    description: '可決成立・否決完了',
-    icon: '✅'
-  }
+    label: "成立",
+    bgColor: "bg-green-50",
+    textColor: "text-green-700",
+    description: "可決成立・否決完了",
+    icon: "✅",
+  },
 };
 
 interface StageColumnProps {
@@ -41,25 +41,25 @@ interface StageColumnProps {
   maxDisplayed?: number;
 }
 
-const StageColumn = React.memo(function StageColumn({ 
-  stageKey, 
-  issues, 
+const StageColumn = React.memo(function StageColumn({
+  stageKey,
+  issues,
   onCardClick,
   onCardHover,
-  maxDisplayed = 8 
+  maxDisplayed = 8,
 }: StageColumnProps) {
   const config = STAGE_CONFIG[stageKey as keyof typeof STAGE_CONFIG];
   const displayedIssues = issues.slice(0, maxDisplayed);
   const hiddenCount = issues.length - maxDisplayed;
-  
+
   if (!config) {
     return null;
   }
 
   return (
-    <div 
-      className="flex flex-col h-full snap-start min-w-[280px] md:min-w-[320px]" 
-      role="group" 
+    <div
+      className="flex flex-col h-full snap-start min-w-[280px] md:min-w-[320px]"
+      role="group"
       aria-labelledby={`stage-${stageKey}-label`}
     >
       {/* Column Header */}
@@ -68,13 +68,13 @@ const StageColumn = React.memo(function StageColumn({
           <span className="text-lg" role="img" aria-label={config.label}>
             {config.icon}
           </span>
-          <h3 
+          <h3
             id={`stage-${stageKey}-label`}
             className="text-sm font-bold text-gray-900"
           >
             {config.label}
           </h3>
-          <span 
+          <span
             className={`px-2 py-1 text-xs rounded-full font-medium ${config.bgColor} ${config.textColor}`}
             aria-label={`${issues.length}件のイシュー`}
           >
@@ -92,21 +92,21 @@ const StageColumn = React.memo(function StageColumn({
           <>
             {/* Issue Cards */}
             {displayedIssues.map((issue) => (
-              <IssueCard 
-                key={issue.id} 
-                issue={issue} 
+              <IssueCard
+                key={issue.id}
+                issue={issue}
                 onCardClick={onCardClick}
                 onCardHover={onCardHover}
               />
             ))}
-            
+
             {/* More Items Indicator */}
             {hiddenCount > 0 && (
               <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-4 text-center border-2 border-dashed border-gray-300">
                 <div className="text-sm font-medium text-gray-700 mb-1">
                   さらに {hiddenCount}件のイシュー
                 </div>
-                <button 
+                <button
                   className="text-xs text-primary hover:underline font-medium"
                   onClick={() => {
                     // Navigate to full stage view
@@ -130,21 +130,20 @@ const StageColumn = React.memo(function StageColumn({
               現在{config.label}のイシューはありません
             </div>
             <div className="text-xs text-gray-400">
-              新しいイシューが追加されると<br />
+              新しいイシューが追加されると
+              <br />
               ここに表示されます
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Column Footer */}
       <div className="px-1 py-2 border-t border-gray-200 bg-gray-50 rounded-b-lg">
         <div className="text-xs text-gray-500 text-center">
-          {displayedIssues.length > 0 ? (
-            `${displayedIssues.length}件表示中`
-          ) : (
-            '空のステージ'
-          )}
+          {displayedIssues.length > 0
+            ? `${displayedIssues.length}件表示中`
+            : "空のステージ"}
         </div>
       </div>
     </div>

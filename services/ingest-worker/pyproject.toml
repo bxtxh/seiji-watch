@@ -3,6 +3,7 @@ name = "ingest-worker"
 version = "0.1.0"
 description = "Diet data ingestion worker (scraper + STT processing)"
 authors = ["Diet Issue Tracker Team"]
+packages = [{include = "*", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

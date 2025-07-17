@@ -13,14 +13,14 @@ export interface Bill {
   bill_number: string;
   title: string;
   summary: string;
-  policy_category?: PolicyCategory;  // PolicyCategory (政策分野) - CAP基準の政策分類
+  policy_category?: PolicyCategory; // PolicyCategory (政策分野) - CAP基準の政策分類
   status: string;
   diet_url: string;
   relevance_score?: number;
   search_method?: string;
   related_issues?: string[];
   issue_tags?: string[];
-  
+
   // 後方互換性のため (段階的移行)
   category?: string;
 }
@@ -86,11 +86,11 @@ export interface Issue {
   id: string;
   title: string;
   description: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'active' | 'reviewed' | 'archived';
-  stage?: string;  // 審議ステージ (審議前, 審議中, 採決待ち, 成立)
-  policy_category?: PolicyCategory;  // PolicyCategory (政策分野) - CAP基準の政策分類
-  issue_tags?: IssueTag[];  // IssueTag (イシュータグ) - Issue特有の分類タグ
+  priority: "high" | "medium" | "low";
+  status: "active" | "reviewed" | "archived";
+  stage?: string; // 審議ステージ (審議前, 審議中, 採決待ち, 成立)
+  policy_category?: PolicyCategory; // PolicyCategory (政策分野) - CAP基準の政策分類
+  issue_tags?: IssueTag[]; // IssueTag (イシュータグ) - Issue特有の分類タグ
   related_bills?: string[];
   related_bills_count?: number;
   extraction_confidence?: number;
@@ -116,7 +116,7 @@ export interface VoteResult {
   member_name: string;
   party_name: string;
   constituency: string;
-  vote_result: 'yes' | 'no' | 'abstain' | 'absent' | 'present';
+  vote_result: "yes" | "no" | "abstain" | "absent" | "present";
 }
 
 export interface VotingSession {

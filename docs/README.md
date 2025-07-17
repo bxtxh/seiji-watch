@@ -18,6 +18,7 @@
 #### 🔧 [technical/](./01-specs/technical/) - 技術仕様
 - **[infrastructure-specification.md](./01-specs/technical/infrastructure-specification.md)** - インフラ構成仕様（GCP・Terraform）
 - **[issue-feature-specification.md](./01-specs/technical/issue-feature-specification.md)** - イシュー機能・3層分類システム
+- **[ingestion-pipeline-hybrid.md](./01-specs/technical/ingestion-pipeline-hybrid.md)** - ハイブリッドインジェスションパイプライン（NDL API × Whisper）
 - **[development-implementation-mapping.md](./01-specs/technical/development-implementation-mapping.md)** - 開発チケット⇔実装ファイル対応
 - **[development-tickets-final.md](./01-specs/technical/development-tickets-final.md)** - EPIC・チケット進捗管理
 

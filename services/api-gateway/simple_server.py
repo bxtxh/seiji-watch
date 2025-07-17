@@ -84,6 +84,16 @@ async def health_check():
         "data_loaded": bool(production_data)
     }
 
+@app.get("/api/health")
+async def api_health_check():
+    """API Health check endpoint for frontend"""
+    return {
+        "status": "healthy",
+        "service": "api-gateway",
+        "version": "1.0.0",
+        "data_loaded": bool(production_data)
+    }
+
 @app.get("/bills")
 async def get_bills(
     limit: int = Query(10, ge=1, le=100),
@@ -488,7 +498,7 @@ async def get_member_policy_analysis(member_id: str):
         "analysis": mock_analysis
     }
 
-# Kanban API endpoint for TOP page
+# Kanban API endpoint for TOP page (must be defined before dynamic routes)
 @app.get("/api/issues/kanban")
 async def get_issues_kanban(
     range: str = Query("30d", description="Date range: 7d, 30d, or 90d"),
@@ -602,6 +612,364 @@ async def get_issues_kanban(
     }
     
     return response
+
+# Issue API endpoints
+@app.get("/api/issues")
+async def get_issues(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    category: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None)
+):
+    """Get issues list with pagination and filtering"""
+    
+    if not production_data:
+        raise HTTPException(status_code=503, detail="Production data not loaded")
+    
+    bills = production_data.get('production_dataset', {}).get('bills', [])
+    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    
+    # Create a mapping of bills to voting sessions
+    bill_vote_map = {}
+    for session in voting_sessions:
+        bill_number = session.get('bill_number', '')
+        if bill_number:
+            bill_vote_map[bill_number] = session
+    
+    # Generate issues from bills data
+    issues = []
+    for i, bill in enumerate(bills):
+        bill_id = bill.get('bill_id', f'bill_{i}')
+        voting_session = bill_vote_map.get(bill_id)
+        
+        # Stage determination logic
+        if voting_session:
+            vote_date = voting_session.get('vote_date')
+            if vote_date:
+                stage = "成立"
+            else:
+                stage = "採決待ち"
+        else:
+            stage = "審議中"
+        
+        # Extract category from bill
+        bill_category = bill.get('category', 'その他')
+        
+        # Create PolicyCategory structure
+        policy_category = {
+            "id": f"cat_{bill_category.replace('・', '_')}",
+            "layer": "L1",
+            "title_ja": bill_category
+        }
+        
+        # Create IssueTag
+        issue_tags = [{
+            "id": f"tag_{bill_category}",
+            "name": bill_category,
+            "color_code": "#3B82F6",
+            "category": "自動生成",
+            "description": f"{bill_category}に関連するイシュー"
+        }]
+        
+        # Generate issue from bill
+        full_title = bill.get('title', '')
+        issue_title = full_title[:50] + '...' if len(full_title) > 50 else full_title
+        
+        issue = {
+            "id": f"ISS-{i+1:03d}",
+            "title": issue_title,
+            "description": f"法案「{full_title}」に関連する政策課題",
+            "stage": stage,
+            "policy_category": policy_category,
+            "issue_tags": issue_tags,
+            "related_bills": [bill_id],
+            "related_bills_count": 1,
+            "extraction_confidence": 0.8,
+            "is_llm_generated": True,
+            "created_at": "2025-07-01T10:00:00Z",
+            "updated_at": datetime.now().isoformat() + "Z"
+        }
+        
+        issues.append(issue)
+    
+    # Apply filters
+    if category:
+        issues = [issue for issue in issues 
+                 if issue.get('policy_category', {}).get('title_ja') == category]
+    
+    if status:
+        issues = [issue for issue in issues if issue.get('status') == status]
+    
+    if priority:
+        issues = [issue for issue in issues if issue.get('priority') == priority]
+    
+    # Apply pagination
+    total = len(issues)
+    issues_page = issues[offset:offset + limit]
+    
+    return {
+        "success": True,
+        "issues": issues_page,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "has_more": offset + limit < total
+    }
+
+# Issue tags endpoint (must be before individual issue endpoint)
+@app.get("/api/issues/tags")
+async def get_issue_tags():
+    """Get all available issue tags"""
+    
+    if not production_data:
+        raise HTTPException(status_code=503, detail="Production data not loaded")
+    
+    bills = production_data.get('production_dataset', {}).get('bills', [])
+    
+    # Extract unique categories and create tags
+    categories = set()
+    for bill in bills:
+        category = bill.get('category', 'その他')
+        categories.add(category)
+    
+    # Create issue tags from categories
+    issue_tags = []
+    for i, category in enumerate(sorted(categories)):
+        tag = {
+            "id": f"tag_{category.replace('・', '_')}_{i}",
+            "name": category,
+            "color_code": "#3B82F6",
+            "category": "政策分野",
+            "description": f"{category}分野に関連するイシュー"
+        }
+        issue_tags.append(tag)
+    
+    # Add some common status tags
+    status_tags = [
+        {
+            "id": "tag_long_deliberation",
+            "name": "長期審議",
+            "color_code": "#F59E0B",
+            "category": "審議期間",
+            "description": "長期間にわたって審議されているイシュー"
+        },
+        {
+            "id": "tag_urgent",
+            "name": "緊急性高",
+            "color_code": "#EF4444",
+            "category": "緊急度",
+            "description": "緊急に対応が必要なイシュー"
+        },
+        {
+            "id": "tag_bipartisan",
+            "name": "与野党対立",
+            "color_code": "#8B5CF6",
+            "category": "審議特徴",
+            "description": "与野党間で意見が対立しているイシュー"
+        }
+    ]
+    
+    all_tags = issue_tags + status_tags
+    
+    return {
+        "success": True,
+        "tags": all_tags,
+        "total": len(all_tags)
+    }
+
+# Individual Issue API endpoints (defined after specific routes)
+@app.get("/api/issues/{issue_id}")
+async def get_issue_detail(issue_id: str):
+    """Get individual issue details by ID"""
+    
+    if not production_data:
+        raise HTTPException(status_code=503, detail="Production data not loaded")
+    
+    bills = production_data.get('production_dataset', {}).get('bills', [])
+    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    
+    # Create a mapping of bills to voting sessions
+    bill_vote_map = {}
+    for session in voting_sessions:
+        bill_number = session.get('bill_number', '')
+        if bill_number:
+            bill_vote_map[bill_number] = session
+    
+    # Find the issue by ID (ISS-XXX format)
+    try:
+        # Extract issue index from ISS-XXX format
+        if not issue_id.startswith('ISS-'):
+            raise HTTPException(status_code=400, detail="Invalid issue ID format")
+        
+        issue_index = int(issue_id.split('-')[1]) - 1  # Convert ISS-001 to index 0
+        
+        if issue_index < 0 or issue_index >= len(bills):
+            raise HTTPException(status_code=404, detail="Issue not found")
+        
+        bill = bills[issue_index]
+        
+    except (ValueError, IndexError):
+        raise HTTPException(status_code=400, detail="Invalid issue ID format")
+    
+    # Determine stage based on bill and voting data
+    bill_id = bill.get('bill_id', f'bill_{issue_index}')
+    voting_session = bill_vote_map.get(bill_id)
+    
+    # Stage determination logic (same as Kanban)
+    if voting_session:
+        vote_date = voting_session.get('vote_date')
+        if vote_date:
+            stage = "成立"
+        else:
+            stage = "採決待ち"
+    else:
+        stage = "審議中"
+    
+    # Create schedule information
+    from datetime import datetime, timedelta
+    cutoff_date = datetime.now() - timedelta(days=30)
+    schedule_from = cutoff_date.strftime("%Y-%m-%d")
+    schedule_to = datetime.now().strftime("%Y-%m-%d")
+    
+    # Extract category and create IssueTag (イシュータグ) - Issue特有の分類タグ
+    category = bill.get('category', 'その他')
+    issue_tags = [{
+        "id": f"tag_{category}",
+        "name": category,
+        "color_code": "#3B82F6",
+        "category": "自動生成",
+        "description": f"{category}に関連するイシュー"
+    }]
+    if len(bill.get('title', '')) > 50:
+        issue_tags.append({
+            "id": "tag_long",
+            "name": "長期審議",
+            "color_code": "#F59E0B",
+            "category": "審議期間",
+            "description": "長期間にわたって審議されているイシュー"
+        })
+    
+    # Create PolicyCategory (政策分野) - CAP基準の政策分類システム
+    policy_category = {
+        "id": f"cat_{category}",
+        "cap_code": "13" if "社会保障" in category else "1",
+        "layer": "L1",
+        "title_ja": category,
+        "parent_category": None
+    }
+    
+    # Create related bills list
+    related_bills = [{
+        "bill_id": bill_id,
+        "title": bill.get('title', ''),
+        "status": "under_review" if stage == "審議中" else "enacted" if stage == "成立" else "pending_vote",
+        "stage": stage,
+        "bill_number": bill_id,
+        "relevance_score": 1.0,
+        "relationship_type": "primary"
+    }]
+    
+    # Generate issue title (shortened bill title)
+    full_title = bill.get('title', '')
+    issue_title = full_title[:20] + '...' if len(full_title) > 20 else full_title
+    
+    # Create issue detail response
+    issue_detail = {
+        "success": True,
+        "issue": {
+            "id": issue_id,
+            "title": issue_title,
+            "description": bill.get('title', ''),  # Use full title as description
+            "priority": "medium",
+            "status": "active",
+            "stage": stage,
+            "policy_category": policy_category,
+            "issue_tags": issue_tags,
+            "related_bills_count": len(related_bills),
+            "extraction_confidence": 0.95,
+            "is_llm_generated": True,
+            "created_at": schedule_from + "T10:00:00Z",
+            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "schedule": {
+                "from": schedule_from,
+                "to": schedule_to
+            }
+        }
+    }
+    
+    return issue_detail
+
+@app.get("/api/issues/{issue_id}/bills")
+async def get_issue_related_bills(issue_id: str):
+    """Get related bills for a specific issue"""
+    
+    if not production_data:
+        raise HTTPException(status_code=503, detail="Production data not loaded")
+    
+    bills = production_data.get('production_dataset', {}).get('bills', [])
+    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    
+    # Create a mapping of bills to voting sessions
+    bill_vote_map = {}
+    for session in voting_sessions:
+        bill_number = session.get('bill_number', '')
+        if bill_number:
+            bill_vote_map[bill_number] = session
+    
+    # Find the issue by ID
+    try:
+        if not issue_id.startswith('ISS-'):
+            raise HTTPException(status_code=400, detail="Invalid issue ID format")
+        
+        issue_index = int(issue_id.split('-')[1]) - 1
+        
+        if issue_index < 0 or issue_index >= len(bills):
+            raise HTTPException(status_code=404, detail="Issue not found")
+        
+        bill = bills[issue_index]
+        
+    except (ValueError, IndexError):
+        raise HTTPException(status_code=400, detail="Invalid issue ID format")
+    
+    # Determine stage
+    bill_id = bill.get('bill_id', f'bill_{issue_index}')
+    voting_session = bill_vote_map.get(bill_id)
+    
+    if voting_session:
+        vote_date = voting_session.get('vote_date')
+        if vote_date:
+            stage = "成立"
+        else:
+            stage = "採決待ち"
+    else:
+        stage = "審議中"
+    
+    # Create related bills response with PolicyCategory (政策分野) 概念統一
+    bill_category = bill.get('category', 'その他')
+    related_bills = [{
+        "bill_id": bill_id,
+        "title": bill.get('title', ''),
+        "summary": bill.get('title', '')[:100] + '...' if len(bill.get('title', '')) > 100 else bill.get('title', ''),
+        "policy_category": {
+            "id": f"cat_{bill_category}",
+            "title_ja": bill_category,
+            "layer": "L1"
+        },
+        "status": "under_review" if stage == "審議中" else "enacted" if stage == "成立" else "pending_vote",
+        "stage": stage,
+        "bill_number": bill_id,
+        "diet_url": bill.get('url', '#'),
+        "relevance_score": 1.0,
+        "relationship_type": "primary",
+        "search_method": "direct"
+    }]
+    
+    return {
+        "success": True,
+        "bills": related_bills,  # 仕様書に合わせてbillsフィールドに統一
+        "total_count": len(related_bills)
+    }
 
 if __name__ == "__main__":
     import uvicorn

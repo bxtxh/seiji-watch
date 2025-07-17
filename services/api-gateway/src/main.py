@@ -272,7 +272,7 @@ app.add_middleware(RateLimitMiddleware, requests_per_minute=1000)
 # CORS middleware - Step 2: Specific origin and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8080"],  # Support both frontend ports
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],  # Support frontend ports
     allow_credentials=False,  # Keep False for security
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
@@ -384,25 +384,44 @@ async def root():
         "health": "/health"
     }
 
-# Include routers (temporarily disabled due to shared dependency)
-# from .routes import issues, speeches
-# app.include_router(issues.router)
-# app.include_router(speeches.router)
+# Include routers
+from .routes import issues, speeches, bills
+app.include_router(issues.router)
+app.include_router(speeches.router)
+app.include_router(bills.router)
 
 # Basic API endpoints for MVP
 @app.get("/embeddings/stats")
 async def get_embedding_stats():
-    """Get embedding statistics (mock data for MVP)."""
-    return {
-        "status": "healthy",
-        "bills": 42,
-        "speeches": 156,
-        "message": "Mock data - external services integration pending"
-    }
+    """Get embedding statistics from real Airtable data."""
+    try:
+        # Get real data counts from Airtable
+        bills = await airtable_client.list_bills(max_records=1000)
+        votes = await airtable_client.list_votes(max_records=1000)
+        
+        bills_count = len(bills)
+        votes_count = len(votes)
+        
+        return {
+            "status": "healthy",
+            "bills": bills_count,
+            "votes": votes_count,
+            "speeches": 0,  # Not implemented yet
+            "message": f"Real data integration complete - {bills_count} bills, {votes_count} votes"
+        }
+    except Exception as e:
+        log_error("Failed to get embedding stats", error=e)
+        return {
+            "status": "error",
+            "bills": 0,
+            "votes": 0,
+            "speeches": 0,
+            "message": f"Failed to fetch real data: {str(e)}"
+        }
 
 @app.post("/search")
 async def search_bills(request: Request):
-    """Search bills endpoint (mock data for MVP)."""
+    """Search bills endpoint using real Airtable data."""
     try:
         # Parse request body
         body = await request.json()
@@ -410,40 +429,57 @@ async def search_bills(request: Request):
         limit = body.get('limit', 10)
         min_certainty = body.get('min_certainty', 0.7)
         
-        # Mock search results
-        mock_results = [
-            {
-                "bill_number": "第213回国会第1号",
-                "title": f"「{query}」に関する法案（サンプル）",
-                "summary": f"「{query}」についての詳細な議論が行われ、重要な政策決定が下されました。",
-                "status": "審議中",
-                "submitted_date": "2024-01-15",
-                "search_method": "vector",
-                "relevance_score": 0.85,
-                "category": "社会保障",
-                "stage": "委員会審議",
-                "related_issues": [f"{query}政策", "社会保障制度改革"]
-            },
-            {
-                "bill_number": "第213回国会第2号", 
-                "title": f"{query}関連制度改革法案",
-                "summary": f"{query}に関連する制度の抜本的な見直しを図る法案です。",
-                "status": "成立",
-                "submitted_date": "2024-02-20",
-                "search_method": "hybrid",
-                "relevance_score": 0.78,
-                "category": "経済・産業",
-                "stage": "成立",
-                "related_issues": ["制度改革", f"{query}関連政策"]
+        if not query.strip():
+            return {
+                "success": False,
+                "message": "検索クエリが必要です",
+                "results": [],
+                "total_found": 0
             }
-        ]
+        
+        # Search in Airtable using structured fields
+        search_formula = f"""OR(
+            SEARCH('{query}', {{Name}}) > 0,
+            SEARCH('{query}', {{Bill_Status}}) > 0,
+            SEARCH('{query}', {{Category}}) > 0,
+            SEARCH('{query}', {{Submitter}}) > 0,
+            SEARCH('{query}', {{Stage}}) > 0,
+            SEARCH('{query}', {{Bill_Number}}) > 0
+        )"""
+        
+        # Get matching bills from Airtable
+        matching_bills = await airtable_client.list_bills(
+            filter_formula=search_formula,
+            max_records=limit * 2  # Get more results to account for processing
+        )
+        
+        # Transform results to expected format
+        search_results = []
+        for i, bill in enumerate(matching_bills[:limit]):
+            fields = bill.get("fields", {})
+            name = fields.get("Name", "")
+            notes = fields.get("Notes", "")
+            
+            # Extract basic info from notes if available
+            result = {
+                "bill_id": bill.get("id"),
+                "title": name[:100] if name else f"法案 {i+1}",
+                "summary": notes[:200] + "..." if len(notes) > 200 else notes,
+                "status": "実データ",
+                "search_method": "airtable_text",
+                "relevance_score": 0.8,  # Static for now, would need vector search for dynamic scoring
+                "category": "実データ統合",
+                "stage": "データ確認済み",
+                "related_issues": [query]
+            }
+            search_results.append(result)
         
         return {
             "success": True,
-            "results": mock_results[:limit],
-            "total_found": len(mock_results),
+            "results": search_results,
+            "total_found": len(matching_bills),
             "query": query,
-            "search_method": "mock_hybrid"
+            "search_method": "airtable_real_data"
         }
         
     except Exception as e:
@@ -936,6 +972,141 @@ async def get_members_list(
             "error": str(e),
             "message": "議員一覧の取得に失敗しました"
         }
+
+# Issue Category API endpoints (for EPIC 7)
+@app.get("/api/issues/categories")
+async def get_categories(max_records: int = 100):
+    """Get all issue categories."""
+    try:
+        categories = await airtable_client.get_issue_categories(max_records=max_records)
+        return categories
+    except Exception as e:
+        log_error("Failed to get categories", error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch categories")
+
+@app.get("/api/issues/categories/tree")
+async def get_category_tree():
+    """Get category tree structure."""
+    try:
+        tree = await airtable_client.get_category_tree()
+        return tree
+    except Exception as e:
+        log_error("Failed to get category tree", error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch category tree")
+
+@app.get("/api/issues/categories/{category_id}")
+async def get_category_detail(category_id: str):
+    """Get specific category details."""
+    try:
+        category = await airtable_client.get_issue_category(category_id)
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        return category
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_error(f"Failed to get category {category_id}", error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch category")
+
+@app.get("/api/issues/categories/{category_id}/children")
+async def get_category_children(category_id: str):
+    """Get child categories."""
+    try:
+        children = await airtable_client.get_category_children(category_id)
+        return children
+    except Exception as e:
+        log_error(f"Failed to get children for category {category_id}", error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch category children")
+
+@app.get("/api/issues/categories/search")
+async def search_categories(query: str, max_records: int = 50):
+    """Search categories by title."""
+    try:
+        results = await airtable_client.search_categories(query, max_records=max_records)
+        return results
+    except Exception as e:
+        log_error(f"Failed to search categories with query: {query}", error=e)
+        raise HTTPException(status_code=500, detail="Failed to search categories")
+
+@app.get("/api/bills")
+async def get_bills(max_records: int = 100, category: Optional[str] = None):
+    """Get bills, optionally filtered by category."""
+    try:
+        # Build filter for category if specified
+        filter_formula = None
+        if category:
+            # Assuming category is stored in Notes field based on our data integration
+            filter_formula = f"SEARCH('{category}', {{Notes}}) > 0"
+        
+        # Get real bills from Airtable
+        bills = await airtable_client.list_bills(
+            filter_formula=filter_formula,
+            max_records=max_records
+        )
+        
+        # Transform the data to match expected format
+        transformed_bills = []
+        for bill in bills:
+            fields = bill.get("fields", {})
+            transformed_bill = {
+                "id": bill.get("id"),
+                "fields": {
+                    "Name": fields.get("Name", ""),
+                    "Notes": fields.get("Notes", ""),
+                    "Status": "実データ統合済み",
+                    "Category": "実データ",
+                    "Title": fields.get("Name", "")[:100],  # Use Name as Title
+                    "Summary": fields.get("Notes", "")[:200] + "..." if len(fields.get("Notes", "")) > 200 else fields.get("Notes", ""),
+                }
+            }
+            transformed_bills.append(transformed_bill)
+        
+        log_api_request(None, 200, 0, f"Bills fetched: {len(transformed_bills)} records")
+        return transformed_bills
+        
+    except Exception as e:
+        log_error("Failed to get bills from Airtable", error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch bills")
+
+@app.get("/api/bills/{bill_id}")
+async def get_bill_detail(bill_id: str):
+    """Get detailed information about a specific bill."""
+    try:
+        # Get bill from Airtable
+        bill = await airtable_client.get_bill(bill_id)
+        
+        if not bill:
+            raise HTTPException(status_code=404, detail="Bill not found")
+        
+        fields = bill.get("fields", {})
+        
+        # Transform bill data for frontend
+        bill_detail = {
+            "id": bill.get("id"),
+            "fields": {
+                "Name": fields.get("Name", ""),
+                "Notes": fields.get("Notes", ""),
+                "Title": fields.get("Name", ""),
+                "Summary": fields.get("Notes", ""),
+                "Status": "実データ統合済み",
+                "Category": "実データ",
+                "Full_Content": fields.get("Notes", ""),  # Full notes as content
+            },
+            "metadata": {
+                "source": "airtable",
+                "last_updated": bill.get("createdTime", ""),
+                "record_id": bill.get("id")
+            }
+        }
+        
+        log_api_request(None, 200, 0, f"Bill detail fetched: {bill_id}")
+        return bill_detail
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_error(f"Failed to get bill detail for {bill_id}", error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch bill detail")
 
 # CORS preflight handled automatically by CORSMiddleware
 

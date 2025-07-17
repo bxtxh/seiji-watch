@@ -93,6 +93,10 @@ class Bill(BaseRecord):
     related_issues: Optional[List[str]] = Field(None, description="List of related Issue record IDs")
     issue_tags: Optional[List[str]] = Field(None, description="List of related IssueTag record IDs")
     
+    # SQLAlchemy relationships (when used as SQLAlchemy model)
+    # Note: This will be available when the model is used with SQLAlchemy
+    # issue_category_relationships = relationship("BillsIssueCategories", back_populates="bill")
+    
     def __repr__(self) -> str:
         return f"<Bill(number='{self.bill_number}', title='{self.title[:50]}...', status='{self.status.value}')>"
     

@@ -1,0 +1,16 @@
+{
+  "execution_date": "2025-07-13T02:45:26.327989",
+  "execution_time_seconds": 28.11793,
+  "initial_record_count": 744,
+  "final_record_count": 727,
+  "total_records_removed": 17,
+  "merge_results": {
+    "simple_merges_completed": 17,
+    "complex_merges_completed": 0,
+    "records_deleted": 17,
+    "records_updated": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "estimated_quality_improvement": 90.55
+}

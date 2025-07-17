@@ -9,6 +9,9 @@
 - **対象読者**: 経営陣、新規参加者、ステークホルダー
 - **内容**: フェーズ別開発計画、目標・成功指標、技術戦略
 
+### 関連技術仕様
+- **[Hybrid Ingestion Pipeline](../01-specs/technical/ingestion-pipeline-hybrid.md)** - NDL API × Whisper統合データ取得戦略
+
 ## 🎯 このディレクトリの目的
 
 - プロジェクトの全体像・方向性を提供

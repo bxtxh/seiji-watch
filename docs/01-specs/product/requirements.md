@@ -263,23 +263,28 @@ Independent, open-source platform for tracking Japanese Diet (parliament) issues
 
 ---
 
-## 📝 Additional Requirements - 3-Layer Issue Categorization System
-**Added Date**: July 10, 2025
+## 📝 Additional Requirements - 3-Layer Policy Categorization & Issue Management System
+**Added Date**: July 10, 2025  
+**Updated**: July 15, 2025 - PolicyCategory/Issue概念区分明確化
 
-### Enhanced Issue Management Requirements:
-- **FR-061**: **[NEW]** Hierarchical issue categorization system with L1/L2/L3 structure
-- **FR-062**: **[NEW]** CAP (Comparative Agendas Project) integration for standardized policy classification
-- **FR-063**: **[NEW]** Issue category seed data management with automated updates
-- **FR-064**: **[NEW]** Enhanced issue-to-bill linking with category inheritance
-- **FR-065**: **[NEW]** Category-based issue filtering and navigation in UI
-- **FR-066**: **[NEW]** Issue category tree API endpoints with hierarchical queries
-- **FR-067**: **[NEW]** Multilingual issue category support (Japanese/English)
+### Enhanced Policy Classification Requirements:
+- **FR-061**: **[NEW]** Hierarchical PolicyCategory system with CAP-compliant L1/L2/L3 structure (Airtable IssueCategories)
+- **FR-062**: **[NEW]** CAP (Comparative Agendas Project) integration for international standardized policy classification
+- **FR-062-B**: **[NEW]** Bills ↔ PolicyCategory relationship mapping via intermediate table (bills_issue_categories)
+- **FR-062-C**: **[NEW]** PostgreSQL Bills.category (enum) ↔ Airtable PolicyCategory synchronization mechanism
+- **FR-063**: **[NEW]** Dynamic Issue extraction from bill content using LLM (separate from PolicyCategory)
+- **FR-064**: **[NEW]** Enhanced Issue-to-Bill linking with confidence scoring and manual curation
+- **FR-065**: **[NEW]** Category-based filtering for both PolicyCategory and Issue navigation in UI
+- **FR-066**: **[NEW]** PolicyCategory tree API endpoints with hierarchical queries (/api/issues/categories/tree)
+- **FR-067**: **[NEW]** Multilingual PolicyCategory support (Japanese/English) with CAP code mapping
 
-### New Issue Categorization Schema:
+### New Policy Categorization Schema (PolicyCategory - CAP準拠):
 ```
 L1 (Major Topics): ~25 categories (e.g., 社会保障, 経済・産業, 外交・国際)
-L2 (Sub-Topics): ~200 categories (e.g., 健康保険制度改革, 高齢者介護サービス)
-L3 (Specific Issues): 500-1,000 items (e.g., 介護保険の自己負担率見直し)
+L2 (Sub-Topics): ~200 categories (e.g., 健康保険制度, 再生可能エネルギー)
+L3 (Specific Policy Areas): ~500 areas (e.g., 高齢者医療, 太陽光発電)
+
+※ 動的Issue例: "介護保険の自己負担率見直し", "カーボンニュートラル2050目標" (別途LLM抽出)
 ```
 
 ### Modified Data Architecture:
