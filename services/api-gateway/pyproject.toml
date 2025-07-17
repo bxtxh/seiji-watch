@@ -3,6 +3,7 @@ name = "api-gateway"
 version = "0.1.0"
 description = "API gateway with embedded vector operations"
 authors = ["Diet Issue Tracker Team"]
+packages = [{include = "*", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

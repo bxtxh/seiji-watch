@@ -3,6 +3,7 @@ name = "shared"
 version = "0.1.0"
 description = "Shared data models and utilities"
 authors = ["Diet Issue Tracker Team"]
+packages = [{include = "shared", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
