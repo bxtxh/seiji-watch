@@ -239,8 +239,15 @@ async def search_bills(request: Request):
                 "total_found": 0
             }
         
-        # Search in Airtable using Notes field (contains bill details)
-        search_formula = f"OR(SEARCH('{query}', {{Name}}) > 0, SEARCH('{query}', {{Notes}}) > 0)"
+        # Search in Airtable using structured fields
+        search_formula = f"""OR(
+            SEARCH('{query}', {{Name}}) > 0,
+            SEARCH('{query}', {{Bill_Status}}) > 0,
+            SEARCH('{query}', {{Category}}) > 0,
+            SEARCH('{query}', {{Submitter}}) > 0,
+            SEARCH('{query}', {{Stage}}) > 0,
+            SEARCH('{query}', {{Bill_Number}}) > 0
+        )"""
         
         # Get matching bills from Airtable
         matching_bills = await airtable.list_bills(

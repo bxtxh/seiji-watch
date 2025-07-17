@@ -27,59 +27,43 @@ class Epic11MinimalIntegrator:
         }
         
     def transform_bill_minimal(self, bill: dict) -> dict:
-        """Transform bill data using only Name and Notes fields"""
-        
-        # Create comprehensive Notes field with all details
-        notes = f"""【法案詳細】
-🏛️ 法案ID: {bill['bill_id']}
-📋 ステータス: {bill['status']}
-🔄 段階: {bill['stage']}
-👤 提出者: {bill['submitter']}
-🏷️ カテゴリ: {bill['category']}
-🔗 URL: {bill['url']}
-📅 収集日時: {bill['collected_at']}
-
-【追加情報】
-- データソース: 参議院公式サイト
-- 収集期間: 2025年6月1日〜30日
-- プロセス: 自動スクレイピング + AI処理"""
+        """Transform bill data using structured fields"""
         
         return {
             "fields": {
                 "Name": bill['title'][:100],  # Airtable Name field length limit
-                "Notes": notes
-                # No Status field to avoid permission issues
+                "Bill_Number": bill['bill_id'],
+                "Bill_Status": bill['status'],
+                "Stage": bill['stage'],
+                "Submitter": bill['submitter'],
+                "Category": bill['category'],
+                "Bill_URL": bill['url'],
+                "Collection_Date": bill['collected_at'],
+                "Data_Source": "参議院公式サイト"
             }
         }
         
     def transform_vote_minimal(self, vote_record: dict, voting_session: dict) -> dict:
-        """Transform vote record using only Name and Notes fields"""
-        
-        # Create comprehensive Notes field
-        notes = f"""【投票記録詳細】
-🗳️ 投票結果: {vote_record['vote_result']}
-👤 議員名: {vote_record['member_name']} ({vote_record['member_name_kana']})
-🏛️ 政党: {vote_record['party_name']}
-📍 選挙区: {vote_record['constituency']}
-🏠 院: {vote_record['house']}
-
-【法案情報】
-📋 法案: {voting_session['bill_title']}
-📅 投票日: {voting_session['vote_date']}
-🎭 投票種別: {voting_session['vote_type']}
-🔄 段階: {voting_session['vote_stage']}
-
-【統計】
-✅ 賛成: {voting_session['yes_votes']}票
-❌ 反対: {voting_session['no_votes']}票
-⏸️ 棄権: {voting_session['abstain_votes']}票
-😴 欠席: {voting_session['absent_votes']}票
-🔢 総票数: {voting_session['total_votes']}票"""
+        """Transform vote record using structured fields"""
         
         return {
             "fields": {
                 "Name": f"{vote_record['member_name']} - {voting_session['bill_title'][:40]}",
-                "Notes": notes
+                "Vote_Result": vote_record['vote_result'],
+                "Member_Name": vote_record['member_name'],
+                "Member_Name_Kana": vote_record['member_name_kana'],
+                "Party_Name": vote_record['party_name'],
+                "Constituency": vote_record['constituency'],
+                "House": vote_record['house'],
+                "Bill_Title": voting_session['bill_title'],
+                "Vote_Date": voting_session['vote_date'],
+                "Vote_Type": voting_session['vote_type'],
+                "Vote_Stage": voting_session['vote_stage'],
+                "Yes_Votes": voting_session['yes_votes'],
+                "No_Votes": voting_session['no_votes'],
+                "Abstain_Votes": voting_session['abstain_votes'],
+                "Absent_Votes": voting_session['absent_votes'],
+                "Total_Votes": voting_session['total_votes']
             }
         }
         

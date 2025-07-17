@@ -25,21 +25,21 @@ interface KanbanData {
 // Skeleton Loading Component
 function KanbanSkeleton() {
   return (
-    <div className="grid grid-flow-col auto-cols-[300px] gap-6 overflow-x-auto pb-4">
+    <div className="grid grid-flow-col auto-cols-[280px] sm:auto-cols-[300px] gap-3 sm:gap-6 overflow-x-auto pb-4">
       {[1, 2, 3, 4].map((stage) => (
-        <div key={stage} className="space-y-4">
-          <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div key={stage} className="space-y-3 sm:space-y-4">
+          <div className="h-5 sm:h-6 bg-gray-200 rounded animate-pulse"></div>
           {[1, 2, 3].map((card) => (
-            <div key={card} className="bg-white rounded-xl p-4 space-y-3 shadow-sm">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+            <div key={card} className="bg-white rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3 shadow-sm">
+              <div className="h-3 sm:h-4 bg-gray-200 rounded animate-pulse"></div>
               <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
               <div className="flex gap-2">
-                <div className="h-5 w-12 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-5 w-12 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-10 sm:h-5 sm:w-12 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-10 sm:h-5 sm:w-12 bg-gray-200 rounded animate-pulse"></div>
               </div>
               <div className="space-y-2">
-                <div className="h-8 bg-gray-100 rounded animate-pulse"></div>
-                <div className="h-8 bg-gray-100 rounded animate-pulse"></div>
+                <div className="h-6 sm:h-8 bg-gray-100 rounded animate-pulse"></div>
+                <div className="h-6 sm:h-8 bg-gray-100 rounded animate-pulse"></div>
               </div>
             </div>
           ))}
@@ -72,7 +72,7 @@ export default function KanbanBoard({ className = '' }: KanbanBoardProps) {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('http://localhost:8000/api/issues/kanban?range=30d&max_per_stage=8');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/issues/kanban?range=30d&max_per_stage=8`);
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -110,26 +110,28 @@ export default function KanbanBoard({ className = '' }: KanbanBoardProps) {
   const stageColumns = useMemo(() => {
     if (!kanbanData) return null;
     
-    return Object.keys(kanbanData.stages).map((stageKey) => (
-      <StageColumn
-        key={stageKey}
-        stageKey={stageKey}
-        issues={kanbanData.stages[stageKey as keyof typeof kanbanData.stages] || []}
-        onCardClick={handleCardClick}
-        onCardHover={handleCardHover}
-      />
-    ));
+    return Object.keys(kanbanData.stages)
+      .filter(stageKey => stageKey !== '審議前') // Hide 審議前 stage
+      .map((stageKey) => (
+        <StageColumn
+          key={stageKey}
+          stageKey={stageKey}
+          issues={kanbanData.stages[stageKey as keyof typeof kanbanData.stages] || []}
+          onCardClick={handleCardClick}
+          onCardHover={handleCardHover}
+        />
+      ));
   }, [kanbanData, handleCardClick, handleCardHover]);
 
   if (error) {
     return (
       <div className={`${className}`}>
-        <div className="text-center py-8">
-          <div className="text-red-600 text-sm mb-2">エラーが発生しました</div>
-          <div className="text-gray-600 text-sm">{error}</div>
+        <div className="text-center py-6 sm:py-8 px-4">
+          <div className="text-red-600 text-sm sm:text-base mb-2">エラーが発生しました</div>
+          <div className="text-gray-600 text-xs sm:text-sm mb-4">{error}</div>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark text-sm"
+            className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark text-xs sm:text-sm"
           >
             再読み込み
           </button>
@@ -139,40 +141,43 @@ export default function KanbanBoard({ className = '' }: KanbanBoardProps) {
   }
 
   return (
-    <section ref={kanbanRef} className={`${className}`} aria-label="国会イシュー Kanban ボード">
+    <section ref={kanbanRef} className={`${className} px-2 sm:px-4 lg:px-0`} aria-label="国会イシュー Kanban ボード">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-2 sm:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">直近1ヶ月の議論</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">直近1ヶ月の議論</h2>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">
             {kanbanData ? `${kanbanData.metadata.total_issues}件のイシューを表示中` : '読み込み中...'}
           </p>
         </div>
-        <span className="text-sm text-gray-500 hidden md:block">
+        <span className="text-xs sm:text-sm text-gray-500 hidden sm:block">
           ← 横スクロールで確認 →
         </span>
       </div>
 
       {/* Kanban Board */}
-      <div className="overflow-x-auto pb-8" role="list" aria-label="ステージ別イシュー一覧">
+      <div className="overflow-x-auto pb-6 sm:pb-8" role="list" aria-label="ステージ別イシュー一覧">
         {loading ? (
           <KanbanSkeleton />
         ) : stageColumns ? (
-          <div className="grid grid-flow-col auto-cols-[300px] md:auto-cols-[320px] gap-6 snap-x snap-mandatory">
+          <div className="grid grid-flow-col auto-cols-[280px] sm:auto-cols-[300px] md:auto-cols-[320px] gap-3 sm:gap-6 snap-x snap-mandatory">
             {stageColumns}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            データが見つかりませんでした
+          <div className="text-center py-6 sm:py-8 text-gray-500">
+            <p className="text-sm sm:text-base">データが見つかりませんでした</p>
           </div>
         )}
       </div>
 
       {/* Metadata */}
       {kanbanData && (
-        <div className="mt-4 text-xs text-gray-500 text-center">
-          最終更新: {new Date(kanbanData.metadata.last_updated).toLocaleString('ja-JP')} |{' '}
-          対象期間: {kanbanData.metadata.date_range.from} 〜 {kanbanData.metadata.date_range.to}
+        <div className="mt-3 sm:mt-4 text-xs text-gray-500 text-center leading-relaxed">
+          <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center sm:space-x-2">
+            <span>最終更新: {new Date(kanbanData.metadata.last_updated).toLocaleString('ja-JP')}</span>
+            <span className="hidden sm:inline">|</span>
+            <span>対象期間: {kanbanData.metadata.date_range.from} 〜 {kanbanData.metadata.date_range.to}</span>
+          </div>
         </div>
       )}
     </section>

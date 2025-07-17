@@ -24,7 +24,7 @@ export default function Layout({
         <meta name="description" content={description} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#27AE60" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
         
         {/* PWA Meta Tags */}
         <link rel="manifest" href="/manifest.json" />
@@ -43,7 +43,7 @@ export default function Layout({
 
       <div className={`min-h-screen bg-gray-50 ${furiganaEnabled ? 'furigana-enabled' : ''}`}>
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 relative backdrop-blur-md" style={{
+        <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50 backdrop-blur-md" style={{
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.98) 100%)'
         }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -51,9 +51,13 @@ export default function Layout({
               {/* Logo and title */}
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <h1 className="text-xl font-bold text-gray-900">
-                    政治ウォッチ！
-                  </h1>
+                  <a href="/" className="flex items-center">
+                    <img
+                      src="/logo.svg"
+                      alt="政治ウォッチ！"
+                      className="h-8 w-auto"
+                    />
+                  </a>
                 </div>
                 
                 {/* Navigation */}
@@ -153,23 +157,21 @@ export default function Layout({
         </header>
 
         {/* Main content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 pt-18 sm:pt-24">
           {children}
         </main>
 
         {/* Footer */}
-        <footer className="bg-gray-50 border-t border-gray-200 mt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <footer className="bg-gray-50 border-t border-gray-200 mt-12 sm:mt-16">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 sm:py-8">
             {/* Header with Logo */}
             <div className="flex items-center mb-6">
               <div className="flex items-center">
-                {/* Logo placeholder - デザイン未定 */}
-                <div className="w-8 h-8 mr-3">
-                  {/* 将来のロゴがここに入ります */}
-                </div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  政治ウォッチ
-                </h2>
+                <img
+                  src="/logo.svg"
+                  alt="政治ウォッチ！"
+                  className="h-6 w-auto"
+                />
               </div>
             </div>
 

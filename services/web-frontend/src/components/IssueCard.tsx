@@ -88,6 +88,7 @@ const IssueCard = React.memo(function IssueCard({ issue, onCardClick, onCardHove
     return TAG_COLORS[index % TAG_COLORS.length];
   };
 
+
   return (
     <article 
       className="bg-white rounded-xl shadow-sm p-4 w-full space-y-3 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] border border-gray-100"

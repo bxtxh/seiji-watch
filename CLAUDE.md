@@ -29,13 +29,14 @@ Architecture Decisions
 	•	Authentication: JWT tokens via api-gateway
 	•	Infrastructure: GCP (Cloud Run, Cloud SQL, Cloud Storage)
 
-### Notification Service (added 2025-07-13)
+### Notification Service (planned implementation)
 	•	Scope: Issue progress alerts (bill stage change, committee meeting created)
 	•	Trigger Sources:
 	  • (A) bills.stage UPDATE (審議中→採決待ち/成立/否決)
 	  • (B) meetings INSERT matching issue_id
 	•	Delivery: Daily batch (22:00 JST) via SendGrid
 	•	UX: Watch button on issue page & header quick-watch modal
+	•	Implementation Status: NOT IMPLEMENTED (WatchButton.tsx contains only skeleton code)
 	•	Future: (C) speech volume spike detection (Roadmap Phase 2)
 
 Service-Specific Guidelines
@@ -67,10 +68,25 @@ data-processor
 	•	Tech Stack: Python + pandas + NLP libraries + OpenAI API/Claude API
 	•	Entities: {Issue, Bill, Stage, Party, Member, Vote, IssueCategory}
 	•	Workflow: Backlog → 審議中 → 採決待ち → 成立
-	•	3-Layer Issue Categorization System:
-	•	L1 (Major Topics): ~25 categories (社会保障, 経済・産業, 外交・国際, etc.)
-	•	L2 (Sub-Topics): ~200 categories (健康保険制度改革, 高齢者介護サービス, etc.)
-	•	L3 (Specific Issues): 500-1,000 items (介護保険の自己負担率見直し, etc.)
+	
+	**Policy Classification Architecture** (CAP-based vs Issue-based):
+	•	**PolicyCategory** (CAP準拠の構造的分類):
+	  • L1 (Major Topics): ~25 categories (社会保障, 経済・産業, 外交・国際, etc.)
+	  • L2 (Sub-Topics): ~200 categories (健康保険制度, 再生可能エネルギー, etc.)
+	  • L3 (Specific Policy Areas): ~500 areas (高齢者医療, 太陽光発電, etc.)
+	  • Purpose: International comparison, systematic classification
+	  • Storage: Airtable IssueCategories table with hierarchical structure
+	•	**Issue** (LLM駆動の動的抽出):
+	  • Specific policy problems extracted from bills/debates (~500-1,000 items)
+	  • Examples: "介護保険の自己負担率見直し", "カーボンニュートラル2050目標"
+	  • Purpose: Current political agenda tracking, bill-to-debate linking
+	  • Storage: Airtable Issues table with dynamic generation
+	
+	**Bills ↔ IssueCategories Relationship**:
+	•	Current: PostgreSQL Bills.category (12 fixed enums) + Airtable IssueCategories (CAP-based)
+	•	Required: Intermediate mapping table for Bills ↔ IssueCategories relationship
+	•	Implementation: bills_issue_categories table with confidence scores and manual/auto flags
+	
 	•	CAP (Comparative Agendas Project) Integration: International policy classification standards
 	•	Issue-first Information Architecture: Policy area → specific bills navigation
 	•	LLM Analysis Features:

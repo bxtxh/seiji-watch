@@ -27,27 +27,19 @@ class Epic11BatchIntegrator:
         }
         
     def transform_bill_minimal(self, bill: dict) -> dict:
-        """Transform bill data using only Name and Notes fields"""
-        
-        # Create comprehensive Notes field with all details
-        notes = f"""【法案詳細】
-🏛️ 法案ID: {bill['bill_id']}
-📋 ステータス: {bill['status']}
-🔄 段階: {bill['stage']}
-👤 提出者: {bill['submitter']}
-🏷️ カテゴリ: {bill['category']}
-🔗 URL: {bill['url']}
-📅 収集日時: {bill['collected_at']}
-
-【追加情報】
-- データソース: 参議院公式サイト
-- 収集期間: 2025年6月1日〜30日
-- プロセス: 自動スクレイピング + AI処理"""
+        """Transform bill data using structured fields"""
         
         return {
             "fields": {
                 "Name": bill['title'][:100],  # Airtable Name field length limit
-                "Notes": notes
+                "Bill_Number": bill['bill_id'],
+                "Bill_Status": bill['status'],
+                "Stage": bill['stage'],
+                "Submitter": bill['submitter'],
+                "Category": bill['category'],
+                "Bill_URL": bill['url'],
+                "Collection_Date": bill['collected_at'],
+                "Data_Source": "参議院公式サイト"
             }
         }
         

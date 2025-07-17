@@ -189,12 +189,12 @@ export default function SearchInterface() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Search Form */}
-      <div className="card">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="card p-4 sm:p-6">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="search" className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
               法案や議事録を検索
             </label>
             <div className="relative">
@@ -213,7 +213,7 @@ export default function SearchInterface() {
                   }
                 }}
                 placeholder="検索キーワードを入力してください..."
-                className={`search-input ${validationError ? 'border-red-300 focus:border-red-500' : ''}`}
+                className={`search-input text-sm sm:text-base ${validationError ? 'border-red-300 focus:border-red-500' : ''}`}
                 aria-describedby="search-help"
                 autoComplete="off"
                 maxLength={INPUT_LIMITS.SEARCH_QUERY}
@@ -229,11 +229,11 @@ export default function SearchInterface() {
               )}
             </div>
             {validationError ? (
-              <p className="mt-2 text-sm text-red-600" role="alert">
+              <p className="mt-2 text-xs sm:text-sm text-red-600" role="alert">
                 {validationError}
               </p>
             ) : (
-              <p id="search-help" className="mt-2 text-sm text-gray-600">
+              <p id="search-help" className="mt-2 text-xs sm:text-sm text-gray-600">
                 例: 「税制改正」「社会保障」「予算」など（{INPUT_LIMITS.SEARCH_QUERY}文字まで）
               </p>
             )}
@@ -242,7 +242,7 @@ export default function SearchInterface() {
           <button
             type="submit"
             disabled={loading || !query.trim() || !!validationError}
-            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
           >
             {loading ? '検索中...' : '検索する'}
           </button>
@@ -250,8 +250,8 @@ export default function SearchInterface() {
 
         {/* Search Stats */}
         {searchStats && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-            <p className="text-sm text-gray-600">
+          <div className="mt-3 sm:mt-4 p-3 bg-gray-50 rounded-md">
+            <p className="text-xs sm:text-sm text-gray-600">
               {searchStats.total}件の結果が見つかりました
               {searchStats.method && (
                 <span className="ml-2 text-xs text-gray-500">
@@ -270,18 +270,18 @@ export default function SearchInterface() {
 
       {/* Error Message */}
       {error && (
-        <div className="card bg-red-50 border-red-200">
+        <div className="card bg-red-50 border-red-200 p-4 sm:p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
+            <div className="ml-2 sm:ml-3">
+              <h3 className="text-sm sm:text-base font-medium text-red-800">
                 検索エラー
               </h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
+              <p className="mt-1 text-xs sm:text-sm text-red-700">{error}</p>
             </div>
           </div>
         </div>
@@ -289,10 +289,10 @@ export default function SearchInterface() {
 
       {/* Search Results */}
       {results.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">検索結果</h2>
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">検索結果</h2>
           
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {results.map((bill, index) => (
               <BillCard 
                 key={`${bill.bill_number}-${index}`} 
@@ -305,12 +305,12 @@ export default function SearchInterface() {
 
       {/* Empty State */}
       {query && !loading && results.length === 0 && !error && (
-        <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="text-center py-8 sm:py-12">
+          <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">検索結果が見つかりませんでした</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm sm:text-base font-medium text-gray-900">検索結果が見つかりませんでした</h3>
+          <p className="mt-1 text-xs sm:text-sm text-gray-500">
             別のキーワードで検索してみてください
           </p>
         </div>

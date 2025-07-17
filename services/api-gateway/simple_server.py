@@ -84,6 +84,16 @@ async def health_check():
         "data_loaded": bool(production_data)
     }
 
+@app.get("/api/health")
+async def api_health_check():
+    """API Health check endpoint for frontend"""
+    return {
+        "status": "healthy",
+        "service": "api-gateway",
+        "version": "1.0.0",
+        "data_loaded": bool(production_data)
+    }
+
 @app.get("/bills")
 async def get_bills(
     limit: int = Query(10, ge=1, le=100),
@@ -963,4 +973,4 @@ async def get_issue_related_bills(issue_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8081)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

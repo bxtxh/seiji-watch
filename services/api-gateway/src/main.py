@@ -384,10 +384,11 @@ async def root():
         "health": "/health"
     }
 
-# Include routers (temporarily disabled due to shared dependency)
-# from .routes import issues, speeches
-# app.include_router(issues.router)
-# app.include_router(speeches.router)
+# Include routers
+from .routes import issues, speeches, bills
+app.include_router(issues.router)
+app.include_router(speeches.router)
+app.include_router(bills.router)
 
 # Basic API endpoints for MVP
 @app.get("/embeddings/stats")
@@ -436,8 +437,15 @@ async def search_bills(request: Request):
                 "total_found": 0
             }
         
-        # Search in Airtable using Notes field (contains bill details)
-        search_formula = f"OR(SEARCH('{query}', {{Name}}) > 0, SEARCH('{query}', {{Notes}}) > 0)"
+        # Search in Airtable using structured fields
+        search_formula = f"""OR(
+            SEARCH('{query}', {{Name}}) > 0,
+            SEARCH('{query}', {{Bill_Status}}) > 0,
+            SEARCH('{query}', {{Category}}) > 0,
+            SEARCH('{query}', {{Submitter}}) > 0,
+            SEARCH('{query}', {{Stage}}) > 0,
+            SEARCH('{query}', {{Bill_Number}}) > 0
+        )"""
         
         # Get matching bills from Airtable
         matching_bills = await airtable_client.list_bills(

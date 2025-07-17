@@ -217,21 +217,21 @@ const IssueDetailPage = ({ issue: initialIssue, relatedBills: initialRelatedBill
     switch (status) {
       case 'active':
         return { 
-          label: 'アクティブ', 
+          label: '審議中', 
           bgColor: 'bg-blue-50', 
           textColor: 'text-blue-700', 
           borderColor: 'border-blue-200' 
         }
       case 'reviewed':
         return { 
-          label: 'レビュー済み', 
+          label: '審議済み', 
           bgColor: 'bg-purple-50', 
           textColor: 'text-purple-700', 
           borderColor: 'border-purple-200' 
         }
       case 'archived':
         return { 
-          label: 'アーカイブ', 
+          label: '完了', 
           bgColor: 'bg-gray-50', 
           textColor: 'text-gray-700', 
           borderColor: 'border-gray-200' 
@@ -253,6 +253,7 @@ const IssueDetailPage = ({ issue: initialIssue, relatedBills: initialRelatedBill
       day: 'numeric'
     })
   }
+
 
   useEffect(() => {
     if (activeTab === 'bills' && !relatedBills.length && !billsLoading) {
@@ -340,9 +341,6 @@ const IssueDetailPage = ({ issue: initialIssue, relatedBills: initialRelatedBill
               </div>
               
               <div className="flex flex-wrap gap-2">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${priorityConfig.bgColor} ${priorityConfig.textColor} ${priorityConfig.borderColor}`}>
-                  {priorityConfig.label}
-                </span>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor}`}>
                   {statusConfig.label}
                 </span>

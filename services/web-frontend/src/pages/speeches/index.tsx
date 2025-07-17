@@ -38,6 +38,9 @@ export default function SpeechesPage() {
             </p>
           </div>
 
+          {/* Search Interface */}
+          <SpeechSearchInterface />
+
           {/* Key Features */}
           <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 md:p-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
@@ -81,9 +84,6 @@ export default function SpeechesPage() {
               </div>
             </div>
           </div>
-
-          {/* Search Interface */}
-          <SpeechSearchInterface />
 
           {/* Usage Guide */}
           <div className="bg-gray-50 rounded-lg p-6">

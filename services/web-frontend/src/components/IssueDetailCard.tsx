@@ -53,9 +53,9 @@ const IssueDetailCard: React.FC<IssueDetailCardProps> = ({ issue, issueTags }) =
 
   const formatStatus = (status: string) => {
     const statusMap: { [key: string]: string } = {
-      'active': 'アクティブ',
-      'reviewed': 'レビュー済み',
-      'archived': 'アーカイブ',
+      'active': '審議中',
+      'reviewed': '審議済み',
+      'archived': '完了',
     }
     return statusMap[status] || status
   }
@@ -104,6 +104,7 @@ const IssueDetailCard: React.FC<IssueDetailCardProps> = ({ issue, issueTags }) =
     return []
   }
 
+
   const tags = getTagsForIssue(issue)
 
   return (
@@ -130,13 +131,6 @@ const IssueDetailCard: React.FC<IssueDetailCardProps> = ({ issue, issueTags }) =
         </div>
         
         <div className="flex gap-2 ml-4" role="group" aria-label="イシューのステータス">
-          <span 
-            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(issue.priority)}`}
-            aria-label={`優先度: ${formatPriority(issue.priority)}`}
-          >
-            {getPriorityIcon(issue.priority)}
-            <span className="ml-1" aria-hidden="true">{formatPriority(issue.priority)}</span>
-          </span>
           <span 
             className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(issue.status)}`}
             aria-label={`ステータス: ${formatStatus(issue.status)}`}

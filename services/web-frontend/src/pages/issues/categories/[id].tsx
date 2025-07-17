@@ -369,10 +369,16 @@ const CategoryDetailPage = () => {
                     </Link>
                   )}
                   <Link
+                    href={`/bills?policy_category_id=${category.id}`}
+                    className="block w-full text-left px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    このカテゴリの法案一覧
+                  </Link>
+                  <Link
                     href="/bills"
                     className="block w-full text-left px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
-                    法案一覧
+                    すべての法案
                   </Link>
                 </div>
               </div>

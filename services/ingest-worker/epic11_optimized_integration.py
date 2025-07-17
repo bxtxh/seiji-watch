@@ -43,16 +43,7 @@ class Epic11OptimizedIntegrator:
         }
         
     def transform_bill_for_airtable(self, bill: dict) -> dict:
-        """Transform bill data to work with Airtable basic fields"""
-        
-        # Create comprehensive Notes field with all details
-        notes = f"""法案ID: {bill['bill_id']}
-カテゴリ: {bill['category']}
-ステージ: {bill['stage']}
-提出者: {bill['submitter']}
-URL: {bill['url']}
-収集日時: {bill['collected_at']}
-ステータス: {bill['status']}"""
+        """Transform bill data to work with structured fields"""
         
         # Map stage to existing Status options
         status = self.stage_mapping.get(bill['stage'], "Not started")
@@ -60,30 +51,33 @@ URL: {bill['url']}
         return {
             "fields": {
                 "Name": bill['title'],
-                "Notes": notes,
+                "Bill_Number": bill['bill_id'],
+                "Category": bill['category'],
+                "Stage": bill['stage'],
+                "Submitter": bill['submitter'],
+                "Bill_URL": bill['url'],
+                "Collection_Date": bill['collected_at'],
+                "Bill_Status": bill['status'],
                 "Status": status
-                # Skip Assignee and Attachments for now
             }
         }
         
     def transform_vote_for_airtable(self, vote_record: dict, voting_session: dict) -> dict:
-        """Transform vote record to work with Airtable basic fields"""
-        
-        # Create comprehensive Notes field
-        notes = f"""議員: {vote_record['member_name']} ({vote_record['member_name_kana']})
-政党: {vote_record['party_name']}
-選挙区: {vote_record['constituency']}
-院: {vote_record['house']}
-投票結果: {vote_record['vote_result']}
-法案: {voting_session['bill_title']}
-投票日: {voting_session['vote_date']}
-投票種別: {voting_session['vote_type']}
-段階: {voting_session['vote_stage']}"""
+        """Transform vote record to work with structured fields"""
         
         return {
             "fields": {
                 "Name": f"{vote_record['member_name']} - {voting_session['bill_title'][:30]}...",
-                "Notes": notes,
+                "Member_Name": vote_record['member_name'],
+                "Member_Name_Kana": vote_record['member_name_kana'],
+                "Party_Name": vote_record['party_name'],
+                "Constituency": vote_record['constituency'],
+                "House": vote_record['house'],
+                "Vote_Result": vote_record['vote_result'],
+                "Bill_Title": voting_session['bill_title'],
+                "Vote_Date": voting_session['vote_date'],
+                "Vote_Type": voting_session['vote_type'],
+                "Vote_Stage": voting_session['vote_stage'],
                 "Status": "Done"  # All votes are completed
             }
         }

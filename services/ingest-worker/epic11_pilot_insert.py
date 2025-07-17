@@ -32,18 +32,17 @@ async def create_test_bill():
     sample_bill = data['production_dataset']['bills'][0]
     print(f"📋 Sample bill: {sample_bill['title']}")
     
-    # Test bill record with appropriate fields
+    # Test bill record with structured fields
     test_bill_data = {
         "fields": {
             "Name": sample_bill['title'],  # Using Name field as primary
-            "Notes": f"Bill ID: {sample_bill['bill_id']}\nCategory: {sample_bill['category']}\nStage: {sample_bill['stage']}\nSubmitter: {sample_bill['submitter']}\nURL: {sample_bill['url']}\nCollected: {sample_bill['collected_at']}",
             "Status": sample_bill['stage'],
-            # Add custom fields if they exist
             "Bill_ID": sample_bill['bill_id'],
             "Category": sample_bill['category'],
             "Stage": sample_bill['stage'],
             "Submitter": sample_bill['submitter'],
-            "URL": sample_bill['url']
+            "URL": sample_bill['url'],
+            "Collection_Date": sample_bill['collected_at']
         }
     }
     
@@ -70,7 +69,10 @@ async def create_test_bill():
                         basic_bill_data = {
                             "fields": {
                                 "Name": sample_bill['title'],
-                                "Notes": f"Bill ID: {sample_bill['bill_id']} | Category: {sample_bill['category']} | Stage: {sample_bill['stage']} | URL: {sample_bill['url']}",
+                                "Bill_ID": sample_bill['bill_id'],
+                                "Category": sample_bill['category'],
+                                "Stage": sample_bill['stage'],
+                                "URL": sample_bill['url'],
                                 "Status": sample_bill['stage']
                             }
                         }
@@ -117,7 +119,14 @@ async def create_test_vote():
     test_vote_data = {
         "fields": {
             "Name": f"{sample_vote_record['member_name']} - {sample_voting_session['bill_title']}",
-            "Notes": f"Member: {sample_vote_record['member_name']} ({sample_vote_record['member_name_kana']})\nParty: {sample_vote_record['party_name']}\nConstituency: {sample_vote_record['constituency']}\nHouse: {sample_vote_record['house']}\nVote: {sample_vote_record['vote_result']}\nBill: {sample_voting_session['bill_title']}\nDate: {sample_voting_session['vote_date']}",
+            "Member_Name": sample_vote_record['member_name'],
+            "Member_Name_Kana": sample_vote_record['member_name_kana'],
+            "Party_Name": sample_vote_record['party_name'],
+            "Constituency": sample_vote_record['constituency'],
+            "House": sample_vote_record['house'],
+            "Vote_Result": sample_vote_record['vote_result'],
+            "Bill_Title": sample_voting_session['bill_title'],
+            "Vote_Date": sample_voting_session['vote_date'],
             "Status": sample_vote_record['vote_result']
         }
     }

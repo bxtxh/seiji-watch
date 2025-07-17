@@ -48,12 +48,13 @@ const IssueListCard: React.FC<IssueListCardProps> = ({ issue, tags, viewMode, on
 
   const formatStatus = (status: string) => {
     switch (status) {
-      case 'active': return 'アクティブ'
-      case 'reviewed': return 'レビュー済み'
-      case 'archived': return 'アーカイブ'
+      case 'active': return '審議中'
+      case 'reviewed': return '審議済み'
+      case 'archived': return '完了'
       default: return status
     }
   }
+
 
   if (viewMode === 'grid') {
     return (
@@ -67,9 +68,6 @@ const IssueListCard: React.FC<IssueListCardProps> = ({ issue, tags, viewMode, on
             {issue.title}
           </h3>
           <div className="flex flex-col gap-1 flex-shrink-0">
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(issue.priority)}`}>
-              {formatPriority(issue.priority)}
-            </span>
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(issue.status)}`}>
               {formatStatus(issue.status)}
             </span>
@@ -145,9 +143,6 @@ const IssueListCard: React.FC<IssueListCardProps> = ({ issue, tags, viewMode, on
                   {issue.stage}
                 </span>
               )}
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(issue.priority)}`}>
-                {formatPriority(issue.priority)}
-              </span>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(issue.status)}`}>
                 {formatStatus(issue.status)}
               </span>

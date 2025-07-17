@@ -1,5 +1,7 @@
 """Airtable client for Diet Issue Tracker structured data."""
 
+from __future__ import annotations
+
 import os
 import asyncio
 from typing import List, Dict, Any, Optional, Union
@@ -661,3 +663,144 @@ class AirtableClient:
             tree[layer].sort(key=lambda x: x.get("fields", {}).get("CAP_Code", ""))
         
         return tree
+
+    # Bills_PolicyCategories relationship table operations
+    async def create_bill_policy_category_relationship(self, relationship_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new bill-policy category relationship."""
+        url = f"{self.base_url}/Bills_PolicyCategories"
+        data = {
+            "fields": {
+                "Bill_ID": relationship_data["bill_id"],  # Link to Bills table
+                "PolicyCategory_ID": relationship_data["policy_category_id"],  # Link to IssueCategories table
+                "Confidence_Score": relationship_data.get("confidence_score", 0.8),
+                "Is_Manual": relationship_data.get("is_manual", False),
+                "Source": relationship_data.get("source", "auto_migration"),
+                "Created_At": datetime.now().isoformat(),
+                "Updated_At": datetime.now().isoformat()
+            }
+        }
+        
+        # Handle relationship links
+        if "bill_record_id" in relationship_data and relationship_data["bill_record_id"]:
+            data["fields"]["Bill"] = [relationship_data["bill_record_id"]]
+        if "policy_category_record_id" in relationship_data and relationship_data["policy_category_record_id"]:
+            data["fields"]["PolicyCategory"] = [relationship_data["policy_category_record_id"]]
+        
+        # Remove None values
+        data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
+        
+        response = await self._rate_limited_request("POST", url, json=data)
+        return response
+
+    async def get_bill_policy_category_relationship(self, record_id: str) -> Dict[str, Any]:
+        """Get a bill-policy category relationship by ID."""
+        url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
+        return await self._rate_limited_request("GET", url)
+
+    async def list_bill_policy_category_relationships(self, filter_formula: Optional[str] = None,
+                                                     max_records: int = 100) -> List[Dict[str, Any]]:
+        """List bill-policy category relationships with optional filtering."""
+        url = f"{self.base_url}/Bills_PolicyCategories"
+        params = {"maxRecords": max_records}
+        if filter_formula:
+            params["filterByFormula"] = filter_formula
+        
+        response = await self._rate_limited_request("GET", url, params=params)
+        return response.get("records", [])
+
+    async def get_bill_policy_categories(self, bill_record_id: str) -> List[Dict[str, Any]]:
+        """Get all policy categories linked to a specific bill."""
+        filter_formula = f"FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0"
+        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+
+    async def get_policy_category_bills(self, policy_category_record_id: str) -> List[Dict[str, Any]]:
+        """Get all bills linked to a specific policy category."""
+        filter_formula = f"FIND('{policy_category_record_id}', ARRAYJOIN({{PolicyCategory}})) > 0"
+        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+
+    async def update_bill_policy_category_relationship(self, record_id: str, 
+                                                      relationship_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update a bill-policy category relationship."""
+        url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
+        data = {
+            "fields": {
+                "Updated_At": datetime.now().isoformat(),
+                **{k: v for k, v in relationship_data.items() if v is not None}
+            }
+        }
+        
+        response = await self._rate_limited_request("PATCH", url, json=data)
+        return response
+
+    async def delete_bill_policy_category_relationship(self, record_id: str) -> Dict[str, Any]:
+        """Delete a bill-policy category relationship."""
+        url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
+        return await self._rate_limited_request("DELETE", url)
+
+    async def find_bill_policy_category_relationship(self, bill_record_id: str, 
+                                                    policy_category_record_id: str) -> Optional[Dict[str, Any]]:
+        """Find existing relationship between a bill and policy category."""
+        filter_formula = f"AND(FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0, FIND('{policy_category_record_id}', ARRAYJOIN({{PolicyCategory}})) > 0)"
+        relationships = await self.list_bill_policy_category_relationships(filter_formula=filter_formula, max_records=1)
+        
+        return relationships[0] if relationships else None
+
+    async def bulk_create_bill_policy_category_relationships(self, relationships: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Bulk create bill-policy category relationships (max 10 at a time due to Airtable limits)."""
+        results = []
+        
+        # Process in batches of 10 (Airtable limit)
+        for i in range(0, len(relationships), 10):
+            batch = relationships[i:i+10]
+            
+            url = f"{self.base_url}/Bills_PolicyCategories"
+            records_data = []
+            
+            for rel in batch:
+                record_data = {
+                    "fields": {
+                        "Bill_ID": rel["bill_id"],
+                        "PolicyCategory_ID": rel["policy_category_id"], 
+                        "Confidence_Score": rel.get("confidence_score", 0.8),
+                        "Is_Manual": rel.get("is_manual", False),
+                        "Source": rel.get("source", "bulk_migration"),
+                        "Created_At": datetime.now().isoformat(),
+                        "Updated_At": datetime.now().isoformat()
+                    }
+                }
+                
+                # Handle relationship links
+                if "bill_record_id" in rel and rel["bill_record_id"]:
+                    record_data["fields"]["Bill"] = [rel["bill_record_id"]]
+                if "policy_category_record_id" in rel and rel["policy_category_record_id"]:
+                    record_data["fields"]["PolicyCategory"] = [rel["policy_category_record_id"]]
+                
+                # Remove None values
+                record_data["fields"] = {k: v for k, v in record_data["fields"].items() if v is not None}
+                records_data.append(record_data)
+            
+            data = {"records": records_data}
+            
+            response = await self._rate_limited_request("POST", url, json=data)
+            results.extend(response.get("records", []))
+            
+            # Rate limiting between batches
+            if i + 10 < len(relationships):
+                await asyncio.sleep(0.3)  # Additional delay for bulk operations
+        
+        return results
+
+    # Additional methods for Bills API routes
+    async def get_bills_by_policy_category(self, policy_category_id: str) -> List[Dict[str, Any]]:
+        """Get all bills linked to a specific policy category by PolicyCategory_ID."""
+        filter_formula = f"{{PolicyCategory_ID}} = '{policy_category_id}'"
+        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+
+    async def get_policy_categories_by_bill(self, bill_id: str) -> List[Dict[str, Any]]:
+        """Get all policy categories linked to a specific bill by Bill_ID."""
+        filter_formula = f"{{Bill_ID}} = '{bill_id}'"
+        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+
+    async def list_bills_policy_categories(self, max_records: int = 1000) -> List[Dict[str, Any]]:
+        """List all Bills-PolicyCategory relationships."""
+        return await self.list_bill_policy_category_relationships(max_records=max_records)
