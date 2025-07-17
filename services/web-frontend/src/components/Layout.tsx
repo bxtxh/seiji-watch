@@ -1,6 +1,6 @@
-import React from 'react';
-import Head from 'next/head';
-import { useState } from 'react';
+import React from "react";
+import Head from "next/head";
+import { useState } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,8 +10,8 @@ interface LayoutProps {
 
 export default function Layout({
   children,
-  title = '政治ウォッチ！',
-  description = '国会で議論されていることをAIによって分析・整理し、社会課題をわかりやすく届けます。',
+  title = "政治ウォッチ！",
+  description = "国会で議論されていることをAIによって分析・整理し、社会課題をわかりやすく届けます。",
 }: LayoutProps) {
   // Furigana state - feature disabled for initial release
   // To enable: Set NEXT_PUBLIC_ENABLE_FURIGANA=true in .env.local
@@ -25,27 +25,33 @@ export default function Layout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#27AE60" />
         <link rel="icon" href="/favicon.png" />
-        
+
         {/* PWA Meta Tags */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        
+
         {/* Open Graph Meta Tags */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:site_name" content="政治ウォッチ！" />
-        
+
         {/* Accessibility */}
         <meta name="color-scheme" content="light" />
       </Head>
 
-      <div className={`min-h-screen bg-gray-50 ${furiganaEnabled ? 'furigana-enabled' : ''}`}>
+      <div
+        className={`min-h-screen bg-gray-50 ${furiganaEnabled ? "furigana-enabled" : ""}`}
+      >
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50 backdrop-blur-md" style={{
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.98) 100%)'
-        }}>
+        <header
+          className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50 backdrop-blur-md"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.98) 100%)",
+          }}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               {/* Logo and title */}
@@ -59,7 +65,7 @@ export default function Layout({
                     />
                   </a>
                 </div>
-                
+
                 {/* Navigation */}
                 <nav className="ml-8 hidden md:flex space-x-8">
                   <a
@@ -92,7 +98,7 @@ export default function Layout({
                   >
                     イシュー
                   </a>
-                  
+
                   {/* Legal dropdown */}
                   <div className="relative group">
                     <button
@@ -108,10 +114,15 @@ export default function Layout({
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
-                    
+
                     <div className="absolute left-0 mt-1 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
@@ -137,16 +148,16 @@ export default function Layout({
               {/* Accessibility controls */}
               <div className="flex items-center space-x-4">
                 {/* Furigana toggle - disabled for initial release */}
-                {process.env.NEXT_PUBLIC_ENABLE_FURIGANA === 'true' && (
+                {process.env.NEXT_PUBLIC_ENABLE_FURIGANA === "true" && (
                   <button
                     type="button"
                     onClick={() => setFuriganaEnabled(!furiganaEnabled)}
                     className={`px-3 py-1 text-sm rounded-md transition-colors ${
                       furiganaEnabled
-                        ? 'bg-primary-green text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? "bg-primary-green text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
-                    aria-label={`ふりがな表示を${furiganaEnabled ? 'オフ' : 'オン'}にする`}
+                    aria-label={`ふりがな表示を${furiganaEnabled ? "オフ" : "オン"}にする`}
                   >
                     ふりがな
                   </button>
@@ -239,16 +250,18 @@ export default function Layout({
             {/* Description */}
             <div className="mb-6">
               <p className="text-sm text-gray-600 leading-relaxed max-w-4xl">
-                政治ウォッチは、国会議案の透明性向上と市民の政治参加促進を目的とした情報プラットフォームです。<br />
-                正確で詳細な政治情報をわかりやすく提供し、民主主義の発展に貢献します。<br />
-                システムに関するお問い合わせ、改善要望は、{' '}
+                政治ウォッチは、国会議案の透明性向上と市民の政治参加促進を目的とした情報プラットフォームです。
+                <br />
+                正確で詳細な政治情報をわかりやすく提供し、民主主義の発展に貢献します。
+                <br />
+                システムに関するお問い合わせ、改善要望は、{" "}
                 <a
                   href="mailto:contact@politics-watch.jp"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   contact@politics-watch.jp
-                </a>
-                {' '}までお願いします。
+                </a>{" "}
+                までお願いします。
               </p>
             </div>
           </div>

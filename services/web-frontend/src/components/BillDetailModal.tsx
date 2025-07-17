@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { Bill } from '@/types';
-import VotingResults from './VotingResults';
+import React, { useEffect } from "react";
+import { Bill } from "@/types";
+import VotingResults from "./VotingResults";
 
 interface BillDetailModalProps {
   bill: Bill;
@@ -8,23 +8,27 @@ interface BillDetailModalProps {
   onClose: () => void;
 }
 
-export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailModalProps) {
+export default function BillDetailModal({
+  bill,
+  isOpen,
+  onClose,
+}: BillDetailModalProps) {
   // Handle escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -32,50 +36,50 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
 
   const formatStatus = (status: string) => {
     const statusMap: { [key: string]: string } = {
-      'passed': '成立',
-      'under_review': '審議中',
-      'pending_vote': '採決待ち',
-      'awaiting_vote': '採決待ち',
-      'backlog': '未審議',
+      passed: "成立",
+      under_review: "審議中",
+      pending_vote: "採決待ち",
+      awaiting_vote: "採決待ち",
+      backlog: "未審議",
     };
     return statusMap[status.toLowerCase()] || status;
   };
 
   const formatCategory = (category: string | undefined) => {
-    if (!category) return 'その他';
+    if (!category) return "その他";
     const categoryMap: { [key: string]: string } = {
-      'budget': '予算・決算',
-      'taxation': '税制',
-      'social_security': '社会保障',
-      'foreign_affairs': '外交・国際',
-      'economy': '経済・産業',
-      'other': 'その他',
+      budget: "予算・決算",
+      taxation: "税制",
+      social_security: "社会保障",
+      foreign_affairs: "外交・国際",
+      economy: "経済・産業",
+      other: "その他",
     };
     return categoryMap[category.toLowerCase()] || category;
   };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'passed':
-      case '成立':
-        return 'status-passed';
-      case 'under_review':
-      case '審議中':
-        return 'status-under-review';
-      case 'pending_vote':
-      case 'awaiting_vote':
-      case '採決待ち':
-        return 'status-pending';
-      case 'backlog':
+      case "passed":
+      case "成立":
+        return "status-passed";
+      case "under_review":
+      case "審議中":
+        return "status-under-review";
+      case "pending_vote":
+      case "awaiting_vote":
+      case "採決待ち":
+        return "status-pending";
+      case "backlog":
       default:
-        return 'status-backlog';
+        return "status-backlog";
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
@@ -83,7 +87,7 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div 
+        <div
           className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-slide-up"
           role="dialog"
           aria-modal="true"
@@ -92,7 +96,7 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
           {/* Header */}
           <div className="flex items-start justify-between p-6 border-b border-gray-200">
             <div className="flex-1 min-w-0">
-              <h2 
+              <h2
                 id="modal-title"
                 className="text-xl font-semibold text-gray-900 japanese-text"
               >
@@ -102,7 +106,7 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
                 法案番号: {bill.bill_number}
               </p>
             </div>
-            
+
             <button
               type="button"
               onClick={onClose}
@@ -110,8 +114,18 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
               aria-label="閉じる"
             >
               <span className="sr-only">閉じる</span>
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -122,14 +136,20 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
               {/* Status and Category */}
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700">ステータス:</span>
-                  <span className={`status-badge ${getStatusBadgeClass(bill.status)}`}>
+                  <span className="text-sm font-medium text-gray-700">
+                    ステータス:
+                  </span>
+                  <span
+                    className={`status-badge ${getStatusBadgeClass(bill.status)}`}
+                  >
                     {formatStatus(bill.status)}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700">カテゴリ:</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    カテゴリ:
+                  </span>
                   <span className="status-badge bg-blue-100 text-blue-800">
                     {formatCategory(bill.category)}
                   </span>
@@ -137,7 +157,9 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
 
                 {bill.relevance_score && (
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">関連度:</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      関連度:
+                    </span>
                     <span className="text-sm text-gray-600">
                       {Math.round(bill.relevance_score * 100)}%
                     </span>
@@ -148,7 +170,9 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
               {/* Summary */}
               {bill.summary && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">概要</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">
+                    概要
+                  </h3>
                   <p className="text-gray-700 japanese-text leading-relaxed">
                     {bill.summary}
                   </p>
@@ -160,7 +184,9 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
 
               {/* Actions */}
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">関連リンク</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">
+                  関連リンク
+                </h3>
                 <div className="space-y-3">
                   {bill.diet_url && (
                     <a
@@ -169,8 +195,18 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-green bg-green-50 hover:bg-green-100 rounded-md transition-colors"
                     >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
                       </svg>
                       参議院ウェブサイトで詳細を見る
                     </a>
@@ -181,15 +217,18 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
               {/* Search metadata */}
               {bill.search_method && (
                 <div className="bg-gray-50 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">検索情報</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    検索情報
+                  </h3>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>
-                      検索方法: {bill.search_method === 'vector' ? 'AI検索（ベクトル類似度）' : 'キーワード検索'}
+                      検索方法:{" "}
+                      {bill.search_method === "vector"
+                        ? "AI検索（ベクトル類似度）"
+                        : "キーワード検索"}
                     </p>
                     {bill.relevance_score && (
-                      <p>
-                        スコア: {bill.relevance_score.toFixed(3)}
-                      </p>
+                      <p>スコア: {bill.relevance_score.toFixed(3)}</p>
                     )}
                   </div>
                 </div>
@@ -199,11 +238,7 @@ export default function BillDetailModal({ bill, isOpen, onClose }: BillDetailMod
 
           {/* Footer */}
           <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary"
-            >
+            <button type="button" onClick={onClose} className="btn-secondary">
               閉じる
             </button>
           </div>

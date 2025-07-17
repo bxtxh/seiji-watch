@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useObservability } from '@/lib/observability';
+import React, { useState, useEffect } from "react";
+import { useObservability } from "@/lib/observability";
 
 /**
  * Observability Dashboard Component
- * 
+ *
  * Displays real-time monitoring data including:
  * - Core Web Vitals
  * - Performance metrics
@@ -17,21 +17,26 @@ interface DashboardProps {
   onClose: () => void;
 }
 
-export default function ObservabilityDashboard({ isOpen, onClose }: DashboardProps) {
+export default function ObservabilityDashboard({
+  isOpen,
+  onClose,
+}: DashboardProps) {
   const { getWebVitals, getSessionSummary } = useObservability();
   const [webVitals, setWebVitals] = useState(getWebVitals());
   const [sessionSummary, setSessionSummary] = useState(getSessionSummary());
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(
+    null,
+  );
 
   useEffect(() => {
     if (isOpen) {
       // Update data immediately when opened
       updateData();
-      
+
       // Set up auto-refresh every 5 seconds
       const interval = setInterval(updateData, 5000);
       setRefreshInterval(interval);
-      
+
       return () => {
         if (interval) clearInterval(interval);
       };
@@ -48,27 +53,30 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
     setSessionSummary(getSessionSummary());
   };
 
-  const getVitalRating = (vital: string, value?: number): 'good' | 'needs-improvement' | 'poor' | 'unknown' => {
-    if (value === undefined) return 'unknown';
-    
+  const getVitalRating = (
+    vital: string,
+    value?: number,
+  ): "good" | "needs-improvement" | "poor" | "unknown" => {
+    if (value === undefined) return "unknown";
+
     const thresholds: Record<string, [number, number]> = {
       fcp: [1800, 3000],
       lcp: [2500, 4000],
       fid: [100, 300],
       cls: [0.1, 0.25],
-      ttfb: [800, 1800]
+      ttfb: [800, 1800],
     };
-    
+
     const [good, poor] = thresholds[vital] || [0, 0];
-    if (value <= good) return 'good';
-    if (value <= poor) return 'needs-improvement';
-    return 'poor';
+    if (value <= good) return "good";
+    if (value <= poor) return "needs-improvement";
+    return "poor";
   };
 
   const formatValue = (vital: string, value?: number): string => {
-    if (value === undefined) return 'N/A';
-    
-    if (vital === 'cls') {
+    if (value === undefined) return "N/A";
+
+    if (vital === "cls") {
       return value.toFixed(3);
     }
     return `${Math.round(value)}ms`;
@@ -76,10 +84,14 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
 
   const getRatingColor = (rating: string): string => {
     switch (rating) {
-      case 'good': return 'text-green-600 bg-green-50';
-      case 'needs-improvement': return 'text-yellow-600 bg-yellow-50';
-      case 'poor': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case "good":
+        return "text-green-600 bg-green-50";
+      case "needs-improvement":
+        return "text-yellow-600 bg-yellow-50";
+      case "poor":
+        return "text-red-600 bg-red-50";
+      default:
+        return "text-gray-600 bg-gray-50";
     }
   };
 
@@ -98,8 +110,18 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
             className="text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="ダッシュボードを閉じる"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -107,7 +129,9 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
         <div className="p-6 space-y-6">
           {/* Session Information */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-3">セッション情報</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              セッション情報
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">セッションID:</span>
@@ -138,35 +162,45 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
 
           {/* Core Web Vitals */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-3">Core Web Vitals</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              Core Web Vitals
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {Object.entries(webVitals).map(([vital, value]) => {
                 const rating = getVitalRating(vital, value);
-                const displayName = {
-                  fcp: 'FCP',
-                  lcp: 'LCP', 
-                  fid: 'FID',
-                  cls: 'CLS',
-                  ttfb: 'TTFB'
-                }[vital] || vital.toUpperCase();
-                
+                const displayName =
+                  {
+                    fcp: "FCP",
+                    lcp: "LCP",
+                    fid: "FID",
+                    cls: "CLS",
+                    ttfb: "TTFB",
+                  }[vital] || vital.toUpperCase();
+
                 return (
-                  <div key={vital} className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={vital}
+                    className="bg-white border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">{displayName}</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRatingColor(rating)}`}>
-                        {rating === 'unknown' ? 'N/A' : rating}
+                      <span className="text-sm font-medium text-gray-600">
+                        {displayName}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getRatingColor(rating)}`}
+                      >
+                        {rating === "unknown" ? "N/A" : rating}
                       </span>
                     </div>
                     <p className="text-lg font-semibold text-gray-900">
                       {formatValue(vital, value)}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {vital === 'fcp' && 'First Contentful Paint'}
-                      {vital === 'lcp' && 'Largest Contentful Paint'}
-                      {vital === 'fid' && 'First Input Delay'}
-                      {vital === 'cls' && 'Cumulative Layout Shift'}
-                      {vital === 'ttfb' && 'Time to First Byte'}
+                      {vital === "fcp" && "First Contentful Paint"}
+                      {vital === "lcp" && "Largest Contentful Paint"}
+                      {vital === "fid" && "First Input Delay"}
+                      {vital === "cls" && "Cumulative Layout Shift"}
+                      {vital === "ttfb" && "Time to First Byte"}
                     </p>
                   </div>
                 );
@@ -176,33 +210,41 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
 
           {/* Performance Summary */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-3">パフォーマンス評価</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              パフォーマンス評価
+            </h3>
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {Object.values(webVitals).filter((v, i) => {
-                      const vital = Object.keys(webVitals)[i];
-                      return getVitalRating(vital, v) === 'good';
-                    }).length}
+                    {
+                      Object.values(webVitals).filter((v, i) => {
+                        const vital = Object.keys(webVitals)[i];
+                        return getVitalRating(vital, v) === "good";
+                      }).length
+                    }
                   </div>
                   <p className="text-sm text-gray-600">良好</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-yellow-600">
-                    {Object.values(webVitals).filter((v, i) => {
-                      const vital = Object.keys(webVitals)[i];
-                      return getVitalRating(vital, v) === 'needs-improvement';
-                    }).length}
+                    {
+                      Object.values(webVitals).filter((v, i) => {
+                        const vital = Object.keys(webVitals)[i];
+                        return getVitalRating(vital, v) === "needs-improvement";
+                      }).length
+                    }
                   </div>
                   <p className="text-sm text-gray-600">要改善</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600">
-                    {Object.values(webVitals).filter((v, i) => {
-                      const vital = Object.keys(webVitals)[i];
-                      return getVitalRating(vital, v) === 'poor';
-                    }).length}
+                    {
+                      Object.values(webVitals).filter((v, i) => {
+                        const vital = Object.keys(webVitals)[i];
+                        return getVitalRating(vital, v) === "poor";
+                      }).length
+                    }
                   </div>
                   <p className="text-sm text-gray-600">不良</p>
                 </div>
@@ -212,25 +254,33 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
 
           {/* Browser Information */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-3">ブラウザ情報</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-3">
+              ブラウザ情報
+            </h3>
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">User Agent:</span>
                   <p className="font-mono text-xs text-gray-900 mt-1 break-all">
-                    {typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
+                    {typeof navigator !== "undefined"
+                      ? navigator.userAgent
+                      : "N/A"}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-600">画面サイズ:</span>
                   <p className="text-gray-900 mt-1">
-                    {typeof window !== 'undefined' ? `${window.innerWidth} × ${window.innerHeight}` : 'N/A'}
+                    {typeof window !== "undefined"
+                      ? `${window.innerWidth} × ${window.innerHeight}`
+                      : "N/A"}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-600">接続状態:</span>
                   <p className="text-gray-900 mt-1">
-                    {typeof navigator !== 'undefined' && navigator.onLine ? '✅ オンライン' : '❌ オフライン'}
+                    {typeof navigator !== "undefined" && navigator.onLine
+                      ? "✅ オンライン"
+                      : "❌ オフライン"}
                   </p>
                 </div>
                 <div>
@@ -246,11 +296,23 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
           {/* Error Status */}
           {sessionSummary.errorsCount > 0 && (
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">エラー状況</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                エラー状況
+              </h3>
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-center">
-                  <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-5 h-5 text-red-400 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <div>
                     <p className="text-sm font-medium text-red-800">
@@ -273,9 +335,7 @@ export default function ObservabilityDashboard({ isOpen, onClose }: DashboardPro
             >
               データを更新
             </button>
-            <p className="text-xs text-gray-500">
-              自動更新: 5秒ごと
-            </p>
+            <p className="text-xs text-gray-500">自動更新: 5秒ごと</p>
           </div>
         </div>
       </div>

@@ -2,8 +2,14 @@
  * Security Context for managing CSRF tokens and security state
  */
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { CSRFProtection, generateSecureId } from '@/utils/security';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { CSRFProtection, generateSecureId } from "@/utils/security";
 
 interface SecurityContextType {
   csrfToken: string | null;
@@ -14,7 +20,9 @@ interface SecurityContextType {
   isSecurityReady: boolean;
 }
 
-const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
+const SecurityContext = createContext<SecurityContextType | undefined>(
+  undefined,
+);
 
 interface SecurityProviderProps {
   children: ReactNode;
@@ -47,10 +55,13 @@ export function SecurityProvider({ children }: SecurityProviderProps) {
   useEffect(() => {
     if (!isSecurityReady) return;
 
-    const refreshInterval = setInterval(() => {
-      const newToken = CSRFProtection.generateToken();
-      setCsrfToken(newToken);
-    }, 30 * 60 * 1000); // 30 minutes
+    const refreshInterval = setInterval(
+      () => {
+        const newToken = CSRFProtection.generateToken();
+        setCsrfToken(newToken);
+      },
+      30 * 60 * 1000,
+    ); // 30 minutes
 
     return () => clearInterval(refreshInterval);
   }, [isSecurityReady]);
@@ -93,18 +104,20 @@ export function SecurityProvider({ children }: SecurityProviderProps) {
 export function useSecurityContext(): SecurityContextType {
   const context = useContext(SecurityContext);
   if (context === undefined) {
-    throw new Error('useSecurityContext must be used within a SecurityProvider');
+    throw new Error(
+      "useSecurityContext must be used within a SecurityProvider",
+    );
   }
   return context;
 }
 
 // Higher-order component for protecting components
 export function withSecurityContext<P extends object>(
-  Component: React.ComponentType<P>
+  Component: React.ComponentType<P>,
 ): React.ComponentType<P> {
   return function SecuredComponent(props: P) {
     const security = useSecurityContext();
-    
+
     if (!security.isSecurityReady) {
       return (
         <div className="flex items-center justify-center p-4">
@@ -123,7 +136,7 @@ export function useSecureForm() {
 
   const createSecureFormData = (data: Record<string, any>) => {
     if (!security.csrfToken) {
-      throw new Error('CSRF token not available');
+      throw new Error("CSRF token not available");
     }
 
     return {
@@ -135,7 +148,7 @@ export function useSecureForm() {
 
   const validateSecureSubmission = (formData: Record<string, any>): boolean => {
     const { _csrf } = formData;
-    if (!_csrf || typeof _csrf !== 'string') {
+    if (!_csrf || typeof _csrf !== "string") {
       return false;
     }
 
@@ -155,21 +168,26 @@ export function useSecurityLogger() {
   const security = useSecurityContext();
 
   const logSecurityEvent = (
-    event: 'csrf_validation_failed' | 'rate_limit_exceeded' | 'invalid_input' | 'security_error',
-    details?: Record<string, any>
+    event:
+      | "csrf_validation_failed"
+      | "rate_limit_exceeded"
+      | "invalid_input"
+      | "security_error",
+    details?: Record<string, any>,
   ) => {
     const logEntry = {
       timestamp: new Date().toISOString(),
       event,
       sessionId: security.sessionId,
-      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-      url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+      url: typeof window !== "undefined" ? window.location.href : "unknown",
       details: details || {},
     };
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('Security Event:', logEntry);
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Security Event:", logEntry);
     }
 
     // In production, this would send to a security monitoring service
@@ -189,7 +207,7 @@ export function useSecurityMetrics() {
   });
 
   const incrementBlocked = () => {
-    setMetrics(prev => ({
+    setMetrics((prev) => ({
       ...prev,
       requestsBlocked: prev.requestsBlocked + 1,
       lastSecurityEvent: new Date(),
@@ -197,14 +215,14 @@ export function useSecurityMetrics() {
   };
 
   const incrementTokensGenerated = () => {
-    setMetrics(prev => ({
+    setMetrics((prev) => ({
       ...prev,
       tokensGenerated: prev.tokensGenerated + 1,
     }));
   };
 
   const incrementValidationErrors = () => {
-    setMetrics(prev => ({
+    setMetrics((prev) => ({
       ...prev,
       validationErrors: prev.validationErrors + 1,
       lastSecurityEvent: new Date(),

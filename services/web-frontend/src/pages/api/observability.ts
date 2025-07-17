@@ -1,8 +1,8 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * Observability Data Collection API
- * 
+ *
  * Receives monitoring data from the frontend and processes it for analysis.
  * In a production environment, this would forward data to a monitoring service
  * like DataDog, New Relic, or a custom analytics platform.
@@ -51,11 +51,11 @@ interface ObservabilityData {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   // Only accept POST requests
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
@@ -63,30 +63,33 @@ export default async function handler(
 
     // Validate required fields
     if (!data.sessionId || !data.timestamp) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     // Process the observability data
     await processObservabilityData(data, req);
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       timestamp: Date.now(),
       processed: {
         metrics: data.metrics.length,
         errors: data.errors.length,
-        interactions: data.interactions.length
-      }
+        interactions: data.interactions.length,
+      },
     });
-
   } catch (error) {
-    console.error('Failed to process observability data:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Failed to process observability data:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 
-async function processObservabilityData(data: ObservabilityData, req: NextApiRequest) {
-  const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+async function processObservabilityData(
+  data: ObservabilityData,
+  req: NextApiRequest,
+) {
+  const clientIP =
+    req.headers["x-forwarded-for"] || req.connection.remoteAddress;
   const timestamp = new Date().toISOString();
 
   // Log structured data for analysis
@@ -100,21 +103,23 @@ async function processObservabilityData(data: ObservabilityData, req: NextApiReq
       metricsCount: data.metrics.length,
       errorsCount: data.errors.length,
       interactionsCount: data.interactions.length,
-      webVitals: data.webVitals
-    }
+      webVitals: data.webVitals,
+    },
   };
 
   // In development, log to console
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Observability]', JSON.stringify(logEntry, null, 2));
-    
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Observability]", JSON.stringify(logEntry, null, 2));
+
     // Log individual metrics for debugging
-    data.metrics.forEach(metric => {
-      console.log(`[Metric] ${metric.name}: ${metric.value}${metric.tags ? ` (${JSON.stringify(metric.tags)})` : ''}`);
+    data.metrics.forEach((metric) => {
+      console.log(
+        `[Metric] ${metric.name}: ${metric.value}${metric.tags ? ` (${JSON.stringify(metric.tags)})` : ""}`,
+      );
     });
 
     // Log errors
-    data.errors.forEach(error => {
+    data.errors.forEach((error) => {
       console.error(`[Error] ${error.context}: ${error.error.message}`);
     });
   }
@@ -132,26 +137,32 @@ async function processObservabilityData(data: ObservabilityData, req: NextApiReq
   await processWebVitals(data.webVitals, data.sessionId);
 }
 
-async function processMetrics(metrics: ObservabilityData['metrics'], sessionId: string) {
+async function processMetrics(
+  metrics: ObservabilityData["metrics"],
+  sessionId: string,
+) {
   // Group metrics by name for analysis
-  const metricsByName = metrics.reduce((acc, metric) => {
-    if (!acc[metric.name]) {
-      acc[metric.name] = [];
-    }
-    acc[metric.name].push(metric);
-    return acc;
-  }, {} as Record<string, typeof metrics>);
+  const metricsByName = metrics.reduce(
+    (acc, metric) => {
+      if (!acc[metric.name]) {
+        acc[metric.name] = [];
+      }
+      acc[metric.name].push(metric);
+      return acc;
+    },
+    {} as Record<string, typeof metrics>,
+  );
 
   // Analyze each metric type
   for (const [name, metricList] of Object.entries(metricsByName)) {
-    const values = metricList.map(m => m.value);
+    const values = metricList.map((m) => m.value);
     const analysis = {
       name,
       count: values.length,
       min: Math.min(...values),
       max: Math.max(...values),
       avg: values.reduce((a, b) => a + b, 0) / values.length,
-      sessionId
+      sessionId,
     };
 
     // Log analysis for monitoring
@@ -163,7 +174,10 @@ async function processMetrics(metrics: ObservabilityData['metrics'], sessionId: 
   }
 }
 
-async function processErrors(errors: ObservabilityData['errors'], sessionId: string) {
+async function processErrors(
+  errors: ObservabilityData["errors"],
+  sessionId: string,
+) {
   for (const error of errors) {
     // Create error report
     const errorReport = {
@@ -174,11 +188,11 @@ async function processErrors(errors: ObservabilityData['errors'], sessionId: str
       context: error.context,
       url: error.url,
       userAgent: error.userAgent,
-      additionalData: error.additionalData
+      additionalData: error.additionalData,
     };
 
     // Log error for monitoring
-    console.error('[Error Report]', errorReport);
+    console.error("[Error Report]", errorReport);
 
     // In production, you would send this to your error tracking service
     // Example: await sendToSentry(errorReport);
@@ -186,35 +200,48 @@ async function processErrors(errors: ObservabilityData['errors'], sessionId: str
   }
 }
 
-async function processInteractions(interactions: ObservabilityData['interactions'], sessionId: string) {
+async function processInteractions(
+  interactions: ObservabilityData["interactions"],
+  sessionId: string,
+) {
   // Analyze user behavior patterns
-  const interactionsByType = interactions.reduce((acc, interaction) => {
-    if (!acc[interaction.type]) {
-      acc[interaction.type] = [];
-    }
-    acc[interaction.type].push(interaction);
-    return acc;
-  }, {} as Record<string, typeof interactions>);
+  const interactionsByType = interactions.reduce(
+    (acc, interaction) => {
+      if (!acc[interaction.type]) {
+        acc[interaction.type] = [];
+      }
+      acc[interaction.type].push(interaction);
+      return acc;
+    },
+    {} as Record<string, typeof interactions>,
+  );
 
   // Log interaction analysis
   for (const [type, interactionList] of Object.entries(interactionsByType)) {
-    console.log(`[Interaction Analysis] ${type}: ${interactionList.length} events`);
+    console.log(
+      `[Interaction Analysis] ${type}: ${interactionList.length} events`,
+    );
   }
 
   // Track search patterns
-  const searches = interactions.filter(i => i.type === 'search');
+  const searches = interactions.filter((i) => i.type === "search");
   if (searches.length > 0) {
     const searchAnalysis = {
       totalSearches: searches.length,
-      uniqueQueries: new Set(searches.map(s => s.value)).size,
-      averageQueryLength: searches.reduce((sum, s) => sum + (s.value?.length || 0), 0) / searches.length,
-      sessionId
+      uniqueQueries: new Set(searches.map((s) => s.value)).size,
+      averageQueryLength:
+        searches.reduce((sum, s) => sum + (s.value?.length || 0), 0) /
+        searches.length,
+      sessionId,
     };
-    console.log('[Search Analysis]', searchAnalysis);
+    console.log("[Search Analysis]", searchAnalysis);
   }
 }
 
-async function processWebVitals(webVitals: ObservabilityData['webVitals'], sessionId: string) {
+async function processWebVitals(
+  webVitals: ObservabilityData["webVitals"],
+  sessionId: string,
+) {
   // Analyze Core Web Vitals
   const vitalsAnalysis = {
     sessionId,
@@ -225,24 +252,29 @@ async function processWebVitals(webVitals: ObservabilityData['webVitals'], sessi
       lcp: webVitals.lcp ? getRating(webVitals.lcp, [2500, 4000]) : null,
       fid: webVitals.fid ? getRating(webVitals.fid, [100, 300]) : null,
       cls: webVitals.cls ? getRating(webVitals.cls, [0.1, 0.25]) : null,
-      ttfb: webVitals.ttfb ? getRating(webVitals.ttfb, [800, 1800]) : null
-    }
+      ttfb: webVitals.ttfb ? getRating(webVitals.ttfb, [800, 1800]) : null,
+    },
   };
 
-  console.log('[Web Vitals Analysis]', vitalsAnalysis);
+  console.log("[Web Vitals Analysis]", vitalsAnalysis);
 
   // Alert on poor Core Web Vitals
   const poorVitals = Object.entries(vitalsAnalysis.ratings)
-    .filter(([_, rating]) => rating === 'poor')
+    .filter(([_, rating]) => rating === "poor")
     .map(([vital, _]) => vital);
 
   if (poorVitals.length > 0) {
-    console.warn(`[Performance Alert] Poor Core Web Vitals detected: ${poorVitals.join(', ')} for session ${sessionId}`);
+    console.warn(
+      `[Performance Alert] Poor Core Web Vitals detected: ${poorVitals.join(", ")} for session ${sessionId}`,
+    );
   }
 }
 
-function getRating(value: number, thresholds: [number, number]): 'good' | 'needs-improvement' | 'poor' {
-  if (value <= thresholds[0]) return 'good';
-  if (value <= thresholds[1]) return 'needs-improvement';
-  return 'poor';
+function getRating(
+  value: number,
+  thresholds: [number, number],
+): "good" | "needs-improvement" | "poor" {
+  if (value <= thresholds[0]) return "good";
+  if (value <= thresholds[1]) return "needs-improvement";
+  return "poor";
 }

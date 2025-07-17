@@ -1,21 +1,21 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     // Get API URL from environment
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
     const response = await fetch(`${apiUrl}/api/issues/categories/tree`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // Add any auth headers if needed
       },
     });
@@ -27,10 +27,10 @@ export default async function handler(
     const data = await response.json();
     res.status(200).json(data);
   } catch (error) {
-    console.error('Failed to fetch category tree:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch category tree',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error("Failed to fetch category tree:", error);
+    res.status(500).json({
+      error: "Failed to fetch category tree",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }

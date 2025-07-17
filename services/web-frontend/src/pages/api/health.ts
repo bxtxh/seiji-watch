@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 type HealthResponse = {
   status: string;
@@ -10,21 +10,21 @@ type HealthResponse = {
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<HealthResponse>
+  res: NextApiResponse<HealthResponse>,
 ) {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET']);
+  if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
     return;
   }
 
   const uptime = process.uptime();
-  
+
   res.status(200).json({
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
-    service: 'web-frontend',
-    version: '1.0.0',
+    service: "web-frontend",
+    version: "1.0.0",
     uptime: Math.floor(uptime),
   });
 }

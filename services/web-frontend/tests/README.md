@@ -64,16 +64,19 @@ This directory contains the comprehensive End-to-End (E2E) testing implementatio
 ## Browser and Device Coverage
 
 ### Desktop Browsers
+
 - **Chromium**: Latest stable version
-- **Firefox**: Latest stable version  
+- **Firefox**: Latest stable version
 - **WebKit**: Safari engine testing
 
 ### Mobile Devices
+
 - **Mobile Chrome**: Pixel 5 simulation
 - **Mobile Safari**: iPhone 12 simulation
 - **Tablet**: iPad simulation
 
 ### Responsive Testing
+
 - Desktop: 1920x1080
 - Tablet: 768x1024
 - Mobile: 375x667
@@ -81,6 +84,7 @@ This directory contains the comprehensive End-to-End (E2E) testing implementatio
 ## Running Tests
 
 ### Prerequisites
+
 ```bash
 # Install dependencies
 npm install
@@ -90,6 +94,7 @@ npx playwright install
 ```
 
 ### Basic Test Execution
+
 ```bash
 # Run all E2E tests
 npx playwright test
@@ -105,6 +110,7 @@ npx playwright test --reporter=html
 ```
 
 ### Custom Test Runner
+
 ```bash
 # Run comprehensive test suite with reporting
 node tests/run-e2e-tests.js
@@ -113,11 +119,13 @@ node tests/run-e2e-tests.js
 ## Test Features
 
 ### Cross-Browser Testing
+
 - Tests run across all major browsers
 - Consistent behavior validation
 - Browser-specific feature testing
 
 ### Accessibility Testing
+
 - WCAG 2.1 AA compliance validation
 - Keyboard navigation testing
 - Screen reader compatibility
@@ -125,6 +133,7 @@ node tests/run-e2e-tests.js
 - Japanese text accessibility (furigana support)
 
 ### Performance Testing
+
 - Core Web Vitals measurement
 - First Contentful Paint (FCP) tracking
 - Largest Contentful Paint (LCP) monitoring
@@ -132,12 +141,14 @@ node tests/run-e2e-tests.js
 - Network condition simulation
 
 ### Security Testing
+
 - XSS attack prevention
 - Input sanitization validation
 - Security header verification
 - Rate limiting protection
 
 ### PWA Testing
+
 - Service Worker functionality
 - Offline capability testing
 - Manifest validation
@@ -146,12 +157,14 @@ node tests/run-e2e-tests.js
 ## Test Data and Fixtures
 
 ### Mock Data
+
 - Sample search queries (valid/invalid)
 - Test issue data
 - Performance thresholds
 - Security test payloads
 
 ### Test Configurations
+
 - Browser viewport settings
 - Network condition presets
 - Performance benchmark thresholds
@@ -160,12 +173,14 @@ node tests/run-e2e-tests.js
 ## Reporting
 
 ### HTML Reports
+
 - Detailed test execution results
 - Screenshot capture on failures
 - Video recordings of test runs
 - Performance metrics visualization
 
 ### Console Output
+
 - Real-time test progress
 - Performance metrics logging
 - Error details and stack traces
@@ -174,12 +189,14 @@ node tests/run-e2e-tests.js
 ## Performance Thresholds
 
 ### Page Load Times
+
 - DOM Content Loaded: < 1000ms
 - Full Page Load: < 2000ms
 - First Contentful Paint: < 800ms
 - Mobile Load Time: < 1500ms
 
 ### Core Web Vitals
+
 - LCP: < 2.5s
 - FID: < 100ms
 - CLS: < 0.1
@@ -187,12 +204,14 @@ node tests/run-e2e-tests.js
 ## Security Validations
 
 ### Headers
+
 - Content-Security-Policy
 - X-Frame-Options
 - X-Content-Type-Options
 - Strict-Transport-Security
 
 ### Input Validation
+
 - XSS prevention
 - SQL injection protection
 - Command injection prevention
@@ -201,6 +220,7 @@ node tests/run-e2e-tests.js
 ## Accessibility Standards
 
 ### WCAG 2.1 AA Compliance
+
 - Keyboard navigation support
 - Screen reader compatibility
 - Color contrast requirements
@@ -208,6 +228,7 @@ node tests/run-e2e-tests.js
 - Semantic HTML structure
 
 ### Japanese-Specific Features
+
 - Furigana toggle functionality
 - Japanese text rendering
 - Character encoding validation
@@ -216,12 +237,14 @@ node tests/run-e2e-tests.js
 ## Maintenance
 
 ### Updating Tests
+
 1. Monitor application changes
 2. Update test selectors as needed
 3. Adjust performance thresholds
 4. Update security test scenarios
 
 ### Adding New Tests
+
 1. Follow existing test patterns
 2. Use helper functions for common operations
 3. Include proper error handling
@@ -230,6 +253,7 @@ node tests/run-e2e-tests.js
 ## Integration with CI/CD
 
 ### GitHub Actions Integration
+
 The E2E tests are designed to integrate with GitHub Actions for automated testing:
 
 ```yaml
@@ -242,6 +266,7 @@ The E2E tests are designed to integrate with GitHub Actions for automated testin
 ```
 
 ### Test Results
+
 - Test results are captured in HTML format
 - Screenshots and videos are preserved for debugging
 - Performance metrics are logged for monitoring
@@ -249,12 +274,14 @@ The E2E tests are designed to integrate with GitHub Actions for automated testin
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Browser Installation**: Run `npx playwright install` if browsers are missing
 2. **Test Timeouts**: Increase timeout values for slow CI environments
 3. **Element Not Found**: Update selectors after UI changes
 4. **Performance Thresholds**: Adjust thresholds based on environment capabilities
 
 ### Debug Mode
+
 ```bash
 # Run with debug output
 npx playwright test --debug

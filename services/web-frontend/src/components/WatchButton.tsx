@@ -1,7 +1,7 @@
 // WatchButton.tsx - Skeleton for issue watch functionality
 // This file will be auto-generated with full implementation
 
-import React from 'react';
+import React from "react";
 
 interface WatchButtonProps {
   issueId: string;
@@ -12,12 +12,12 @@ interface WatchButtonProps {
 export const WatchButton: React.FC<WatchButtonProps> = ({
   issueId,
   isWatching = false,
-  onWatchChange
+  onWatchChange,
 }) => {
   // TODO: Implement watch functionality
   return (
     <button className="watch-button">
-      {isWatching ? 'ウォッチ中 ✓' : 'この法案をウォッチする'}
+      {isWatching ? "ウォッチ中 ✓" : "この法案をウォッチする"}
     </button>
   );
 };

@@ -1,26 +1,26 @@
-import React from 'react'
-import { 
-  MagnifyingGlassIcon, 
-  Bars3Icon, 
+import React from "react";
+import {
+  MagnifyingGlassIcon,
+  Bars3Icon,
   ListBulletIcon,
-  XMarkIcon 
-} from '@heroicons/react/24/outline'
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 interface IssueSearchFiltersProps {
-  searchQuery: string
-  setSearchQuery: (query: string) => void
-  selectedCategory: string
-  setSelectedCategory: (category: string) => void
-  selectedStatus: string
-  setSelectedStatus: (status: string) => void
-  selectedPriority: string
-  setSelectedPriority: (priority: string) => void
-  viewMode: 'grid' | 'list'
-  setViewMode: (mode: 'grid' | 'list') => void
-  sortBy: string
-  setSortBy: (sort: string) => void
-  categories: string[]
-  onClearFilters: () => void
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+  selectedStatus: string;
+  setSelectedStatus: (status: string) => void;
+  selectedPriority: string;
+  setSelectedPriority: (priority: string) => void;
+  viewMode: "grid" | "list";
+  setViewMode: (mode: "grid" | "list") => void;
+  sortBy: string;
+  setSortBy: (sort: string) => void;
+  categories: string[];
+  onClearFilters: () => void;
 }
 
 const IssueSearchFilters: React.FC<IssueSearchFiltersProps> = ({
@@ -37,9 +37,10 @@ const IssueSearchFilters: React.FC<IssueSearchFiltersProps> = ({
   sortBy,
   setSortBy,
   categories,
-  onClearFilters
+  onClearFilters,
 }) => {
-  const hasActiveFilters = selectedCategory || selectedStatus || selectedPriority
+  const hasActiveFilters =
+    selectedCategory || selectedStatus || selectedPriority;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -62,27 +63,32 @@ const IssueSearchFilters: React.FC<IssueSearchFiltersProps> = ({
         {/* View Toggle */}
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode("grid")}
             className={`p-2 rounded-md transition-colors ${
-              viewMode === 'grid'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              viewMode === "grid"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
             aria-label="グリッド表示"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <rect x="3" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" strokeWidth="2" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" strokeWidth="2" rx="1"/>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <rect x="3" y="3" width="7" height="7" strokeWidth="2" rx="1" />
+              <rect x="14" y="3" width="7" height="7" strokeWidth="2" rx="1" />
+              <rect x="3" y="14" width="7" height="7" strokeWidth="2" rx="1" />
+              <rect x="14" y="14" width="7" height="7" strokeWidth="2" rx="1" />
             </svg>
           </button>
           <button
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode("list")}
             className={`p-2 rounded-md transition-colors ${
-              viewMode === 'list'
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              viewMode === "list"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
             aria-label="リスト表示"
           >
@@ -136,8 +142,10 @@ const IssueSearchFilters: React.FC<IssueSearchFiltersProps> = ({
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
           >
             <option value="">すべて</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
         </div>
@@ -173,7 +181,7 @@ const IssueSearchFilters: React.FC<IssueSearchFiltersProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default IssueSearchFilters
+export default IssueSearchFilters;
