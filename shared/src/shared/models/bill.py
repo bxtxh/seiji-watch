@@ -51,6 +51,14 @@ class Bill(BaseRecord):
     full_text: Optional[str] = Field(None, description="Full bill text")
     purpose: Optional[str] = Field(None, description="Purpose of the bill")
     
+    # Enhanced detailed content (新規追加)
+    bill_outline: Optional[str] = Field(None, description="議案要旨相当の長文情報")
+    background_context: Optional[str] = Field(None, description="提出背景・経緯")
+    expected_effects: Optional[str] = Field(None, description="期待される効果")
+    key_provisions: Optional[List[str]] = Field(None, description="主要条項リスト")
+    related_laws: Optional[List[str]] = Field(None, description="関連法律リスト")
+    implementation_date: Optional[str] = Field(None, description="施行予定日")
+    
     # Classification
     status: BillStatus = Field(BillStatus.BACKLOG, description="Current bill status")
     category: Optional[BillCategory] = Field(None, description="Bill category")
@@ -68,9 +76,11 @@ class Bill(BaseRecord):
     diet_session: Optional[str] = Field(None, description="Diet session number")
     house_of_origin: Optional[str] = Field(None, description="House of origin")
     
-    # Submitter information
+    # Submitter information (拡張)
     submitter_type: Optional[str] = Field(None, description="Submitter type")
     submitting_members: Optional[List[str]] = Field(None, description="List of submitting member IDs")
+    supporting_members: Optional[List[str]] = Field(None, description="賛成議員一覧（衆議院のみ）")
+    submitting_party: Optional[str] = Field(None, description="提出会派")
     sponsoring_ministry: Optional[str] = Field(None, description="Sponsoring ministry")
     
     # URLs and references
@@ -78,16 +88,27 @@ class Bill(BaseRecord):
     pdf_url: Optional[str] = Field(None, description="PDF document URL")
     related_bills: Optional[List[str]] = Field(None, description="List of related bill IDs")
     
+    # Process tracking (新規追加)
+    committee_assignments: Optional[Dict[str, Any]] = Field(None, description="委員会付託情報")
+    voting_results: Optional[Dict[str, Any]] = Field(None, description="採決結果")
+    amendments: Optional[List[Dict[str, Any]]] = Field(None, description="修正内容")
+    inter_house_status: Optional[str] = Field(None, description="両院間の状況")
+    
     # LLM-generated content
     ai_summary: Optional[str] = Field(None, description="AI-generated summary")
     key_points: Optional[List[str]] = Field(None, description="List of key points")
     tags: Optional[List[str]] = Field(None, description="List of tags")
     impact_assessment: Optional[Dict[str, Any]] = Field(None, description="AI impact analysis")
     
-    # Metadata
+    # Metadata (拡張)
     is_controversial: bool = Field(False, description="Whether the bill is controversial")
     priority_level: str = Field("normal", description="Priority level (high/normal/low)")
     estimated_cost: Optional[str] = Field(None, description="Estimated cost")
+    
+    # Source metadata (新規追加)
+    source_house: Optional[str] = Field(None, description="データ取得元議院")
+    source_url: Optional[str] = Field(None, description="元データURL")
+    data_quality_score: Optional[float] = Field(None, description="データ品質スコア")
     
     # Issue Management
     related_issues: Optional[List[str]] = Field(None, description="List of related Issue record IDs")
