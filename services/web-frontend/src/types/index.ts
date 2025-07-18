@@ -21,8 +21,56 @@ export interface Bill {
   related_issues?: string[];
   issue_tags?: string[];
 
+  // Enhanced detailed content fields
+  bill_outline?: string;           // 議案要旨相当の長文情報
+  background_context?: string;     // 提出背景・経緯
+  expected_effects?: string;       // 期待される効果
+  key_provisions?: string[];       // 主要条項リスト
+  related_laws?: string[];         // 関連法律リスト
+  implementation_date?: string;    // 施行予定日
+
+  // Process tracking fields
+  committee_assignments?: CommitteeAssignment[]; // 委員会付託情報
+  voting_results?: VotingSession[];              // 採決結果
+  amendments?: Amendment[];                      // 修正内容
+  inter_house_status?: string;                   // 両院間の状況
+  legislative_stage?: LegislativeStage;          // 立法段階情報
+
   // 後方互換性のため (段階的移行)
   category?: string;
+}
+
+export interface CommitteeAssignment {
+  committee_name: string;
+  assignment_date: string;
+  status: "pending" | "in_progress" | "completed";
+  house: "衆議院" | "参議院";
+}
+
+export interface Amendment {
+  amendment_id: string;
+  title: string;
+  description: string;
+  proposed_by: string;
+  proposed_date: string;
+  status: "proposed" | "adopted" | "rejected";
+  amendment_text?: string;
+}
+
+export interface LegislativeStage {
+  current_stage: "提出" | "審議中" | "委員会" | "採決待ち" | "成立" | "否決";
+  stage_progress: number; // 0-100の進捗率
+  next_scheduled_action?: string;
+  next_action_date?: string;
+  milestones: LegislativeMilestone[];
+}
+
+export interface LegislativeMilestone {
+  stage: string;
+  date: string;
+  description: string;
+  completed: boolean;
+  house?: "衆議院" | "参議院";
 }
 
 export interface Speech {
