@@ -3,8 +3,8 @@
  * Allows users to switch between high school (Level 1) and general reader (Level 2) issue views
  */
 
-import React, { useState, useCallback } from 'react';
-import { ChevronDownIcon, AcademicCapIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import React, { useState, useCallback } from "react";
+import { ChevronDownIcon, AcademicCapIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 
 export interface DualLevelToggleProps {
   currentLevel: 1 | 2;
@@ -17,7 +17,7 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
   currentLevel,
   onLevelChange,
   disabled = false,
-  className = ''
+  className = ""
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -36,19 +36,19 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
     return level === 1 
       ? {
           icon: AcademicCapIcon,
-          label: '高校生向け',
-          description: 'わかりやすい表現',
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200'
+          label: "高校生向け",
+          description: "わかりやすい表現",
+          color: "text-blue-600",
+          bgColor: "bg-blue-50",
+          borderColor: "border-blue-200"
         }
       : {
           icon: UserGroupIcon,
-          label: '一般読者向け',
-          description: '詳細な専門用語',
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200'
+          label: "一般読者向け",
+          description: "詳細な専門用語",
+          color: "text-green-600",
+          bgColor: "bg-green-50",
+          borderColor: "border-green-200"
         };
   };
 
@@ -69,8 +69,8 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
           transition-all duration-200 ease-in-out
           ${currentInfo.color} ${currentInfo.bgColor} ${currentInfo.borderColor}
           ${disabled 
-            ? 'opacity-50 cursor-not-allowed' 
-            : 'hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+            ? "opacity-50 cursor-not-allowed" 
+            : "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           }
           min-w-[200px]
         `}
@@ -87,7 +87,7 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
         </div>
         <ChevronDownIcon 
           className={`w-4 h-4 transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
+            isOpen ? "rotate-180" : ""
           }`}
           aria-hidden="true"
         />
@@ -160,7 +160,7 @@ export const CompactDualLevelToggle: React.FC<DualLevelToggleProps> = ({
   currentLevel,
   onLevelChange,
   disabled = false,
-  className = ''
+  className = ""
 }) => {
   const handleToggle = useCallback(() => {
     if (!disabled) {
@@ -170,8 +170,8 @@ export const CompactDualLevelToggle: React.FC<DualLevelToggleProps> = ({
   }, [currentLevel, onLevelChange, disabled]);
 
   const currentInfo = currentLevel === 1 
-    ? { label: '高校生', color: 'text-blue-600', bgColor: 'bg-blue-100' }
-    : { label: '一般', color: 'text-green-600', bgColor: 'bg-green-100' };
+    ? { label: "高校生", color: "text-blue-600", bgColor: "bg-blue-100" }
+    : { label: "一般", color: "text-green-600", bgColor: "bg-green-100" };
 
   return (
     <button

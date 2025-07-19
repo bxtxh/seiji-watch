@@ -3,23 +3,23 @@
  * Main page for browsing and managing dual-level policy issues
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { NextPage } from 'next';
-import Head from 'next/head';
+import React, { useState, useEffect, useCallback } from "react";
+import { NextPage } from "next";
+import Head from "next/head";
 import { 
   Bars3Icon,
   ListBulletIcon,
   FunnelIcon,
   ArrowPathIcon,
   ChartBarIcon
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 
-import { DualLevelToggle, useDualLevel } from '../../components/issues/DualLevelToggle';
-import { IssueCard, CompactIssueCard, Issue } from '../../components/issues/IssueCard';
-import { IssueTreeView, useIssueTree } from '../../components/issues/IssueTreeView';
-import { IssueSearch, useIssueSearch, SearchFilters } from '../../components/issues/IssueSearch';
+import { DualLevelToggle, useDualLevel } from "../../components/issues/DualLevelToggle";
+import { IssueCard, CompactIssueCard, Issue } from "../../components/issues/IssueCard";
+import { IssueTreeView, useIssueTree } from "../../components/issues/IssueTreeView";
+import { IssueSearch, useIssueSearch, SearchFilters } from "../../components/issues/IssueSearch";
 
-type ViewMode = 'list' | 'tree' | 'search';
+type ViewMode = "list" | "tree" | "search";
 
 interface IssueStats {
   total_issues: number;
@@ -37,12 +37,12 @@ interface IssueStats {
 
 const EnhancedIssuesPage: NextPage = () => {
   const { level, setLevel } = useDualLevel(1);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<IssueStats | null>(null);
-  const [statusFilter, setStatusFilter] = useState('approved');
+  const [statusFilter, setStatusFilter] = useState("approved");
   const [maxRecords, setMaxRecords] = useState(50);
 
   // Hooks for different view modes
@@ -64,13 +64,13 @@ const EnhancedIssuesPage: NextPage = () => {
       const response = await fetch(`/api/issues?${params.toString()}`);
       
       if (!response.ok) {
-        throw new Error('Failed to load issues');
+        throw new Error("Failed to load issues");
       }
 
       const data = await response.json();
       setIssues(data.issues || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ const EnhancedIssuesPage: NextPage = () => {
   // Load statistics
   const loadStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/issues/statistics');
+      const response = await fetch("/api/issues/statistics");
       if (response.ok) {
         const data = await response.json();
         setStats(data);
