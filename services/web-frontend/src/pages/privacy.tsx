@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 
 export default function Privacy() {
@@ -283,15 +284,15 @@ export default function Privacy() {
         {/* Navigation Links */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex justify-between items-center">
-            <a href="/terms" className="text-primary-green hover:underline">
+            <Link href="/terms/" className="text-primary-green hover:underline">
               ← 利用規約
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
             >
               ホームに戻る
-            </a>
+            </Link>
           </div>
         </div>
       </div>

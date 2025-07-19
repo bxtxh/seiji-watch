@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 
 export default function Terms() {
@@ -198,9 +199,9 @@ export default function Terms() {
             <p>
               利用者のアクセスログ・Cookie 等の情報は、Google Analytics 4
               などの解析ツールを通じて収集する場合がある。詳細は
-              <a href="/privacy" className="text-primary-green hover:underline">
+              <Link href="/privacy/" className="text-primary-green hover:underline">
                 プライバシーポリシー
-              </a>
+              </Link>
               に定める。
             </p>
           </section>
@@ -246,15 +247,15 @@ export default function Terms() {
         {/* Navigation Links */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex justify-between items-center">
-            <a href="/privacy" className="text-primary-green hover:underline">
+            <Link href="/privacy/" className="text-primary-green hover:underline">
               プライバシーポリシー →
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="bg-primary-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
             >
               ホームに戻る
-            </a>
+            </Link>
           </div>
         </div>
       </div>

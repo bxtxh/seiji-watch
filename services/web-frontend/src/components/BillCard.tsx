@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Bill, IssueTag } from "@/types";
 import BillDetailModal from "./BillDetailModal";
 
@@ -14,9 +14,9 @@ export default function BillCard({ bill }: BillCardProps) {
     if (bill.issue_tags && bill.issue_tags.length > 0) {
       fetchIssueTags();
     }
-  }, [bill.issue_tags]);
+  }, [bill.issue_tags, fetchIssueTags]);
 
-  const fetchIssueTags = async () => {
+  const fetchIssueTags = useCallback(async () => {
     try {
       const response = await fetch("/api/issues/tags/");
       const data = await response.json();
@@ -38,7 +38,7 @@ export default function BillCard({ bill }: BillCardProps) {
     } catch (error) {
       console.error("Failed to fetch issue tags:", error);
     }
-  };
+  }, [bill.issue_tags]);
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
