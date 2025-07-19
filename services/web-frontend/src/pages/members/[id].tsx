@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
+import Image from "next/image";
 import Layout from "@/components/Layout";
 import { useObservability } from "@/lib/observability";
 import { apiClient } from "@/lib/api";
@@ -87,15 +88,15 @@ const MemberPage: React.FC<MemberPageProps> = ({
     if (id) {
       recordPageView(`member/${id}`);
     }
-  }, [id]);
+  }, [id, recordPageView]);
 
   useEffect(() => {
     if (!initialMember && id) {
       fetchMemberData();
     }
-  }, [id, initialMember]);
+  }, [id, initialMember, fetchMemberData]);
 
-  const fetchMemberData = async () => {
+  const fetchMemberData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -134,7 +135,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, recordError]);
 
   const getHouseLabel = (house: string) => {
     return house === "house_of_representatives" ? "衆議院" : "参議院";
@@ -221,9 +222,11 @@ const MemberPage: React.FC<MemberPageProps> = ({
           <div className="flex items-start space-x-6">
             <div className="flex-shrink-0">
               {member.profile_image ? (
-                <img
+                <Image
                   src={member.profile_image}
                   alt={`${member.name}の写真`}
+                  width={96}
+                  height={96}
                   className="w-24 h-24 rounded-lg object-cover"
                 />
               ) : (

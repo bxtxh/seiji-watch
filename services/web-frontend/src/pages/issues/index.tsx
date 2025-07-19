@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Layout from "../../components/Layout";
 import IssueSearchFilters from "../../components/IssueSearchFilters";
@@ -32,9 +32,9 @@ const IssuesPage = () => {
   useEffect(() => {
     fetchIssues();
     fetchIssueTags();
-  }, [selectedCategory, selectedStatus, selectedPriority]);
+  }, [fetchIssues, fetchIssueTags]);
 
-  const fetchIssues = async () => {
+  const fetchIssues = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -58,9 +58,9 @@ const IssuesPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, selectedStatus, selectedPriority]);
 
-  const fetchIssueTags = async () => {
+  const fetchIssueTags = useCallback(async () => {
     try {
       const response = await fetch("/api/issues/tags");
       const data = await response.json();
@@ -75,7 +75,7 @@ const IssuesPage = () => {
       console.error("Failed to fetch issue tags:", error);
       setIssueTags([]);
     }
-  };
+  }, []);
 
   const getTagsForIssue = (issue: Issue): IssueTag[] => {
     if (!issue.issue_tags) return [];

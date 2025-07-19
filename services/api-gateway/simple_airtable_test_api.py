@@ -354,7 +354,7 @@ async def get_active_issues(
             if "🏛️ 法案ID:" in notes:
                 try:
                     bill_id = notes.split("🏛️ 法案ID:")[1].split("\\n")[0].strip()
-                except:
+                except Exception:
                     bill_id = f"bill-{len(active_issues) + 1}"
             
             # Determine status (simulate deliberating/vote_pending)
@@ -386,7 +386,7 @@ async def get_active_issues(
             "success": True,
             "data": active_issues,
             "count": len(active_issues),
-            "message": f"EPIC 12 T101 - Active Issues API実装完了",
+            "message": "EPIC 12 T101 - Active Issues API実装完了",
             "source": "airtable_real_data"
         }
         

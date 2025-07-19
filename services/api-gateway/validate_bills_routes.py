@@ -11,14 +11,16 @@ def validate_bills_routes():
     print("=" * 50)
     
     # Read the bills routes file
-    bills_routes_path = "/Users/shogen/seiji-watch/services/api-gateway/src/routes/bills.py"
+    bills_routes_path = (
+        "/Users/shogen/seiji-watch/services/api-gateway/src/routes/bills.py"
+    )
     
     if not os.path.exists(bills_routes_path):
         print("❌ Bills routes file not found")
         return False
     
     try:
-        with open(bills_routes_path, 'r') as f:
+        with open(bills_routes_path) as f:
             content = f.read()
         
         # Parse the Python file
@@ -52,7 +54,7 @@ def validate_bills_routes():
             "get_bills_policy_category_statistics"
         ]
         
-        print(f"\n📋 Expected endpoint functions:")
+        print("\n📋 Expected endpoint functions:")
         for endpoint in expected_endpoints:
             if endpoint in functions:
                 print(f"   ✅ {endpoint}")
@@ -65,7 +67,7 @@ def validate_bills_routes():
             "BillSearchRequest"
         ]
         
-        print(f"\n📋 Expected request models:")
+        print("\n📋 Expected request models:")
         for model in expected_models:
             if model in classes:
                 print(f"   ✅ {model}")
@@ -74,14 +76,16 @@ def validate_bills_routes():
         
         # Check for FastAPI router
         router_found = "router = APIRouter" in content
-        print(f"\n🔌 FastAPI Router: {'✅ Found' if router_found else '❌ Not found'}")
+        print(
+            f"\n🔌 FastAPI Router: {'✅ Found' if router_found else '❌ Not found'}"
+        )
         
         # Check for proper imports
         has_fastapi_imports = "from fastapi import" in content
         has_pydantic_imports = "from pydantic import" in content
         has_shared_imports = "from shared.clients import" in content
         
-        print(f"\n📦 Import structure:")
+        print("\n📦 Import structure:")
         print(f"   FastAPI imports: {'✅' if has_fastapi_imports else '❌'}")
         print(f"   Pydantic imports: {'✅' if has_pydantic_imports else '❌'}")
         print(f"   Shared imports: {'✅' if has_shared_imports else '❌'}")
@@ -92,12 +96,15 @@ def validate_bills_routes():
         put_decorators = content.count("@router.put(")
         delete_decorators = content.count("@router.delete(")
         
-        print(f"\n🎯 API endpoint decorators:")
+        print("\n🎯 API endpoint decorators:")
         print(f"   GET endpoints: {get_decorators}")
         print(f"   POST endpoints: {post_decorators}")
         print(f"   PUT endpoints: {put_decorators}")
         print(f"   DELETE endpoints: {delete_decorators}")
-        print(f"   Total endpoints: {get_decorators + post_decorators + put_decorators + delete_decorators}")
+        total_endpoints = (
+            get_decorators + post_decorators + put_decorators + delete_decorators
+        )
+        print(f"   Total endpoints: {total_endpoints}")
         
         return True
         
@@ -112,14 +119,16 @@ def validate_airtable_client_extensions():
     print("=" * 50)
     
     # Read the airtable client file
-    airtable_client_path = "/Users/shogen/seiji-watch/shared/src/shared/clients/airtable.py"
+    airtable_client_path = (
+        "/Users/shogen/seiji-watch/shared/src/shared/clients/airtable.py"
+    )
     
     if not os.path.exists(airtable_client_path):
         print("❌ Airtable client file not found")
         return False
     
     try:
-        with open(airtable_client_path, 'r') as f:
+        with open(airtable_client_path) as f:
             content = f.read()
         
         # Check for Bills-PolicyCategory methods
@@ -135,7 +144,7 @@ def validate_airtable_client_extensions():
             "list_bills_policy_categories"
         ]
         
-        print(f"📋 Expected Airtable client methods:")
+        print("📋 Expected Airtable client methods:")
         for method in expected_methods:
             if f"async def {method}" in content:
                 print(f"   ✅ {method}")
@@ -159,21 +168,25 @@ def validate_main_app_integration():
     print("=" * 50)
     
     # Read the main app file
-    main_app_path = "/Users/shogen/seiji-watch/services/api-gateway/src/main.py"
+    main_app_path = (
+        "/Users/shogen/seiji-watch/services/api-gateway/src/main.py"
+    )
     
     if not os.path.exists(main_app_path):
         print("❌ Main app file not found")
         return False
     
     try:
-        with open(main_app_path, 'r') as f:
+        with open(main_app_path) as f:
             content = f.read()
         
         # Check for bills router import and inclusion
-        bills_import = "from .routes import issues, speeches, bills" in content
+        bills_import = (
+            "from .routes import issues, speeches, bills" in content
+        )
         bills_inclusion = "app.include_router(bills.router)" in content
         
-        print(f"📦 Bills router integration:")
+        print("📦 Bills router integration:")
         print(f"   Import statement: {'✅' if bills_import else '❌'}")
         print(f"   Router inclusion: {'✅' if bills_inclusion else '❌'}")
         
@@ -192,17 +205,29 @@ if __name__ == "__main__":
     airtable_client_ok = validate_airtable_client_extensions()
     main_app_ok = validate_main_app_integration()
     
-    print(f"\n📊 Validation Summary:")
-    print(f"   Bills routes structure: {'✅ Valid' if bills_routes_ok else '❌ Invalid'}")
-    print(f"   Airtable client extensions: {'✅ Valid' if airtable_client_ok else '❌ Invalid'}")
-    print(f"   Main app integration: {'✅ Valid' if main_app_ok else '❌ Invalid'}")
+    print("\n📊 Validation Summary:")
+    bills_status = '✅ Valid' if bills_routes_ok else '❌ Invalid'
+    airtable_status = '✅ Valid' if airtable_client_ok else '❌ Invalid'
+    main_status = '✅ Valid' if main_app_ok else '❌ Invalid'
+    print(f"   Bills routes structure: {bills_status}")
+    print(f"   Airtable client extensions: {airtable_status}")
+    print(f"   Main app integration: {main_status}")
     
     if bills_routes_ok and airtable_client_ok and main_app_ok:
-        print(f"\n✅ All validations passed! Bills-PolicyCategory API is ready for T128 completion.")
+        print(
+            "\n✅ All validations passed! "
+            "Bills-PolicyCategory API is ready for T128 completion."
+        )
     else:
-        print(f"\n❌ Some validations failed. Please fix issues before proceeding.")
+        print(
+            "\n❌ Some validations failed. "
+            "Please fix issues before proceeding."
+        )
     
-    print(f"\n🎯 Next steps for T128 completion:")
-    print(f"   1. Start the API server: cd /Users/shogen/seiji-watch/services/api-gateway && python -m uvicorn src.main:app --reload")
-    print(f"   2. Test with: python test_bills_policy_category_api.py")
-    print(f"   3. Check API docs at: http://localhost:8000/docs")
+    print("\n🎯 Next steps for T128 completion:")
+    print(
+        "   1. Start the API server: cd /Users/shogen/seiji-watch/"
+        "services/api-gateway && python -m uvicorn src.main:app --reload"
+    )
+    print("   2. Test with: python test_bills_policy_category_api.py")
+    print("   3. Check API docs at: http://localhost:8000/docs")
