@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [shared, api-gateway, ingest-worker]
+        service: [api-gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -114,6 +114,9 @@ jobs:
   security-scan:
     name: Security Scanning
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     
     steps:
     - name: Checkout code
