@@ -385,8 +385,12 @@ async def root():
     }
 
 # Include routers
-from .routes import issues, speeches, bills
+from .routes import issues, speeches, bills, enhanced_issues, airtable_webhooks, batch_management, monitoring
 app.include_router(issues.router)
+app.include_router(enhanced_issues.router)
+app.include_router(airtable_webhooks.router)
+app.include_router(batch_management.router)
+app.include_router(monitoring.router)
 app.include_router(speeches.router)
 app.include_router(bills.router)
 
