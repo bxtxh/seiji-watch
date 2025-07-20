@@ -4,6 +4,8 @@ API Bearer Token Generator
 Uses the generated JWT_SECRET_KEY to create API bearer tokens for CI/CD.
 """
 
+import os
+
 try:
     import jwt
     import datetime
