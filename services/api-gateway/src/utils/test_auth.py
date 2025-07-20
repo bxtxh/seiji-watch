@@ -20,7 +20,7 @@ def generate_test_token(
         scopes = ['read', 'write', 'admin']  # Full permissions for testing
     
     if secret_key is None:
-        secret_key = os.getenv('JWT_SECRET_KEY', 'test-secret-key-for-ci')
+        secret_key = os.getenv('JWT_SECRET_KEY', 'test-jwt-secret-unified-for-ci-cd')
     
     payload = {
         'user_id': user_id,

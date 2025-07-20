@@ -21,7 +21,7 @@ def mock_env_vars(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
     monkeypatch.setenv("AIRTABLE_API_KEY", "test-airtable-key")
     monkeypatch.setenv("AIRTABLE_BASE_ID", "test-base-id")
-    monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret-for-ci")
+    monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret-unified-for-ci-cd")
     monkeypatch.setenv("ENVIRONMENT", "testing")
     monkeypatch.setenv("API_BEARER_TOKEN", "test-api-bearer-token")
 
@@ -60,7 +60,7 @@ def mock_airtable_client():
 def test_token():
     """Generate a test JWT token for authenticated requests."""
     from src.utils.test_auth import generate_test_token
-    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-for-ci'
+    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
     return generate_test_token()
 
 
@@ -75,7 +75,7 @@ def auth_headers(test_token):
 def client():
     """Create a test client for the FastAPI application."""
     os.environ['ENVIRONMENT'] = 'testing'
-    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-for-ci'
+    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
     
     try:
         from src.main import app

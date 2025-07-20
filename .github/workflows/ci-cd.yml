@@ -12,6 +12,9 @@ on:
 env:
   GCP_REGION: asia-northeast1
   ARTIFACT_REGISTRY_URL: asia-northeast1-docker.pkg.dev
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-unified-for-ci-cd' }}
+  ENVIRONMENT: testing
+  API_BEARER_TOKEN: ${{ secrets.API_BEARER_TOKEN }}
   
 jobs:
   test-python:
