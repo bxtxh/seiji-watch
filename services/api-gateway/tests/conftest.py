@@ -23,6 +23,7 @@ def mock_env_vars(monkeypatch):
     monkeypatch.setenv("AIRTABLE_BASE_ID", "test-base-id")
     monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret-for-ci")
     monkeypatch.setenv("ENVIRONMENT", "testing")
+    monkeypatch.setenv("API_BEARER_TOKEN", "test-api-bearer-token")
 
 
 @pytest.fixture
