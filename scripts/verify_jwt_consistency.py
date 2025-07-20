@@ -27,7 +27,7 @@ def test_jwt_consistency():
     print("🔍 JWT Consistency Verification")
     print("=" * 50)
     
-    # Test configurations
+    # Test configurations - 統一された設定
     test_configs = {
         "Production": "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w",
         "Test/CI-CD": "test-jwt-secret-unified-for-ci-cd",
