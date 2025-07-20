@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "@/components/Layout";
@@ -91,6 +91,7 @@ const BillsPage = () => {
     selectedStage,
     selectedCategory,
     currentPage,
+    fetchBills,
   ]);
 
   const fetchCategory = async (categoryId: string) => {
@@ -110,7 +111,7 @@ const BillsPage = () => {
     }
   };
 
-  const fetchBills = async () => {
+  const fetchBills = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -155,7 +156,7 @@ const BillsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedStatus, selectedStage, selectedCategory, currentPage]);
 
   const convertBillRecordToBill = (billRecord: BillRecord): Bill => {
     return {

@@ -2,12 +2,12 @@
 """
 Simple Airtable API test - EPIC 11 T97 verification
 """
-import os
 import asyncio
-import aiohttp
-from typing import List, Dict, Any, Optional
-from dotenv import load_dotenv
+import os
+from typing import Any
 
+import aiohttp
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -42,7 +42,7 @@ class SimpleAirtableClient:
             "Content-Type": "application/json"
         }
     
-    async def list_bills(self, max_records: int = 100, filter_formula: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def list_bills(self, max_records: int = 100, filter_formula: str | None = None) -> list[dict[str, Any]]:
         """List bills from Airtable"""
         url = f"{self.base_url}/Bills (法案)"
         params = {"maxRecords": max_records}
@@ -68,7 +68,7 @@ class SimpleAirtableClient:
                 else:
                     raise Exception(f"Airtable error: {response.status}")
     
-    async def list_votes(self, max_records: int = 100) -> List[Dict[str, Any]]:
+    async def list_votes(self, max_records: int = 100) -> list[dict[str, Any]]:
         """List votes from Airtable"""
         url = f"{self.base_url}/Votes (投票)"
         params = {"maxRecords": max_records}
@@ -254,14 +254,14 @@ async def search_bills(request: Request):
             filter_formula=search_formula,
             max_records=limit * 2
         )
-        
+
         # Transform results to expected format
         search_results = []
         for i, bill in enumerate(matching_bills[:limit]):
             fields = bill.get("fields", {})
             name = fields.get("Name", "")
             notes = fields.get("Notes", "")
-            
+
             result = {
                 "bill_id": bill.get("id"),
                 "title": name[:100] if name else f"法案 {i+1}",
@@ -274,7 +274,7 @@ async def search_bills(request: Request):
                 "related_issues": [query]
             }
             search_results.append(result)
-        
+
         return {
             "success": True,
             "results": search_results,
@@ -282,7 +282,7 @@ async def search_bills(request: Request):
             "query": query,
             "search_method": "airtable_real_data"
         }
-        
+
     except Exception as e:
         return {
             "success": False,
@@ -298,10 +298,10 @@ async def get_embedding_stats():
         # Get real data counts from Airtable
         bills = await airtable.list_bills(max_records=1000)
         votes = await airtable.list_votes(max_records=1000)
-        
+
         bills_count = len(bills)
         votes_count = len(votes)
-        
+
         return {
             "status": "healthy",
             "bills": bills_count,
@@ -321,21 +321,23 @@ async def get_embedding_stats():
 
 @app.get("/api/issues")
 async def get_active_issues(
-    status: Optional[str] = Query(None, description="Filter by status: 'in_view' for active issues"),
+    status: str | None = Query(
+        None, description="Filter by status: 'in_view' for active issues"
+    ),
     limit: int = Query(12, le=50, description="Limit number of results")
 ):
     """Get active issues for TOP page horizontal strip (EPIC 12 T101)."""
     try:
         # Get all bills from Airtable
         bills = await airtable.list_bills(max_records=limit * 2)
-        
+
         # Transform bills to issue format for TOP page strip
         active_issues = []
         for bill in bills[:limit]:
             fields = bill.get("fields", {})
             name = fields.get("Name", "")
             notes = fields.get("Notes", "")
-            
+
             # Extract category from notes (looking for カテゴリ: label)
             category = "その他"
             if "税制" in notes:
@@ -348,7 +350,7 @@ async def get_active_issues(
                 category = "外交・国際"
             elif "環境・エネルギー" in notes:
                 category = "環境・エネルギー"
-            
+
             # Extract bill ID from notes
             bill_id = ""
             if "🏛️ 法案ID:" in notes:
@@ -356,10 +358,10 @@ async def get_active_issues(
                     bill_id = notes.split("🏛️ 法案ID:")[1].split("\\n")[0].strip()
                 except Exception:
                     bill_id = f"bill-{len(active_issues) + 1}"
-            
+
             # Determine status (simulate deliberating/vote_pending)
             stage = "審議中" if len(active_issues) % 2 == 0 else "採決待ち"
-            
+
             issue = {
                 "id": bill.get("id"),
                 "title": name[:80] + "..." if len(name) > 80 else name,
@@ -377,11 +379,11 @@ async def get_active_issues(
                 }
             }
             active_issues.append(issue)
-        
+
         # Filter by status if specified
         if status == "in_view":
             active_issues = [issue for issue in active_issues if issue["status"] in ["deliberating", "vote_pending"]]
-        
+
         return {
             "success": True,
             "data": active_issues,
@@ -389,7 +391,7 @@ async def get_active_issues(
             "message": "EPIC 12 T101 - Active Issues API実装完了",
             "source": "airtable_real_data"
         }
-        
+
     except Exception as e:
         return {
             "success": False,
