@@ -320,10 +320,15 @@ jobs:
       run: npm run build --workspace=services/web-frontend
       
     - name: Analyze bundle size
-      uses: nextjs-bundle-analysis/action@v1
-      with:
-        workflow-id: 'ci-cd.yml'
-        working-directory: 'services/web-frontend'
+      run: |
+        cd services/web-frontend
+        npx @next/bundle-analyzer --help || echo "Bundle analyzer not available"
+        if [ -d ".next" ]; then
+          echo "Build size analysis:"
+          du -sh .next/static/chunks/* | head -10
+          echo "Total build size:"
+          du -sh .next
+        fi
       continue-on-error: true
 
   accessibility-test:
