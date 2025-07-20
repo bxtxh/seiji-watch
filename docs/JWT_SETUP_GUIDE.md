@@ -6,8 +6,39 @@
 
 ## 🎯 重要な原則
 
+### 1. **JWT_SECRET_KEYの完全一致**
 **JWT_SECRET_KEYとトークン生成時のSECRET_KEYが完全一致していなければ認証は絶対に失敗します。**
 1文字でも違うと認証できません。
+
+### 2. **サーバー側が期待するJWTペイロード形式**
+サーバー側（`auth.py`）が期待するクレーム（必須）:
+
+| クレーム名 | 型 | 必須 | 例 | 説明 |
+|------------|-----|------|-----|------|
+| `user_id` | string | ✅ | `"ci-bot"` | ユーザーID（`sub`ではない） |
+| `email` | string | ✅ | `"ci-bot@seiji-watch.local"` | メールアドレス（`role`ではない） |
+| `scopes` | array | ✅ | `["read", "write", "admin"]` | 権限スコープの配列 |
+| `type` | string | ✅ | `"access_token"` | トークンタイプ（固定値） |
+| `exp` | number | ✅ | `1705737600` | 有効期限（UTC timestamp） |
+| `iat` | number | ✅ | `1705651200` | 発行時刻（UTC timestamp） |
+
+**❌ 間違ったペイロード例:**
+```json
+{
+  "sub": "ci-bot",           // ❌ 'user_id'であるべき
+  "role": "ci",              // ❌ 'email'であるべき
+  "scopes": ["read"]         // ✅ 正しい
+}
+```
+
+**✅ 正しいペイロード例:**
+```json
+{
+  "user_id": "ci-bot",       // ✅ 正しい
+  "email": "ci-bot@seiji-watch.local",  // ✅ 正しい
+  "scopes": ["read", "write", "admin"]  // ✅ 正しい
+}
+```
 
 ## 📋 必要なGitHub Secrets
 
@@ -69,12 +100,14 @@ import os
 # GitHub Secretsと同じ値を使用
 SECRET_KEY = "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
 
+# ⚠️ 重要: サーバー側が期待する正確なペイロード形式
 payload = {
-    "sub": "ci-bot",
-    "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
-    "role": "ci",
-    "scopes": ["read", "write", "admin"],
-    "type": "access_token"
+    "user_id": "ci-bot",                     # 必須: 'sub'ではなく'user_id'
+    "email": "ci-bot@seiji-watch.local",     # 必須: 'role'ではなく'email'
+    "scopes": ["read", "write", "admin"],    # 必須: 配列形式
+    "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),  # 必須
+    "iat": datetime.datetime.utcnow(),       # 必須
+    "type": "access_token"                   # 必須: 固定値
 }
 
 token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
@@ -82,7 +115,14 @@ print(f"Generated Token: {token}")
 
 # 検証
 decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-print(f"Verification successful: {decoded['sub']}")
+print(f"Verification successful: {decoded['user_id']}")
+```
+
+### 3. API認証テスト
+
+```bash
+# APIテストスクリプトを実行
+python3 scripts/test_jwt_auth.py
 ```
 
 ## 🌍 環境別設定

@@ -26,14 +26,14 @@ def generate_ci_bearer_token(secret_key: str, hours: int = 24) -> str:
     if not JWT_AVAILABLE:
         raise ImportError("PyJWT library is required. Install with: pip install PyJWT")
     
-    # トークンに入れる情報（ペイロード）
+    # サーバー側が期待するペイロード形式（auth.pyのcreate_access_token()と同じ）
     payload = {
-        "sub": "ci-bot",  # 誰のトークンか（任意の文字列でOK）
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=hours),  # 有効期限
-        "iat": datetime.datetime.utcnow(),  # 発行時刻
-        "role": "ci",  # 役割（任意）
-        "scopes": ["read", "write", "admin"],  # 権限スコープ
-        "type": "access_token"  # トークンタイプ
+        "user_id": "ci-bot",  # 必須: サーバーが期待するuser_id
+        "email": "ci-bot@seiji-watch.local",  # 必須: サーバーが期待するemail
+        "scopes": ["read", "write", "admin"],  # 必須: 権限スコープ配列
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=hours),  # 必須: 有効期限
+        "iat": datetime.datetime.utcnow(),  # 必須: 発行時刻
+        "type": "access_token"  # 必須: トークンタイプ（固定値）
     }
 
     # JWTトークンを生成
@@ -55,6 +55,55 @@ def generate_multiple_tokens(secret_key: str) -> dict:
     
     return tokens
 
+def decode_and_verify_token(token: str, secret_key: str) -> dict:
+    """Decode and verify a JWT token for debugging."""
+    try:
+        # Decode without verification first (for debugging)
+        unverified = jwt.decode(token, options={"verify_signature": False})
+        print(f"🔍 Token payload (unverified): {unverified}")
+        
+        # Now verify with secret
+        verified = jwt.decode(token, secret_key, algorithms=["HS256"])
+        print(f"✅ Token verification successful")
+        
+        # Check server requirements
+        required_fields = ['user_id', 'email', 'scopes', 'exp', 'iat', 'type']
+        missing_fields = [field for field in required_fields if field not in verified]
+        
+        if missing_fields:
+            print(f"❌ Missing required fields: {missing_fields}")
+        else:
+            print(f"✅ All required fields present")
+            
+        # Check token type
+        if verified.get('type') != 'access_token':
+            print(f"❌ Invalid token type: {verified.get('type')}")
+        else:
+            print(f"✅ Valid token type: access_token")
+            
+        # Check expiration
+        exp = verified.get('exp')
+        if exp:
+            exp_time = datetime.datetime.fromtimestamp(exp)
+            now = datetime.datetime.utcnow()
+            if exp_time > now:
+                time_left = exp_time - now
+                print(f"✅ Token valid for: {time_left}")
+            else:
+                print(f"❌ Token expired {now - exp_time} ago")
+        
+        return verified
+        
+    except jwt.ExpiredSignatureError:
+        print(f"❌ Token has expired")
+        return None
+    except jwt.InvalidSignatureError:
+        print(f"❌ Invalid signature - JWT_SECRET_KEY mismatch")
+        return None
+    except jwt.JWTError as e:
+        print(f"❌ JWT Error: {e}")
+        return None
+
 if __name__ == "__main__":
     print("🎫 API Bearer Token Generator")
     print("=" * 50)
@@ -71,7 +120,7 @@ if __name__ == "__main__":
         # Generate tokens
         tokens = generate_multiple_tokens(SECRET_KEY)
         
-        print(f"\n📋 Generated API Bearer Tokens:")
+        print(f"\n📋 Generated API Bearer Tokens (Server-Compatible Format):")
         print(f"1. Short-term (1 hour):  {tokens['1hour']}")
         print(f"2. Medium-term (24 hours): {tokens['24hours']}")
         print(f"3. Long-term (7 days):   {tokens['7days']}")
@@ -80,9 +129,22 @@ if __name__ == "__main__":
         print(f"   Name: API_BEARER_TOKEN")
         print(f"   Value: {tokens['24hours']}")
         
+        # Verify the generated token
+        print(f"\n🔍 Token Verification:")
+        print("-" * 40)
+        decode_and_verify_token(tokens['24hours'], SECRET_KEY)
+        
         print(f"\n🧪 Test your token:")
-        print(f"   curl -H \"Authorization: Bearer {tokens['1hour'][:50]}...\" \\")
+        print(f"   curl -H \"Authorization: Bearer {tokens['24hours'][:50]}...\" \\")
         print(f"        http://localhost:8000/api/issues/")
+        
+        print(f"\n📝 Server Expected Payload Structure:")
+        print(f"   user_id: 'ci-bot'")
+        print(f"   email: 'ci-bot@seiji-watch.local'")
+        print(f"   scopes: ['read', 'write', 'admin']")
+        print(f"   type: 'access_token'")
+        print(f"   exp: {datetime.datetime.utcnow() + datetime.timedelta(hours=24)}")
+        print(f"   iat: {datetime.datetime.utcnow()}")
         
         print(f"\n📝 How to add to GitHub Secrets:")
         print(f"   1. Go to: https://github.com/YOUR_REPO/settings/secrets/actions")
@@ -93,9 +155,12 @@ if __name__ == "__main__":
         
     except Exception as e:
         print(f"❌ Error generating tokens: {e}")
+        import traceback
+        traceback.print_exc()
 
     print(f"\n🔒 Security Reminders:")
-    print(f"   - These tokens expire automatically")
+    print(f"   - These tokens use server-compatible payload format")
+    print(f"   - Tokens expire automatically")
     print(f"   - Use the 24-hour token for CI/CD")
     print(f"   - Generate new tokens when secrets are rotated")
     print(f"   - Never expose tokens in logs or code")

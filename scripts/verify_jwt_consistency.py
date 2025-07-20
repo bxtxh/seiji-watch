@@ -49,14 +49,14 @@ def test_jwt_consistency():
             continue
             
         try:
-            # Generate a test token
+            # Generate a test token with server-compatible format
             payload = {
-                "sub": "test-user",
+                "user_id": "test-user",
+                "email": "test@seiji-watch.local",
+                "scopes": ["read", "write"],
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.utcnow(),
-                "role": "test",
-                "type": "access_token",
-                "scopes": ["read", "write"]
+                "type": "access_token"
             }
             
             # Generate token
@@ -66,7 +66,7 @@ def test_jwt_consistency():
             decoded = jwt.decode(token, secret_key, algorithms=["HS256"])
             
             # Check if verification successful
-            if decoded["sub"] == "test-user":
+            if decoded["user_id"] == "test-user" and decoded["email"] == "test@seiji-watch.local":
                 results[config_name] = {
                     "status": "✅ PASS",
                     "token": token[:30] + "...",
@@ -108,7 +108,9 @@ def test_jwt_consistency():
         # Generate token with test secret, try to verify with production secret
         try:
             test_payload = {
-                "sub": "cross-test",
+                "user_id": "cross-test",
+                "email": "cross-test@seiji-watch.local",
+                "scopes": ["read"],
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.utcnow(),
                 "type": "access_token"
