@@ -153,12 +153,12 @@ bills_import = (
 )
 bills_inclusion = "app.include_router(bills.router)" in content
     print("📦 Bills router integration:")
-print(f"   Import statement: {'✅' if bills_import else '❌'}")
-print(f"   Router inclusion: {'✅' if bills_inclusion else '❌'}")
+    print(f"   Import statement: {'✅' if bills_import else '❌'}")
+    print(f"   Router inclusion: {'✅' if bills_inclusion else '❌'}")
     return bills_import and bills_inclusion
 except Exception as e:
-print(f"❌ Error validating main app: {e}")
-return False
+    print(f"❌ Error validating main app: {e}")
+    return False
 
 if __name__ == "__main__":
     print("🚀 Bills-PolicyCategory API Validation")

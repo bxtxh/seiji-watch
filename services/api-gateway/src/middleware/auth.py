@@ -13,10 +13,14 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
-# JWT Configuration
+# JWT Configuration with production security check
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '24'))
+
+# Production security check
+if os.getenv('ENVIRONMENT') == 'production' and JWT_SECRET_KEY == 'your-secret-key-change-in-production':
+    raise RuntimeError("JWT_SECRET_KEY must be set in production environment")
 
 # Security scheme
 security = HTTPBearer()

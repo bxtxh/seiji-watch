@@ -70,6 +70,9 @@ jobs:
       working-directory: services/${{ matrix.service }}
       run: poetry run pytest --cov=. --cov-report=xml
       continue-on-error: true  # Allow tests to fail during initial development
+      env:
+        JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-for-ci' }}
+        ENVIRONMENT: testing
       
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
