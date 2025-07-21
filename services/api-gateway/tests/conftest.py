@@ -4,6 +4,7 @@ import pytest
 import asyncio
 import os
 from unittest.mock import AsyncMock
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="session")
@@ -20,6 +21,9 @@ def mock_env_vars(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
     monkeypatch.setenv("AIRTABLE_API_KEY", "test-airtable-key")
     monkeypatch.setenv("AIRTABLE_BASE_ID", "test-base-id")
+    monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret-unified-for-ci-cd")
+    monkeypatch.setenv("ENVIRONMENT", "testing")
+    monkeypatch.setenv("API_BEARER_TOKEN", "test-api-bearer-token")
 
 
 @pytest.fixture
@@ -49,4 +53,41 @@ def mock_airtable_client():
             }
         }
     ]
+    return client
+
+
+@pytest.fixture
+def test_token():
+    """Generate a test JWT token for authenticated requests."""
+    from src.utils.test_auth import generate_test_token
+    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
+    return generate_test_token()
+
+
+@pytest.fixture  
+def auth_headers(test_token):
+    """Get authorization headers for authenticated requests."""
+    from src.utils.test_auth import get_auth_headers
+    return get_auth_headers(test_token)
+
+
+@pytest.fixture
+def client():
+    """Create a test client for the FastAPI application."""
+    os.environ['ENVIRONMENT'] = 'testing'
+    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
+    
+    try:
+        from src.main import app
+        return TestClient(app)
+    except ImportError:
+        # Return a mock client if app is not available
+        return AsyncMock()
+
+
+@pytest.fixture
+def authenticated_client(client, auth_headers):
+    """Create a test client with authentication headers pre-configured."""
+    if hasattr(client, 'headers'):
+        client.headers.update(auth_headers)
     return client

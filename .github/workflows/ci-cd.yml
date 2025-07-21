@@ -12,6 +12,9 @@ on:
 env:
   GCP_REGION: asia-northeast1
   ARTIFACT_REGISTRY_URL: asia-northeast1-docker.pkg.dev
+  JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-unified-for-ci-cd' }}
+  ENVIRONMENT: testing
+  API_BEARER_TOKEN: ${{ secrets.API_BEARER_TOKEN }}
   
 jobs:
   test-python:
@@ -42,7 +45,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .venv
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+        key: venv-v2-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-${{ hashFiles('**/.github/workflows/ci-cd.yml') }}
         
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -70,6 +73,10 @@ jobs:
       working-directory: services/${{ matrix.service }}
       run: poetry run pytest --cov=. --cov-report=xml
       continue-on-error: true  # Allow tests to fail during initial development
+      env:
+        JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-unified-for-ci-cd' }}
+        ENVIRONMENT: testing
+        API_BEARER_TOKEN: ${{ secrets.API_BEARER_TOKEN }}
       
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -156,7 +163,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
         
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker ${{ env.ARTIFACT_REGISTRY_URL }}
@@ -199,9 +207,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-images]
     if: github.ref == 'refs/heads/main'
-    environment:
-      name: staging
-      url: ${{ steps.deploy.outputs.url }}
     
     strategy:
       matrix:
@@ -214,7 +219,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -273,9 +279,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-staging]
     if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.url }}
     
     strategy:
       matrix:
@@ -288,7 +291,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+        service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2

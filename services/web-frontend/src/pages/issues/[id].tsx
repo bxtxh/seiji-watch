@@ -62,9 +62,9 @@ const IssueDetailPage = ({
     if (!initialIssue && !error && id) {
       fetchIssueDetails();
     }
-  }, [id, initialIssue, error]);
+  }, [id, initialIssue, error, fetchIssueDetails]);
 
-  const fetchIssueDetails = async () => {
+  const fetchIssueDetails = useCallback(async () => {
     try {
       setLoading(true);
       const [issueResponse, billsResponse, tagsResponse] = await Promise.all([
@@ -96,7 +96,7 @@ const IssueDetailPage = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const fetchRelatedBills = useCallback(async () => {
     try {

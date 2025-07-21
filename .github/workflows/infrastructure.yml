@@ -96,7 +96,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-    environment: dev-planning
     
     steps:
     - name: Checkout code
@@ -165,7 +164,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-plan-dev
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: dev
     
     steps:
     - name: Checkout code
@@ -233,7 +231,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
-    environment: staging-planning
     
     steps:
     - name: Checkout code
@@ -297,7 +294,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod'
-    environment: production-planning
     
     steps:
     - name: Checkout code

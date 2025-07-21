@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiClient, handleApiError } from "@/lib/api";
 import { Bill, SearchResult } from "@/types";
 import BillCard from "./BillCard";
@@ -27,18 +27,15 @@ export default function SearchInterface() {
     duration?: number;
   } | null>(null);
 
-  // Security hooks (client-side only)
-  const secureForm = typeof window !== "undefined" ? useSecureForm() : null;
-  const { logSecurityEvent } =
-    typeof window !== "undefined"
-      ? useSecurityLogger()
-      : { logSecurityEvent: () => {} };
+  // Security hooks (always call, handle SSR internally)
+  const secureForm = useSecureForm();
+  const { logSecurityEvent } = useSecurityLogger();
 
   // Observability hooks
   const { recordInteraction, recordError, recordMetric, startTimer } =
     useObservability();
 
-  const handleSearch = async (searchQuery: string) => {
+  const handleSearch = useCallback(async (searchQuery: string) => {
     const stopTimer = startTimer("search_operation");
 
     // Clear previous errors
@@ -188,7 +185,7 @@ export default function SearchInterface() {
       setLoading(false);
       stopTimer();
     }
-  };
+  }, [startTimer, recordInteraction, recordError, recordMetric, logSecurityEvent]);
 
   // Debounced search
   useEffect(() => {
@@ -199,7 +196,7 @@ export default function SearchInterface() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, handleSearch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

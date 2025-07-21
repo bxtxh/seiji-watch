@@ -43,7 +43,7 @@ const MembersPage: React.FC = () => {
 
   useEffect(() => {
     recordPageView("members_virtualized");
-  }, []);
+  }, [recordPageView]);
 
   // Generate comprehensive mock data for 700+ members
   const generateMockMembers = useCallback((): Member[] => {
@@ -250,7 +250,7 @@ const MembersPage: React.FC = () => {
     };
 
     loadMembers();
-  }, [generateMockMembers]);
+  }, [generateMockMembers, API_BASE_URL, recordMetric, recordError]);
 
   // Enhanced Japanese text search with wanakana
   const normalizeSearchQuery = useCallback((query: string): string[] => {

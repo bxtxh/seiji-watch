@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 import SearchInterface from "@/components/SearchInterface";
 import KanbanBoard from "@/components/KanbanBoard";
@@ -61,12 +62,12 @@ export default function Home() {
             >
               法案を検索する
             </button>
-            <a
-              href="/speeches"
+            <Link
+              href="/speeches/"
               className="w-full sm:w-auto sm:min-w-44 bg-white text-blue-600 px-4 sm:px-6 py-3 rounded-lg font-medium border border-blue-600 hover:bg-blue-50 transition-colors text-sm sm:text-base text-center"
             >
               最新の議論をみる
-            </a>
+            </Link>
           </div>
         </div>
 

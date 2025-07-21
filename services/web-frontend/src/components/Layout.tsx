@@ -1,5 +1,7 @@
 import React from "react";
 import Head from "next/head";
+import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 interface LayoutProps {
@@ -57,47 +59,49 @@ export default function Layout({
               {/* Logo and title */}
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <a href="/" className="flex items-center">
-                    <img
+                  <Link href="/" className="flex items-center">
+                    <Image
                       src="/logo.svg"
                       alt="政治ウォッチ！"
+                      width={32}
+                      height={32}
                       className="h-8 w-auto"
                     />
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Navigation */}
                 <nav className="ml-8 hidden md:flex space-x-8">
-                  <a
+                  <Link
                     href="/"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >
                     法案検索
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/speeches"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >
                     発言検索
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/members"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >
                     議員一覧
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/issues/categories"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >
                     政策分野
-                  </a>
-                  <a
+                  </Link>
+                  <Link
                     href="/issues"
                     className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium"
                   >
                     イシュー
-                  </a>
+                  </Link>
 
                   {/* Legal dropdown */}
                   <div className="relative group">
@@ -126,18 +130,18 @@ export default function Layout({
                     <div className="absolute left-0 mt-1 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                       <div className="bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
-                          <a
+                          <Link
                             href="/terms"
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           >
                             利用規約
-                          </a>
-                          <a
+                          </Link>
+                          <Link
                             href="/privacy"
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           >
                             プライバシーポリシー
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -178,9 +182,11 @@ export default function Layout({
             {/* Header with Logo */}
             <div className="flex items-center mb-6">
               <div className="flex items-center">
-                <img
+                <Image
                   src="/logo.svg"
                   alt="政治ウォッチ！"
+                  width={24}
+                  height={24}
                   className="h-6 w-auto"
                 />
               </div>
@@ -189,61 +195,61 @@ export default function Layout({
             {/* Navigation Links */}
             <div className="mb-6">
               <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-                <a
+                <Link
                   href="/"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   法案検索
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/speeches"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   発言検索
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/members"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   議員一覧
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/issues/categories"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   政策分野
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/issues"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   イシュー
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/terms"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   利用規約
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/privacy"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   プライバシーポリシー
-                </a>
+                </Link>
                 <span className="text-gray-300">|</span>
-                <a
+                <Link
                   href="/about-data"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   データについて
-                </a>
+                </Link>
               </nav>
             </div>
 
@@ -255,12 +261,12 @@ export default function Layout({
                 正確で詳細な政治情報をわかりやすく提供し、民主主義の発展に貢献します。
                 <br />
                 システムに関するお問い合わせ、改善要望は、{" "}
-                <a
+                <Link
                   href="mailto:contact@politics-watch.jp"
                   className="text-blue-600 hover:text-blue-800 transition-colors"
                 >
                   contact@politics-watch.jp
-                </a>{" "}
+                </Link>{" "}
                 までお願いします。
               </p>
             </div>
