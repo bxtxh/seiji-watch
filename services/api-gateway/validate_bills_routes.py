@@ -20,7 +20,7 @@ def validate_bills_routes():
         return False
         
     try:
-        with open(bills_routes_path, "r", encoding="utf-8") as f:
+        with open(bills_routes_path, encoding="utf-8") as f:
             content = f.read()
             
         # Parse the Python file
@@ -36,7 +36,7 @@ def validate_bills_routes():
             elif isinstance(node, ast.ClassDef):
                 classes.append(node.name)
                 
-        print(f"✅ Bills routes file parsed successfully")
+        print("✅ Bills routes file parsed successfully")
         print(f"   File size: {len(content)} characters")
         print(f"   Functions found: {len(functions)}")
         print(f"   Classes found: {len(classes)}")
@@ -129,7 +129,7 @@ def validate_airtable_client_extensions():
         return False
         
     try:
-        with open(airtable_client_path, "r", encoding="utf-8") as f:
+        with open(airtable_client_path, encoding="utf-8") as f:
             content = f.read()
             
         # Check for Bills-PolicyCategory methods
@@ -151,13 +151,12 @@ def validate_airtable_client_extensions():
                 print(f"   ✅ {method}")
             else:
                 print(f"   ❌ {method} - Missing")
-                
+
         # Check for Bills_PolicyCategories table references
         table_refs = content.count("Bills_PolicyCategories")
         print(f"\n📊 Bills_PolicyCategories table references: {table_refs}")
-        
+
         return True
-        
     except Exception as e:
         print(f"❌ Error validating Airtable client: {e}")
         return False
@@ -178,7 +177,7 @@ def validate_main_app_integration():
         return False
     
     try:
-        with open(main_app_path, "r", encoding="utf-8") as f:
+        with open(main_app_path, encoding="utf-8") as f:
             content = f.read()
         
         # Check for bills router import and inclusion
