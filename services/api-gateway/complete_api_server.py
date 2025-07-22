@@ -1,17 +1,16 @@
 """Complete API Server for Diet Issue Tracker - UI Demo Ready"""
 
-import os
 import logging
+import os
 import time
-from typing import Dict, List, Optional
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ app = FastAPI(
     description="Complete API Gateway for Diet Issue Tracker with Category System",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS middleware - Allow all localhost variants
@@ -29,22 +28,28 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:3001", 
+        "http://localhost:3001",
         "http://localhost:8080",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        "http://127.0.0.1:8080"
+        "http://127.0.0.1:8080",
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization", 
-        "content-language", "content-type", "x-requested-with",
-        "x-csrf-token", "x-request-id"
+        "accept",
+        "accept-language",
+        "authorization",
+        "content-language",
+        "content-type",
+        "x-requested-with",
+        "x-csrf-token",
+        "x-request-id",
     ],
     expose_headers=["X-Total-Count"],
-    max_age=600
+    max_age=600,
 )
+
 
 # Root endpoint
 @app.get("/")
@@ -52,12 +57,13 @@ async def root():
     """Root endpoint."""
     return {
         "message": "Diet Issue Tracker API Gateway - Complete Version",
-        "docs": "/docs", 
+        "docs": "/docs",
         "health": "/health",
         "categories_demo": "/api/issues/categories",
         "ui_demo": "/demo",
-        "ui_ready": True
+        "ui_ready": True,
     }
+
 
 @app.get("/demo", response_class=HTMLResponse)
 async def demo_page():
@@ -91,13 +97,13 @@ async def demo_page():
 <body>
     <div class="container">
         <h1>🏛️ EPIC 7: 3層イシューカテゴリシステム</h1>
-        
+
         <div class="stats">
             <h3>システム概要</h3>
             <p><strong>実装状況:</strong> ✅ 完全実装済み</p>
             <p><strong>分類標準:</strong> CAP (Comparative Agendas Project) 準拠</p>
             <p><strong>階層構造:</strong> L1 (主要分野) → L2 (サブ分野) → L3 (具体的イシュー)</p>
-            <p><strong>API エンドポイント:</strong> 
+            <p><strong>API エンドポイント:</strong>
                 <a href="/api/issues/categories" class="api-link" target="_blank">/api/issues/categories</a> |
                 <a href="/api/issues/categories/tree" class="api-link" target="_blank">/api/issues/categories/tree</a> |
                 <a href="/docs" class="api-link" target="_blank">Swagger UI</a>
@@ -121,11 +127,11 @@ async def demo_page():
             try {
                 const response = await fetch('/api/issues/categories/tree');
                 const data = await response.json();
-                
+
                 // Display L1 categories
                 const l1Container = document.getElementById('l1-categories');
                 l1Container.innerHTML = '';
-                
+
                 data.L1.forEach(category => {
                     const card = document.createElement('div');
                     card.className = 'category-card';
@@ -144,7 +150,7 @@ async def demo_page():
                 // Display L2 categories with parent relationships
                 const l2Container = document.getElementById('l2-categories');
                 l2Container.innerHTML = '';
-                
+
                 const l2ByParent = {};
                 data.L2.forEach(category => {
                     const parentId = category.fields.Parent_Category[0];
@@ -173,7 +179,7 @@ async def demo_page():
 
             } catch (error) {
                 console.error('Failed to load categories:', error);
-                document.getElementById('l1-categories').innerHTML = 
+                document.getElementById('l1-categories').innerHTML =
                     '<div style="color: red;">カテゴリの読み込みに失敗しました</div>';
             }
         }
@@ -185,6 +191,7 @@ async def demo_page():
 </html>
     """
 
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
@@ -195,10 +202,12 @@ async def health_check():
         "version": "1.0.0",
         "timestamp": time.time(),
         "data_loaded": True,
-        "ui_ready": True
+        "ui_ready": True,
     }
 
+
 # === EPIC 7: Issue Category API Endpoints ===
+
 
 @app.get("/api/issues/categories")
 async def get_categories(max_records: int = 100):
@@ -212,43 +221,43 @@ async def get_categories(max_records: int = 100):
                     "CAP_Code": "1",
                     "Layer": "L1",
                     "Title_JA": "マクロ経済学",
-                    "Title_EN": "Macroeconomics", 
+                    "Title_EN": "Macroeconomics",
                     "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_civil_rights",
                 "fields": {
-                    "CAP_Code": "2", 
+                    "CAP_Code": "2",
                     "Layer": "L1",
                     "Title_JA": "市民権・自由・少数者問題",
                     "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
                     "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_health",
                 "fields": {
                     "CAP_Code": "3",
-                    "Layer": "L1", 
+                    "Layer": "L1",
                     "Title_JA": "健康",
                     "Title_EN": "Health",
                     "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
-                "id": "rec_l1_agriculture", 
+                "id": "rec_l1_agriculture",
                 "fields": {
                     "CAP_Code": "4",
                     "Layer": "L1",
                     "Title_JA": "農業",
                     "Title_EN": "Agriculture",
                     "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_labor",
@@ -256,27 +265,28 @@ async def get_categories(max_records: int = 100):
                     "CAP_Code": "5",
                     "Layer": "L1",
                     "Title_JA": "労働・雇用",
-                    "Title_EN": "Labour and Employment", 
+                    "Title_EN": "Labour and Employment",
                     "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野。働き方改革と雇用の安定化を促進します。",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_education",
                 "fields": {
                     "CAP_Code": "6",
                     "Layer": "L1",
-                    "Title_JA": "教育", 
+                    "Title_JA": "教育",
                     "Title_EN": "Education",
                     "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野。生涯学習社会の実現と教育機会の平等を目指します。",
-                    "Is_Seed": True
-                }
-            }
+                    "Is_Seed": True,
+                },
+            },
         ]
         return mock_categories[:max_records]
     except Exception as e:
         logger.error(f"Failed to get categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch categories")
+
 
 @app.get("/api/issues/categories/tree")
 async def get_category_tree():
@@ -287,35 +297,35 @@ async def get_category_tree():
                 {
                     "id": "rec_l1_macroeconomics",
                     "fields": {
-                        "CAP_Code": "1", 
+                        "CAP_Code": "1",
                         "Layer": "L1",
                         "Title_JA": "マクロ経済学",
                         "Title_EN": "Macroeconomics",
                         "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_civil_rights",
                     "fields": {
                         "CAP_Code": "2",
-                        "Layer": "L1", 
+                        "Layer": "L1",
                         "Title_JA": "市民権・自由・少数者問題",
                         "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
                         "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_health",
                     "fields": {
                         "CAP_Code": "3",
                         "Layer": "L1",
-                        "Title_JA": "健康", 
+                        "Title_JA": "健康",
                         "Title_EN": "Health",
                         "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_agriculture",
@@ -323,10 +333,10 @@ async def get_category_tree():
                         "CAP_Code": "4",
                         "Layer": "L1",
                         "Title_JA": "農業",
-                        "Title_EN": "Agriculture", 
+                        "Title_EN": "Agriculture",
                         "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_labor",
@@ -336,20 +346,20 @@ async def get_category_tree():
                         "Title_JA": "労働・雇用",
                         "Title_EN": "Labour and Employment",
                         "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_education",
                     "fields": {
-                        "CAP_Code": "6", 
+                        "CAP_Code": "6",
                         "Layer": "L1",
                         "Title_JA": "教育",
                         "Title_EN": "Education",
                         "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野",
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
             "L2": [
                 {
@@ -360,19 +370,19 @@ async def get_category_tree():
                         "Title_JA": "国内マクロ経済問題",
                         "Title_EN": "General Domestic Macroeconomic Issues",
                         "Parent_Category": ["rec_l1_macroeconomics"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
-                    "id": "rec_l2_inflation_prices", 
+                    "id": "rec_l2_inflation_prices",
                     "fields": {
                         "CAP_Code": "106",
                         "Layer": "L2",
                         "Title_JA": "インフレ・物価・デフレ",
                         "Title_EN": "Inflation, Prices, and Deflation",
                         "Parent_Category": ["rec_l1_macroeconomics"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_general_civil_rights",
@@ -380,10 +390,10 @@ async def get_category_tree():
                         "CAP_Code": "200",
                         "Layer": "L2",
                         "Title_JA": "一般的市民権・自由",
-                        "Title_EN": "General Civil Rights and Liberties", 
+                        "Title_EN": "General Civil Rights and Liberties",
                         "Parent_Category": ["rec_l1_civil_rights"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_minority_issues",
@@ -392,9 +402,9 @@ async def get_category_tree():
                         "Layer": "L2",
                         "Title_JA": "少数者の権利・差別問題",
                         "Title_EN": "Minority Rights and Discrimination Issues",
-                        "Parent_Category": ["rec_l1_civil_rights"], 
-                        "Is_Seed": True
-                    }
+                        "Parent_Category": ["rec_l1_civil_rights"],
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_health_care_reform",
@@ -404,15 +414,16 @@ async def get_category_tree():
                         "Title_JA": "医療制度改革",
                         "Title_EN": "Health Care Reform",
                         "Parent_Category": ["rec_l1_health"],
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
-            "L3": []
+            "L3": [],
         }
     except Exception as e:
         logger.error(f"Failed to get category tree: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category tree")
+
 
 @app.get("/api/issues/categories/{category_id}")
 async def get_category_detail(category_id: str):
@@ -424,18 +435,18 @@ async def get_category_detail(category_id: str):
                 "id": "rec_l1_macroeconomics",
                 "fields": {
                     "CAP_Code": "1",
-                    "Layer": "L1", 
+                    "Layer": "L1",
                     "Title_JA": "マクロ経済学",
                     "Title_EN": "Macroeconomics",
                     "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野です。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含み、国家レベルでの経済戦略を策定します。",
                     "Description": "マクロ経済学分野では、政府の財政政策や中央銀行の金融政策を通じて、経済の安定と成長を図ります。景気循環の管理、失業率の改善、物価安定などが主要な政策目標となります。",
                     "Is_Seed": True,
                     "Related_Bills_Count": 15,
-                    "Child_Categories_Count": 8
-                }
+                    "Child_Categories_Count": 8,
+                },
             },
             "rec_l1_civil_rights": {
-                "id": "rec_l1_civil_rights", 
+                "id": "rec_l1_civil_rights",
                 "fields": {
                     "CAP_Code": "2",
                     "Layer": "L1",
@@ -445,11 +456,11 @@ async def get_category_detail(category_id: str):
                     "Description": "市民権・自由分野では、すべての市民が平等に権利を享受できる社会の実現を目指します。性別、人種、宗教、性的指向などによる差別の撤廃と、表現の自由、集会の自由などの基本的人権の保護が重要です。",
                     "Is_Seed": True,
                     "Related_Bills_Count": 22,
-                    "Child_Categories_Count": 12
-                }
-            }
+                    "Child_Categories_Count": 12,
+                },
+            },
         }
-        
+
         if category_id in category_details:
             return category_details[category_id]
         else:
@@ -465,12 +476,13 @@ async def get_category_detail(category_id: str):
                     "Description": "これはサンプルカテゴリの説明文です。",
                     "Is_Seed": False,
                     "Related_Bills_Count": 5,
-                    "Child_Categories_Count": 3
-                }
+                    "Child_Categories_Count": 3,
+                },
             }
     except Exception as e:
         logger.error(f"Failed to get category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category")
+
 
 @app.get("/api/issues/categories/{category_id}/children")
 async def get_category_children(category_id: str):
@@ -487,31 +499,31 @@ async def get_category_children(category_id: str):
                         "Title_JA": "国内マクロ経済問題",
                         "Title_EN": "General Domestic Macroeconomic Issues",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_inflation_prices",
                     "fields": {
-                        "CAP_Code": "106", 
+                        "CAP_Code": "106",
                         "Layer": "L2",
                         "Title_JA": "インフレ・物価・デフレ",
                         "Title_EN": "Inflation, Prices, and Deflation",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_fiscal_policy",
                     "fields": {
                         "CAP_Code": "107",
-                        "Layer": "L2", 
+                        "Layer": "L2",
                         "Title_JA": "財政政策",
                         "Title_EN": "Fiscal Policy",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
             "rec_l1_civil_rights": [
                 {
@@ -522,27 +534,28 @@ async def get_category_children(category_id: str):
                         "Title_JA": "一般的市民権・自由",
                         "Title_EN": "General Civil Rights and Liberties",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_minority_issues",
                     "fields": {
                         "CAP_Code": "201",
                         "Layer": "L2",
-                        "Title_JA": "少数者の権利・差別問題", 
+                        "Title_JA": "少数者の権利・差別問題",
                         "Title_EN": "Minority Rights and Discrimination Issues",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
-                }
-            ]
+                        "Is_Seed": True,
+                    },
+                },
+            ],
         }
-        
+
         return children_map.get(category_id, [])
     except Exception as e:
         logger.error(f"Failed to get children for category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category children")
+
 
 @app.get("/api/issues/categories/search")
 async def search_categories(query: str, max_records: int = 50):
@@ -551,21 +564,36 @@ async def search_categories(query: str, max_records: int = 50):
         # Mock search results
         all_categories = [
             {"id": "rec_l1_macroeconomics", "title": "マクロ経済学", "layer": "L1"},
-            {"id": "rec_l1_civil_rights", "title": "市民権・自由・少数者問題", "layer": "L1"},
+            {
+                "id": "rec_l1_civil_rights",
+                "title": "市民権・自由・少数者問題",
+                "layer": "L1",
+            },
             {"id": "rec_l1_health", "title": "健康", "layer": "L1"},
-            {"id": "rec_l2_general_domestic_macro", "title": "国内マクロ経済問題", "layer": "L2"},
-            {"id": "rec_l2_inflation_prices", "title": "インフレ・物価・デフレ", "layer": "L2"}
+            {
+                "id": "rec_l2_general_domestic_macro",
+                "title": "国内マクロ経済問題",
+                "layer": "L2",
+            },
+            {
+                "id": "rec_l2_inflation_prices",
+                "title": "インフレ・物価・デフレ",
+                "layer": "L2",
+            },
         ]
-        
+
         # Simple text search
-        results = [cat for cat in all_categories if query.lower() in cat["title"].lower()]
+        results = [
+            cat for cat in all_categories if query.lower() in cat["title"].lower()
+        ]
         return results[:max_records]
-    except Exception as e:
+    except Exception:
         logger.error(f"Failed to search categories with query: {query}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to search categories")
 
+
 @app.get("/api/bills")
-async def get_bills(max_records: int = 100, category: Optional[str] = None):
+async def get_bills(max_records: int = 100, category: str | None = None):
     """Get bills, optionally filtered by category."""
     try:
         # Mock bills data for category integration
@@ -576,29 +604,50 @@ async def get_bills(max_records: int = 100, category: Optional[str] = None):
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"マクロ経済政策関連法案{i}",
                     "Summary": f"これは法案{i}の要約です。マクロ経済学に関する重要な政策が含まれており、経済成長と安定化を目指しています。",
-                    "Status": "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決",
-                    "Category": "マクロ経済学" if i <= 5 else "市民権・自由・少数者問題" if i <= 8 else "健康",
-                    "Category_ID": "rec_l1_macroeconomics" if i <= 5 else "rec_l1_civil_rights" if i <= 8 else "rec_l1_health",
-                    "Diet_Session": f"第213回国会",
+                    "Status": "審議中"
+                    if i % 3 == 0
+                    else "成立"
+                    if i % 3 == 1
+                    else "否決",
+                    "Category": "マクロ経済学"
+                    if i <= 5
+                    else "市民権・自由・少数者問題"
+                    if i <= 8
+                    else "健康",
+                    "Category_ID": "rec_l1_macroeconomics"
+                    if i <= 5
+                    else "rec_l1_civil_rights"
+                    if i <= 8
+                    else "rec_l1_health",
+                    "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15",
-                    "Keywords": ["経済政策", "成長戦略", "財政"] if i <= 5 else ["人権", "平等", "自由"] if i <= 8 else ["医療", "健康", "保険"]
-                }
+                    "Keywords": ["経済政策", "成長戦略", "財政"]
+                    if i <= 5
+                    else ["人権", "平等", "自由"]
+                    if i <= 8
+                    else ["医療", "健康", "保険"],
+                },
             }
             for i in range(1, min(max_records + 1, 21))
         ]
-        
+
         # Filter by category if specified
         if category:
-            mock_bills = [bill for bill in mock_bills 
-                         if category.lower() in bill["fields"].get("Category", "").lower() 
-                         or category == bill["fields"].get("Category_ID", "")]
-        
+            mock_bills = [
+                bill
+                for bill in mock_bills
+                if category.lower() in bill["fields"].get("Category", "").lower()
+                or category == bill["fields"].get("Category_ID", "")
+            ]
+
         return mock_bills
     except Exception as e:
         logger.error(f"Failed to get bills: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
 
+
 # === Additional API Endpoints ===
+
 
 @app.get("/api/members")
 async def get_members(limit: int = 50):
@@ -608,8 +657,12 @@ async def get_members(limit: int = 50):
             {
                 "id": f"member_{i:03d}",
                 "name": f"議員{i}",
-                "party": "自由民主党" if i % 3 == 0 else "立憲民主党" if i % 3 == 1 else "日本維新の会",
-                "house": "衆議院" if i % 2 == 0 else "参議院"
+                "party": "自由民主党"
+                if i % 3 == 0
+                else "立憲民主党"
+                if i % 3 == 1
+                else "日本維新の会",
+                "house": "衆議院" if i % 2 == 0 else "参議院",
             }
             for i in range(1, min(limit + 1, 51))
         ]
@@ -618,20 +671,22 @@ async def get_members(limit: int = 50):
         logger.error(f"Failed to get members: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch members")
 
+
 # Global exception handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
-        status_code=500,
-        content={"error": "Internal server error", "detail": str(exc)}
+        status_code=500, content={"error": "Internal server error", "detail": str(exc)}
     )
+
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.getenv("PORT", 8001))
     logger.info(f"Starting Complete API Server on port {port}")
-    
+
     # Bind to all interfaces for maximum compatibility
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")

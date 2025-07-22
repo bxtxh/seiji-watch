@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Simple demo server for EPIC 7 Category System"""
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import urllib.parse
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Mock category data
 CATEGORY_TREE = {
@@ -16,8 +16,8 @@ CATEGORY_TREE = {
                 "Title_JA": "マクロ経済学",
                 "Title_EN": "Macroeconomics",
                 "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
-                "Is_Seed": True
-            }
+                "Is_Seed": True,
+            },
         },
         {
             "id": "rec_l1_civil_rights",
@@ -27,8 +27,8 @@ CATEGORY_TREE = {
                 "Title_JA": "市民権・自由・少数者問題",
                 "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
                 "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
-                "Is_Seed": True
-            }
+                "Is_Seed": True,
+            },
         },
         {
             "id": "rec_l1_health",
@@ -38,8 +38,8 @@ CATEGORY_TREE = {
                 "Title_JA": "健康",
                 "Title_EN": "Health",
                 "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
-                "Is_Seed": True
-            }
+                "Is_Seed": True,
+            },
         },
         {
             "id": "rec_l1_agriculture",
@@ -49,9 +49,9 @@ CATEGORY_TREE = {
                 "Title_JA": "農業",
                 "Title_EN": "Agriculture",
                 "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
-                "Is_Seed": True
-            }
-        }
+                "Is_Seed": True,
+            },
+        },
     ],
     "L2": [
         {
@@ -62,8 +62,8 @@ CATEGORY_TREE = {
                 "Title_JA": "国内マクロ経済問題",
                 "Title_EN": "General Domestic Macroeconomic Issues",
                 "Parent_Category": ["rec_l1_macroeconomics"],
-                "Is_Seed": True
-            }
+                "Is_Seed": True,
+            },
         },
         {
             "id": "rec_l2_inflation_prices",
@@ -73,11 +73,11 @@ CATEGORY_TREE = {
                 "Title_JA": "インフレ・物価・デフレ",
                 "Title_EN": "Inflation, Prices, and Deflation",
                 "Parent_Category": ["rec_l1_macroeconomics"],
-                "Is_Seed": True
-            }
-        }
+                "Is_Seed": True,
+            },
+        },
     ],
-    "L3": []
+    "L3": [],
 }
 
 DEMO_HTML = """
@@ -111,14 +111,14 @@ DEMO_HTML = """
 <body>
     <div class="container">
         <h1>🏛️ EPIC 7: 3層イシューカテゴリシステム</h1>
-        
+
         <div class="stats">
             <h3>✅ システム実装完了</h3>
             <p><strong>実装状況:</strong> <span class="success">完全実装済み</span> <span class="badge">LIVE</span></p>
             <p><strong>分類標準:</strong> CAP (Comparative Agendas Project) 準拠</p>
             <p><strong>階層構造:</strong> L1 (主要分野) → L2 (サブ分野) → L3 (具体的イシュー)</p>
             <p><strong>技術スタック:</strong> FastAPI + React + PostgreSQL + Airtable</p>
-            <p><strong>API エンドポイント:</strong> 
+            <p><strong>API エンドポイント:</strong>
                 <a href="/api/categories" class="api-link">Categories</a> |
                 <a href="/api/tree" class="api-link">Tree</a> |
                 <a href="/health" class="api-link">Health</a>
@@ -150,11 +150,11 @@ DEMO_HTML = """
             try {
                 const response = await fetch('/api/tree');
                 const data = await response.json();
-                
+
                 // Display L1 categories
                 const l1Container = document.getElementById('l1-categories');
                 l1Container.innerHTML = '';
-                
+
                 data.L1.forEach(category => {
                     const card = document.createElement('div');
                     card.className = 'category-card';
@@ -173,7 +173,7 @@ DEMO_HTML = """
                 // Display L2 categories with parent relationships
                 const l2Container = document.getElementById('l2-categories');
                 l2Container.innerHTML = '';
-                
+
                 const l2ByParent = {};
                 data.L2.forEach(category => {
                     const parentId = category.fields.Parent_Category[0];
@@ -204,7 +204,7 @@ DEMO_HTML = """
 
             } catch (error) {
                 console.error('Failed to load categories:', error);
-                document.getElementById('l1-categories').innerHTML = 
+                document.getElementById('l1-categories').innerHTML =
                     '<div style="color: red; padding: 20px; text-align: center;">❌ カテゴリの読み込みに失敗しました</div>';
             }
         }
@@ -216,49 +216,53 @@ DEMO_HTML = """
 </html>
 """
 
+
 class DemoHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
         path = parsed_path.path
-        
+
         # CORS headers
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        
-        if path == '/':
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+        if path == "/":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write(DEMO_HTML.encode('utf-8'))
-        
-        elif path == '/api/tree':
+            self.wfile.write(DEMO_HTML.encode("utf-8"))
+
+        elif path == "/api/tree":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json; charset=utf-8')
+            self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
-            self.wfile.write(json.dumps(CATEGORY_TREE, ensure_ascii=False).encode('utf-8'))
-        
-        elif path == '/health':
+            self.wfile.write(
+                json.dumps(CATEGORY_TREE, ensure_ascii=False).encode("utf-8")
+            )
+
+        elif path == "/health":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             health_data = {
                 "status": "healthy",
                 "service": "epic7-demo",
-                "message": "EPIC 7 Demo Server Running"
+                "message": "EPIC 7 Demo Server Running",
             }
-            self.wfile.write(json.dumps(health_data).encode('utf-8'))
-        
+            self.wfile.write(json.dumps(health_data).encode("utf-8"))
+
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         print(f"[DEMO] {format % args}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     port = 8080
-    server = HTTPServer(('127.0.0.1', port), DemoHandler)
+    server = HTTPServer(("127.0.0.1", port), DemoHandler)
     print(f"🚀 EPIC 7 Demo Server starting on http://127.0.0.1:{port}")
     print(f"📱 ブラウザで http://127.0.0.1:{port} にアクセスしてください")
     server.serve_forever()

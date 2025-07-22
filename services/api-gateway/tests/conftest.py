@@ -1,9 +1,10 @@
 """Test configuration and fixtures."""
 
-import pytest
 import asyncio
 import os
 from unittest.mock import AsyncMock
+
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -38,8 +39,8 @@ def mock_airtable_client():
             "Speaker_Name": "テスト議員",
             "Summary": None,
             "Topics": None,
-            "Is_Processed": False
-        }
+            "Is_Processed": False,
+        },
     }
     client.list_speeches.return_value = [
         {
@@ -49,8 +50,8 @@ def mock_airtable_client():
                 "Speaker_Name": "テスト議員",
                 "Summary": "テスト要約",
                 "Topics": "トピック1,トピック2",
-                "Is_Processed": True
-            }
+                "Is_Processed": True,
+            },
         }
     ]
     return client
@@ -60,25 +61,28 @@ def mock_airtable_client():
 def test_token():
     """Generate a test JWT token for authenticated requests."""
     from src.utils.test_auth import generate_test_token
-    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
+
+    os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-unified-for-ci-cd"
     return generate_test_token()
 
 
-@pytest.fixture  
+@pytest.fixture
 def auth_headers(test_token):
     """Get authorization headers for authenticated requests."""
     from src.utils.test_auth import get_auth_headers
+
     return get_auth_headers(test_token)
 
 
 @pytest.fixture
 def client():
     """Create a test client for the FastAPI application."""
-    os.environ['ENVIRONMENT'] = 'testing'
-    os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
-    
+    os.environ["ENVIRONMENT"] = "testing"
+    os.environ["JWT_SECRET_KEY"] = "test-jwt-secret-unified-for-ci-cd"
+
     try:
         from src.main import app
+
         return TestClient(app)
     except ImportError:
         # Return a mock client if app is not available
@@ -88,6 +92,6 @@ def client():
 @pytest.fixture
 def authenticated_client(client, auth_headers):
     """Create a test client with authentication headers pre-configured."""
-    if hasattr(client, 'headers'):
+    if hasattr(client, "headers"):
         client.headers.update(auth_headers)
     return client
