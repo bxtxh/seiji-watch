@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 # Import shared models and clients
 from shared.clients import AirtableClient
@@ -38,19 +38,19 @@ class PolicyCategoryRelationshipRequest(BaseModel):
         None, description="Additional notes about the relationship"
     )
 
-    @validator("bill_id")
+    @field_validator("bill_id")
     def validate_bill_id(self, v):
         if not v or not v.strip():
             raise ValueError("Bill ID cannot be empty")
         return InputValidator.sanitize_string(v, 50)
 
-    @validator("policy_category_id")
+    @field_validator("policy_category_id")
     def validate_policy_category_id(self, v):
         if not v or not v.strip():
             raise ValueError("PolicyCategory ID cannot be empty")
         return InputValidator.sanitize_string(v, 50)
 
-    @validator("notes")
+    @field_validator("notes")
     def validate_notes(self, v):
         if v and len(v) > 1000:
             raise ValueError("Notes too long (max 1000 characters)")
@@ -71,7 +71,7 @@ class BillSearchRequest(BaseModel):
     stage: str | None = Field(None, description="Filter by bill stage")
     max_records: int = Field(100, le=1000, description="Maximum records to return")
 
-    @validator("query")
+    @field_validator("query")
     def validate_query(self, v):
         if v and len(v) > 200:
             raise ValueError("Query too long (max 200 characters)")

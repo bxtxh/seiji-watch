@@ -13,7 +13,7 @@ from typing import Any
 
 import openai
 from janome.tokenizer import Tokenizer
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel, ValidationError, field_validator
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class DualLevelIssue(BaseModel):
     label_lv2: str
     confidence: float
 
-    @validator("label_lv1")
+    @field_validator("label_lv1")
     def validate_lv1_label(self, v):
         # Length check
         if len(v) > 60:
@@ -55,7 +55,7 @@ class DualLevelIssue(BaseModel):
 
         return v
 
-    @validator("label_lv2")
+    @field_validator("label_lv2")
     def validate_lv2_label(self, v):
         # Length check
         if len(v) > 60:
@@ -67,7 +67,7 @@ class DualLevelIssue(BaseModel):
 
         return v
 
-    @validator("confidence")
+    @field_validator("confidence")
     def validate_confidence(self, v):
         if not 0.0 <= v <= 1.0:
             raise ValueError("confidence must be between 0.0 and 1.0")

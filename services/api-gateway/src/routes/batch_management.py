@@ -12,7 +12,7 @@ from datetime import datetime, time, timedelta
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..security.validation import InputValidator
 
@@ -35,7 +35,7 @@ class BatchJobTriggerRequest(BaseModel):
     force_run: bool = False
     custom_params: dict[str, Any] | None = None
 
-    @validator("job_id")
+    @field_validator("job_id")
     def validate_job_id(self, v):
         if not v or not v.strip():
             raise ValueError("Job ID cannot be empty")
@@ -53,7 +53,7 @@ class BatchJobConfigUpdateRequest(BaseModel):
     notification_on_success: bool | None = None
     notification_on_failure: bool | None = None
 
-    @validator("schedule_time")
+    @field_validator("schedule_time")
     def validate_schedule_time(self, v):
         if v is not None:
             try:

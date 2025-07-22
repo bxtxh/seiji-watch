@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..security.validation import InputValidator
 
@@ -36,13 +36,13 @@ class AlertFilterRequest(BaseModel):
     status: str | None = None
     hours_back: int = Field(24, ge=1, le=168)  # 1 hour to 1 week
 
-    @validator("severity")
+    @field_validator("severity")
     def validate_severity(self, v):
         if v and v not in ["critical", "high", "medium", "low", "info"]:
             raise ValueError("Invalid severity level")
         return v
 
-    @validator("status")
+    @field_validator("status")
     def validate_status(self, v):
         if v and v not in ["active", "resolved", "suppressed"]:
             raise ValueError("Invalid alert status")

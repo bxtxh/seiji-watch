@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..security.validation import InputValidator
 
@@ -51,13 +51,13 @@ class DualLevelIssueRequest(BaseModel):
     submitter: str | None = None
     category: str | None = None
 
-    @validator("bill_id")
+    @field_validator("bill_id")
     def validate_bill_id(self, v):
         if not v or not v.strip():
             raise ValueError("Bill ID cannot be empty")
         return InputValidator.sanitize_string(v, 100)
 
-    @validator("bill_title")
+    @field_validator("bill_title")
     def validate_bill_title(self, v):
         if not v or not v.strip():
             raise ValueError("Bill title cannot be empty")
@@ -72,14 +72,14 @@ class IssueStatusUpdateRequest(BaseModel):
     status: str
     reviewer_notes: str | None = None
 
-    @validator("status")
+    @field_validator("status")
     def validate_status(self, v):
         allowed_statuses = ["pending", "approved", "rejected", "failed_validation"]
         if v not in allowed_statuses:
             raise ValueError(f"Status must be one of: {', '.join(allowed_statuses)}")
         return v
 
-    @validator("reviewer_notes")
+    @field_validator("reviewer_notes")
     def validate_reviewer_notes(self, v):
         if v and len(v) > 1000:
             raise ValueError("Reviewer notes too long (max 1000 characters)")
@@ -94,7 +94,7 @@ class IssueSearchRequest(BaseModel):
     status: str = "approved"
     max_records: int = Query(50, le=200)
 
-    @validator("query")
+    @field_validator("query")
     def validate_query(self, v):
         if not v or not v.strip():
             raise ValueError("Search query cannot be empty")

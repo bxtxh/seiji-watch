@@ -17,7 +17,7 @@ from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 sys.path.append(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "ingest-worker", "src")
@@ -64,7 +64,7 @@ class AirtableWebhookPayload(BaseModel):
     destroyedRecordIds: list[str] | None = None
     changedRecordsById: dict[str, Any] | None = None
 
-    @validator("timestamp")
+    @field_validator("timestamp")
     def validate_timestamp(self, v):
         try:
             datetime.fromisoformat(v.replace("Z", "+00:00"))

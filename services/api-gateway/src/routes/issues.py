@@ -3,7 +3,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from shared.clients import AirtableClient
 
@@ -37,7 +37,7 @@ class IssueCreateRequest(BaseModel):
     related_bills: list[str] | None = None
     issue_tags: list[str] | None = None
 
-    @validator("title")
+    @field_validator("title")
     def validate_title(self, v):
         if not v or not v.strip():
             raise ValueError("Title cannot be empty")
@@ -45,7 +45,7 @@ class IssueCreateRequest(BaseModel):
             raise ValueError("Title too long (max 200 characters)")
         return InputValidator.sanitize_string(v, 200)
 
-    @validator("description")
+    @field_validator("description")
     def validate_description(self, v):
         if not v or not v.strip():
             raise ValueError("Description cannot be empty")
@@ -53,7 +53,7 @@ class IssueCreateRequest(BaseModel):
             raise ValueError("Description too long (max 2000 characters)")
         return InputValidator.sanitize_string(v, 2000)
 
-    @validator("priority")
+    @field_validator("priority")
     def validate_priority(self, v):
         allowed_priorities = ["low", "medium", "high", "urgent"]
         if v not in allowed_priorities:
@@ -68,7 +68,7 @@ class IssueExtractRequest(BaseModel):
     bill_title: str = ""
     bill_id: str | None = None
 
-    @validator("bill_content")
+    @field_validator("bill_content")
     def validate_bill_content(self, v):
         if not v or not v.strip():
             raise ValueError("Bill content cannot be empty")
@@ -76,7 +76,7 @@ class IssueExtractRequest(BaseModel):
             raise ValueError("Bill content too long (max 50000 characters)")
         return InputValidator.sanitize_string(v, 50000)
 
-    @validator("bill_title")
+    @field_validator("bill_title")
     def validate_bill_title(self, v):
         if v and len(v) > 500:
             raise ValueError("Bill title too long (max 500 characters)")
@@ -89,7 +89,7 @@ class IssueTagCreateRequest(BaseModel):
     color_code: str = "#3B82F6"
     description: str | None = None
 
-    @validator("name")
+    @field_validator("name")
     def validate_name(self, v):
         if not v or not v.strip():
             raise ValueError("Tag name cannot be empty")
@@ -97,7 +97,7 @@ class IssueTagCreateRequest(BaseModel):
             raise ValueError("Tag name too long (max 100 characters)")
         return InputValidator.sanitize_string(v, 100)
 
-    @validator("category")
+    @field_validator("category")
     def validate_category(self, v):
         allowed_categories = [
             "予算・決算",
@@ -115,7 +115,7 @@ class IssueTagCreateRequest(BaseModel):
             )
         return v
 
-    @validator("color_code")
+    @field_validator("color_code")
     def validate_color_code(self, v):
         import re
 
