@@ -191,4 +191,7 @@ htmlcov/
 .coverage
 .pytest_cache/
 .mypy_cache/
-.ruff_cache/WORKTREES/
+.ruff_cache/
+
+# Git worktrees
+WORKTREES/
