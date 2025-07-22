@@ -510,7 +510,7 @@ async def search_bills(request: Request):
             # Extract basic info from notes if available
             result = {
                 "bill_id": bill.get("id"),
-                "title": name[:100] if name else f"法案 {i+1}",
+                "title": name[:100] if name else f"法案 {i + 1}",
                 "summary": notes[:200] + "..." if len(notes) > 200 else notes,
                 "status": "実データ",
                 "search_method": "airtable_text",

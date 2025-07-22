@@ -1,31 +1,30 @@
 """Pydantic schemas for API requests and responses."""
 
 from datetime import date, datetime
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any
 
-from ..models.bill import BillStatus, BillCategory
+from pydantic import BaseModel, ConfigDict, Field
+
+from ..models.bill import BillCategory, BillStatus
 
 
 # Base schemas
 class BaseSchema(BaseModel):
     """Base schema with common configuration."""
-    
+
     model_config = ConfigDict(
-        from_attributes=True,
-        use_enum_values=True,
-        arbitrary_types_allowed=True
+        from_attributes=True, use_enum_values=True, arbitrary_types_allowed=True
     )
 
 
 # Party schemas
 class PartyBase(BaseSchema):
     name: str = Field(..., min_length=1, max_length=100)
-    name_en: Optional[str] = Field(None, max_length=200)
-    abbreviation: Optional[str] = Field(None, max_length=10)
-    description: Optional[str] = None
-    website_url: Optional[str] = Field(None, max_length=500)
-    color_code: Optional[str] = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
+    name_en: str | None = Field(None, max_length=200)
+    abbreviation: str | None = Field(None, max_length=10)
+    description: str | None = None
+    website_url: str | None = Field(None, max_length=500)
+    color_code: str | None = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
 
 
 class PartyCreate(PartyBase):
@@ -33,7 +32,7 @@ class PartyCreate(PartyBase):
 
 
 class PartyUpdate(PartyBase):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    name: str | None = Field(None, min_length=1, max_length=100)
 
 
 class PartyResponse(PartyBase):
@@ -46,36 +45,36 @@ class PartyResponse(PartyBase):
 # Member schemas
 class MemberBase(BaseSchema):
     name: str = Field(..., min_length=1, max_length=100)
-    name_kana: Optional[str] = Field(None, max_length=200)
-    name_en: Optional[str] = Field(None, max_length=200)
+    name_kana: str | None = Field(None, max_length=200)
+    name_en: str | None = Field(None, max_length=200)
     house: str = Field(..., pattern=r"^(衆議院|参議院)$")
-    constituency: Optional[str] = Field(None, max_length=100)
-    diet_member_id: Optional[str] = Field(None, max_length=50)
-    birth_date: Optional[str] = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
-    gender: Optional[str] = Field(None, max_length=10)
-    first_elected: Optional[str] = Field(None, pattern=r"^\d{4}$")
-    terms_served: Optional[int] = Field(None, ge=0)
-    previous_occupations: Optional[str] = None
-    education: Optional[str] = None
-    website_url: Optional[str] = Field(None, max_length=500)
-    twitter_handle: Optional[str] = Field(None, max_length=100)
-    facebook_url: Optional[str] = Field(None, max_length=500)
+    constituency: str | None = Field(None, max_length=100)
+    diet_member_id: str | None = Field(None, max_length=50)
+    birth_date: str | None = Field(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    gender: str | None = Field(None, max_length=10)
+    first_elected: str | None = Field(None, pattern=r"^\d{4}$")
+    terms_served: int | None = Field(None, ge=0)
+    previous_occupations: str | None = None
+    education: str | None = None
+    website_url: str | None = Field(None, max_length=500)
+    twitter_handle: str | None = Field(None, max_length=100)
+    facebook_url: str | None = Field(None, max_length=500)
 
 
 class MemberCreate(MemberBase):
-    party_id: Optional[int] = None
+    party_id: int | None = None
 
 
 class MemberUpdate(MemberBase):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    house: Optional[str] = Field(None, pattern=r"^(衆議院|参議院)$")
-    party_id: Optional[int] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    house: str | None = Field(None, pattern=r"^(衆議院|参議院)$")
+    party_id: int | None = None
 
 
 class MemberResponse(MemberBase):
     id: int
-    party_id: Optional[int]
-    party: Optional[PartyResponse]
+    party_id: int | None
+    party: PartyResponse | None
     is_active: bool
     status: str
     created_at: datetime
@@ -86,68 +85,68 @@ class MemberResponse(MemberBase):
 class BillBase(BaseSchema):
     bill_number: str = Field(..., min_length=1, max_length=50)
     title: str = Field(..., min_length=1, max_length=500)
-    title_en: Optional[str] = Field(None, max_length=1000)
-    short_title: Optional[str] = Field(None, max_length=200)
-    summary: Optional[str] = None
-    full_text: Optional[str] = None
-    purpose: Optional[str] = None
-    category: Optional[BillCategory] = None
-    bill_type: Optional[str] = Field(None, max_length=50)
-    diet_session: Optional[str] = Field(None, max_length=20)
-    house_of_origin: Optional[str] = Field(None, pattern=r"^(衆議院|参議院)$")
-    submitter_type: Optional[str] = Field(None, pattern=r"^(government|member)$")
-    sponsoring_ministry: Optional[str] = Field(None, max_length=100)
-    diet_url: Optional[str] = Field(None, max_length=500)
-    pdf_url: Optional[str] = Field(None, max_length=500)
-    estimated_cost: Optional[str] = Field(None, max_length=100)
+    title_en: str | None = Field(None, max_length=1000)
+    short_title: str | None = Field(None, max_length=200)
+    summary: str | None = None
+    full_text: str | None = None
+    purpose: str | None = None
+    category: BillCategory | None = None
+    bill_type: str | None = Field(None, max_length=50)
+    diet_session: str | None = Field(None, max_length=20)
+    house_of_origin: str | None = Field(None, pattern=r"^(衆議院|参議院)$")
+    submitter_type: str | None = Field(None, pattern=r"^(government|member)$")
+    sponsoring_ministry: str | None = Field(None, max_length=100)
+    diet_url: str | None = Field(None, max_length=500)
+    pdf_url: str | None = Field(None, max_length=500)
+    estimated_cost: str | None = Field(None, max_length=100)
 
 
 class BillCreate(BillBase):
     status: BillStatus = BillStatus.BACKLOG
-    submitted_date: Optional[date] = None
-    submitting_members: Optional[List[int]] = None
-    related_bills: Optional[List[int]] = None
+    submitted_date: date | None = None
+    submitting_members: list[int] | None = None
+    related_bills: list[int] | None = None
 
 
 class BillUpdate(BillBase):
-    bill_number: Optional[str] = Field(None, min_length=1, max_length=50)
-    title: Optional[str] = Field(None, min_length=1, max_length=500)
-    status: Optional[BillStatus] = None
-    submitted_date: Optional[date] = None
-    first_reading_date: Optional[date] = None
-    committee_referral_date: Optional[date] = None
-    committee_report_date: Optional[date] = None
-    final_vote_date: Optional[date] = None
-    promulgated_date: Optional[date] = None
-    submitting_members: Optional[List[int]] = None
-    related_bills: Optional[List[int]] = None
-    key_points: Optional[List[str]] = None
-    tags: Optional[List[str]] = None
-    impact_assessment: Optional[Dict[str, Any]] = None
-    is_controversial: Optional[bool] = None
-    priority_level: Optional[str] = Field(None, pattern=r"^(high|normal|low)$")
+    bill_number: str | None = Field(None, min_length=1, max_length=50)
+    title: str | None = Field(None, min_length=1, max_length=500)
+    status: BillStatus | None = None
+    submitted_date: date | None = None
+    first_reading_date: date | None = None
+    committee_referral_date: date | None = None
+    committee_report_date: date | None = None
+    final_vote_date: date | None = None
+    promulgated_date: date | None = None
+    submitting_members: list[int] | None = None
+    related_bills: list[int] | None = None
+    key_points: list[str] | None = None
+    tags: list[str] | None = None
+    impact_assessment: dict[str, Any] | None = None
+    is_controversial: bool | None = None
+    priority_level: str | None = Field(None, pattern=r"^(high|normal|low)$")
 
 
 class BillResponse(BillBase):
     id: int
     status: BillStatus
-    submitted_date: Optional[date]
-    first_reading_date: Optional[date]
-    committee_referral_date: Optional[date]
-    committee_report_date: Optional[date]
-    final_vote_date: Optional[date]
-    promulgated_date: Optional[date]
-    submitting_members: Optional[List[int]]
-    related_bills: Optional[List[int]]
-    ai_summary: Optional[str]
-    key_points: Optional[List[str]]
-    tags: Optional[List[str]]
-    impact_assessment: Optional[Dict[str, Any]]
+    submitted_date: date | None
+    first_reading_date: date | None
+    committee_referral_date: date | None
+    committee_report_date: date | None
+    final_vote_date: date | None
+    promulgated_date: date | None
+    submitting_members: list[int] | None
+    related_bills: list[int] | None
+    ai_summary: str | None
+    key_points: list[str] | None
+    tags: list[str] | None
+    impact_assessment: dict[str, Any] | None
     is_controversial: bool
     priority_level: str
     is_passed: bool
     is_pending: bool
-    days_since_submission: Optional[int]
+    days_since_submission: int | None
     created_at: datetime
     updated_at: datetime
 
@@ -157,47 +156,47 @@ class MeetingBase(BaseSchema):
     meeting_id: str = Field(..., min_length=1, max_length=50)
     title: str = Field(..., min_length=1, max_length=500)
     meeting_type: str = Field(..., max_length=50)
-    committee_name: Optional[str] = Field(None, max_length=200)
+    committee_name: str | None = Field(None, max_length=200)
     diet_session: str = Field(..., max_length=20)
     house: str = Field(..., pattern=r"^(衆議院|参議院)$")
-    session_number: Optional[int] = Field(None, ge=1)
+    session_number: int | None = Field(None, ge=1)
     meeting_date: datetime
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    duration_minutes: Optional[int] = Field(None, ge=0)
-    summary: Optional[str] = None
-    meeting_notes: Optional[str] = None
-    video_url: Optional[str] = Field(None, max_length=500)
-    audio_url: Optional[str] = Field(None, max_length=500)
-    transcript_url: Optional[str] = Field(None, max_length=500)
-    participant_count: Optional[int] = Field(None, ge=0)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    duration_minutes: int | None = Field(None, ge=0)
+    summary: str | None = None
+    meeting_notes: str | None = None
+    video_url: str | None = Field(None, max_length=500)
+    audio_url: str | None = Field(None, max_length=500)
+    transcript_url: str | None = Field(None, max_length=500)
+    participant_count: int | None = Field(None, ge=0)
     is_public: bool = True
 
 
 class MeetingCreate(MeetingBase):
-    agenda: Optional[List[str]] = None
-    documents_urls: Optional[List[str]] = None
+    agenda: list[str] | None = None
+    documents_urls: list[str] | None = None
 
 
 class MeetingUpdate(MeetingBase):
-    meeting_id: Optional[str] = Field(None, min_length=1, max_length=50)
-    title: Optional[str] = Field(None, min_length=1, max_length=500)
-    meeting_type: Optional[str] = Field(None, max_length=50)
-    diet_session: Optional[str] = Field(None, max_length=20)
-    house: Optional[str] = Field(None, pattern=r"^(衆議院|参議院)$")
-    meeting_date: Optional[datetime] = None
-    agenda: Optional[List[str]] = None
-    documents_urls: Optional[List[str]] = None
-    is_processed: Optional[bool] = None
-    transcript_processed: Optional[bool] = None
-    stt_completed: Optional[bool] = None
-    is_cancelled: Optional[bool] = None
+    meeting_id: str | None = Field(None, min_length=1, max_length=50)
+    title: str | None = Field(None, min_length=1, max_length=500)
+    meeting_type: str | None = Field(None, max_length=50)
+    diet_session: str | None = Field(None, max_length=20)
+    house: str | None = Field(None, pattern=r"^(衆議院|参議院)$")
+    meeting_date: datetime | None = None
+    agenda: list[str] | None = None
+    documents_urls: list[str] | None = None
+    is_processed: bool | None = None
+    transcript_processed: bool | None = None
+    stt_completed: bool | None = None
+    is_cancelled: bool | None = None
 
 
 class MeetingResponse(MeetingBase):
     id: int
-    agenda: Optional[List[str]]
-    documents_urls: Optional[List[str]]
+    agenda: list[str] | None
+    documents_urls: list[str] | None
     is_processed: bool
     transcript_processed: bool
     stt_completed: bool
@@ -209,56 +208,58 @@ class MeetingResponse(MeetingBase):
 # Speech schemas
 class SpeechBase(BaseSchema):
     speech_order: int = Field(..., ge=1)
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    duration_seconds: Optional[int] = Field(None, ge=0)
-    speaker_name: Optional[str] = Field(None, max_length=200)
-    speaker_title: Optional[str] = Field(None, max_length=200)
-    speaker_type: str = Field(default="member", pattern=r"^(member|minister|official|other)$")
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    duration_seconds: int | None = Field(None, ge=0)
+    speaker_name: str | None = Field(None, max_length=200)
+    speaker_title: str | None = Field(None, max_length=200)
+    speaker_type: str = Field(
+        default="member", pattern=r"^(member|minister|official|other)$"
+    )
     original_text: str = Field(..., min_length=1)
-    cleaned_text: Optional[str] = None
-    speech_type: Optional[str] = Field(None, max_length=50)
-    word_count: Optional[int] = Field(None, ge=0)
-    confidence_score: Optional[str] = Field(None, max_length=10)
+    cleaned_text: str | None = None
+    speech_type: str | None = Field(None, max_length=50)
+    word_count: int | None = Field(None, ge=0)
+    confidence_score: str | None = Field(None, max_length=10)
     is_interruption: bool = False
 
 
 class SpeechCreate(SpeechBase):
     meeting_id: int
-    speaker_id: Optional[int] = None
-    related_bill_id: Optional[int] = None
+    speaker_id: int | None = None
+    related_bill_id: int | None = None
 
 
 class SpeechUpdate(SpeechBase):
-    speech_order: Optional[int] = Field(None, ge=1)
-    original_text: Optional[str] = Field(None, min_length=1)
-    speaker_id: Optional[int] = None
-    related_bill_id: Optional[int] = None
-    summary: Optional[str] = None
-    key_points: Optional[List[str]] = None
-    topics: Optional[List[str]] = None
-    sentiment: Optional[str] = Field(None, pattern=r"^(positive|negative|neutral)$")
-    stance: Optional[str] = Field(None, max_length=50)
-    is_processed: Optional[bool] = None
-    needs_review: Optional[bool] = None
+    speech_order: int | None = Field(None, ge=1)
+    original_text: str | None = Field(None, min_length=1)
+    speaker_id: int | None = None
+    related_bill_id: int | None = None
+    summary: str | None = None
+    key_points: list[str] | None = None
+    topics: list[str] | None = None
+    sentiment: str | None = Field(None, pattern=r"^(positive|negative|neutral)$")
+    stance: str | None = Field(None, max_length=50)
+    is_processed: bool | None = None
+    needs_review: bool | None = None
 
 
 class SpeechResponse(SpeechBase):
     id: int
     meeting_id: int
-    speaker_id: Optional[int]
-    related_bill_id: Optional[int]
-    summary: Optional[str]
-    key_points: Optional[List[str]]
-    topics: Optional[List[str]]
-    sentiment: Optional[str]
-    stance: Optional[str]
+    speaker_id: int | None
+    related_bill_id: int | None
+    summary: str | None
+    key_points: list[str] | None
+    topics: list[str] | None
+    sentiment: str | None
+    stance: str | None
     is_processed: bool
     needs_review: bool
     display_speaker_name: str
-    duration_minutes: Optional[float]
-    speaker: Optional[MemberResponse]
-    related_bill: Optional[BillResponse]
+    duration_minutes: float | None
+    speaker: MemberResponse | None
+    related_bill: BillResponse | None
     created_at: datetime
     updated_at: datetime
 
@@ -269,14 +270,14 @@ class VoteBase(BaseSchema):
     vote_date: datetime
     house: str = Field(..., pattern=r"^(衆議院|参議院)$")
     vote_type: str = Field(..., max_length=50)
-    vote_stage: Optional[str] = Field(None, max_length=50)
-    committee_name: Optional[str] = Field(None, max_length=200)
-    total_votes: Optional[int] = Field(None, ge=0)
-    yes_votes: Optional[int] = Field(None, ge=0)
-    no_votes: Optional[int] = Field(None, ge=0)
-    abstain_votes: Optional[int] = Field(None, ge=0)
-    absent_votes: Optional[int] = Field(None, ge=0)
-    notes: Optional[str] = None
+    vote_stage: str | None = Field(None, max_length=50)
+    committee_name: str | None = Field(None, max_length=200)
+    total_votes: int | None = Field(None, ge=0)
+    yes_votes: int | None = Field(None, ge=0)
+    no_votes: int | None = Field(None, ge=0)
+    abstain_votes: int | None = Field(None, ge=0)
+    absent_votes: int | None = Field(None, ge=0)
+    notes: str | None = None
     is_final_vote: bool = False
 
 
@@ -290,7 +291,7 @@ class VoteResponse(VoteBase):
     bill_id: int
     member_id: int
     vote_result_ja: str
-    bill: Optional[BillResponse]
-    member: Optional[MemberResponse]
+    bill: BillResponse | None
+    member: MemberResponse | None
     created_at: datetime
     updated_at: datetime

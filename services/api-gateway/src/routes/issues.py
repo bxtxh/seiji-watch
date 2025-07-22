@@ -58,7 +58,7 @@ class IssueCreateRequest(BaseModel):
         allowed_priorities = ["low", "medium", "high", "urgent"]
         if v not in allowed_priorities:
             raise ValueError(
-                f'Priority must be one of: {", ".join(allowed_priorities)}'
+                f"Priority must be one of: {', '.join(allowed_priorities)}"
             )
         return v
 
@@ -111,7 +111,7 @@ class IssueTagCreateRequest(BaseModel):
         ]
         if v not in allowed_categories:
             raise ValueError(
-                f'Category must be one of: {", ".join(allowed_categories)}'
+                f"Category must be one of: {', '.join(allowed_categories)}"
             )
         return v
 
@@ -221,11 +221,7 @@ async def extract_issues(
 
             # Get existing tags for suggestions
             existing_tags = await airtable.list_issue_tags()
-            [
-                tag["fields"].get("Name", "")
-                for tag in existing_tags
-                if "fields" in tag
-            ]
+            [tag["fields"].get("Name", "") for tag in existing_tags if "fields" in tag]
 
             # Add default tags based on category
             default_tags = extractor.generate_default_tags(

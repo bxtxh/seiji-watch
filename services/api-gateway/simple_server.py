@@ -689,7 +689,7 @@ async def get_issues_kanban(
         issue_title = full_title[:20] + "..." if len(full_title) > 20 else full_title
 
         kanban_issue = {
-            "id": f"ISS-{i+1:03d}",
+            "id": f"ISS-{i + 1:03d}",
             "title": issue_title,
             "stage": stage,
             "schedule": {"from": schedule_from, "to": schedule_to},
@@ -799,7 +799,7 @@ async def get_issues(
         issue_title = full_title[:50] + "..." if len(full_title) > 50 else full_title
 
         issue = {
-            "id": f"ISS-{i+1:03d}",
+            "id": f"ISS-{i + 1:03d}",
             "title": issue_title,
             "description": f"法案「{full_title}」に関連する政策課題",
             "stage": stage,
