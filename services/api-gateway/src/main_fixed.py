@@ -133,7 +133,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
             auth_header = request.headers.get("authorization")
             if auth_header:
                 user = await get_current_user_optional(auth_header)
-        except:
+        except Exception:
             pass
 
         # Log request

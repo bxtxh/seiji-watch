@@ -8,6 +8,7 @@ import os
 from typing import Any
 
 import aiohttp
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -267,7 +268,7 @@ class AirtableServiceClient:
             ) as session:
                 async with session.get(f"{self.base_url}/health") as response:
                     return response.status == 200
-        except:
+        except Exception:
             return False
 
 

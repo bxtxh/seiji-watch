@@ -4,7 +4,7 @@ Simple Airtable API test - EPIC 11 T97 verification
 """
 
 import os
-from typing import Any
+from typing import Any, Dict, Optional
 
 import aiohttp
 from dotenv import load_dotenv

@@ -232,7 +232,7 @@ class MemberService:
                     birth_date = datetime.fromisoformat(fields["Birth_Date"])
                     age = (datetime.now() - birth_date).days // 365
                     enriched["computed_age"] = age
-                except:
+                except Exception:
                     pass
 
             # Calculate tenure
@@ -241,7 +241,7 @@ class MemberService:
                     first_elected = datetime.fromisoformat(fields["First_Elected"])
                     tenure_years = (datetime.now() - first_elected).days // 365
                     enriched["computed_tenure_years"] = tenure_years
-                except:
+                except Exception:
                     pass
 
             # Add display name with furigana
