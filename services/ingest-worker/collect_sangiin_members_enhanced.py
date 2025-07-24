@@ -5,15 +5,14 @@ Enhanced Sangiin (House of Councillors) member data collection
 """
 
 import asyncio
-import aiohttp
+import json
 import os
 import re
-import json
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from bs4 import BeautifulSoup
+
+import aiohttp
 from dotenv import load_dotenv
-from typing import List, Dict, Optional
-from dataclasses import dataclass, asdict
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
@@ -21,45 +20,45 @@ load_dotenv('/Users/shogen/seiji-watch/.env.local')
 class SanguinMemberData:
     """Sanguin member data structure"""
     name: str
-    name_kana: Optional[str] = None
+    name_kana: str | None = None
     house: str = "参議院"
-    constituency: Optional[str] = None
-    party_name: Optional[str] = None
-    first_elected: Optional[str] = None
-    terms_served: Optional[int] = None
+    constituency: str | None = None
+    party_name: str | None = None
+    first_elected: str | None = None
+    terms_served: int | None = None
     is_active: bool = True
-    member_id: Optional[str] = None
-    profile_url: Optional[str] = None
-    birth_date: Optional[str] = None
-    gender: Optional[str] = None
-    previous_occupations: Optional[str] = None
-    education: Optional[str] = None
-    website_url: Optional[str] = None
-    twitter_handle: Optional[str] = None
+    member_id: str | None = None
+    profile_url: str | None = None
+    birth_date: str | None = None
+    gender: str | None = None
+    previous_occupations: str | None = None
+    education: str | None = None
+    website_url: str | None = None
+    twitter_handle: str | None = None
 
 class EnhancedSanguinMemberCollector:
     """Enhanced Sanguin member data collector"""
-    
+
     def __init__(self):
         self.pat = os.getenv("AIRTABLE_PAT")
         self.base_id = os.getenv("AIRTABLE_BASE_ID")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
-        
+
         if not self.pat or not self.base_id:
             raise ValueError("Airtable PAT and base ID are required")
-        
+
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
             "Content-Type": "application/json"
         }
-        
+
         # Rate limiting
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
-        
+
         # 参議院公式サイトのURL
         self.sangiin_base_url = "https://www.sangiin.go.jp"
-        
+
         # 政党名正規化マッピング
         self.party_mapping = {
             "自由民主党": "自由民主党",
@@ -84,7 +83,7 @@ class EnhancedSanguinMemberCollector:
             "参政党": "参政党",
             "無所属": "無所属"
         }
-        
+
         # 実際の参議院議員データ（公開情報から）
         self.member_seed_data = [
             # 自由民主党
@@ -162,7 +161,7 @@ class EnhancedSanguinMemberCollector:
             {"name": "山谷えり子", "party": "自由民主党", "constituency": "比例代表", "terms": 4},
             {"name": "吉川ゆうみ", "party": "自由民主党", "constituency": "三重県", "terms": 2},
             {"name": "和田政宗", "party": "自由民主党", "constituency": "比例代表", "terms": 2},
-            
+
             # 立憲民主党
             {"name": "枝野幸男", "party": "立憲民主党", "constituency": "埼玉県", "terms": 3},
             {"name": "福山哲郎", "party": "立憲民主党", "constituency": "京都府", "terms": 4},
@@ -198,7 +197,7 @@ class EnhancedSanguinMemberCollector:
             {"name": "横沢高徳", "party": "立憲民主党", "constituency": "岩手県", "terms": 1},
             {"name": "吉田忠智", "party": "立憲民主党", "constituency": "比例代表", "terms": 2},
             {"name": "鈴木宗男", "party": "立憲民主党", "constituency": "北海道", "terms": 1},
-            
+
             # 日本維新の会
             {"name": "片山虎之助", "party": "日本維新の会", "constituency": "比例代表", "terms": 5},
             {"name": "馬場伸幸", "party": "日本維新の会", "constituency": "大阪府", "terms": 1},
@@ -215,7 +214,7 @@ class EnhancedSanguinMemberCollector:
             {"name": "松沢成文", "party": "日本維新の会", "constituency": "神奈川県", "terms": 3},
             {"name": "室井邦彦", "party": "日本維新の会", "constituency": "比例代表", "terms": 3},
             {"name": "音喜多駿", "party": "日本維新の会", "constituency": "東京都", "terms": 1},
-            
+
             # 公明党
             {"name": "山口那津男", "party": "公明党", "constituency": "東京都", "terms": 5},
             {"name": "石井啓一", "party": "公明党", "constituency": "比例代表", "terms": 3},
@@ -242,7 +241,7 @@ class EnhancedSanguinMemberCollector:
             {"name": "竹谷とし子", "party": "公明党", "constituency": "比例代表", "terms": 2},
             {"name": "熊野正士", "party": "公明党", "constituency": "比例代表", "terms": 1},
             {"name": "塩田博昭", "party": "公明党", "constituency": "比例代表", "terms": 1},
-            
+
             # 国民民主党
             {"name": "玉木雄一郎", "party": "国民民主党", "constituency": "香川県", "terms": 2},
             {"name": "榛葉賀津也", "party": "国民民主党", "constituency": "静岡県", "terms": 3},
@@ -259,7 +258,7 @@ class EnhancedSanguinMemberCollector:
             {"name": "芳賀道也", "party": "国民民主党", "constituency": "山形県", "terms": 1},
             {"name": "柳田稔", "party": "国民民主党", "constituency": "広島県", "terms": 4},
             {"name": "足立敏之", "party": "国民民主党", "constituency": "比例代表", "terms": 1},
-            
+
             # 日本共産党
             {"name": "小池晃", "party": "日本共産党", "constituency": "比例代表", "terms": 3},
             {"name": "田村智子", "party": "日本共産党", "constituency": "比例代表", "terms": 2},
@@ -276,26 +275,26 @@ class EnhancedSanguinMemberCollector:
             {"name": "藤野保史", "party": "日本共産党", "constituency": "比例代表", "terms": 1},
             {"name": "高橋千鶴子", "party": "日本共産党", "constituency": "比例代表", "terms": 4},
             {"name": "本村伸子", "party": "日本共産党", "constituency": "比例代表", "terms": 2},
-            
+
             # れいわ新選組
             {"name": "山本太郎", "party": "れいわ新選組", "constituency": "比例代表", "terms": 2},
             {"name": "木村英子", "party": "れいわ新選組", "constituency": "比例代表", "terms": 1},
             {"name": "舩後靖彦", "party": "れいわ新選組", "constituency": "比例代表", "terms": 1},
             {"name": "櫛渕万里", "party": "れいわ新選組", "constituency": "比例代表", "terms": 1},
             {"name": "天畠大輔", "party": "れいわ新選組", "constituency": "比例代表", "terms": 1},
-            
+
             # 社会民主党
             {"name": "福島みずほ", "party": "社会民主党", "constituency": "比例代表", "terms": 4},
             {"name": "大椿裕子", "party": "社会民主党", "constituency": "比例代表", "terms": 1},
-            
+
             # NHK党
             {"name": "立花孝志", "party": "NHK党", "constituency": "比例代表", "terms": 1},
             {"name": "浜田聡", "party": "NHK党", "constituency": "比例代表", "terms": 1},
-            
+
             # 参政党
             {"name": "神谷宗幣", "party": "参政党", "constituency": "比例代表", "terms": 1},
             {"name": "赤尾由美", "party": "参政党", "constituency": "比例代表", "terms": 1},
-            
+
             # 無所属
             {"name": "金子恵美", "party": "無所属", "constituency": "福島県", "terms": 1},
             {"name": "渡辺喜美", "party": "無所属", "constituency": "栃木県", "terms": 4},
@@ -321,18 +320,18 @@ class EnhancedSanguinMemberCollector:
         """Normalize party name"""
         if not raw_party:
             return "無所属"
-        
+
         # 括弧内の情報を除去
         party = re.sub(r'\(.*?\)', '', raw_party).strip()
         party = re.sub(r'（.*?）', '', party).strip()
-        
+
         # マッピングを使用して正規化
         return self.party_mapping.get(party, party)
 
-    def generate_member_data_from_seed(self) -> List[SanguinMemberData]:
+    def generate_member_data_from_seed(self) -> list[SanguinMemberData]:
         """Generate member data from seed data"""
         members = []
-        
+
         for seed in self.member_seed_data:
             try:
                 member_data = SanguinMemberData(
@@ -347,11 +346,11 @@ class EnhancedSanguinMemberCollector:
             except Exception as e:
                 print(f"Error creating member data for {seed.get('name', 'unknown')}: {e}")
                 continue
-        
+
         print(f"Generated {len(members)} Sanguin members from seed data")
         return members
 
-    async def get_existing_parties(self, session: aiohttp.ClientSession) -> Dict[str, str]:
+    async def get_existing_parties(self, session: aiohttp.ClientSession) -> dict[str, str]:
         """Get existing parties from Airtable"""
         try:
             await self.rate_limit_delay()
@@ -369,11 +368,11 @@ class EnhancedSanguinMemberCollector:
             print(f"Error fetching parties: {e}")
             return {}
 
-    async def create_party_if_not_exists(self, session: aiohttp.ClientSession, party_name: str, existing_parties: Dict[str, str]) -> Optional[str]:
+    async def create_party_if_not_exists(self, session: aiohttp.ClientSession, party_name: str, existing_parties: dict[str, str]) -> str | None:
         """Create party if it doesn't exist"""
         if party_name in existing_parties:
             return existing_parties[party_name]
-        
+
         try:
             await self.rate_limit_delay()
             party_data = {
@@ -385,7 +384,7 @@ class EnhancedSanguinMemberCollector:
                     }
                 }]
             }
-            
+
             async with session.post(
                 f"{self.base_url}/Parties (政党)",
                 headers=self.headers,
@@ -404,30 +403,30 @@ class EnhancedSanguinMemberCollector:
             print(f"Error creating party {party_name}: {e}")
             return None
 
-    async def insert_members_to_airtable(self, session: aiohttp.ClientSession, members: List[SanguinMemberData]) -> bool:
+    async def insert_members_to_airtable(self, session: aiohttp.ClientSession, members: list[SanguinMemberData]) -> bool:
         """Insert members to Airtable"""
         if not members:
             print("No members to insert")
             return False
-        
+
         try:
             # 既存政党を取得
             existing_parties = await self.get_existing_parties(session)
-            
+
             # バッチサイズを設定
             batch_size = 10
             success_count = 0
-            
+
             for i in range(0, len(members), batch_size):
                 batch = members[i:i + batch_size]
                 records = []
-                
+
                 for member in batch:
                     # 政党IDを取得または作成
                     party_id = None
                     if member.party_name and member.party_name != "無所属":
                         party_id = await self.create_party_if_not_exists(session, member.party_name, existing_parties)
-                    
+
                     # レコードを作成
                     record_fields = {
                         "Name": member.name,
@@ -436,7 +435,7 @@ class EnhancedSanguinMemberCollector:
                         "Created_At": datetime.now().isoformat(),
                         "Updated_At": datetime.now().isoformat()
                     }
-                    
+
                     # オプションフィールドを追加
                     if member.name_kana:
                         record_fields["Name_Kana"] = member.name_kana
@@ -460,9 +459,9 @@ class EnhancedSanguinMemberCollector:
                         record_fields["Education"] = member.education
                     if member.twitter_handle:
                         record_fields["Twitter_Handle"] = member.twitter_handle
-                    
+
                     records.append({"fields": record_fields})
-                
+
                 # バッチ挿入
                 await self.rate_limit_delay()
                 async with session.post(
@@ -477,23 +476,23 @@ class EnhancedSanguinMemberCollector:
                     else:
                         error_text = await response.text()
                         print(f"Failed to insert batch {i//batch_size + 1}: {response.status} - {error_text}")
-                
+
                 # バッチ間の待機
                 await asyncio.sleep(1)
-            
+
             print(f"Total members inserted: {success_count}")
             return success_count > 0
-            
+
         except Exception as e:
             print(f"Error inserting members: {e}")
             return False
 
-    async def save_results_to_file(self, members: List[SanguinMemberData], filename: str = None):
+    async def save_results_to_file(self, members: list[SanguinMemberData], filename: str = None):
         """Save results to JSON file"""
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"sanguin_members_enhanced_result_{timestamp}.json"
-        
+
         try:
             # Convert to serializable format
             serializable_data = {
@@ -501,13 +500,13 @@ class EnhancedSanguinMemberCollector:
                 "total_members": len(members),
                 "members": [asdict(member) for member in members]
             }
-            
+
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(serializable_data, f, indent=2, ensure_ascii=False)
-            
+
             print(f"Results saved to {filename}")
             return filename
-            
+
         except Exception as e:
             print(f"Error saving results: {e}")
             return None
@@ -515,23 +514,23 @@ class EnhancedSanguinMemberCollector:
     async def run(self):
         """Main execution method"""
         print("Starting enhanced Sanguin member data collection...")
-        
+
         async with aiohttp.ClientSession() as session:
             # シードデータから議員データを生成
             members = self.generate_member_data_from_seed()
-            
+
             if not members:
                 print("No members found. Exiting.")
                 return
-            
+
             print(f"Found {len(members)} Sanguin members")
-            
+
             # 結果をファイルに保存
             await self.save_results_to_file(members)
-            
+
             # Airtableに挿入
             success = await self.insert_members_to_airtable(session, members)
-            
+
             if success:
                 print("✅ Successfully completed enhanced Sanguin member data collection")
             else:

@@ -1,29 +1,26 @@
 """Member data processing tasks for batch execution."""
 
 import logging
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-import asyncio
+from datetime import datetime
+from typing import Any
 
 from shared.clients.airtable import AirtableClient
-from ..cache.redis_client import RedisCache, MemberCache
-from ..services.member_service import MemberService
 
 logger = logging.getLogger(__name__)
 
 
-def calculate_member_voting_statistics(member_id: str, airtable_config: Dict[str, str]) -> Dict[str, Any]:
+def calculate_member_voting_statistics(member_id: str, airtable_config: dict[str, str]) -> dict[str, Any]:
     """Calculate voting statistics for a member (synchronous task)."""
     try:
         # Initialize clients (sync versions needed for RQ)
-        airtable = AirtableClient(
+        AirtableClient(
             api_key=airtable_config.get("api_key"),
             base_id=airtable_config.get("base_id")
         )
-        
+
         # This is a simplified synchronous version
         # In production, this would use proper async-to-sync conversion
-        
+
         # Mock implementation - replace with actual calculation
         stats = {
             "member_id": member_id,
@@ -45,14 +42,14 @@ def calculate_member_voting_statistics(member_id: str, airtable_config: Dict[str
             },
             "calculated_at": datetime.now().isoformat()
         }
-        
+
         logger.info(f"Calculated voting statistics for member {member_id}")
         return {
             "success": True,
             "member_id": member_id,
             "stats": stats
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to calculate statistics for member {member_id}: {e}")
         return {
@@ -62,13 +59,13 @@ def calculate_member_voting_statistics(member_id: str, airtable_config: Dict[str
         }
 
 
-def analyze_member_policy_stance(member_id: str, issue_tags: List[str], 
-                               airtable_config: Dict[str, str]) -> Dict[str, Any]:
+def analyze_member_policy_stance(member_id: str, issue_tags: list[str],
+                               airtable_config: dict[str, str]) -> dict[str, Any]:
     """Analyze member's policy stance for specific issues (synchronous task)."""
     try:
         # Mock LLM analysis implementation
         stance_analysis = {}
-        
+
         for issue_tag in issue_tags:
             # Simulate LLM analysis
             stance_analysis[issue_tag] = {
@@ -84,21 +81,21 @@ def analyze_member_policy_stance(member_id: str, issue_tags: List[str],
                     "委員会での質疑応答"
                 ]
             }
-        
+
         result = {
             "member_id": member_id,
             "issue_stances": stance_analysis,
             "analyzed_at": datetime.now().isoformat(),
             "analysis_method": "llm_voting_pattern"
         }
-        
+
         logger.info(f"Analyzed policy stance for member {member_id} on {len(issue_tags)} issues")
         return {
             "success": True,
             "member_id": member_id,
             "result": result
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to analyze policy stance for member {member_id}: {e}")
         return {
@@ -108,25 +105,25 @@ def analyze_member_policy_stance(member_id: str, issue_tags: List[str],
         }
 
 
-def update_member_cache(member_id: str, redis_config: Dict[str, str]) -> Dict[str, Any]:
+def update_member_cache(member_id: str, redis_config: dict[str, str]) -> dict[str, Any]:
     """Update member cache with fresh data (synchronous task)."""
     try:
         # This would be implemented with proper async-to-sync conversion
         # For now, return success
-        
+
         result = {
             "member_id": member_id,
             "cache_updated": True,
             "updated_at": datetime.now().isoformat()
         }
-        
+
         logger.info(f"Updated cache for member {member_id}")
         return {
             "success": True,
             "member_id": member_id,
             "result": result
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to update cache for member {member_id}: {e}")
         return {
@@ -136,18 +133,18 @@ def update_member_cache(member_id: str, redis_config: Dict[str, str]) -> Dict[st
         }
 
 
-def bulk_calculate_member_statistics(member_ids: List[str], 
-                                   airtable_config: Dict[str, str]) -> Dict[str, Any]:
+def bulk_calculate_member_statistics(member_ids: list[str],
+                                   airtable_config: dict[str, str]) -> dict[str, Any]:
     """Calculate statistics for multiple members (batch task)."""
     try:
         results = []
         errors = []
-        
+
         for member_id in member_ids:
             try:
                 stats_result = calculate_member_voting_statistics(member_id, airtable_config)
                 results.append(stats_result)
-                
+
             except Exception as e:
                 error_info = {
                     "member_id": member_id,
@@ -155,7 +152,7 @@ def bulk_calculate_member_statistics(member_ids: List[str],
                 }
                 errors.append(error_info)
                 logger.error(f"Failed to process member {member_id}: {e}")
-        
+
         summary = {
             "total_members": len(member_ids),
             "successful": len(results),
@@ -164,13 +161,13 @@ def bulk_calculate_member_statistics(member_ids: List[str],
             "errors": errors,
             "processed_at": datetime.now().isoformat()
         }
-        
+
         logger.info(f"Bulk calculated statistics for {len(member_ids)} members: {len(results)} successful, {len(errors)} failed")
         return {
             "success": True,
             "summary": summary
         }
-        
+
     except Exception as e:
         logger.error(f"Bulk calculation failed: {e}")
         return {
@@ -179,8 +176,8 @@ def bulk_calculate_member_statistics(member_ids: List[str],
         }
 
 
-def generate_member_profile_report(member_id: str, 
-                                 airtable_config: Dict[str, str]) -> Dict[str, Any]:
+def generate_member_profile_report(member_id: str,
+                                 airtable_config: dict[str, str]) -> dict[str, Any]:
     """Generate comprehensive member profile report (synchronous task)."""
     try:
         # Mock comprehensive report generation
@@ -224,14 +221,14 @@ def generate_member_profile_report(member_id: str,
             "generated_at": datetime.now().isoformat(),
             "report_version": "1.0"
         }
-        
+
         logger.info(f"Generated comprehensive profile report for member {member_id}")
         return {
             "success": True,
             "member_id": member_id,
             "report": report
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to generate profile report for member {member_id}: {e}")
         return {
@@ -241,13 +238,13 @@ def generate_member_profile_report(member_id: str,
         }
 
 
-def refresh_member_voting_data(member_id: str, 
-                             airtable_config: Dict[str, str]) -> Dict[str, Any]:
+def refresh_member_voting_data(member_id: str,
+                             airtable_config: dict[str, str]) -> dict[str, Any]:
     """Refresh member voting data from source (synchronous task)."""
     try:
         # Mock data refresh implementation
         # In production, this would scrape latest voting data
-        
+
         refresh_result = {
             "member_id": member_id,
             "votes_updated": 12,
@@ -257,14 +254,14 @@ def refresh_member_voting_data(member_id: str,
             "data_source": "diet_official_records",
             "refreshed_at": datetime.now().isoformat()
         }
-        
+
         logger.info(f"Refreshed voting data for member {member_id}: {refresh_result['votes_updated']} votes updated")
         return {
             "success": True,
             "member_id": member_id,
             "result": refresh_result
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to refresh voting data for member {member_id}: {e}")
         return {
@@ -276,19 +273,19 @@ def refresh_member_voting_data(member_id: str,
 
 class MemberTaskManager:
     """Manager for member-related batch tasks."""
-    
-    def __init__(self, task_queue, airtable_config: Dict[str, str], redis_config: Dict[str, str]):
+
+    def __init__(self, task_queue, airtable_config: dict[str, str], redis_config: dict[str, str]):
         self.task_queue = task_queue
         self.airtable_config = airtable_config
         self.redis_config = redis_config
-    
-    def schedule_member_statistics_batch(self, member_ids: List[str], 
+
+    def schedule_member_statistics_batch(self, member_ids: list[str],
                                        priority: str = "normal") -> str:
         """Schedule batch calculation of member statistics."""
         from .task_queue import TaskPriority
-        
+
         priority_enum = TaskPriority(priority)
-        
+
         job_id = self.task_queue.enqueue_task(
             func=bulk_calculate_member_statistics,
             args=(member_ids, self.airtable_config),
@@ -296,16 +293,16 @@ class MemberTaskManager:
             job_timeout="30m",
             description=f"Bulk member statistics calculation for {len(member_ids)} members"
         )
-        
+
         return job_id
-    
-    def schedule_policy_stance_analysis(self, member_id: str, issue_tags: List[str], 
+
+    def schedule_policy_stance_analysis(self, member_id: str, issue_tags: list[str],
                                       priority: str = "normal") -> str:
         """Schedule policy stance analysis for a member."""
         from .task_queue import TaskPriority
-        
+
         priority_enum = TaskPriority(priority)
-        
+
         job_id = self.task_queue.enqueue_task(
             func=analyze_member_policy_stance,
             args=(member_id, issue_tags, self.airtable_config),
@@ -313,16 +310,16 @@ class MemberTaskManager:
             job_timeout="15m",
             description=f"Policy stance analysis for member {member_id}"
         )
-        
+
         return job_id
-    
-    def schedule_member_profile_report(self, member_id: str, 
+
+    def schedule_member_profile_report(self, member_id: str,
                                      priority: str = "normal") -> str:
         """Schedule comprehensive profile report generation."""
         from .task_queue import TaskPriority
-        
+
         priority_enum = TaskPriority(priority)
-        
+
         job_id = self.task_queue.enqueue_task(
             func=generate_member_profile_report,
             args=(member_id, self.airtable_config),
@@ -330,16 +327,16 @@ class MemberTaskManager:
             job_timeout="20m",
             description=f"Profile report generation for member {member_id}"
         )
-        
+
         return job_id
-    
-    def schedule_voting_data_refresh(self, member_id: str, 
+
+    def schedule_voting_data_refresh(self, member_id: str,
                                    priority: str = "high") -> str:
         """Schedule voting data refresh for a member."""
         from .task_queue import TaskPriority
-        
+
         priority_enum = TaskPriority(priority)
-        
+
         job_id = self.task_queue.enqueue_task(
             func=refresh_member_voting_data,
             args=(member_id, self.airtable_config),
@@ -347,5 +344,5 @@ class MemberTaskManager:
             job_timeout="10m",
             description=f"Voting data refresh for member {member_id}"
         )
-        
+
         return job_id

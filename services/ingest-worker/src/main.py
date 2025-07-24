@@ -5,36 +5,46 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Dict, List, Optional, Union
 
+import uvicorn
+from batch_queue.batch_processor import (
+    BatchConfig,
+    BatchProcessor,
+    EmbeddingTaskProcessor,
+    TaskPriority,
+    TaskType,
+    TranscriptionTaskProcessor,
+)
+from embeddings.vector_client import VectorClient
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
-from pydantic import BaseModel
-import uvicorn
-
-from scraper.diet_scraper import DietScraper, BillData
-from scraper.voting_scraper import VotingScraper, VotingSession, VoteRecord
-from scraper.hr_voting_scraper import HouseOfRepresentativesVotingScraper
-from scraper.enhanced_hr_scraper import EnhancedHRProcessor
-from stt.whisper_client import WhisperClient, TranscriptionResult
-from embeddings.vector_client import VectorClient, EmbeddingResult
-from scheduler.scheduler import IngestionScheduler, SchedulerConfig
-from batch_queue.batch_processor import (
-    BatchProcessor, BatchConfig, TaskType, TaskPriority, TaskStatus,
-    EmbeddingTaskProcessor, TranscriptionTaskProcessor
-)
-from pipeline.hr_data_integration import run_hr_integration_pipeline
 
 # Import monitoring components
 from monitoring import (
-    get_dashboard_overview, get_pipeline_status, get_quality_metrics,
-    get_system_status, get_alerts_dashboard, get_performance_dashboard,
-    get_health_status, get_metrics_export, ingest_metrics
+    get_alerts_dashboard,
+    get_dashboard_overview,
+    get_health_status,
+    get_metrics_export,
+    get_performance_dashboard,
+    get_pipeline_status,
+    get_quality_metrics,
+    get_system_status,
+    ingest_metrics,
 )
+from pipeline.hr_data_integration import run_hr_integration_pipeline
 
 # Import limited scraping pipeline for T52
-from pipeline.limited_scraping import LimitedScrapeCoordinator, run_limited_scraping_pipeline
+from pipeline.limited_scraping import (
+    LimitedScrapeCoordinator,
+)
+from pydantic import BaseModel
+from scheduler.scheduler import IngestionScheduler
+from scraper.diet_scraper import BillData, DietScraper
+from scraper.enhanced_hr_scraper import EnhancedHRProcessor
+from scraper.hr_voting_scraper import HouseOfRepresentativesVotingScraper
+from scraper.voting_scraper import VoteRecord, VotingScraper, VotingSession
+from stt.whisper_client import TranscriptionResult, WhisperClient
 
 # Configure logging
 logging.basicConfig(
@@ -44,33 +54,33 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Global instances
-diet_scraper: Optional[DietScraper] = None
-voting_scraper: Optional[VotingScraper] = None
-hr_voting_scraper: Optional[HouseOfRepresentativesVotingScraper] = None
-whisper_client: Optional[WhisperClient] = None
-vector_client: Optional[VectorClient] = None
-scheduler: Optional[IngestionScheduler] = None
-batch_processor: Optional[BatchProcessor] = None
-limited_scrape_coordinator: Optional[LimitedScrapeCoordinator] = None
+diet_scraper: DietScraper | None = None
+voting_scraper: VotingScraper | None = None
+hr_voting_scraper: HouseOfRepresentativesVotingScraper | None = None
+whisper_client: WhisperClient | None = None
+vector_client: VectorClient | None = None
+scheduler: IngestionScheduler | None = None
+batch_processor: BatchProcessor | None = None
+limited_scrape_coordinator: LimitedScrapeCoordinator | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler"""
     global diet_scraper, voting_scraper, hr_voting_scraper, whisper_client, vector_client, scheduler, batch_processor, limited_scrape_coordinator
-    
+
     # Startup
     logger.info("Starting ingest-worker service...")
-    
+
     try:
         # Initialize Diet scraper
         diet_scraper = DietScraper()
         logger.info("Diet scraper initialized")
-        
+
         # Initialize Voting scraper
         voting_scraper = VotingScraper()
         logger.info("Voting scraper initialized")
-        
+
         # Initialize House of Representatives voting scraper
         try:
             hr_voting_scraper = HouseOfRepresentativesVotingScraper()
@@ -78,7 +88,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"HR voting scraper not initialized: {e}")
             hr_voting_scraper = None
-        
+
         # Initialize Whisper client (only if API key is available)
         try:
             whisper_client = WhisperClient()
@@ -86,7 +96,7 @@ async def lifespan(app: FastAPI):
         except ValueError as e:
             logger.warning(f"Whisper client not initialized: {e}")
             whisper_client = None
-        
+
         # Initialize Vector client (only if API keys are available)
         try:
             vector_client = VectorClient()
@@ -94,7 +104,7 @@ async def lifespan(app: FastAPI):
         except ValueError as e:
             logger.warning(f"Vector client not initialized: {e}")
             vector_client = None
-        
+
         # Initialize Scheduler
         try:
             scheduler = IngestionScheduler()
@@ -102,7 +112,7 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"Scheduler not initialized: {e}")
             scheduler = None
-        
+
         # Initialize Batch Processor
         try:
             batch_config = BatchConfig(
@@ -113,41 +123,41 @@ async def lifespan(app: FastAPI):
                 persistence_backend="file"
             )
             batch_processor = BatchProcessor(batch_config)
-            
+
             # Register task processors
             if vector_client:
                 batch_processor.register_processor(
                     TaskType.GENERATE_EMBEDDINGS,
                     EmbeddingTaskProcessor(vector_client)
                 )
-            
+
             if whisper_client:
                 batch_processor.register_processor(
                     TaskType.TRANSCRIBE_AUDIO,
                     TranscriptionTaskProcessor(whisper_client)
                 )
-            
+
             # Start batch processing
             asyncio.create_task(batch_processor.start_processing())
             logger.info("Batch processor initialized and started")
-            
+
         except Exception as e:
             logger.warning(f"Batch processor not initialized: {e}")
             batch_processor = None
-        
+
         # Start system metrics collection
         try:
             async def collect_system_metrics():
                 while True:
                     ingest_metrics.record_system_metrics()
                     await asyncio.sleep(60)  # Collect every minute
-            
+
             asyncio.create_task(collect_system_metrics())
             logger.info("System metrics collection started")
-            
+
         except Exception as e:
             logger.warning(f"System metrics collection not started: {e}")
-        
+
         # Initialize Limited Scraping Coordinator for T52
         try:
             limited_scrape_coordinator = LimitedScrapeCoordinator()
@@ -155,19 +165,19 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"Limited scraping coordinator not initialized: {e}")
             limited_scrape_coordinator = None
-        
+
         yield
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize service: {e}")
         raise
     finally:
         # Shutdown
         logger.info("Shutting down ingest-worker service...")
-        
+
         if batch_processor:
             await batch_processor.stop_processing()
-            
+
         if vector_client:
             vector_client.close()
 
@@ -200,13 +210,13 @@ class ScrapeResponse(BaseModel):
     success: bool
     message: str
     bills_processed: int
-    errors: List[str] = []
+    errors: list[str] = []
 
 
 class TranscribeRequest(BaseModel):
     """Request model for transcription operations"""
-    audio_url: Optional[str] = None
-    video_url: Optional[str] = None
+    audio_url: str | None = None
+    video_url: str | None = None
     language: str = "ja"
 
 
@@ -214,26 +224,26 @@ class TranscribeResponse(BaseModel):
     """Response model for transcription operations"""
     success: bool
     message: str
-    text: Optional[str] = None
-    duration: Optional[float] = None
-    language: Optional[str] = None
-    quality_passed: Optional[bool] = None
+    text: str | None = None
+    duration: float | None = None
+    language: str | None = None
+    quality_passed: bool | None = None
 
 
 class EmbeddingRequest(BaseModel):
     """Request model for embedding operations"""
     text: str
     store_in_weaviate: bool = True
-    metadata: Optional[Dict] = None
+    metadata: dict | None = None
 
 
 class EmbeddingResponse(BaseModel):
     """Response model for embedding operations"""
     success: bool
     message: str
-    dimensions: Optional[int] = None
-    model: Optional[str] = None
-    weaviate_uuid: Optional[str] = None
+    dimensions: int | None = None
+    model: str | None = None
+    weaviate_uuid: str | None = None
 
 
 class SearchRequest(BaseModel):
@@ -247,7 +257,7 @@ class SearchResponse(BaseModel):
     """Response model for vector search operations"""
     success: bool
     message: str
-    results: List[Dict] = []
+    results: list[dict] = []
     total_found: int = 0
 
 
@@ -264,11 +274,11 @@ class VotingResponse(BaseModel):
     sessions_processed: int
     votes_processed: int
     members_processed: int
-    errors: List[str] = []
+    errors: list[str] = []
 
 
 @app.get("/health")
-async def health_check() -> Dict[str, str]:
+async def health_check() -> dict[str, str]:
     """Health check endpoint"""
     return {
         "status": "healthy",
@@ -283,19 +293,19 @@ async def scrape_diet_data(
     background_tasks: BackgroundTasks
 ) -> ScrapeResponse:
     """Scrape Diet data and return results"""
-    
+
     if not diet_scraper:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Service not properly initialized"
         )
-    
+
     # Run scraping in background for long-running operations
     background_tasks.add_task(
         _scrape_bills_task,
         force_refresh=request.force_refresh
     )
-    
+
     return ScrapeResponse(
         success=True,
         message="Scraping task started",
@@ -304,7 +314,7 @@ async def scrape_diet_data(
 
 
 @app.get("/scrape/status")
-async def get_scrape_status() -> Dict[str, str]:
+async def get_scrape_status() -> dict[str, str]:
     """Get current scraping status"""
     # TODO: Implement proper status tracking
     return {
@@ -320,20 +330,20 @@ async def collect_voting_data(
     background_tasks: BackgroundTasks
 ) -> VotingResponse:
     """Collect voting data from Diet website and store in Airtable"""
-    
+
     if not voting_scraper:
         raise HTTPException(
             status_code=500,
             detail="Voting scraper not properly initialized"
         )
-    
+
     # Run voting data collection in background
     background_tasks.add_task(
         _collect_voting_data_task,
         vote_type=request.vote_type,
         force_refresh=request.force_refresh
     )
-    
+
     return VotingResponse(
         success=True,
         message="Voting data collection task started",
@@ -344,7 +354,7 @@ async def collect_voting_data(
 
 
 @app.get("/voting/status")
-async def get_voting_status() -> Dict[str, str]:
+async def get_voting_status() -> dict[str, str]:
     """Get current voting data collection status"""
     # TODO: Implement proper status tracking
     return {
@@ -355,7 +365,7 @@ async def get_voting_status() -> Dict[str, str]:
 
 
 @app.get("/voting/stats")
-async def get_voting_stats() -> Dict[str, Union[int, str]]:
+async def get_voting_stats() -> dict[str, int | str]:
     """Get voting data statistics"""
     # TODO: Implement with Airtable queries
     return {
@@ -372,19 +382,19 @@ async def transcribe_audio(
     background_tasks: BackgroundTasks
 ) -> TranscribeResponse:
     """Transcribe audio or video content using Whisper API"""
-    
+
     if not whisper_client:
         raise HTTPException(
             status_code=503,
             detail="Speech-to-text service not available (missing OpenAI API key)"
         )
-    
+
     if not request.audio_url and not request.video_url:
         raise HTTPException(
             status_code=400,
             detail="Either audio_url or video_url must be provided"
         )
-    
+
     # Run transcription in background for long-running operations
     background_tasks.add_task(
         _transcribe_task,
@@ -392,7 +402,7 @@ async def transcribe_audio(
         video_url=request.video_url,
         language=request.language
     )
-    
+
     return TranscribeResponse(
         success=True,
         message="Transcription task started"
@@ -402,17 +412,17 @@ async def transcribe_audio(
 @app.post("/embeddings", response_model=EmbeddingResponse)
 async def generate_embedding(request: EmbeddingRequest) -> EmbeddingResponse:
     """Generate vector embedding for text"""
-    
+
     if not vector_client:
         raise HTTPException(
             status_code=503,
             detail="Vector service not available (missing OpenAI/Weaviate credentials)"
         )
-    
+
     try:
         # Generate embedding
         embedding = vector_client.generate_embedding(request.text)
-        
+
         weaviate_uuid = None
         if request.store_in_weaviate and request.metadata:
             # Store in Weaviate if metadata provided
@@ -420,7 +430,7 @@ async def generate_embedding(request: EmbeddingRequest) -> EmbeddingResponse:
                 weaviate_uuid = vector_client.store_bill_embedding(request.metadata, embedding)
             elif "speaker" in request.metadata:
                 weaviate_uuid = vector_client.store_speech_embedding(request.metadata, embedding)
-        
+
         return EmbeddingResponse(
             success=True,
             message="Embedding generated successfully",
@@ -428,7 +438,7 @@ async def generate_embedding(request: EmbeddingRequest) -> EmbeddingResponse:
             model=embedding.model,
             weaviate_uuid=weaviate_uuid
         )
-        
+
     except Exception as e:
         logger.error(f"Embedding generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -440,10 +450,10 @@ async def search_similar_bills(request: SearchRequest) -> SearchResponse:
     Hybrid search for bills using vector similarity and keyword matching.
     Falls back to keyword search if vector search is unavailable.
     """
-    
+
     try:
         results = []
-        
+
         if vector_client:
             # Perform vector similarity search
             try:
@@ -454,7 +464,7 @@ async def search_similar_bills(request: SearchRequest) -> SearchResponse:
                 )
                 results.extend(vector_results)
                 search_method = "vector"
-                
+
             except Exception as e:
                 logger.warning(f"Vector search failed, falling back to keyword search: {e}")
                 # Fallback to keyword search if vector search fails
@@ -464,20 +474,20 @@ async def search_similar_bills(request: SearchRequest) -> SearchResponse:
             # Use keyword search if vector client not available
             results = await _keyword_search_bills(request.query, request.limit)
             search_method = "keyword"
-        
+
         return SearchResponse(
             success=True,
             message=f"Found {len(results)} bills using {search_method} search",
             results=results,
             total_found=len(results)
         )
-        
+
     except Exception as e:
         logger.error(f"Search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def _keyword_search_bills(query: str, limit: int = 10) -> List[Dict]:
+async def _keyword_search_bills(query: str, limit: int = 10) -> list[dict]:
     """
     Fallback keyword search using scraped bill data.
     In production, this would query Airtable directly.
@@ -485,17 +495,17 @@ async def _keyword_search_bills(query: str, limit: int = 10) -> List[Dict]:
     try:
         # For now, search through scraped bills in memory
         # TODO: Replace with Airtable query when integrated
-        
+
         bills_data = diet_scraper.fetch_current_bills()
         results = []
-        
+
         query_lower = query.lower()
-        
+
         for bill_data in bills_data:
             # Simple keyword matching
             title_match = query_lower in bill_data.title.lower()
             summary_match = bill_data.summary and query_lower in bill_data.summary.lower()
-            
+
             if title_match or summary_match:
                 # Calculate simple relevance score
                 score = 0.0
@@ -503,7 +513,7 @@ async def _keyword_search_bills(query: str, limit: int = 10) -> List[Dict]:
                     score += 0.8
                 if summary_match:
                     score += 0.5
-                
+
                 # Convert to search result format
                 results.append({
                     "bill_number": bill_data.bill_id,
@@ -515,20 +525,20 @@ async def _keyword_search_bills(query: str, limit: int = 10) -> List[Dict]:
                     "relevance_score": score,
                     "search_method": "keyword"
                 })
-        
+
         # Sort by relevance score and limit results
         results.sort(key=lambda x: x["relevance_score"], reverse=True)
         return results[:limit]
-        
+
     except Exception as e:
         logger.error(f"Keyword search failed: {e}")
         return []
 
 
 @app.get("/embeddings/stats")
-async def get_embedding_stats() -> Dict[str, Union[int, str]]:
+async def get_embedding_stats() -> dict[str, int | str]:
     """Get statistics about stored embeddings"""
-    
+
     if not vector_client:
         return {
             "status": "unavailable",
@@ -536,7 +546,7 @@ async def get_embedding_stats() -> Dict[str, Union[int, str]]:
             "speeches": 0,
             "message": "Vector service not available"
         }
-    
+
     try:
         stats = vector_client.get_embedding_stats()
         return {
@@ -545,7 +555,7 @@ async def get_embedding_stats() -> Dict[str, Union[int, str]]:
             "speeches": stats["speeches"],
             "message": f"Vector store contains {stats['bills']} bills and {stats['speeches']} speeches"
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to get embedding stats: {e}")
         return {
@@ -559,92 +569,92 @@ async def get_embedding_stats() -> Dict[str, Union[int, str]]:
 async def _scrape_bills_task(force_refresh: bool = False) -> None:
     """Background task to scrape bills and process them"""
     logger.info("Starting bill scraping and processing task...")
-    
+
     try:
         # Fetch bills from Diet website
         bills_data = diet_scraper.fetch_current_bills()
         logger.info(f"Scraped {len(bills_data)} bills from Diet website")
-        
+
         # Process and normalize the data
         processed_count = 0
         errors = []
-        
+
         for bill_data in bills_data:
             try:
                 # Convert and normalize bill data
                 normalized_bill = _normalize_bill_data(bill_data)
-                
+
                 # Generate embedding if vector client is available
                 if vector_client and bill_data.title:
                     try:
                         # Create text for embedding (title + summary)
                         embedding_text = f"{bill_data.title}\n{bill_data.summary or ''}"
-                        
+
                         # Generate embedding
                         embedding = vector_client.generate_embedding(embedding_text)
-                        
+
                         # Store in Weaviate
                         weaviate_uuid = vector_client.store_bill_embedding(normalized_bill, embedding)
-                        
+
                         if weaviate_uuid:
                             logger.info(f"Generated embedding for bill {normalized_bill['bill_number']}: {weaviate_uuid}")
-                        
+
                     except Exception as e:
                         logger.warning(f"Failed to generate embedding for bill {bill_data.bill_id}: {e}")
-                
+
                 # For now, just log the normalized data (TODO: Store in Airtable)
                 logger.debug(f"Normalized bill: {normalized_bill['bill_number']} - {normalized_bill['title'][:50]}...")
                 processed_count += 1
-                
+
                 # Rate limiting - respect both Airtable and OpenAI limits
                 await asyncio.sleep(0.2)
-                
+
             except Exception as e:
                 error_msg = f"Failed to process bill {bill_data.bill_id}: {str(e)}"
                 logger.warning(error_msg)
                 errors.append(error_msg)
-        
+
         logger.info(f"Bill processing completed: {processed_count} processed, {len(errors)} errors")
         if errors:
             logger.warning(f"First few errors: {errors[:3]}")
-        
+
     except Exception as e:
         logger.error(f"Bill scraping task failed: {e}")
 
 
-def _normalize_bill_data(bill_data: BillData) -> Dict[str, str]:
+def _normalize_bill_data(bill_data: BillData) -> dict[str, str]:
     """
     Normalize bill data from scraper format to structured format
-    
+
     Args:
         bill_data: BillData object from scraper
-        
+
     Returns:
         Normalized bill data dictionary
     """
     # Map category string to standardized category
     category_mapping = {
         "予算・決算": "BUDGET",
-        "税制": "TAXATION", 
+        "税制": "TAXATION",
         "社会保障": "SOCIAL_SECURITY",
         "外交・国際": "FOREIGN_AFFAIRS",
         "経済・産業": "ECONOMY",
         "その他": "OTHER"
     }
-    
+
     # Map stage to standardized status
     status_mapping = {
         "成立": "PASSED",
-        "採決待ち": "PENDING_VOTE", 
+        "採決待ち": "PENDING_VOTE",
         "審議中": "UNDER_REVIEW",
         "Backlog": "BACKLOG"
     }
-    
+
     # Extract diet session from bill ID (format: "217-1")
     diet_session = None
     if "-" in bill_data.bill_id:
         diet_session = bill_data.bill_id.split("-")[0]
-    
+
     return {
         "bill_number": bill_data.bill_id,
         "title": bill_data.title,
@@ -664,16 +674,16 @@ def _validate_transcription_quality(transcription: TranscriptionResult) -> bool:
     # Basic quality checks since we don't have reference text
     if not transcription.text or len(transcription.text.strip()) < 10:
         return False
-    
+
     # Check for reasonable Japanese content
     japanese_chars = sum(1 for c in transcription.text if ord(c) > 127)
     if japanese_chars < len(transcription.text) * 0.3:
         return False
-    
+
     # Check duration makes sense
     if transcription.duration <= 0:
         return False
-    
+
     # Check for excessive repetition (poor transcription indicator)
     words = transcription.text.split()
     if len(words) > 10:
@@ -681,21 +691,21 @@ def _validate_transcription_quality(transcription: TranscriptionResult) -> bool:
         repetition_rate = 1.0 - (len(unique_words) / len(words))
         if repetition_rate > 0.5:  # More than 50% repetition
             return False
-    
+
     return True
 
 
 async def _transcribe_task(
-    audio_url: Optional[str] = None,
-    video_url: Optional[str] = None,
+    audio_url: str | None = None,
+    video_url: str | None = None,
     language: str = "ja"
 ) -> None:
     """Background task to transcribe audio/video"""
     logger.info("Starting transcription task...")
-    
+
     try:
         result = None
-        
+
         if video_url:
             logger.info(f"Transcribing video: {video_url}")
             result, audio_file = whisper_client.download_and_transcribe_video(video_url)
@@ -704,18 +714,18 @@ async def _transcribe_task(
             # This is a simplified implementation
             logger.info(f"Audio URL transcription not yet implemented: {audio_url}")
             return
-        
+
         if result:
             # Validate transcription quality using local function
             quality_passed = _validate_transcription_quality(result)
-            
-            logger.info(f"Transcription completed:")
+
+            logger.info("Transcription completed:")
             logger.info(f"  Text length: {len(result.text)} characters")
             logger.info(f"  Duration: {result.duration:.2f} seconds")
             logger.info(f"  Language: {result.language}")
             logger.info(f"  Quality passed: {quality_passed}")
             logger.info(f"  Preview: {result.text[:100]}...")
-            
+
             # Normalize transcription data
             normalized_transcription = {
                 "text": result.text,
@@ -725,13 +735,13 @@ async def _transcribe_task(
                 "processing_date": datetime.now().isoformat(),
                 "segments_count": len(result.segments) if result.segments else 0
             }
-            
+
             logger.info(f"Normalized transcription data: {normalized_transcription}")
             # TODO: Store transcription result in database
-            
+
         else:
             logger.error("Transcription returned no result")
-        
+
     except Exception as e:
         logger.error(f"Transcription task failed: {e}")
 
@@ -739,12 +749,12 @@ async def _transcribe_task(
 async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool = False) -> None:
     """Background task to collect voting data and store in Airtable"""
     logger.info(f"Starting voting data collection task (type: {vote_type})...")
-    
+
     try:
         # Fetch voting sessions from Diet website
         voting_sessions = voting_scraper.fetch_voting_sessions()
         logger.info(f"Scraped {len(voting_sessions)} voting sessions from Diet website")
-        
+
         # Process and store the data
         sessions_processed = 0
         votes_processed = 0
@@ -752,70 +762,70 @@ async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool 
         errors = []
         unique_members = set()
         unique_parties = set()
-        
+
         for session in voting_sessions:
             try:
                 # Process voting session
                 session_data = _normalize_voting_session(session)
                 logger.debug(f"Processing session: {session_data['bill_number']} - {session_data['bill_title'][:50]}...")
-                
+
                 # Process individual vote records
                 for vote_record in session.vote_records:
                     try:
                         # Normalize vote data
-                        vote_data = _normalize_vote_record(vote_record, session)
-                        
+                        _normalize_vote_record(vote_record, session)
+
                         # Track unique members and parties for later processing
                         unique_members.add((vote_record.member_name, vote_record.party_name, vote_record.constituency))
                         unique_parties.add(vote_record.party_name)
-                        
+
                         votes_processed += 1
-                        
+
                         # Rate limiting - respect Airtable API limits
                         await asyncio.sleep(0.2)
-                        
+
                     except Exception as e:
                         error_msg = f"Failed to process vote record for {vote_record.member_name}: {str(e)}"
                         logger.warning(error_msg)
                         errors.append(error_msg)
-                
+
                 sessions_processed += 1
-                
+
                 # TODO: Store session data in Airtable
                 # TODO: Store vote records in Airtable
-                
+
             except Exception as e:
                 error_msg = f"Failed to process voting session {session.bill_number}: {str(e)}"
                 logger.warning(error_msg)
                 errors.append(error_msg)
-        
+
         # Process unique members and parties
         members_processed = len(unique_members)
         logger.info(f"Found {len(unique_parties)} unique parties and {members_processed} unique members")
-        
+
         # TODO: Store parties and members in Airtable if they don't exist
-        
-        logger.info(f"Voting data collection completed:")
+
+        logger.info("Voting data collection completed:")
         logger.info(f"  Sessions processed: {sessions_processed}")
         logger.info(f"  Votes processed: {votes_processed}")
         logger.info(f"  Members identified: {members_processed}")
         logger.info(f"  Parties identified: {len(unique_parties)}")
         logger.info(f"  Errors: {len(errors)}")
-        
+
         if errors:
             logger.warning(f"First few errors: {errors[:3]}")
-        
+
     except Exception as e:
         logger.error(f"Voting data collection task failed: {e}")
 
 
-def _normalize_voting_session(session: VotingSession) -> Dict[str, any]:
+def _normalize_voting_session(session: VotingSession) -> dict[str, any]:
     """
     Normalize voting session data for Airtable storage
-    
+
     Args:
         session: VotingSession object from scraper
-        
+
     Returns:
         Normalized voting session data dictionary
     """
@@ -836,14 +846,14 @@ def _normalize_voting_session(session: VotingSession) -> Dict[str, any]:
     }
 
 
-def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> Dict[str, any]:
+def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> dict[str, any]:
     """
     Normalize individual vote record for Airtable storage
-    
+
     Args:
         vote_record: VoteRecord object from scraper
         session: Parent VotingSession object
-        
+
     Returns:
         Normalized vote record data dictionary
     """
@@ -855,7 +865,7 @@ def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> D
         "欠席": "absent",
         "出席": "present"
     }
-    
+
     return {
         "member_name": vote_record.member_name,
         "member_name_kana": vote_record.member_name_kana,
@@ -875,14 +885,14 @@ def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> D
 
 # Scheduler endpoints
 @app.get("/scheduler/status")
-async def get_scheduler_status() -> Dict[str, Any]:
+async def get_scheduler_status() -> dict[str, Any]:
     """Get current scheduler status and task information"""
     if not scheduler:
         return {
             "status": "unavailable",
             "message": "Scheduler service not initialized"
         }
-    
+
     return {
         "status": "available",
         "config": {
@@ -895,42 +905,42 @@ async def get_scheduler_status() -> Dict[str, Any]:
 
 
 @app.get("/scheduler/tasks")
-async def get_all_scheduled_tasks() -> Dict[str, Any]:
+async def get_all_scheduled_tasks() -> dict[str, Any]:
     """Get all scheduled tasks configuration"""
     if not scheduler:
         raise HTTPException(
             status_code=503,
             detail="Scheduler service not available"
         )
-    
+
     return scheduler.get_task_status()
 
 
 @app.get("/scheduler/tasks/{task_id}")
-async def get_task_status(task_id: str) -> Dict[str, Any]:
+async def get_task_status(task_id: str) -> dict[str, Any]:
     """Get status of a specific scheduled task"""
     if not scheduler:
         raise HTTPException(
             status_code=503,
             detail="Scheduler service not available"
         )
-    
+
     task_status = scheduler.get_task_status(task_id)
     if "error" in task_status:
         raise HTTPException(status_code=404, detail=task_status["error"])
-    
+
     return task_status
 
 
 @app.post("/scheduler/setup")
-async def setup_cloud_scheduler() -> Dict[str, Any]:
+async def setup_cloud_scheduler() -> dict[str, Any]:
     """Set up Google Cloud Scheduler jobs (admin only)"""
     if not scheduler:
         raise HTTPException(
             status_code=503,
             detail="Scheduler service not available"
         )
-    
+
     try:
         success = await scheduler.setup_cloud_scheduler()
         if success:
@@ -950,15 +960,15 @@ async def setup_cloud_scheduler() -> Dict[str, Any]:
 
 @app.post("/scheduler/execute")
 async def execute_scheduled_task(
-    task_data: Dict[str, Any]
-) -> Dict[str, Any]:
+    task_data: dict[str, Any]
+) -> dict[str, Any]:
     """Execute a scheduled task manually (for Pub/Sub integration)"""
     if not scheduler:
         raise HTTPException(
             status_code=503,
             detail="Scheduler service not available"
         )
-    
+
     try:
         success = await scheduler.handle_pubsub_message(task_data)
         return {
@@ -973,14 +983,14 @@ async def execute_scheduled_task(
 @app.post("/scheduler/cleanup")
 async def cleanup_scheduler_history(
     days_to_keep: int = 30
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Clean up old scheduler execution history"""
     if not scheduler:
         raise HTTPException(
             status_code=503,
             detail="Scheduler service not available"
         )
-    
+
     try:
         cleaned_count = scheduler.cleanup_old_executions(days_to_keep)
         return {
@@ -995,56 +1005,56 @@ async def cleanup_scheduler_history(
 
 # Enhanced scraper endpoints with resilience features
 @app.get("/scraper/statistics")
-async def get_scraper_statistics() -> Dict[str, Any]:
+async def get_scraper_statistics() -> dict[str, Any]:
     """Get scraper performance statistics and resilience metrics"""
     if not diet_scraper:
         raise HTTPException(
             status_code=503,
             detail="Diet scraper not available"
         )
-    
+
     return diet_scraper.get_scraper_statistics()
 
 
 @app.get("/scraper/jobs")
-async def get_scraper_jobs() -> Dict[str, Any]:
+async def get_scraper_jobs() -> dict[str, Any]:
     """Get all scraping jobs status"""
     if not diet_scraper:
         raise HTTPException(
             status_code=503,
             detail="Diet scraper not available"
         )
-    
+
     return diet_scraper.get_all_jobs()
 
 
 @app.get("/scraper/jobs/{job_id}")
-async def get_scraper_job_status(job_id: str) -> Dict[str, Any]:
+async def get_scraper_job_status(job_id: str) -> dict[str, Any]:
     """Get status of a specific scraping job"""
     if not diet_scraper:
         raise HTTPException(
             status_code=503,
             detail="Diet scraper not available"
         )
-    
+
     job_status = diet_scraper.get_job_status(job_id)
     if job_status is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    
+
     return job_status
 
 
 @app.post("/scraper/cleanup")
 async def cleanup_scraper_cache(
     max_age_hours: int = 24
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Clean up old scraper jobs and cache"""
     if not diet_scraper:
         raise HTTPException(
             status_code=503,
             detail="Diet scraper not available"
         )
-    
+
     try:
         cleaned_count = diet_scraper.cleanup_old_jobs(max_age_hours)
         return {
@@ -1062,25 +1072,25 @@ async def scrape_diet_data_async(
     request: ScrapeRequest
 ) -> ScrapeResponse:
     """Scrape Diet data using enhanced async resilient scraper"""
-    
+
     if not diet_scraper:
         raise HTTPException(
-            status_code=500, 
+            status_code=500,
             detail="Service not properly initialized"
         )
-    
+
     try:
         # Use the async resilient scraper
         bills_data = await diet_scraper.fetch_current_bills_async(
             force_refresh=request.force_refresh
         )
-        
+
         return ScrapeResponse(
             success=True,
             message=f"Successfully scraped {len(bills_data)} bills with resilience features",
             bills_processed=len(bills_data)
         )
-        
+
     except Exception as e:
         logger.error(f"Async scraping failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1088,34 +1098,34 @@ async def scrape_diet_data_async(
 
 # Batch processing endpoints
 @app.get("/batch/status")
-async def get_batch_status() -> Dict[str, Any]:
+async def get_batch_status() -> dict[str, Any]:
     """Get batch processing queue status"""
     if not batch_processor:
         return {
             "status": "unavailable",
             "message": "Batch processor not initialized"
         }
-    
+
     return batch_processor.get_queue_status()
 
 
 @app.post("/batch/tasks")
 async def add_batch_task(
     task_type: TaskType,
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     priority: TaskPriority = TaskPriority.NORMAL,
     max_retries: int = 3,
     timeout_seconds: int = 300,
-    tags: Optional[List[str]] = None,
-    depends_on: Optional[List[str]] = None
-) -> Dict[str, str]:
+    tags: list[str] | None = None,
+    depends_on: list[str] | None = None
+) -> dict[str, str]:
     """Add a new task to the batch processing queue"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     try:
         task_id = await batch_processor.add_task(
             task_type=task_type,
@@ -1126,42 +1136,42 @@ async def add_batch_task(
             tags=tags,
             depends_on=depends_on
         )
-        
+
         return {
             "task_id": task_id,
             "message": f"Task added to queue with priority {priority.value}"
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to add batch task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/batch/tasks/{task_id}")
-async def get_batch_task_status(task_id: str) -> Dict[str, Any]:
+async def get_batch_task_status(task_id: str) -> dict[str, Any]:
     """Get status of a specific batch task"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     task_status = batch_processor.get_task_status(task_id)
     if task_status is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     return task_status
 
 
 @app.post("/batch/tasks/{task_id}/cancel")
-async def cancel_batch_task(task_id: str) -> Dict[str, Any]:
+async def cancel_batch_task(task_id: str) -> dict[str, Any]:
     """Cancel a queued or active batch task"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     try:
         cancelled = await batch_processor.cancel_task(task_id)
         if cancelled:
@@ -1182,14 +1192,14 @@ async def cancel_batch_task(task_id: str) -> Dict[str, Any]:
 @app.post("/batch/cleanup")
 async def cleanup_batch_tasks(
     max_age_hours: int = 24
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Clean up old completed batch tasks"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     try:
         cleaned_count = batch_processor.cleanup_completed_tasks(max_age_hours)
         return {
@@ -1205,22 +1215,22 @@ async def cleanup_batch_tasks(
 # Convenience endpoints for specific batch operations
 @app.post("/batch/embeddings")
 async def queue_embedding_generation(
-    texts: List[str],
-    metadata_list: Optional[List[Dict[str, Any]]] = None,
+    texts: list[str],
+    metadata_list: list[dict[str, Any]] | None = None,
     priority: TaskPriority = TaskPriority.NORMAL
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Queue embedding generation for multiple texts"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     payload = {
         "texts": texts,
         "metadata_list": metadata_list or [{}] * len(texts)
     }
-    
+
     try:
         task_id = await batch_processor.add_task(
             task_type=TaskType.GENERATE_EMBEDDINGS,
@@ -1228,12 +1238,12 @@ async def queue_embedding_generation(
             priority=priority,
             tags=["embeddings", "batch"]
         )
-        
+
         return {
             "task_id": task_id,
             "message": f"Queued embedding generation for {len(texts)} texts"
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to queue embedding generation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1241,30 +1251,30 @@ async def queue_embedding_generation(
 
 @app.post("/batch/transcriptions")
 async def queue_transcription_batch(
-    audio_urls: Optional[List[str]] = None,
-    video_urls: Optional[List[str]] = None,
+    audio_urls: list[str] | None = None,
+    video_urls: list[str] | None = None,
     language: str = "ja",
     priority: TaskPriority = TaskPriority.NORMAL
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Queue transcription for multiple audio/video files"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     if not audio_urls and not video_urls:
         raise HTTPException(
             status_code=400,
             detail="At least one of audio_urls or video_urls must be provided"
         )
-    
+
     payload = {
         "audio_urls": audio_urls or [],
         "video_urls": video_urls or [],
         "language": language
     }
-    
+
     try:
         task_id = await batch_processor.add_task(
             task_type=TaskType.TRANSCRIBE_AUDIO,
@@ -1273,13 +1283,13 @@ async def queue_transcription_batch(
             timeout_seconds=1800,  # 30 minutes for transcription
             tags=["transcription", "batch"]
         )
-        
+
         total_files = len(audio_urls or []) + len(video_urls or [])
         return {
             "task_id": task_id,
             "message": f"Queued transcription for {total_files} files"
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to queue transcription batch: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1289,39 +1299,39 @@ async def queue_transcription_batch(
 @app.post("/voting/hr/collect")
 async def collect_hr_voting_data(
     days_back: int = 30,
-    session_numbers: Optional[List[int]] = None
-) -> Dict[str, Any]:
+    session_numbers: list[int] | None = None
+) -> dict[str, Any]:
     """Collect voting data from House of Representatives PDFs"""
     if not hr_voting_scraper:
         raise HTTPException(
             status_code=503,
             detail="House of Representatives voting scraper not available"
         )
-    
+
     try:
         logger.info(f"Starting HR voting data collection (days_back: {days_back})")
-        
+
         voting_sessions = await hr_voting_scraper.fetch_recent_voting_sessions(
             days_back=days_back,
             session_numbers=session_numbers
         )
-        
+
         # Process results
         total_sessions = len(voting_sessions)
         total_votes = sum(len(session.vote_records) for session in voting_sessions)
-        
+
         # Extract unique members and parties
         unique_members = set()
         unique_parties = set()
-        
+
         for session in voting_sessions:
             for vote_record in session.vote_records:
                 unique_members.add(vote_record.member_name)
                 unique_parties.add(vote_record.party_name)
-        
+
         return {
             "success": True,
-            "message": f"Successfully collected HR voting data",
+            "message": "Successfully collected HR voting data",
             "sessions_processed": total_sessions,
             "votes_processed": total_votes,
             "unique_members": len(unique_members),
@@ -1339,43 +1349,43 @@ async def collect_hr_voting_data(
                 for session in voting_sessions
             ]
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to collect HR voting data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/voting/hr/statistics")
-async def get_hr_voting_statistics() -> Dict[str, Any]:
+async def get_hr_voting_statistics() -> dict[str, Any]:
     """Get House of Representatives voting scraper statistics"""
     if not hr_voting_scraper:
         raise HTTPException(
             status_code=503,
             detail="House of Representatives voting scraper not available"
         )
-    
+
     return hr_voting_scraper.get_scraper_statistics()
 
 
 @app.post("/batch/hr-voting")
 async def queue_hr_voting_collection(
     days_back: int = 30,
-    session_numbers: Optional[List[int]] = None,
+    session_numbers: list[int] | None = None,
     priority: TaskPriority = TaskPriority.HIGH
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Queue House of Representatives voting data collection as batch task"""
     if not batch_processor:
         raise HTTPException(
             status_code=503,
             detail="Batch processor not available"
         )
-    
+
     payload = {
         "days_back": days_back,
         "session_numbers": session_numbers or [],
         "task_type": "hr_voting_collection"
     }
-    
+
     try:
         task_id = await batch_processor.add_task(
             task_type=TaskType.PROCESS_VOTING_DATA,
@@ -1384,12 +1394,12 @@ async def queue_hr_voting_collection(
             timeout_seconds=3600,  # 1 hour for PDF processing
             tags=["hr-voting", "pdf-processing", "batch"]
         )
-        
+
         return {
             "task_id": task_id,
             "message": f"Queued HR voting data collection for {days_back} days"
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to queue HR voting collection: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1398,7 +1408,7 @@ async def queue_hr_voting_collection(
 class HRProcessingRequest(BaseModel):
     """Request model for HR PDF processing"""
     days_back: int = 7
-    session_numbers: Optional[List[int]] = None
+    session_numbers: list[int] | None = None
     max_concurrent: int = 2
     dry_run: bool = False
 
@@ -1416,7 +1426,7 @@ class HRProcessingResponse(BaseModel):
     votes_created: int
     vote_records_created: int
     conflicts_detected: int
-    errors: List[str] = []
+    errors: list[str] = []
 
 
 @app.post("/hr/process", response_model=HRProcessingResponse)
@@ -1425,9 +1435,9 @@ async def process_hr_pdfs(
     background_tasks: BackgroundTasks
 ) -> HRProcessingResponse:
     """Process House of Representatives PDF voting data with enhanced extraction"""
-    
+
     logger.info(f"Starting HR PDF processing: days_back={request.days_back}, dry_run={request.dry_run}")
-    
+
     try:
         # Run the complete HR integration pipeline
         pipeline_result = await run_hr_integration_pipeline(
@@ -1435,10 +1445,10 @@ async def process_hr_pdfs(
             dry_run=request.dry_run,
             max_concurrent=request.max_concurrent
         )
-        
+
         # Extract results
         integration_result = pipeline_result.get('integration_results')
-        
+
         if integration_result:
             return HRProcessingResponse(
                 success=pipeline_result['success'],
@@ -1469,7 +1479,7 @@ async def process_hr_pdfs(
                 conflicts_detected=0,
                 errors=pipeline_result.get('errors', ['No integration results generated'])
             )
-    
+
     except Exception as e:
         logger.error(f"HR PDF processing failed: {e}")
         return HRProcessingResponse(
@@ -1489,19 +1499,19 @@ async def process_hr_pdfs(
 
 
 @app.get("/hr/status")
-async def get_hr_processing_status() -> Dict[str, Any]:
+async def get_hr_processing_status() -> dict[str, Any]:
     """Get House of Representatives processing status and statistics"""
-    
+
     try:
         # Initialize processor to get current statistics
         processor = EnhancedHRProcessor()
         processing_stats = processor.get_processing_statistics()
-        
+
         # Get base scraper statistics
         base_stats = {}
         if hr_voting_scraper:
             base_stats = hr_voting_scraper.get_scraper_statistics()
-        
+
         return {
             "status": "ready",
             "service": "enhanced_hr_processor",
@@ -1518,7 +1528,7 @@ async def get_hr_processing_status() -> Dict[str, Any]:
             "base_scraper_statistics": base_stats,
             "last_check": datetime.now().isoformat()
         }
-    
+
     except Exception as e:
         logger.error(f"Failed to get HR status: {e}")
         raise HTTPException(
@@ -1529,49 +1539,49 @@ async def get_hr_processing_status() -> Dict[str, Any]:
 
 # Monitoring and Observability Endpoints
 @app.get("/monitoring/overview")
-async def monitoring_overview() -> Dict[str, Any]:
+async def monitoring_overview() -> dict[str, Any]:
     """Get comprehensive monitoring overview"""
     return get_dashboard_overview()
 
 
 @app.get("/monitoring/pipeline")
-async def monitoring_pipeline() -> Dict[str, Any]:
+async def monitoring_pipeline() -> dict[str, Any]:
     """Get processing pipeline status"""
     return get_pipeline_status()
 
 
 @app.get("/monitoring/quality")
-async def monitoring_quality() -> Dict[str, Any]:
+async def monitoring_quality() -> dict[str, Any]:
     """Get data quality metrics"""
     return get_quality_metrics()
 
 
 @app.get("/monitoring/system")
-async def monitoring_system() -> Dict[str, Any]:
+async def monitoring_system() -> dict[str, Any]:
     """Get system resource metrics"""
     return get_system_status()
 
 
 @app.get("/monitoring/alerts")
-async def monitoring_alerts() -> Dict[str, Any]:
+async def monitoring_alerts() -> dict[str, Any]:
     """Get alerts dashboard"""
     return get_alerts_dashboard()
 
 
 @app.get("/monitoring/performance")
-async def monitoring_performance(hours: int = 24) -> Dict[str, Any]:
+async def monitoring_performance(hours: int = 24) -> dict[str, Any]:
     """Get performance trends"""
     return get_performance_dashboard(hours)
 
 
 @app.get("/monitoring/health")
-async def monitoring_health() -> Dict[str, Any]:
+async def monitoring_health() -> dict[str, Any]:
     """Get comprehensive health status"""
     return get_health_status()
 
 
 @app.get("/metrics")
-async def get_metrics(format: str = "json") -> Union[Dict[str, Any], str]:
+async def get_metrics(format: str = "json") -> dict[str, Any] | str:
     """Get metrics in specified format (json or prometheus)"""
     if format == "prometheus":
         return PlainTextResponse(
@@ -1603,8 +1613,8 @@ class T52ScrapeResponse(BaseModel):
     speeches_processed: int
     embeddings_generated: int
     transcriptions_completed: int
-    errors: List[str]
-    performance_metrics: Dict[str, Any]
+    errors: list[str]
+    performance_metrics: dict[str, Any]
 
 
 @app.post("/t52/scrape", response_model=T52ScrapeResponse)
@@ -1612,31 +1622,31 @@ async def execute_t52_limited_scraping(
     request: T52ScrapeRequest
 ) -> T52ScrapeResponse:
     """Execute T52 limited scope scraping for June 2025 first week"""
-    
+
     if not limited_scrape_coordinator:
         raise HTTPException(
             status_code=503,
             detail="Limited scraping coordinator not available"
         )
-    
+
     logger.info(f"Starting T52 limited scraping (dry_run: {request.dry_run})")
-    
+
     try:
         # Get target configuration
         target = limited_scrape_coordinator.get_june_first_week_target()
-        
+
         # Apply request parameters
         target.enable_stt = request.enable_stt
         target.enable_embeddings = request.enable_embeddings
         target.max_bills = request.max_bills
         target.max_voting_sessions = request.max_voting_sessions
-        
+
         # Execute pipeline
         result = await limited_scrape_coordinator.execute_limited_scraping(
             target=target,
             dry_run=request.dry_run
         )
-        
+
         return T52ScrapeResponse(
             success=result.success,
             message="T52 limited scraping completed successfully" if result.success else "T52 limited scraping completed with errors",
@@ -1649,37 +1659,37 @@ async def execute_t52_limited_scraping(
             errors=result.errors,
             performance_metrics=result.performance_metrics
         )
-        
+
     except Exception as e:
         logger.error(f"T52 limited scraping failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/t52/status")
-async def get_t52_status() -> Dict[str, Any]:
+async def get_t52_status() -> dict[str, Any]:
     """Get T52 limited scraping pipeline status"""
-    
+
     if not limited_scrape_coordinator:
         return {
             "status": "unavailable",
             "message": "Limited scraping coordinator not initialized"
         }
-    
+
     return limited_scrape_coordinator.get_pipeline_status()
 
 
 @app.get("/t52/target")
-async def get_t52_target() -> Dict[str, Any]:
+async def get_t52_target() -> dict[str, Any]:
     """Get T52 target configuration"""
-    
+
     if not limited_scrape_coordinator:
         raise HTTPException(
             status_code=503,
             detail="Limited scraping coordinator not available"
         )
-    
+
     target = limited_scrape_coordinator.get_june_first_week_target()
-    
+
     return {
         "start_date": target.start_date.isoformat(),
         "end_date": target.end_date.isoformat(),

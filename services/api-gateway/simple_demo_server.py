@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Simple demo server for EPIC 7 Category System"""
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 import urllib.parse
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Mock category data
 CATEGORY_TREE = {
@@ -111,14 +111,14 @@ DEMO_HTML = """
 <body>
     <div class="container">
         <h1>🏛️ EPIC 7: 3層イシューカテゴリシステム</h1>
-        
+
         <div class="stats">
             <h3>✅ システム実装完了</h3>
             <p><strong>実装状況:</strong> <span class="success">完全実装済み</span> <span class="badge">LIVE</span></p>
             <p><strong>分類標準:</strong> CAP (Comparative Agendas Project) 準拠</p>
             <p><strong>階層構造:</strong> L1 (主要分野) → L2 (サブ分野) → L3 (具体的イシュー)</p>
             <p><strong>技術スタック:</strong> FastAPI + React + PostgreSQL + Airtable</p>
-            <p><strong>API エンドポイント:</strong> 
+            <p><strong>API エンドポイント:</strong>
                 <a href="/api/categories" class="api-link">Categories</a> |
                 <a href="/api/tree" class="api-link">Tree</a> |
                 <a href="/health" class="api-link">Health</a>
@@ -150,11 +150,11 @@ DEMO_HTML = """
             try {
                 const response = await fetch('/api/tree');
                 const data = await response.json();
-                
+
                 // Display L1 categories
                 const l1Container = document.getElementById('l1-categories');
                 l1Container.innerHTML = '';
-                
+
                 data.L1.forEach(category => {
                     const card = document.createElement('div');
                     card.className = 'category-card';
@@ -173,7 +173,7 @@ DEMO_HTML = """
                 // Display L2 categories with parent relationships
                 const l2Container = document.getElementById('l2-categories');
                 l2Container.innerHTML = '';
-                
+
                 const l2ByParent = {};
                 data.L2.forEach(category => {
                     const parentId = category.fields.Parent_Category[0];
@@ -204,7 +204,7 @@ DEMO_HTML = """
 
             } catch (error) {
                 console.error('Failed to load categories:', error);
-                document.getElementById('l1-categories').innerHTML = 
+                document.getElementById('l1-categories').innerHTML =
                     '<div style="color: red; padding: 20px; text-align: center;">❌ カテゴリの読み込みに失敗しました</div>';
             }
         }
@@ -220,24 +220,24 @@ class DemoHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
         path = parsed_path.path
-        
+
         # CORS headers
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        
+
         if path == '/':
             self.send_response(200)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.end_headers()
             self.wfile.write(DEMO_HTML.encode('utf-8'))
-        
+
         elif path == '/api/tree':
             self.send_response(200)
             self.send_header('Content-type', 'application/json; charset=utf-8')
             self.end_headers()
             self.wfile.write(json.dumps(CATEGORY_TREE, ensure_ascii=False).encode('utf-8'))
-        
+
         elif path == '/health':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -248,11 +248,11 @@ class DemoHandler(BaseHTTPRequestHandler):
                 "message": "EPIC 7 Demo Server Running"
             }
             self.wfile.write(json.dumps(health_data).encode('utf-8'))
-        
+
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         print(f"[DEMO] {format % args}")
 

@@ -18,15 +18,12 @@ logger = logging.getLogger(__name__)
 async def test_hr_scraper_import():
     """Test basic import of HR scraper components"""
     try:
-        from scraper.enhanced_hr_scraper import EnhancedHRProcessor
         logger.info("✅ EnhancedHRProcessor imported successfully")
-        
-        from scraper.pdf_processor import PDFProcessor
+
         logger.info("✅ PDFProcessor imported successfully")
-        
-        from scraper.hr_voting_scraper import HouseOfRepresentativesVotingScraper
+
         logger.info("✅ HouseOfRepresentativesVotingScraper imported successfully")
-        
+
         return True
     except Exception as e:
         logger.error(f"❌ Import failed: {e}")
@@ -36,12 +33,12 @@ async def test_hr_processor_initialization():
     """Test basic HR processor initialization"""
     try:
         from scraper.enhanced_hr_scraper import EnhancedHRProcessor
-        
+
         config = {
             'max_concurrent_pdfs': 1,
             'pdf_timeout_seconds': 60
         }
-        processor = EnhancedHRProcessor(config=config)
+        EnhancedHRProcessor(config=config)
         logger.info("✅ EnhancedHRProcessor initialized successfully")
         return True
     except Exception as e:
@@ -52,20 +49,20 @@ async def test_hr_data_processing():
     """Test HR data processing functionality"""
     try:
         from scraper.enhanced_hr_scraper import EnhancedHRProcessor
-        
+
         config = {'max_concurrent_pdfs': 1}
         processor = EnhancedHRProcessor(config=config)
-        
+
         # Test basic HR data processing with minimal parameters
         logger.info("Testing HR data processing...")
-        
+
         # Try to process with limited scope to avoid long running operations
         sessions = await processor.process_enhanced_hr_data(
             days_back=1,  # Very limited scope
             session_numbers=[208],  # Recent session
             max_concurrent=1
         )
-        
+
         logger.info(f"✅ Processed {len(sessions)} voting sessions")
         if sessions:
             for session in sessions[:2]:  # Show first 2
@@ -73,7 +70,7 @@ async def test_hr_data_processing():
                 logger.info(f"    Quality: {session.quality_metrics}")
         else:
             logger.info("  - No sessions found (this is normal for limited test)")
-        
+
         return True
     except Exception as e:
         logger.error(f"❌ HR data processing failed: {e}")
@@ -85,13 +82,13 @@ async def main():
     """Run all basic tests"""
     logger.info("Starting HR PDF Processing Basic Tests")
     logger.info("=" * 50)
-    
+
     tests = [
         ("Import Test", test_hr_scraper_import),
         ("Initialization Test", test_hr_processor_initialization),
         ("HR Data Processing Test", test_hr_data_processing),
     ]
-    
+
     results = []
     for test_name, test_func in tests:
         logger.info(f"\n🔍 Running {test_name}...")
@@ -105,21 +102,21 @@ async def main():
         except Exception as e:
             logger.error(f"❌ {test_name} ERROR: {e}")
             results.append((test_name, False))
-    
+
     # Summary
     logger.info("\n" + "=" * 50)
     logger.info("TEST SUMMARY")
     logger.info("=" * 50)
-    
+
     passed = sum(1 for _, result in results if result)
     total = len(results)
-    
+
     for test_name, result in results:
         status = "✅ PASS" if result else "❌ FAIL"
         logger.info(f"{test_name}: {status}")
-    
+
     logger.info(f"\nOverall: {passed}/{total} tests passed")
-    
+
     if passed == total:
         logger.info("🎉 All tests passed! HR PDF processing system is ready.")
     else:

@@ -1,15 +1,15 @@
 """Policy analysis service with MVP implementation."""
 
 import logging
-from typing import Dict, List, Optional, Any, Tuple
-from datetime import datetime, timedelta
-from dataclasses import dataclass
-from enum import Enum
-import json
 import random
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any
 
 from shared.clients.airtable import AirtableClient
-from ..cache.redis_client import RedisCache, MemberCache
+
+from ..cache.redis_client import MemberCache, RedisCache
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class IssuePosition:
     stance: PolicyStance
     confidence: float
     vote_count: int
-    supporting_evidence: List[str]
+    supporting_evidence: list[str]
     last_updated: datetime
 
 
@@ -39,7 +39,7 @@ class IssuePosition:
 class PolicyAnalysisResult:
     """Result of policy analysis."""
     member_id: str
-    issue_positions: List[IssuePosition]
+    issue_positions: list[IssuePosition]
     overall_activity_level: float
     party_alignment_rate: float
     analysis_timestamp: datetime
@@ -48,12 +48,12 @@ class PolicyAnalysisResult:
 
 class PolicyAnalysisService:
     """Service for analyzing member policy positions."""
-    
+
     def __init__(self, airtable_client: AirtableClient, redis_cache: RedisCache):
         self.airtable = airtable_client
         self.redis = redis_cache
         self.member_cache = MemberCache(redis_cache)
-        
+
         # Issue tag definitions for Japanese politics
         self.issue_tags = {
             "経済・産業": {
@@ -107,47 +107,47 @@ class PolicyAnalysisService:
                 "color": "#1F2937"
             }
         }
-    
-    async def analyze_member_policy_positions(self, member_id: str, 
+
+    async def analyze_member_policy_positions(self, member_id: str,
                                             force_refresh: bool = False) -> PolicyAnalysisResult:
         """Analyze member's policy positions across all issues."""
         cache_key = f"policy_analysis:{member_id}"
-        
+
         # Check cache first
         if not force_refresh:
             cached_result = await self.redis.get(cache_key)
             if cached_result:
                 return PolicyAnalysisResult(**cached_result)
-        
+
         # Generate MVP analysis (mock data)
         analysis_result = await self._generate_mvp_analysis(member_id)
-        
+
         # Cache the result
         await self.redis.set(cache_key, analysis_result.__dict__, ttl=3600)  # 1 hour TTL
-        
+
         return analysis_result
-    
+
     async def _generate_mvp_analysis(self, member_id: str) -> PolicyAnalysisResult:
         """Generate MVP policy analysis with mock data."""
         # Get member info for context
         member_info = await self.member_cache.get_member(member_id)
         party_name = "自由民主党"  # Default for mock
-        
+
         if member_info and "fields" in member_info:
             party_name = member_info["fields"].get("Party_Name", "自由民主党")
-        
+
         # Generate positions for each issue
         issue_positions = []
-        
+
         for issue_tag, issue_info in self.issue_tags.items():
             position = self._generate_mock_position(issue_tag, party_name)
             issue_positions.append(position)
-        
+
         # Calculate overall metrics
         overall_activity_level = random.uniform(0.6, 0.95)
         party_alignment_rate = random.uniform(0.7, 0.9)
         data_completeness = random.uniform(0.8, 0.95)
-        
+
         return PolicyAnalysisResult(
             member_id=member_id,
             issue_positions=issue_positions,
@@ -156,7 +156,7 @@ class PolicyAnalysisService:
             analysis_timestamp=datetime.now(),
             data_completeness=data_completeness
         )
-    
+
     def _generate_mock_position(self, issue_tag: str, party_name: str) -> IssuePosition:
         """Generate mock position based on issue and party."""
         # Simulate party-based tendencies
@@ -198,16 +198,16 @@ class PolicyAnalysisService:
                 "憲法・政治": PolicyStance.SUPPORT
             }
         }
-        
+
         # Default stance if party not found
         default_stance = PolicyStance.NEUTRAL
         stance = party_tendencies.get(party_name, {}).get(issue_tag, default_stance)
-        
+
         # Add some randomness to avoid perfectly predictable results
         if random.random() < 0.2:  # 20% chance to deviate
             stance_values = list(PolicyStance)
             stance = random.choice(stance_values)
-        
+
         # Generate confidence based on stance
         confidence_map = {
             PolicyStance.STRONG_SUPPORT: random.uniform(0.8, 0.95),
@@ -217,13 +217,13 @@ class PolicyAnalysisService:
             PolicyStance.STRONG_OPPOSE: random.uniform(0.8, 0.95),
             PolicyStance.UNKNOWN: random.uniform(0.3, 0.5)
         }
-        
+
         confidence = confidence_map.get(stance, 0.5)
         vote_count = random.randint(5, 25)
-        
+
         # Generate supporting evidence
         evidence = self._generate_mock_evidence(issue_tag, stance)
-        
+
         return IssuePosition(
             issue_tag=issue_tag,
             stance=stance,
@@ -232,8 +232,8 @@ class PolicyAnalysisService:
             supporting_evidence=evidence,
             last_updated=datetime.now() - timedelta(days=random.randint(1, 30))
         )
-    
-    def _generate_mock_evidence(self, issue_tag: str, stance: PolicyStance) -> List[str]:
+
+    def _generate_mock_evidence(self, issue_tag: str, stance: PolicyStance) -> list[str]:
         """Generate mock evidence for a stance."""
         evidence_templates = {
             PolicyStance.STRONG_SUPPORT: [
@@ -262,25 +262,25 @@ class PolicyAnalysisService:
                 f"{issue_tag}関連の予算削減を要求"
             ]
         }
-        
+
         templates = evidence_templates.get(stance, [f"{issue_tag}に関する発言"])
         return random.sample(templates, min(len(templates), 2))
-    
-    async def get_member_issue_stance(self, member_id: str, issue_tag: str) -> Optional[IssuePosition]:
+
+    async def get_member_issue_stance(self, member_id: str, issue_tag: str) -> IssuePosition | None:
         """Get member's stance on a specific issue."""
         analysis = await self.analyze_member_policy_positions(member_id)
-        
+
         for position in analysis.issue_positions:
             if position.issue_tag == issue_tag:
                 return position
-        
+
         return None
-    
-    async def compare_members_on_issue(self, member_ids: List[str], 
-                                     issue_tag: str) -> Dict[str, Any]:
+
+    async def compare_members_on_issue(self, member_ids: list[str],
+                                     issue_tag: str) -> dict[str, Any]:
         """Compare multiple members on a specific issue."""
         comparisons = []
-        
+
         for member_id in member_ids:
             position = await self.get_member_issue_stance(member_id, issue_tag)
             if position:
@@ -290,13 +290,13 @@ class PolicyAnalysisService:
                     "confidence": position.confidence,
                     "vote_count": position.vote_count
                 })
-        
+
         # Calculate stance distribution
         stance_counts = {}
         for comp in comparisons:
             stance = comp["stance"]
             stance_counts[stance] = stance_counts.get(stance, 0) + 1
-        
+
         return {
             "issue_tag": issue_tag,
             "issue_name": self.issue_tags.get(issue_tag, {}).get("name", issue_tag),
@@ -305,12 +305,12 @@ class PolicyAnalysisService:
             "member_positions": comparisons,
             "analyzed_at": datetime.now().isoformat()
         }
-    
-    async def get_similar_members(self, member_id: str, 
-                                issue_tags: List[str] = None) -> List[Dict[str, Any]]:
+
+    async def get_similar_members(self, member_id: str,
+                                issue_tags: list[str] = None) -> list[dict[str, Any]]:
         """Find members with similar policy positions."""
-        target_analysis = await self.analyze_member_policy_positions(member_id)
-        
+        await self.analyze_member_policy_positions(member_id)
+
         # For MVP, return mock similar members
         similar_members = [
             {
@@ -322,7 +322,7 @@ class PolicyAnalysisService:
                 "different_stances": 3
             },
             {
-                "member_id": "member_002", 
+                "member_id": "member_002",
                 "name": "鈴木一郎",
                 "party": "自由民主党",
                 "similarity_score": 0.72,
@@ -338,11 +338,11 @@ class PolicyAnalysisService:
                 "different_stances": 5
             }
         ]
-        
+
         return similar_members
-    
-    async def get_policy_trends(self, issue_tag: str, 
-                              time_range_days: int = 30) -> Dict[str, Any]:
+
+    async def get_policy_trends(self, issue_tag: str,
+                              time_range_days: int = 30) -> dict[str, Any]:
         """Get policy trends for an issue over time."""
         # Mock trend data
         return {
@@ -374,24 +374,24 @@ class PolicyAnalysisService:
             ],
             "analyzed_at": datetime.now().isoformat()
         }
-    
-    async def get_analysis_summary(self, member_id: str) -> Dict[str, Any]:
+
+    async def get_analysis_summary(self, member_id: str) -> dict[str, Any]:
         """Get summary of member's policy analysis."""
         analysis = await self.analyze_member_policy_positions(member_id)
-        
+
         # Calculate stance distribution
         stance_counts = {}
         for position in analysis.issue_positions:
             stance = position.stance.value
             stance_counts[stance] = stance_counts.get(stance, 0) + 1
-        
+
         # Find strongest positions
         strongest_positions = sorted(
             analysis.issue_positions,
             key=lambda p: p.confidence,
             reverse=True
         )[:5]
-        
+
         return {
             "member_id": member_id,
             "analysis_timestamp": analysis.analysis_timestamp.isoformat(),
@@ -411,8 +411,8 @@ class PolicyAnalysisService:
             ],
             "total_issues_analyzed": len(analysis.issue_positions)
         }
-    
-    async def get_available_issues(self) -> List[Dict[str, Any]]:
+
+    async def get_available_issues(self) -> list[dict[str, Any]]:
         """Get list of available issue tags."""
         return [
             {

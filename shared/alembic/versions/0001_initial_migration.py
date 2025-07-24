@@ -1,28 +1,27 @@
 """Initial migration - create all tables
 
 Revision ID: 0001
-Revises: 
+Revises:
 Create Date: 2025-07-01 15:30:00.000000
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
-import pgvector
+from alembic import op
 from pgvector.sqlalchemy import Vector
 
 # revision identifiers, used by Alembic.
 revision: str = '0001'
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
     # Enable pgvector extension
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    
+
     # Create parties table
     op.create_table('parties',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -285,7 +284,7 @@ def downgrade() -> None:
     op.drop_table('bills')
     op.drop_table('members')
     op.drop_table('parties')
-    
+
     # Drop enums
     op.execute("DROP TYPE IF EXISTS billcategory")
     op.execute("DROP TYPE IF EXISTS billstatus")

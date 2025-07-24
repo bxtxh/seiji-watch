@@ -1,9 +1,10 @@
 """Test configuration and fixtures."""
 
-import pytest
 import asyncio
 import os
 from unittest.mock import AsyncMock
+
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -64,7 +65,7 @@ def test_token():
     return generate_test_token()
 
 
-@pytest.fixture  
+@pytest.fixture
 def auth_headers(test_token):
     """Get authorization headers for authenticated requests."""
     from src.utils.test_auth import get_auth_headers
@@ -76,7 +77,7 @@ def client():
     """Create a test client for the FastAPI application."""
     os.environ['ENVIRONMENT'] = 'testing'
     os.environ['JWT_SECRET_KEY'] = 'test-jwt-secret-unified-for-ci-cd'
-    
+
     try:
         from src.main import app
         return TestClient(app)

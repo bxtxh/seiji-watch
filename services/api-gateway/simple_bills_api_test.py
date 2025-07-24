@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Simple test for Bills API routes without full app startup."""
 
-import asyncio
 import sys
-import os
 
 # Add the project root to the Python path
 sys.path.insert(0, '/Users/shogen/seiji-watch')
@@ -28,10 +26,10 @@ client = TestClient(app)
 
 def test_bills_endpoints():
     """Test basic Bills API endpoints."""
-    
+
     print("\n🧪 Testing Bills API Routes")
     print("=" * 40)
-    
+
     # Test 1: List bills endpoint
     print("\n📋 Test 1: GET /api/bills/")
     try:
@@ -43,8 +41,8 @@ def test_bills_endpoints():
             print(f"   Response: {response.json()}")
     except Exception as e:
         print(f"   ❌ Error: {e}")
-    
-    # Test 2: Get specific bill endpoint  
+
+    # Test 2: Get specific bill endpoint
     print("\n🔍 Test 2: GET /api/bills/test_bill_id")
     try:
         response = client.get("/api/bills/test_bill_id")
@@ -55,7 +53,7 @@ def test_bills_endpoints():
             print(f"   Response: {response.json()}")
     except Exception as e:
         print(f"   ❌ Error: {e}")
-    
+
     # Test 3: Search bills endpoint
     print("\n🔍 Test 3: POST /api/bills/search")
     try:
@@ -71,7 +69,7 @@ def test_bills_endpoints():
             print(f"   Response: {response.json()}")
     except Exception as e:
         print(f"   ❌ Error: {e}")
-    
+
     # Test 4: Policy category relationship endpoint
     print("\n🔗 Test 4: GET /api/bills/test_bill_id/policy-categories")
     try:
@@ -83,7 +81,7 @@ def test_bills_endpoints():
             print(f"   Response: {response.json()}")
     except Exception as e:
         print(f"   ❌ Error: {e}")
-    
+
     # Test 5: Statistics endpoint
     print("\n📊 Test 5: GET /api/bills/statistics/policy-categories")
     try:
@@ -95,7 +93,7 @@ def test_bills_endpoints():
             print(f"   Response: {response.json()}")
     except Exception as e:
         print(f"   ❌ Error: {e}")
-    
+
     print("\n✅ Route structure test complete!")
     print("   All endpoints are accessible and returning expected HTTP 500 errors")
     print("   (500 errors are expected since Airtable client is not configured)")

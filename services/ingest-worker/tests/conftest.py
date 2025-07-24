@@ -3,14 +3,15 @@ Shared test configuration and fixtures for Policy Issue Extraction tests.
 Provides common fixtures, mocks, and test utilities.
 """
 
-import pytest
 import asyncio
+import json
 import os
 import sys
-from unittest.mock import Mock, AsyncMock, patch
-from datetime import datetime, date
-import json
 import uuid
+from datetime import datetime
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -39,7 +40,7 @@ def event_loop():
 def mock_openai_client():
     """Create a mock OpenAI client with typical responses."""
     mock_client = AsyncMock()
-    
+
     # Default successful response
     mock_response = Mock()
     mock_response.choices = [Mock()]
@@ -48,7 +49,7 @@ def mock_openai_client():
         "label_lv2": "包括的な政策課題の解決を図る",
         "confidence": 0.85
     })
-    
+
     mock_client.chat.completions.create.return_value = mock_response
     return mock_client
 
@@ -58,14 +59,14 @@ def mock_airtable_client():
     """Create a mock Airtable client with typical responses."""
     mock_client = AsyncMock()
     mock_client.base_url = "https://api.airtable.com/v0/test_base"
-    
+
     # Default successful response
     mock_client._rate_limited_request.return_value = {
         "id": "rec_test_123",
         "fields": {},
         "createdTime": datetime.now().isoformat()
     }
-    
+
     mock_client.health_check.return_value = True
     return mock_client
 
@@ -74,15 +75,15 @@ def mock_airtable_client():
 def mock_discord_client():
     """Create a mock Discord client."""
     mock_client = AsyncMock()
-    
+
     # Mock successful webhook response
     mock_response = AsyncMock()
     mock_response.status = 204
     mock_response.headers = {}
-    
+
     mock_session = AsyncMock()
     mock_session.post.return_value.__aenter__.return_value = mock_response
-    
+
     with patch('aiohttp.ClientSession', return_value=mock_session):
         yield mock_client
 
@@ -91,7 +92,7 @@ def mock_discord_client():
 def sample_bill_data():
     """Create sample bill data for testing."""
     from services.policy_issue_extractor import BillData
-    
+
     return BillData(
         id="test_bill_001",
         title="介護保険制度改正法案",
@@ -108,7 +109,7 @@ def sample_bill_data():
 def sample_dual_issue():
     """Create sample dual-level issue for testing."""
     from services.policy_issue_extractor import DualLevelIssue
-    
+
     return DualLevelIssue(
         label_lv1="介護制度を改善する",
         label_lv2="高齢者介護保険制度の包括的な見直しを実施する",
@@ -120,7 +121,7 @@ def sample_dual_issue():
 def sample_issue_record():
     """Create sample issue record for testing."""
     from services.airtable_issue_manager import AirtableIssueRecord
-    
+
     return AirtableIssueRecord(
         issue_id=str(uuid.uuid4()),
         label_lv1="テスト政策課題",
@@ -168,12 +169,12 @@ def pytest_configure(config):
 # Test data factories
 class TestDataFactory:
     """Factory for creating test data objects."""
-    
+
     @staticmethod
     def create_bill_data(**kwargs):
         """Create test bill data with defaults."""
         from services.policy_issue_extractor import BillData
-        
+
         defaults = {
             "id": f"bill_{uuid.uuid4().hex[:8]}",
             "title": "テスト法案",
@@ -186,12 +187,12 @@ class TestDataFactory:
         }
         defaults.update(kwargs)
         return BillData(**defaults)
-    
+
     @staticmethod
     def create_dual_issue(**kwargs):
         """Create test dual-level issue with defaults."""
         from services.policy_issue_extractor import DualLevelIssue
-        
+
         defaults = {
             "label_lv1": "政策課題を解決する",
             "label_lv2": "包括的な政策課題の解決を図る",
@@ -199,12 +200,12 @@ class TestDataFactory:
         }
         defaults.update(kwargs)
         return DualLevelIssue(**defaults)
-    
+
     @staticmethod
     def create_issue_record(**kwargs):
         """Create test issue record with defaults."""
         from services.airtable_issue_manager import AirtableIssueRecord
-        
+
         defaults = {
             "issue_id": str(uuid.uuid4()),
             "label_lv1": "テスト政策課題",
@@ -216,7 +217,7 @@ class TestDataFactory:
         }
         defaults.update(kwargs)
         return AirtableIssueRecord(**defaults)
-    
+
     @staticmethod
     def create_airtable_response(records_data):
         """Create mock Airtable API response."""
@@ -230,7 +231,7 @@ class TestDataFactory:
                 for i, record_data in enumerate(records_data)
             ]
         }
-    
+
     @staticmethod
     def create_openai_response(content):
         """Create mock OpenAI API response."""
@@ -249,19 +250,19 @@ def test_data_factory():
 # Async test utilities
 class AsyncTestUtils:
     """Utilities for async testing."""
-    
+
     @staticmethod
     async def wait_for_condition(condition_func, timeout=5.0, interval=0.1):
         """Wait for a condition to become true."""
         start_time = asyncio.get_event_loop().time()
-        
+
         while asyncio.get_event_loop().time() - start_time < timeout:
             if await condition_func():
                 return True
             await asyncio.sleep(interval)
-        
+
         return False
-    
+
     @staticmethod
     async def run_with_timeout(coro, timeout=10.0):
         """Run a coroutine with timeout."""
@@ -277,31 +278,31 @@ def async_test_utils():
 # Performance testing utilities
 class PerformanceTracker:
     """Track performance metrics during tests."""
-    
+
     def __init__(self):
         self.start_time = None
         self.end_time = None
         self.metrics = {}
-    
+
     def start(self):
         """Start performance tracking."""
         self.start_time = asyncio.get_event_loop().time()
-    
+
     def stop(self):
         """Stop performance tracking."""
         self.end_time = asyncio.get_event_loop().time()
-    
+
     @property
     def duration(self):
         """Get duration in seconds."""
         if self.start_time and self.end_time:
             return self.end_time - self.start_time
         return None
-    
+
     def add_metric(self, name, value):
         """Add a custom metric."""
         self.metrics[name] = value
-    
+
     def get_summary(self):
         """Get performance summary."""
         summary = {
@@ -320,13 +321,13 @@ def performance_tracker():
 # Mock validators for testing
 class MockValidators:
     """Mock validators for testing without external dependencies."""
-    
+
     @staticmethod
     def mock_verb_ending_validator():
         """Mock verb ending validator that always returns True."""
         with patch('services.policy_issue_extractor.VerbEndingValidator.is_valid_verb_ending', return_value=True):
             yield
-    
+
     @staticmethod
     def mock_vocabulary_validator():
         """Mock vocabulary validator that always returns True."""
@@ -362,7 +363,7 @@ def cleanup_test_environment():
 # Custom assertions
 class CustomAssertions:
     """Custom assertions for testing specific scenarios."""
-    
+
     @staticmethod
     def assert_valid_dual_issue(issue):
         """Assert that a dual-level issue is valid."""
@@ -372,7 +373,7 @@ class CustomAssertions:
         assert 10 <= len(issue.label_lv1) <= 60
         assert 10 <= len(issue.label_lv2) <= 60
         assert 0.0 <= issue.confidence <= 1.0
-    
+
     @staticmethod
     def assert_valid_issue_record(record):
         """Assert that an issue record is valid."""
@@ -381,7 +382,7 @@ class CustomAssertions:
         assert hasattr(record, 'label_lv2')
         assert hasattr(record, 'status')
         assert record.status in ['pending', 'approved', 'rejected', 'failed_validation']
-    
+
     @staticmethod
     def assert_performance_acceptable(duration, max_duration):
         """Assert that performance is acceptable."""
@@ -406,14 +407,14 @@ def skip_if_no_api_key():
 def skip_if_no_network():
     """Skip test if no network connection is available."""
     import socket
-    
+
     def has_network():
         try:
             socket.create_connection(("8.8.8.8", 53), timeout=3)
             return True
         except OSError:
             return False
-    
+
     return pytest.mark.skipif(
         not has_network(),
         reason="No network connection available"
@@ -423,7 +424,7 @@ def skip_if_no_network():
 # Export commonly used fixtures and utilities
 __all__ = [
     'mock_openai_client',
-    'mock_airtable_client', 
+    'mock_airtable_client',
     'mock_discord_client',
     'sample_bill_data',
     'sample_dual_issue',

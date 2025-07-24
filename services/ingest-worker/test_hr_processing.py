@@ -13,14 +13,13 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from scraper.enhanced_hr_scraper import EnhancedHRProcessor
 from pipeline.hr_data_integration import run_hr_integration_pipeline
-
+from scraper.enhanced_hr_scraper import EnhancedHRProcessor
 
 # Configure logging
 logging.basicConfig(
@@ -35,18 +34,18 @@ async def test_basic_hr_processing():
     logger.info("=" * 60)
     logger.info("Testing Basic HR PDF Processing")
     logger.info("=" * 60)
-    
+
     try:
         processor = EnhancedHRProcessor()
-        
+
         # Test with a small time window
         sessions = await processor.process_enhanced_hr_data(
             days_back=3,  # Small window for testing
             max_concurrent=1  # Conservative for testing
         )
-        
+
         logger.info(f"Processed {len(sessions)} voting sessions")
-        
+
         if sessions:
             # Display summary of first session
             session = sessions[0]
@@ -55,13 +54,13 @@ async def test_basic_hr_processing():
             logger.info(f"  Date: {session.base_session.vote_date}")
             logger.info(f"  Members: {len(session.base_session.vote_records)}")
             logger.info(f"  Quality: {session.quality_metrics}")
-        
+
         # Get processing statistics
         stats = processor.get_processing_statistics()
         logger.info(f"Processing statistics: {json.dumps(stats, indent=2)}")
-        
+
         return True
-        
+
     except Exception as e:
         logger.error(f"Basic HR processing test failed: {e}")
         return False
@@ -72,7 +71,7 @@ async def test_integration_pipeline():
     logger.info("=" * 60)
     logger.info("Testing HR Integration Pipeline (Dry Run)")
     logger.info("=" * 60)
-    
+
     try:
         # Run pipeline in dry run mode
         result = await run_hr_integration_pipeline(
@@ -80,9 +79,9 @@ async def test_integration_pipeline():
             dry_run=True,  # Important: don't modify database in test
             max_concurrent=1
         )
-        
+
         logger.info(f"Pipeline result: {json.dumps(result, indent=2, default=str)}")
-        
+
         if result['success']:
             integration_result = result.get('integration_results')
             if integration_result:
@@ -90,9 +89,9 @@ async def test_integration_pipeline():
                 logger.info(f"Integration would have created {integration_result.bills_created} bills")
                 logger.info(f"Integration would have created {integration_result.members_created} members")
                 logger.info(f"Integration would have created {integration_result.votes_created} votes")
-        
+
         return result['success']
-        
+
     except Exception as e:
         logger.error(f"Integration pipeline test failed: {e}")
         return False
@@ -103,28 +102,28 @@ async def test_error_handling():
     logger.info("=" * 60)
     logger.info("Testing Error Handling")
     logger.info("=" * 60)
-    
+
     try:
         processor = EnhancedHRProcessor()
-        
+
         # Test with impossible parameters
         sessions = await processor.process_enhanced_hr_data(
             days_back=0,  # Should handle gracefully
             max_concurrent=1
         )
-        
+
         logger.info(f"Processed {len(sessions)} sessions with days_back=0")
-        
+
         # Test with very old date range (should find no PDFs)
         sessions = await processor.process_enhanced_hr_data(
             days_back=3650,  # 10 years back - should be empty
             max_concurrent=1
         )
-        
+
         logger.info(f"Processed {len(sessions)} sessions with days_back=3650")
-        
+
         return True
-        
+
     except Exception as e:
         logger.error(f"Error handling test failed: {e}")
         return False
@@ -135,44 +134,44 @@ async def test_performance():
     logger.info("=" * 60)
     logger.info("Testing Performance")
     logger.info("=" * 60)
-    
+
     try:
         processor = EnhancedHRProcessor()
-        
+
         # Measure processing time
         start_time = time.time()
-        
+
         sessions = await processor.process_enhanced_hr_data(
             days_back=1,  # Single day for performance test
             max_concurrent=2
         )
-        
+
         processing_time = time.time() - start_time
-        
+
         logger.info(f"Processed {len(sessions)} sessions in {processing_time:.2f} seconds")
-        
+
         if sessions:
             avg_time_per_session = processing_time / len(sessions)
             logger.info(f"Average time per session: {avg_time_per_session:.2f} seconds")
-        
+
         # Performance thresholds
         if processing_time > 300:  # 5 minutes
             logger.warning("Processing time exceeded 5 minutes - may need optimization")
         else:
             logger.info("Processing time within acceptable limits")
-        
+
         return True
-        
+
     except Exception as e:
         logger.error(f"Performance test failed: {e}")
         return False
 
 
-def save_test_results(results: Dict[str, Any]):
+def save_test_results(results: dict[str, Any]):
     """Save test results to file"""
     try:
         output_file = Path(__file__).parent / "test_results.json"
-        
+
         test_data = {
             "test_timestamp": datetime.now().isoformat(),
             "test_results": results,
@@ -181,12 +180,12 @@ def save_test_results(results: Dict[str, Any]):
                 "test_script": str(Path(__file__).name)
             }
         }
-        
+
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(test_data, f, indent=2, ensure_ascii=False, default=str)
-        
+
         logger.info(f"Test results saved to {output_file}")
-        
+
     except Exception as e:
         logger.error(f"Failed to save test results: {e}")
 
@@ -195,44 +194,44 @@ async def run_comprehensive_tests():
     """Run all HR processing tests"""
     logger.info("Starting Comprehensive HR Processing Tests")
     logger.info("=" * 80)
-    
+
     test_results = {}
     overall_success = True
-    
+
     # Test 1: Basic processing
     logger.info("\n1. Basic HR PDF Processing Test")
     test_results['basic_processing'] = await test_basic_hr_processing()
     overall_success &= test_results['basic_processing']
-    
+
     # Test 2: Integration pipeline
     logger.info("\n2. Integration Pipeline Test")
     test_results['integration_pipeline'] = await test_integration_pipeline()
     overall_success &= test_results['integration_pipeline']
-    
+
     # Test 3: Error handling
     logger.info("\n3. Error Handling Test")
     test_results['error_handling'] = await test_error_handling()
     overall_success &= test_results['error_handling']
-    
+
     # Test 4: Performance
     logger.info("\n4. Performance Test")
     test_results['performance'] = await test_performance()
     overall_success &= test_results['performance']
-    
+
     # Summary
     logger.info("\n" + "=" * 80)
     logger.info("Test Summary")
     logger.info("=" * 80)
-    
+
     for test_name, result in test_results.items():
         status = "PASS" if result else "FAIL"
         logger.info(f"{test_name}: {status}")
-    
+
     logger.info(f"\nOverall Result: {'PASS' if overall_success else 'FAIL'}")
-    
+
     # Save results
     save_test_results(test_results)
-    
+
     return overall_success
 
 

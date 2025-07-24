@@ -3,33 +3,33 @@
 T53 Data Quality Validation & Report
 Validates pilot dataset quality and generates comprehensive report
 """
+import asyncio
 import json
 import sys
-import asyncio
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from quality.data_validator import DataQualityValidator, ValidationResult, QualityMetric
+from quality.data_validator import DataQualityValidator, QualityMetric, ValidationResult
 
 
-def load_pilot_dataset() -> Dict[str, Any]:
+def load_pilot_dataset() -> dict[str, Any]:
     """Load the most recent pilot dataset"""
     # Find the most recent T52 pilot dataset file
     pilot_files = list(Path('.').glob('t52_pilot_*.json'))
-    
+
     if not pilot_files:
         raise FileNotFoundError("No T52 pilot dataset files found")
-    
+
     # Get the most recent file
     latest_file = max(pilot_files, key=lambda f: f.stat().st_mtime)
-    
+
     print(f"📊 Loading pilot dataset: {latest_file}")
-    
-    with open(latest_file, 'r', encoding='utf-8') as f:
+
+    with open(latest_file, encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -37,7 +37,7 @@ def analyze_stt_accuracy() -> QualityMetric:
     """Analyze speech-to-text accuracy (simulated for pilot)"""
     # Note: In T52 pilot, STT was disabled for cost control
     # This provides framework for future STT validation
-    
+
     return QualityMetric(
         name="stt_accuracy",
         value=0.0,  # Not available in pilot
@@ -53,10 +53,10 @@ def analyze_stt_accuracy() -> QualityMetric:
     )
 
 
-def analyze_llm_issue_extraction(pilot_data: Dict[str, Any]) -> QualityMetric:
+def analyze_llm_issue_extraction(pilot_data: dict[str, Any]) -> QualityMetric:
     """Analyze LLM issue extraction quality"""
     bills = pilot_data.get('pilot_dataset', {}).get('bills', [])
-    
+
     if not bills:
         return QualityMetric(
             name="llm_issue_extraction",
@@ -66,19 +66,19 @@ def analyze_llm_issue_extraction(pilot_data: Dict[str, Any]) -> QualityMetric:
             description="No bills available for LLM analysis",
             recommendations=["Ensure bills data is available for LLM processing"]
         )
-    
+
     # Analyze bill categorization as proxy for LLM quality
     categorized_bills = sum(1 for bill in bills if bill.get('category') != 'その他')
     categorization_rate = categorized_bills / len(bills)
-    
+
     # Assess title complexity as indicator of issue extraction potential
-    complex_titles = sum(1 for bill in bills 
+    complex_titles = sum(1 for bill in bills
                         if len(bill.get('title', '')) > 20 and '法' in bill.get('title', ''))
     complexity_score = complex_titles / len(bills)
-    
+
     # Combined score
     extraction_quality = (categorization_rate + complexity_score) / 2
-    
+
     return QualityMetric(
         name="llm_issue_extraction",
         value=extraction_quality,
@@ -98,10 +98,10 @@ def analyze_llm_issue_extraction(pilot_data: Dict[str, Any]) -> QualityMetric:
     )
 
 
-def analyze_semantic_search_quality(pilot_data: Dict[str, Any]) -> QualityMetric:
+def analyze_semantic_search_quality(pilot_data: dict[str, Any]) -> QualityMetric:
     """Analyze semantic search quality potential"""
     bills = pilot_data.get('pilot_dataset', {}).get('bills', [])
-    
+
     if not bills:
         return QualityMetric(
             name="semantic_search_quality",
@@ -111,41 +111,41 @@ def analyze_semantic_search_quality(pilot_data: Dict[str, Any]) -> QualityMetric
             description="No bills available for semantic search analysis",
             recommendations=["Ensure bills data is available for embedding generation"]
         )
-    
+
     # Analyze text quality for embedding generation
     quality_factors = []
-    
+
     # Title diversity
     titles = [bill.get('title', '') for bill in bills]
     unique_words = set()
     total_words = 0
-    
+
     for title in titles:
         words = title.split()
         unique_words.update(words)
         total_words += len(words)
-    
+
     vocabulary_diversity = len(unique_words) / max(total_words, 1)
     quality_factors.append(vocabulary_diversity)
-    
+
     # Content length adequacy
     adequate_length = sum(1 for bill in bills if len(bill.get('title', '')) >= 10)
     length_score = adequate_length / len(bills)
     quality_factors.append(length_score)
-    
+
     # Category diversity (important for search quality)
     categories = set(bill.get('category', '') for bill in bills)
     category_diversity = min(len(categories) / 6, 1.0)  # 6 expected categories
     quality_factors.append(category_diversity)
-    
+
     # Japanese content ratio
-    japanese_content = sum(1 for bill in bills 
+    japanese_content = sum(1 for bill in bills
                           if any(ord(char) > 127 for char in bill.get('title', '')))
     japanese_score = japanese_content / len(bills)
     quality_factors.append(japanese_score)
-    
+
     overall_quality = sum(quality_factors) / len(quality_factors)
-    
+
     return QualityMetric(
         name="semantic_search_quality",
         value=overall_quality,
@@ -165,14 +165,14 @@ def analyze_semantic_search_quality(pilot_data: Dict[str, Any]) -> QualityMetric
     )
 
 
-def generate_parameter_tuning_recommendations(validation_results: List[ValidationResult]) -> List[str]:
+def generate_parameter_tuning_recommendations(validation_results: list[ValidationResult]) -> list[str]:
     """Generate parameter tuning recommendations based on validation results"""
     recommendations = []
-    
+
     # Analyze overall performance
     overall_scores = [result.overall_score for result in validation_results]
     avg_score = sum(overall_scores) / len(overall_scores)
-    
+
     if avg_score < 0.80:
         recommendations.extend([
             "🔧 Performance Tuning Needed:",
@@ -180,7 +180,7 @@ def generate_parameter_tuning_recommendations(validation_results: List[Validatio
             "  • Add data quality validation during collection",
             "  • Implement retry logic for failed extractions"
         ])
-    
+
     # Bills-specific recommendations
     bills_result = next((r for r in validation_results if r.component == "bills_data"), None)
     if bills_result and bills_result.overall_score < 0.85:
@@ -190,7 +190,7 @@ def generate_parameter_tuning_recommendations(validation_results: List[Validatio
             "  • Improve category classification keywords",
             "  • Add summary extraction from detail pages"
         ])
-    
+
     # Voting-specific recommendations
     voting_result = next((r for r in validation_results if r.component == "voting_data"), None)
     if voting_result and voting_result.overall_score < 0.85:
@@ -200,7 +200,7 @@ def generate_parameter_tuning_recommendations(validation_results: List[Validatio
             "  • Standardize party name formats",
             "  • Add validation for vote result values"
         ])
-    
+
     # Performance recommendations
     metadata_result = next((r for r in validation_results if r.component == "metadata"), None)
     if metadata_result:
@@ -212,7 +212,7 @@ def generate_parameter_tuning_recommendations(validation_results: List[Validatio
                 "  • Add progress tracking for long-running operations",
                 "  • Optimize rate limiting parameters"
             ])
-    
+
     # AI/ML recommendations
     recommendations.extend([
         "🤖 AI/ML Parameter Tuning:",
@@ -221,25 +221,25 @@ def generate_parameter_tuning_recommendations(validation_results: List[Validatio
         "  • LLM: Fine-tune prompts for Japanese political content",
         "  • Search: Adjust similarity thresholds based on user feedback"
     ])
-    
+
     return recommendations
 
 
-def generate_quality_report(pilot_data: Dict[str, Any], validation_results: List[ValidationResult], 
-                          stt_metric: QualityMetric, llm_metric: QualityMetric, 
-                          search_metric: QualityMetric) -> Dict[str, Any]:
+def generate_quality_report(pilot_data: dict[str, Any], validation_results: list[ValidationResult],
+                          stt_metric: QualityMetric, llm_metric: QualityMetric,
+                          search_metric: QualityMetric) -> dict[str, Any]:
     """Generate comprehensive quality assessment report"""
-    
+
     # Calculate overall scores
     data_validation_score = sum(r.overall_score for r in validation_results) / len(validation_results)
     ai_readiness_score = (stt_metric.value + llm_metric.value + search_metric.value) / 3
     overall_quality_score = (data_validation_score + ai_readiness_score) / 2
-    
+
     # Determine readiness status
     readiness_status = "PRODUCTION_READY" if overall_quality_score >= 0.80 else \
                       "NEEDS_IMPROVEMENT" if overall_quality_score >= 0.60 else \
                       "REQUIRES_MAJOR_WORK"
-    
+
     report = {
         "report_info": {
             "generation_date": datetime.now().isoformat(),
@@ -258,7 +258,7 @@ def generate_quality_report(pilot_data: Dict[str, Any], validation_results: List
                 f"Overall system quality: {overall_quality_score:.1%}"
             ],
             "critical_issues": [
-                metric.name for result in validation_results 
+                metric.name for result in validation_results
                 for metric in result.metrics if not metric.passed
             ],
             "recommendations_summary": "See detailed recommendations section for improvement actions"
@@ -322,11 +322,11 @@ def generate_quality_report(pilot_data: Dict[str, Any], validation_results: List
             "production_readiness": {
                 "estimated_completion": "2025-07-12" if readiness_status == "PRODUCTION_READY" else "2025-07-15",
                 "blocking_issues": [
-                    metric.name for result in validation_results 
+                    metric.name for result in validation_results
                     for metric in result.metrics if not metric.passed and metric.threshold > 0.80
                 ],
                 "nice_to_have_improvements": [
-                    metric.name for result in validation_results 
+                    metric.name for result in validation_results
                     for metric in result.metrics if not metric.passed and metric.threshold <= 0.80
                 ]
             }
@@ -339,7 +339,7 @@ def generate_quality_report(pilot_data: Dict[str, Any], validation_results: List
             "scalability_outlook": "Good - architecture supports volume increases"
         }
     }
-    
+
     return report
 
 
@@ -349,82 +349,82 @@ async def run_t53_validation():
     print(f"📅 Validation Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("🎯 Target: Comprehensive quality assessment of T52 pilot dataset")
     print()
-    
+
     try:
         # Load pilot dataset
         pilot_data = load_pilot_dataset()
-        print(f"✅ Pilot dataset loaded successfully")
-        
+        print("✅ Pilot dataset loaded successfully")
+
         # Initialize validator
         validator = DataQualityValidator()
         print("✅ Data quality validator initialized")
-        
+
         print(f"\n{'='*60}")
         print("📊 Running Data Validation Tests")
         print(f"{'='*60}")
-        
+
         # Run core data validation
         validation_results = validator.validate_pilot_dataset(pilot_data)
-        
+
         for result in validation_results:
             status_icon = "✅" if result.passed else "❌"
             print(f"{status_icon} {result.component}: {result.summary}")
-            
+
             for metric in result.metrics:
                 metric_icon = "✅" if metric.passed else "⚠️"
                 print(f"    {metric_icon} {metric.name}: {metric.value:.2f} (threshold: {metric.threshold:.2f})")
-        
+
         print(f"\n{'='*60}")
         print("🤖 Running AI/ML Feature Analysis")
         print(f"{'='*60}")
-        
+
         # Analyze AI/ML features
         stt_metric = analyze_stt_accuracy()
         print(f"🔊 STT Analysis: {stt_metric.description}")
-        
+
         llm_metric = analyze_llm_issue_extraction(pilot_data)
         llm_icon = "✅" if llm_metric.passed else "⚠️"
         print(f"{llm_icon} LLM Issue Extraction: {llm_metric.description}")
-        
+
         search_metric = analyze_semantic_search_quality(pilot_data)
         search_icon = "✅" if search_metric.passed else "⚠️"
         print(f"{search_icon} Semantic Search: {search_metric.description}")
-        
+
         print(f"\n{'='*60}")
         print("📋 Generating Quality Assessment Report")
         print(f"{'='*60}")
-        
+
         # Generate comprehensive report
-        quality_report = generate_quality_report(pilot_data, validation_results, 
+        quality_report = generate_quality_report(pilot_data, validation_results,
                                                 stt_metric, llm_metric, search_metric)
-        
+
         # Save report
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         report_file = f"t53_quality_validation_report_{timestamp}.json"
-        
+
         with open(report_file, 'w', encoding='utf-8') as f:
             json.dump(quality_report, f, indent=2, ensure_ascii=False)
-        
+
         print(f"💾 Quality report saved to: {report_file}")
-        
+
         # Display summary
         summary = quality_report['executive_summary']
-        print(f"\n🏁 T53 Validation Summary")
+        print("\n🏁 T53 Validation Summary")
         print(f"Overall Quality Score: {summary['overall_quality_score']:.1%}")
         print(f"Readiness Status: {summary['readiness_status']}")
         print(f"Components Passed: {quality_report['data_validation_results']['components_passed']}/{quality_report['data_validation_results']['components_tested']}")
-        
+
         if summary['critical_issues']:
-            print(f"\n⚠️  Critical Issues:")
+            print("\n⚠️  Critical Issues:")
             for issue in summary['critical_issues'][:3]:
                 print(f"  • {issue}")
-        
-        print(f"\n📋 Next Steps:")
+
+        print("\n📋 Next Steps:")
         for step in quality_report['next_steps']['immediate_actions']:
             print(f"  • {step}")
-        
+
         return quality_report['executive_summary']['readiness_status'] == "PRODUCTION_READY"
-        
+
     except Exception as e:
         print(f"❌ T53 validation failed: {e}")
         import traceback

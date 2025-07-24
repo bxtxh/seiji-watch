@@ -1,10 +1,9 @@
 """Simplified FastAPI application for Diet Issue Tracker API Gateway - MVP Demo."""
 
-import os
-import sys
 import logging
+import os
 import time
-from typing import Dict, List, Optional
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -32,7 +31,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization", 
+        "accept", "accept-language", "authorization",
         "content-language", "content-type", "x-requested-with",
         "x-csrf-token", "x-request-id"
     ],
@@ -230,7 +229,7 @@ async def get_category_children(category_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch category children")
 
 @app.get("/api/bills")
-async def get_bills(max_records: int = 100, category: Optional[str] = None):
+async def get_bills(max_records: int = 100, category: str | None = None):
     """Get bills, optionally filtered by category (mock data)."""
     try:
         # Mock bills data
@@ -243,17 +242,17 @@ async def get_bills(max_records: int = 100, category: Optional[str] = None):
                     "Summary": f"これは法案{i}の要約です。マクロ経済学に関する重要な政策が含まれています。",
                     "Status": "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決",
                     "Category": "マクロ経済学",
-                    "Diet_Session": f"第213回国会",
+                    "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15"
                 }
             }
             for i in range(1, min(max_records + 1, 11))
         ]
-        
+
         # Filter by category if specified
         if category:
             mock_bills = [bill for bill in mock_bills if category in bill["fields"].get("Category", "")]
-        
+
         return mock_bills
     except Exception as e:
         logger.error(f"Failed to get bills: {e}")

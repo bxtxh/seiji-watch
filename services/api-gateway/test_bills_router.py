@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Test Bills router directly without full server."""
 
-import asyncio
-import sys
 import os
+import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared', 'src'))
 
 from fastapi import FastAPI
@@ -27,7 +27,7 @@ def test_bills_router():
     """Test the Bills router directly."""
     print("🧪 Testing Bills Router Directly")
     print("=" * 50)
-    
+
     # Test 1: List bills
     print("\n1. Testing GET /api/bills/")
     response = client.get("/api/bills/")
@@ -39,7 +39,7 @@ def test_bills_router():
             print(f"   Sample bill: {data[0].get('fields', {}).get('Name', 'Unknown')}")
     else:
         print(f"   ❌ Error: {response.text}")
-    
+
     # Test 2: Search bills
     print("\n2. Testing POST /api/bills/search")
     search_data = {
@@ -55,7 +55,7 @@ def test_bills_router():
             print(f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}")
     else:
         print(f"   ❌ Error: {response.text}")
-    
+
     # Test 3: Statistics
     print("\n3. Testing GET /api/bills/statistics/policy-categories")
     response = client.get("/api/bills/statistics/policy-categories")

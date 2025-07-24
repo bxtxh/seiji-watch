@@ -3,55 +3,53 @@ SECURITY FIXED FastAPI application for Diet Issue Tracker API Gateway.
 Added authentication middleware, rate limiting, and secure error handling.
 """
 
-import os
 import logging
+import os
 import time
-from fastapi import FastAPI, HTTPException, Request, Response, Depends
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from typing import Dict, List, Optional
+from fastapi.responses import JSONResponse
 
 # Import security and error handling
-from middleware.auth import security, get_current_user_optional
-from utils.error_handling import handle_service_error, ServiceError, ErrorCode
+from middleware.auth import get_current_user_optional
+from starlette.middleware.base import BaseHTTPMiddleware
+from utils.error_handling import ErrorCode, ServiceError, handle_service_error
 
-# Import monitoring utilities  
+# Import monitoring utilities
 try:
     from .monitoring.logger import (
-        structured_logger, RequestContextMiddleware,
-        log_api_request, log_error, log_security_event
+        RequestContextMiddleware,
+        log_api_request,
+        log_error,
+        log_security_event,
+        structured_logger,
     )
-    from .monitoring.metrics import (
-        metrics_collector, health_checker, RequestTracker
-    )
+    from .monitoring.metrics import RequestTracker, health_checker, metrics_collector
 except ImportError:
     # Fallback for standalone execution
     from monitoring.logger import (
-        structured_logger, RequestContextMiddleware,
-        log_api_request, log_error, log_security_event
+        RequestContextMiddleware,
+        log_api_request,
+        log_error,
     )
-    from monitoring.metrics import (
-        metrics_collector, health_checker, RequestTracker
-    )
+    from monitoring.metrics import health_checker, metrics_collector
 
 # Import cache and services
 try:
+    from shared.clients.airtable import AirtableClient
+
+    from .batch.member_tasks import MemberTaskManager
+    from .batch.task_queue import batch_processor, task_queue
     from .cache.redis_client import RedisCache
     from .services.member_service import MemberService
     from .services.policy_analysis_service import PolicyAnalysisService
-    from .batch.task_queue import task_queue, batch_processor
-    from .batch.member_tasks import MemberTaskManager
-    from shared.clients.airtable import AirtableClient
 except ImportError:
     # Fallback for standalone execution
+    from batch.task_queue import task_queue
     from cache.redis_client import RedisCache
-    from services.member_service import MemberService
-    from services.policy_analysis_service import PolicyAnalysisService
-    from batch.task_queue import task_queue, batch_processor
-    from batch.member_tasks import MemberTaskManager
-    from shared.clients.airtable import AirtableClient
+
 
 # Configure logging
 logging.basicConfig(
@@ -77,7 +75,7 @@ app.add_middleware(
         "https://www.seiji-watch.com",
         "http://localhost:3000",  # Development only
     ] if os.getenv("ENVIRONMENT") != "production" else [
-        "https://seiji-watch.com", 
+        "https://seiji-watch.com",
         "https://www.seiji-watch.com"
     ],
     allow_credentials=True,
@@ -100,10 +98,10 @@ app.add_middleware(
 # Security headers middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
-    
+
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        
+
         # Security headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -111,7 +109,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = "default-src 'self'"
-        
+
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
@@ -119,13 +117,13 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Request context and logging middleware
 app.add_middleware(RequestContextMiddleware)
 
-# Request tracking middleware  
+# Request tracking middleware
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
     """Track requests for monitoring and rate limiting."""
-    
+
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
-        
+
         # Get user info if available
         user = None
         try:
@@ -134,7 +132,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                 user = await get_current_user_optional(auth_header)
         except:
             pass
-        
+
         # Log request
         log_api_request(
             method=request.method,
@@ -142,11 +140,11 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
             user_id=user.get("user_id") if user else None,
             ip_address=request.client.host if request.client else None
         )
-        
+
         # Process request
         try:
             response = await call_next(request)
-            
+
             # Log successful response
             metrics_collector.record_request(
                 method=request.method,
@@ -154,9 +152,9 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                 status_code=response.status_code,
                 duration=time.time() - start_time
             )
-            
+
             return response
-            
+
         except Exception as e:
             # Log error
             log_error(
@@ -167,7 +165,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                     "user_id": user.get("user_id") if user else None
                 }
             )
-            
+
             # Convert to appropriate HTTP response
             if isinstance(e, ServiceError):
                 raise handle_service_error(e)
@@ -195,7 +193,7 @@ async def service_error_handler(request: Request, exc: ServiceError):
         }
     )
 
-@app.exception_handler(HTTPException)  
+@app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     """Handle HTTP exceptions with structured error response."""
     return JSONResponse(
@@ -208,14 +206,14 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 # Import and register routes
-from routes.enhanced_issues_fixed import router as enhanced_issues_router
 from routes.airtable_webhooks import router as webhooks_router
 from routes.batch_management import router as batch_router
+from routes.enhanced_issues_fixed import router as enhanced_issues_router
 from routes.monitoring import router as monitoring_router
 
 # Register all routers with security
 app.include_router(enhanced_issues_router, tags=["Enhanced Issues"])
-app.include_router(webhooks_router, tags=["Webhooks"]) 
+app.include_router(webhooks_router, tags=["Webhooks"])
 app.include_router(batch_router, tags=["Batch Processing"])
 app.include_router(monitoring_router, tags=["Monitoring"])
 
@@ -225,7 +223,7 @@ async def health_check():
     """Application health check."""
     try:
         health_status = await health_checker.check_all_services()
-        
+
         return {
             "status": "healthy" if health_status["overall_healthy"] else "unhealthy",
             "timestamp": health_status["timestamp"],
@@ -248,23 +246,23 @@ async def health_check():
 async def startup_event():
     """Initialize services on startup."""
     logger.info("Starting Seiji Watch API Gateway...")
-    
+
     try:
         # Initialize Redis cache
         redis_cache = RedisCache()
         await redis_cache.connect()
         logger.info("Redis cache connected")
-        
+
         # Initialize metrics collector
         metrics_collector.start()
         logger.info("Metrics collection started")
-        
+
         # Initialize task queue
         await task_queue.start()
         logger.info("Task queue started")
-        
+
         logger.info("API Gateway startup completed successfully")
-        
+
     except Exception as e:
         logger.error(f"Startup failed: {e}")
         raise
@@ -274,20 +272,20 @@ async def startup_event():
 async def shutdown_event():
     """Cleanup on shutdown."""
     logger.info("Shutting down API Gateway...")
-    
+
     try:
         # Stop task queue
         await task_queue.stop()
-        
+
         # Stop metrics collection
         metrics_collector.stop()
-        
+
         # Close Redis connection
         redis_cache = RedisCache()
         await redis_cache.disconnect()
-        
+
         logger.info("API Gateway shutdown completed")
-        
+
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
 
@@ -309,7 +307,7 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Development server
     uvicorn.run(
         "main_fixed:app",

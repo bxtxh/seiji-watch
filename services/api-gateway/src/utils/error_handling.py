@@ -4,33 +4,34 @@ Provides specific error types and better error context for debugging.
 """
 
 import logging
-from typing import Dict, Any, Optional
-from fastapi import HTTPException, status
 from enum import Enum
+from typing import Any
+
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
 class ErrorCode(Enum):
     """Specific error codes for better error handling."""
-    
+
     # Authentication/Authorization
     INVALID_TOKEN = "INVALID_TOKEN"
     EXPIRED_TOKEN = "EXPIRED_TOKEN"
     INSUFFICIENT_PERMISSIONS = "INSUFFICIENT_PERMISSIONS"
     RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED"
-    
+
     # Validation
     INVALID_INPUT = "INVALID_INPUT"
     VALIDATION_FAILED = "VALIDATION_FAILED"
     RECORD_NOT_FOUND = "RECORD_NOT_FOUND"
     DUPLICATE_RECORD = "DUPLICATE_RECORD"
-    
+
     # External Services
     SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE"
     AIRTABLE_ERROR = "AIRTABLE_ERROR"
     LLM_ERROR = "LLM_ERROR"
     EXTRACTION_FAILED = "EXTRACTION_FAILED"
-    
+
     # Internal
     DATABASE_ERROR = "DATABASE_ERROR"
     CONFIGURATION_ERROR = "CONFIGURATION_ERROR"
@@ -38,12 +39,12 @@ class ErrorCode(Enum):
 
 class ServiceError(Exception):
     """Base exception for service-specific errors."""
-    
+
     def __init__(
-        self, 
-        message: str, 
-        error_code: ErrorCode, 
-        details: Optional[Dict[str, Any]] = None,
+        self,
+        message: str,
+        error_code: ErrorCode,
+        details: dict[str, Any] | None = None,
         status_code: int = 500
     ):
         self.message = message
@@ -54,8 +55,8 @@ class ServiceError(Exception):
 
 class ValidationError(ServiceError):
     """Validation-specific error."""
-    
-    def __init__(self, message: str, field: str = None, details: Dict[str, Any] = None):
+
+    def __init__(self, message: str, field: str = None, details: dict[str, Any] = None):
         super().__init__(
             message=message,
             error_code=ErrorCode.VALIDATION_FAILED,
@@ -65,7 +66,7 @@ class ValidationError(ServiceError):
 
 class AuthenticationError(ServiceError):
     """Authentication-specific error."""
-    
+
     def __init__(self, message: str, error_code: ErrorCode = ErrorCode.INVALID_TOKEN):
         super().__init__(
             message=message,
@@ -75,7 +76,7 @@ class AuthenticationError(ServiceError):
 
 class AuthorizationError(ServiceError):
     """Authorization-specific error."""
-    
+
     def __init__(self, message: str, required_permission: str = None):
         super().__init__(
             message=message,
@@ -86,7 +87,7 @@ class AuthorizationError(ServiceError):
 
 class ExternalServiceError(ServiceError):
     """External service communication error."""
-    
+
     def __init__(self, service_name: str, message: str, error_code: ErrorCode, response_code: int = None):
         super().__init__(
             message=f"{service_name}: {message}",
@@ -97,7 +98,7 @@ class ExternalServiceError(ServiceError):
 
 class RateLimitError(ServiceError):
     """Rate limiting error."""
-    
+
     def __init__(self, message: str = "Rate limit exceeded", retry_after: int = None):
         super().__init__(
             message=message,
@@ -108,7 +109,7 @@ class RateLimitError(ServiceError):
 
 def handle_service_error(error: ServiceError) -> HTTPException:
     """Convert ServiceError to HTTPException with proper logging."""
-    
+
     # Log error with context
     logger.error(
         f"Service error: {error.error_code.value} - {error.message}",
@@ -118,7 +119,7 @@ def handle_service_error(error: ServiceError) -> HTTPException:
             "status_code": error.status_code
         }
     )
-    
+
     # Create response
     return HTTPException(
         status_code=error.status_code,
@@ -131,9 +132,9 @@ def handle_service_error(error: ServiceError) -> HTTPException:
 
 def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
     """Handle unexpected errors with proper logging."""
-    
+
     error_id = f"err_{hash(str(error)) % 10000:04d}"
-    
+
     logger.error(
         f"Unexpected error in {operation}: {type(error).__name__}: {str(error)}",
         extra={
@@ -143,7 +144,7 @@ def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
         },
         exc_info=True
     )
-    
+
     return HTTPException(
         status_code=500,
         detail={
@@ -156,21 +157,21 @@ def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
 # Context managers for error handling
 class ErrorContext:
     """Context manager for handling errors in a specific operation."""
-    
+
     def __init__(self, operation: str):
         self.operation = operation
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
             return False
-        
+
         if isinstance(exc_val, ServiceError):
             # Re-raise service errors as-is
             return False
-        
+
         # Convert unexpected errors
         raise handle_unexpected_error(exc_val, self.operation)
 
@@ -192,26 +193,26 @@ def handle_errors(operation: str):
 def validate_record_id(record_id: str, field_name: str = "record_id") -> str:
     """Validate Airtable record ID format."""
     import re
-    
+
     if not isinstance(record_id, str):
         raise ValidationError(f"{field_name} must be a string", field_name)
-    
+
     if not re.match(r'^rec[a-zA-Z0-9]{14}$', record_id):
         raise ValidationError(f"Invalid {field_name} format", field_name)
-    
+
     return record_id
 
 def validate_pagination(offset: int = 0, limit: int = 50, max_limit: int = 1000) -> tuple:
     """Validate pagination parameters."""
     if offset < 0:
         raise ValidationError("Offset must be non-negative", "offset")
-    
+
     if limit < 1:
         raise ValidationError("Limit must be positive", "limit")
-    
+
     if limit > max_limit:
         raise ValidationError(f"Limit cannot exceed {max_limit}", "limit")
-    
+
     return offset, limit
 
 def validate_enum_value(value: str, enum_class: Enum, field_name: str) -> str:
@@ -222,7 +223,7 @@ def validate_enum_value(value: str, enum_class: Enum, field_name: str) -> str:
     except ValueError:
         valid_values = [e.value for e in enum_class]
         raise ValidationError(
-            f"{field_name} must be one of: {', '.join(valid_values)}", 
+            f"{field_name} must be one of: {', '.join(valid_values)}",
             field_name,
             {"valid_values": valid_values}
         )

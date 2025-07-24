@@ -1,15 +1,16 @@
 """Issue management API routes."""
 
 import logging
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Depends, Query, Request, Header
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, validator
-from ..security.validation import validate_and_sanitize_request, InputValidator
+
+from shared.clients import AirtableClient
 
 # Import shared models and clients
-from shared.models import Issue, IssueTag, IssueCategory
-from shared.clients import AirtableClient
 from shared.utils import IssueExtractor
+
+from ..security.validation import InputValidator
 
 logger = logging.getLogger(__name__)
 
@@ -30,27 +31,27 @@ class IssueCreateRequest(BaseModel):
     title: str
     description: str
     priority: str = "medium"
-    related_bills: Optional[List[str]] = None
-    issue_tags: Optional[List[str]] = None
-    
+    related_bills: list[str] | None = None
+    issue_tags: list[str] | None = None
+
     @validator('title')
-    def validate_title(cls, v):
+    def validate_title(self, v):
         if not v or not v.strip():
             raise ValueError('Title cannot be empty')
         if len(v) > 200:
             raise ValueError('Title too long (max 200 characters)')
         return InputValidator.sanitize_string(v, 200)
-    
+
     @validator('description')
-    def validate_description(cls, v):
+    def validate_description(self, v):
         if not v or not v.strip():
             raise ValueError('Description cannot be empty')
         if len(v) > 2000:
             raise ValueError('Description too long (max 2000 characters)')
         return InputValidator.sanitize_string(v, 2000)
-    
+
     @validator('priority')
-    def validate_priority(cls, v):
+    def validate_priority(self, v):
         allowed_priorities = ['low', 'medium', 'high', 'urgent']
         if v not in allowed_priorities:
             raise ValueError(f'Priority must be one of: {", ".join(allowed_priorities)}')
@@ -59,18 +60,18 @@ class IssueCreateRequest(BaseModel):
 class IssueExtractRequest(BaseModel):
     bill_content: str
     bill_title: str = ""
-    bill_id: Optional[str] = None
-    
+    bill_id: str | None = None
+
     @validator('bill_content')
-    def validate_bill_content(cls, v):
+    def validate_bill_content(self, v):
         if not v or not v.strip():
             raise ValueError('Bill content cannot be empty')
         if len(v) > 50000:  # 50KB limit for bill content
             raise ValueError('Bill content too long (max 50000 characters)')
         return InputValidator.sanitize_string(v, 50000)
-    
+
     @validator('bill_title')
-    def validate_bill_title(cls, v):
+    def validate_bill_title(self, v):
         if v and len(v) > 500:
             raise ValueError('Bill title too long (max 500 characters)')
         return InputValidator.sanitize_string(v, 500) if v else v
@@ -79,38 +80,38 @@ class IssueTagCreateRequest(BaseModel):
     name: str
     category: str
     color_code: str = "#3B82F6"
-    description: Optional[str] = None
-    
+    description: str | None = None
+
     @validator('name')
-    def validate_name(cls, v):
+    def validate_name(self, v):
         if not v or not v.strip():
             raise ValueError('Tag name cannot be empty')
         if len(v) > 100:
             raise ValueError('Tag name too long (max 100 characters)')
         return InputValidator.sanitize_string(v, 100)
-    
+
     @validator('category')
-    def validate_category(cls, v):
+    def validate_category(self, v):
         allowed_categories = [
-            '予算・決算', '税制', '社会保障', '外交・国際', 
+            '予算・決算', '税制', '社会保障', '外交・国際',
             '経済・産業', '教育・文化', '環境・エネルギー', 'その他'
         ]
         if v not in allowed_categories:
             raise ValueError(f'Category must be one of: {", ".join(allowed_categories)}')
         return v
-    
+
     @validator('color_code')
-    def validate_color_code(cls, v):
+    def validate_color_code(self, v):
         import re
         if not re.match(r'^#[0-9A-Fa-f]{6}$', v):
             raise ValueError('Color code must be a valid hex color (e.g., #3B82F6)')
         return v
 
 # Issue endpoints
-@router.get("/", response_model=List[dict])
+@router.get("/", response_model=list[dict])
 async def list_issues(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    status: Optional[str] = Query(None, description="Filter by status"),
+    category: str | None = Query(None, description="Filter by category"),
+    status: str | None = Query(None, description="Filter by status"),
     max_records: int = Query(100, le=1000),
     airtable: AirtableClient = Depends(get_airtable_client)
 ):
@@ -122,16 +123,16 @@ async def list_issues(
             filters.append(f"{{Category}} = '{category}'")
         if status:
             filters.append(f"{{Status}} = '{status}'")
-        
+
         filter_formula = "AND(" + ", ".join(filters) + ")" if filters else None
-        
+
         issues = await airtable.list_issues(
             filter_formula=filter_formula,
             max_records=max_records
         )
-        
+
         return issues
-        
+
     except Exception as e:
         logger.error(f"Failed to list issues: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch issues")
@@ -192,40 +193,40 @@ async def extract_issues(
             request.bill_content,
             request.bill_title
         )
-        
+
         if not extracted_issues:
             return {"message": "No issues extracted", "issues": []}
-        
+
         # For each extracted issue, suggest tags
         for issue in extracted_issues:
             if "suggested_tags" not in issue:
                 issue["suggested_tags"] = []
-            
+
             # Get existing tags for suggestions
             existing_tags = await airtable.list_issue_tags()
-            tag_names = [tag["fields"].get("Name", "") for tag in existing_tags if "fields" in tag]
-            
+            [tag["fields"].get("Name", "") for tag in existing_tags if "fields" in tag]
+
             # Add default tags based on category
             default_tags = extractor.generate_default_tags(issue.get("category", "その他"))
             issue["suggested_tags"].extend(default_tags)
-            
+
             # Remove duplicates
             issue["suggested_tags"] = list(set(issue["suggested_tags"]))
-        
+
         return {
             "message": f"Extracted {len(extracted_issues)} issues",
             "issues": extracted_issues,
             "bill_id": request.bill_id
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to extract issues: {e}")
         raise HTTPException(status_code=500, detail="Failed to extract issues")
 
 # Issue Tags endpoints
-@router.get("/tags/", response_model=List[dict])
+@router.get("/tags/", response_model=list[dict])
 async def list_issue_tags(
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
     airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """List all issue tags."""
@@ -279,10 +280,10 @@ async def get_bill_issues(
         raise HTTPException(status_code=500, detail="Failed to fetch bill issues")
 
 # Issue Categories endpoints
-@router.get("/categories", response_model=List[dict])
+@router.get("/categories", response_model=list[dict])
 async def list_issue_categories(
-    layer: Optional[str] = Query(None, description="Filter by layer (L1/L2/L3)"),
-    parent_id: Optional[str] = Query(None, description="Filter by parent category"),
+    layer: str | None = Query(None, description="Filter by layer (L1/L2/L3)"),
+    parent_id: str | None = Query(None, description="Filter by parent category"),
     max_records: int = Query(1000, le=1000),
     airtable: AirtableClient = Depends(get_airtable_client)
 ):
@@ -297,9 +298,9 @@ async def list_issue_categories(
         else:
             # Get all categories
             categories = await airtable.list_issue_categories(max_records=max_records)
-        
+
         return categories
-        
+
     except Exception as e:
         logger.error(f"Failed to list issue categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch issue categories")
@@ -345,7 +346,7 @@ async def get_category_children(
 @router.get("/categories/search")
 async def search_categories(
     q: str = Query(..., description="Search query"),
-    layer: Optional[str] = Query(None, description="Filter by layer"),
+    layer: str | None = Query(None, description="Filter by layer"),
     max_records: int = Query(100, le=1000),
     airtable: AirtableClient = Depends(get_airtable_client)
 ):
@@ -353,27 +354,27 @@ async def search_categories(
     try:
         # Build search filter
         search_filters = []
-        
+
         # Search in both Japanese and English titles
         search_filters.append(f"SEARCH('{q}', {{Title_JA}}) > 0")
         search_filters.append(f"SEARCH('{q}', {{Title_EN}}) > 0")
-        
+
         # Combine search filters with OR
         search_formula = "OR(" + ", ".join(search_filters) + ")"
-        
+
         # Add layer filter if specified
         if layer:
             filter_formula = f"AND({search_formula}, {{Layer}} = '{layer}')"
         else:
             filter_formula = search_formula
-        
+
         categories = await airtable.list_issue_categories(
             filter_formula=filter_formula,
             max_records=max_records
         )
-        
+
         return categories
-        
+
     except Exception as e:
         logger.error(f"Failed to search categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to search categories")

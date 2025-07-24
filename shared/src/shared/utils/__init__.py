@@ -1,17 +1,17 @@
 """Utility functions for Diet Issue Tracker."""
 
 from .database import (
-    init_database,
-    run_migrations,
+    check_database_connection,
     create_tables,
     drop_tables,
-    check_database_connection,
+    init_database,
+    run_migrations,
 )
 from .issue_extractor import IssueExtractor
 
 __all__ = [
     "init_database",
-    "run_migrations", 
+    "run_migrations",
     "create_tables",
     "drop_tables",
     "check_database_connection",

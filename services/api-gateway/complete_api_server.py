@@ -1,12 +1,12 @@
 """Complete API Server for Diet Issue Tracker - UI Demo Ready"""
 
-import os
 import logging
+import os
 import time
-from typing import Dict, List, Optional
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 # Configure logging
 logging.basicConfig(
@@ -29,7 +29,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:3001", 
+        "http://localhost:3001",
         "http://localhost:8080",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
@@ -38,7 +38,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization", 
+        "accept", "accept-language", "authorization",
         "content-language", "content-type", "x-requested-with",
         "x-csrf-token", "x-request-id"
     ],
@@ -52,7 +52,7 @@ async def root():
     """Root endpoint."""
     return {
         "message": "Diet Issue Tracker API Gateway - Complete Version",
-        "docs": "/docs", 
+        "docs": "/docs",
         "health": "/health",
         "categories_demo": "/api/issues/categories",
         "ui_demo": "/demo",
@@ -70,19 +70,54 @@ async def demo_page():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EPIC 7: 3層カテゴリシステム デモ</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 40px; background: #f8f9fa; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 40px; background: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px; margin: 0 auto; background: white;
+            padding: 40px; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
         h1 { color: #27AE60; margin-bottom: 30px; }
-        h2 { color: #2C3E50; border-bottom: 2px solid #27AE60; padding-bottom: 10px; }
-        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin: 20px 0; }
-        .category-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f8f9fa; transition: transform 0.2s; }
-        .category-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .cap-code { background: #27AE60; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-        .layer-badge { background: #3498DB; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 8px; }
+        h2 {
+            color: #2C3E50; border-bottom: 2px solid #27AE60;
+            padding-bottom: 10px;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px; margin: 20px 0;
+        }
+        .category-card {
+            border: 1px solid #ddd; border-radius: 8px; padding: 20px;
+            background: #f8f9fa; transition: transform 0.2s;
+        }
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .cap-code {
+            background: #27AE60; color: white; padding: 4px 8px;
+            border-radius: 4px; font-size: 0.8em; font-weight: bold;
+        }
+        .layer-badge {
+            background: #3498DB; color: white; padding: 2px 6px;
+            border-radius: 3px; font-size: 0.7em; margin-left: 8px;
+        }
         .description { color: #666; margin-top: 10px; line-height: 1.5; }
-        .children { margin-top: 15px; padding-left: 20px; border-left: 3px solid #27AE60; }
-        .child-item { background: white; padding: 10px; margin: 5px 0; border-radius: 4px; border: 1px solid #e0e0e0; }
-        .stats { background: #ecf0f1; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .children {
+            margin-top: 15px; padding-left: 20px;
+            border-left: 3px solid #27AE60;
+        }
+        .child-item {
+            background: white; padding: 10px; margin: 5px 0;
+            border-radius: 4px; border: 1px solid #e0e0e0;
+        }
+        .stats {
+            background: #ecf0f1; padding: 20px;
+            border-radius: 8px; margin: 20px 0;
+        }
         .api-link { color: #27AE60; text-decoration: none; font-weight: bold; }
         .api-link:hover { text-decoration: underline; }
         .loading { text-align: center; color: #666; }
@@ -91,15 +126,19 @@ async def demo_page():
 <body>
     <div class="container">
         <h1>🏛️ EPIC 7: 3層イシューカテゴリシステム</h1>
-        
+
         <div class="stats">
             <h3>システム概要</h3>
             <p><strong>実装状況:</strong> ✅ 完全実装済み</p>
             <p><strong>分類標準:</strong> CAP (Comparative Agendas Project) 準拠</p>
-            <p><strong>階層構造:</strong> L1 (主要分野) → L2 (サブ分野) → L3 (具体的イシュー)</p>
-            <p><strong>API エンドポイント:</strong> 
-                <a href="/api/issues/categories" class="api-link" target="_blank">/api/issues/categories</a> |
-                <a href="/api/issues/categories/tree" class="api-link" target="_blank">/api/issues/categories/tree</a> |
+            <p><strong>階層構造:</strong>
+                L1 (主要分野) → L2 (サブ分野) → L3 (具体的イシュー)
+            </p>
+            <p><strong>API エンドポイント:</strong>
+                <a href="/api/issues/categories" class="api-link"
+                   target="_blank">/api/issues/categories</a> |
+                <a href="/api/issues/categories/tree" class="api-link"
+                   target="_blank">/api/issues/categories/tree</a> |
                 <a href="/docs" class="api-link" target="_blank">Swagger UI</a>
             </p>
         </div>
@@ -121,17 +160,19 @@ async def demo_page():
             try {
                 const response = await fetch('/api/issues/categories/tree');
                 const data = await response.json();
-                
+
                 // Display L1 categories
                 const l1Container = document.getElementById('l1-categories');
                 l1Container.innerHTML = '';
-                
+
                 data.L1.forEach(category => {
                     const card = document.createElement('div');
                     card.className = 'category-card';
                     card.innerHTML = `
                         <div>
-                            <span class="cap-code">CAP ${category.fields.CAP_Code}</span>
+                            <span class="cap-code">
+                                CAP ${category.fields.CAP_Code}
+                            </span>
                             <span class="layer-badge">${category.fields.Layer}</span>
                         </div>
                         <h3>${category.fields.Title_JA}</h3>
@@ -144,7 +185,7 @@ async def demo_page():
                 // Display L2 categories with parent relationships
                 const l2Container = document.getElementById('l2-categories');
                 l2Container.innerHTML = '';
-                
+
                 const l2ByParent = {};
                 data.L2.forEach(category => {
                     const parentId = category.fields.Parent_Category[0];
@@ -160,7 +201,9 @@ async def demo_page():
                             <div class="children">
                                 ${l2ByParent[parent.id].map(child => `
                                     <div class="child-item">
-                                        <span class="cap-code">CAP ${child.fields.CAP_Code}</span>
+                                        <span class="cap-code">
+                                            CAP ${child.fields.CAP_Code}
+                                        </span>
                                         <strong>${child.fields.Title_JA}</strong>
                                         <p><em>${child.fields.Title_EN}</em></p>
                                     </div>
@@ -173,7 +216,7 @@ async def demo_page():
 
             } catch (error) {
                 console.error('Failed to load categories:', error);
-                document.getElementById('l1-categories').innerHTML = 
+                document.getElementById('l1-categories').innerHTML =
                     '<div style="color: red;">カテゴリの読み込みに失敗しました</div>';
             }
         }
@@ -212,7 +255,7 @@ async def get_categories(max_records: int = 100):
                     "CAP_Code": "1",
                     "Layer": "L1",
                     "Title_JA": "マクロ経済学",
-                    "Title_EN": "Macroeconomics", 
+                    "Title_EN": "Macroeconomics",
                     "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
                     "Is_Seed": True
                 }
@@ -220,7 +263,7 @@ async def get_categories(max_records: int = 100):
             {
                 "id": "rec_l1_civil_rights",
                 "fields": {
-                    "CAP_Code": "2", 
+                    "CAP_Code": "2",
                     "Layer": "L1",
                     "Title_JA": "市民権・自由・少数者問題",
                     "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
@@ -232,7 +275,7 @@ async def get_categories(max_records: int = 100):
                 "id": "rec_l1_health",
                 "fields": {
                     "CAP_Code": "3",
-                    "Layer": "L1", 
+                    "Layer": "L1",
                     "Title_JA": "健康",
                     "Title_EN": "Health",
                     "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
@@ -240,7 +283,7 @@ async def get_categories(max_records: int = 100):
                 }
             },
             {
-                "id": "rec_l1_agriculture", 
+                "id": "rec_l1_agriculture",
                 "fields": {
                     "CAP_Code": "4",
                     "Layer": "L1",
@@ -256,7 +299,7 @@ async def get_categories(max_records: int = 100):
                     "CAP_Code": "5",
                     "Layer": "L1",
                     "Title_JA": "労働・雇用",
-                    "Title_EN": "Labour and Employment", 
+                    "Title_EN": "Labour and Employment",
                     "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野。働き方改革と雇用の安定化を促進します。",
                     "Is_Seed": True
                 }
@@ -266,7 +309,7 @@ async def get_categories(max_records: int = 100):
                 "fields": {
                     "CAP_Code": "6",
                     "Layer": "L1",
-                    "Title_JA": "教育", 
+                    "Title_JA": "教育",
                     "Title_EN": "Education",
                     "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野。生涯学習社会の実現と教育機会の平等を目指します。",
                     "Is_Seed": True
@@ -287,7 +330,7 @@ async def get_category_tree():
                 {
                     "id": "rec_l1_macroeconomics",
                     "fields": {
-                        "CAP_Code": "1", 
+                        "CAP_Code": "1",
                         "Layer": "L1",
                         "Title_JA": "マクロ経済学",
                         "Title_EN": "Macroeconomics",
@@ -299,7 +342,7 @@ async def get_category_tree():
                     "id": "rec_l1_civil_rights",
                     "fields": {
                         "CAP_Code": "2",
-                        "Layer": "L1", 
+                        "Layer": "L1",
                         "Title_JA": "市民権・自由・少数者問題",
                         "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
                         "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野",
@@ -311,7 +354,7 @@ async def get_category_tree():
                     "fields": {
                         "CAP_Code": "3",
                         "Layer": "L1",
-                        "Title_JA": "健康", 
+                        "Title_JA": "健康",
                         "Title_EN": "Health",
                         "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野",
                         "Is_Seed": True
@@ -323,7 +366,7 @@ async def get_category_tree():
                         "CAP_Code": "4",
                         "Layer": "L1",
                         "Title_JA": "農業",
-                        "Title_EN": "Agriculture", 
+                        "Title_EN": "Agriculture",
                         "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野",
                         "Is_Seed": True
                     }
@@ -342,7 +385,7 @@ async def get_category_tree():
                 {
                     "id": "rec_l1_education",
                     "fields": {
-                        "CAP_Code": "6", 
+                        "CAP_Code": "6",
                         "Layer": "L1",
                         "Title_JA": "教育",
                         "Title_EN": "Education",
@@ -364,7 +407,7 @@ async def get_category_tree():
                     }
                 },
                 {
-                    "id": "rec_l2_inflation_prices", 
+                    "id": "rec_l2_inflation_prices",
                     "fields": {
                         "CAP_Code": "106",
                         "Layer": "L2",
@@ -380,7 +423,7 @@ async def get_category_tree():
                         "CAP_Code": "200",
                         "Layer": "L2",
                         "Title_JA": "一般的市民権・自由",
-                        "Title_EN": "General Civil Rights and Liberties", 
+                        "Title_EN": "General Civil Rights and Liberties",
                         "Parent_Category": ["rec_l1_civil_rights"],
                         "Is_Seed": True
                     }
@@ -392,7 +435,7 @@ async def get_category_tree():
                         "Layer": "L2",
                         "Title_JA": "少数者の権利・差別問題",
                         "Title_EN": "Minority Rights and Discrimination Issues",
-                        "Parent_Category": ["rec_l1_civil_rights"], 
+                        "Parent_Category": ["rec_l1_civil_rights"],
                         "Is_Seed": True
                     }
                 },
@@ -424,7 +467,7 @@ async def get_category_detail(category_id: str):
                 "id": "rec_l1_macroeconomics",
                 "fields": {
                     "CAP_Code": "1",
-                    "Layer": "L1", 
+                    "Layer": "L1",
                     "Title_JA": "マクロ経済学",
                     "Title_EN": "Macroeconomics",
                     "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野です。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含み、国家レベルでの経済戦略を策定します。",
@@ -435,7 +478,7 @@ async def get_category_detail(category_id: str):
                 }
             },
             "rec_l1_civil_rights": {
-                "id": "rec_l1_civil_rights", 
+                "id": "rec_l1_civil_rights",
                 "fields": {
                     "CAP_Code": "2",
                     "Layer": "L1",
@@ -449,7 +492,7 @@ async def get_category_detail(category_id: str):
                 }
             }
         }
-        
+
         if category_id in category_details:
             return category_details[category_id]
         else:
@@ -493,7 +536,7 @@ async def get_category_children(category_id: str):
                 {
                     "id": "rec_l2_inflation_prices",
                     "fields": {
-                        "CAP_Code": "106", 
+                        "CAP_Code": "106",
                         "Layer": "L2",
                         "Title_JA": "インフレ・物価・デフレ",
                         "Title_EN": "Inflation, Prices, and Deflation",
@@ -505,7 +548,7 @@ async def get_category_children(category_id: str):
                     "id": "rec_l2_fiscal_policy",
                     "fields": {
                         "CAP_Code": "107",
-                        "Layer": "L2", 
+                        "Layer": "L2",
                         "Title_JA": "財政政策",
                         "Title_EN": "Fiscal Policy",
                         "Parent_Category": [category_id],
@@ -530,7 +573,7 @@ async def get_category_children(category_id: str):
                     "fields": {
                         "CAP_Code": "201",
                         "Layer": "L2",
-                        "Title_JA": "少数者の権利・差別問題", 
+                        "Title_JA": "少数者の権利・差別問題",
                         "Title_EN": "Minority Rights and Discrimination Issues",
                         "Parent_Category": [category_id],
                         "Is_Seed": True
@@ -538,7 +581,7 @@ async def get_category_children(category_id: str):
                 }
             ]
         }
-        
+
         return children_map.get(category_id, [])
     except Exception as e:
         logger.error(f"Failed to get children for category {category_id}: {e}")
@@ -551,21 +594,33 @@ async def search_categories(query: str, max_records: int = 50):
         # Mock search results
         all_categories = [
             {"id": "rec_l1_macroeconomics", "title": "マクロ経済学", "layer": "L1"},
-            {"id": "rec_l1_civil_rights", "title": "市民権・自由・少数者問題", "layer": "L1"},
+            {
+                "id": "rec_l1_civil_rights",
+                "title": "市民権・自由・少数者問題", "layer": "L1"
+            },
             {"id": "rec_l1_health", "title": "健康", "layer": "L1"},
-            {"id": "rec_l2_general_domestic_macro", "title": "国内マクロ経済問題", "layer": "L2"},
-            {"id": "rec_l2_inflation_prices", "title": "インフレ・物価・デフレ", "layer": "L2"}
+            {
+                "id": "rec_l2_general_domestic_macro",
+                "title": "国内マクロ経済問題", "layer": "L2"
+            },
+            {
+                "id": "rec_l2_inflation_prices",
+                "title": "インフレ・物価・デフレ", "layer": "L2"
+            }
         ]
-        
+
         # Simple text search
-        results = [cat for cat in all_categories if query.lower() in cat["title"].lower()]
+        results = [
+            cat for cat in all_categories
+            if query.lower() in cat["title"].lower()
+        ]
         return results[:max_records]
-    except Exception as e:
+    except Exception:
         logger.error(f"Failed to search categories with query: {query}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to search categories")
 
 @app.get("/api/bills")
-async def get_bills(max_records: int = 100, category: Optional[str] = None):
+async def get_bills(max_records: int = 100, category: str | None = None):
     """Get bills, optionally filtered by category."""
     try:
         # Mock bills data for category integration
@@ -575,24 +630,42 @@ async def get_bills(max_records: int = 100, category: Optional[str] = None):
                 "fields": {
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"マクロ経済政策関連法案{i}",
-                    "Summary": f"これは法案{i}の要約です。マクロ経済学に関する重要な政策が含まれており、経済成長と安定化を目指しています。",
-                    "Status": "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決",
-                    "Category": "マクロ経済学" if i <= 5 else "市民権・自由・少数者問題" if i <= 8 else "健康",
-                    "Category_ID": "rec_l1_macroeconomics" if i <= 5 else "rec_l1_civil_rights" if i <= 8 else "rec_l1_health",
-                    "Diet_Session": f"第213回国会",
+                    "Summary": (
+                        f"これは法案{i}の要約です。マクロ経済学に関する"
+                        f"重要な政策が含まれており、経済成長と安定化を目指しています。"
+                    ),
+                    "Status": (
+                        "審議中" if i % 3 == 0 else
+                        "成立" if i % 3 == 1 else "否決"
+                    ),
+                    "Category": (
+                        "マクロ経済学" if i <= 5 else
+                        "市民権・自由・少数者問題" if i <= 8 else "健康"
+                    ),
+                    "Category_ID": (
+                        "rec_l1_macroeconomics" if i <= 5 else
+                        "rec_l1_civil_rights" if i <= 8 else "rec_l1_health"
+                    ),
+                    "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15",
-                    "Keywords": ["経済政策", "成長戦略", "財政"] if i <= 5 else ["人権", "平等", "自由"] if i <= 8 else ["医療", "健康", "保険"]
+                    "Keywords": (
+                        ["経済政策", "成長戦略", "財政"] if i <= 5 else
+                        ["人権", "平等", "自由"] if i <= 8 else
+                        ["医療", "健康", "保険"]
+                    )
                 }
             }
             for i in range(1, min(max_records + 1, 21))
         ]
-        
+
         # Filter by category if specified
         if category:
-            mock_bills = [bill for bill in mock_bills 
-                         if category.lower() in bill["fields"].get("Category", "").lower() 
-                         or category == bill["fields"].get("Category_ID", "")]
-        
+            mock_bills = [
+                bill for bill in mock_bills
+                if category.lower() in bill["fields"].get("Category", "").lower()
+                or category == bill["fields"].get("Category_ID", "")
+            ]
+
         return mock_bills
     except Exception as e:
         logger.error(f"Failed to get bills: {e}")
@@ -608,7 +681,10 @@ async def get_members(limit: int = 50):
             {
                 "id": f"member_{i:03d}",
                 "name": f"議員{i}",
-                "party": "自由民主党" if i % 3 == 0 else "立憲民主党" if i % 3 == 1 else "日本維新の会",
+                "party": (
+                    "自由民主党" if i % 3 == 0 else
+                    "立憲民主党" if i % 3 == 1 else "日本維新の会"
+                ),
                 "house": "衆議院" if i % 2 == 0 else "参議院"
             }
             for i in range(1, min(limit + 1, 51))
@@ -632,6 +708,6 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8001))
     logger.info(f"Starting Complete API Server on port {port}")
-    
+
     # Bind to all interfaces for maximum compatibility
     uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")

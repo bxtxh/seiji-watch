@@ -19,11 +19,11 @@ sys.path.insert(0, current_dir)
 
 # Now import and run the main application
 if __name__ == "__main__":
-    from src.main import app
     import uvicorn
-    
+    from src.main import app
+
     port = int(os.getenv("PORT", 8080))
     print(f"Starting API Gateway on port {port}")
     print(f"Python path includes: {sys.path[:3]}")
-    
+
     uvicorn.run(app, host="0.0.0.0", port=port, reload=True)

@@ -5,15 +5,15 @@ Complete Sangiin (House of Councillors) member data collection
 """
 
 import asyncio
-import aiohttp
+import json
 import os
 import re
-import json
+from dataclasses import asdict, dataclass
 from datetime import datetime
+
+import aiohttp
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from typing import List, Dict, Optional
-from dataclasses import dataclass, asdict
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
@@ -21,46 +21,46 @@ load_dotenv('/Users/shogen/seiji-watch/.env.local')
 class SanguinMemberData:
     """Sanguin member data structure"""
     name: str
-    name_kana: Optional[str] = None
+    name_kana: str | None = None
     house: str = "参議院"
-    constituency: Optional[str] = None
-    party_name: Optional[str] = None
-    first_elected: Optional[str] = None
-    terms_served: Optional[int] = None
+    constituency: str | None = None
+    party_name: str | None = None
+    first_elected: str | None = None
+    terms_served: int | None = None
     is_active: bool = True
-    member_id: Optional[str] = None
-    profile_url: Optional[str] = None
-    birth_date: Optional[str] = None
-    gender: Optional[str] = None
-    previous_occupations: Optional[str] = None
-    education: Optional[str] = None
-    website_url: Optional[str] = None
-    twitter_handle: Optional[str] = None
+    member_id: str | None = None
+    profile_url: str | None = None
+    birth_date: str | None = None
+    gender: str | None = None
+    previous_occupations: str | None = None
+    education: str | None = None
+    website_url: str | None = None
+    twitter_handle: str | None = None
 
 class CompleteSanguinMemberCollector:
     """Complete Sanguin member data collector"""
-    
+
     def __init__(self):
         self.pat = os.getenv("AIRTABLE_PAT")
         self.base_id = os.getenv("AIRTABLE_BASE_ID")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
-        
+
         if not self.pat or not self.base_id:
             raise ValueError("Airtable PAT and base ID are required")
-        
+
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
             "Content-Type": "application/json"
         }
-        
+
         # Rate limiting
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
-        
+
         # 参議院公式サイトのURL
         self.sangiin_base_url = "https://www.sangiin.go.jp"
         self.member_list_url = f"{self.sangiin_base_url}/japanese/joho1/kousei/giin/current/giin.htm"
-        
+
         # 政党名正規化マッピング
         self.party_mapping = {
             "自由民主党": "自由民主党",
@@ -110,11 +110,11 @@ class CompleteSanguinMemberCollector:
         """Normalize party name"""
         if not raw_party:
             return "無所属"
-        
+
         # 括弧内の情報を除去
         party = re.sub(r'\(.*?\)', '', raw_party).strip()
         party = re.sub(r'（.*?）', '', party).strip()
-        
+
         # マッピングを使用して正規化
         return self.party_mapping.get(party, party)
 
@@ -122,36 +122,36 @@ class CompleteSanguinMemberCollector:
         """Extract constituency and election type"""
         if not constituency_text:
             return None, None
-        
+
         # 比例代表の判定
         if "比例" in constituency_text:
             return "比例代表", "比例代表"
-        
+
         # 選挙区の判定
         if "選挙区" in constituency_text:
             # 都道府県名を抽出
             prefecture = re.search(r'([^選挙区]+)選挙区', constituency_text)
             if prefecture:
                 return prefecture.group(1), "選挙区"
-        
+
         return constituency_text, "選挙区"
 
-    async def scrape_sangiin_member_list(self, session: aiohttp.ClientSession) -> List[SanguinMemberData]:
+    async def scrape_sangiin_member_list(self, session: aiohttp.ClientSession) -> list[SanguinMemberData]:
         """Scrape member list from Sangiin official site"""
         members = []
-        
+
         try:
             # メイン議員リストページを取得
             html_content = await self.fetch_html(session, self.member_list_url)
             if not html_content:
                 print("Failed to fetch member list page")
                 return members
-            
+
             soup = BeautifulSoup(html_content, 'html.parser')
-            
+
             # 議員リストテーブルを探す
             member_tables = soup.find_all('table')
-            
+
             for table in member_tables:
                 rows = table.find_all('tr')
                 for row in rows[1:]:  # ヘッダーをスキップ
@@ -169,20 +169,20 @@ class CompleteSanguinMemberCollector:
                             else:
                                 name = name_cell.get_text(strip=True)
                                 profile_url = None
-                            
+
                             if not name:
                                 continue
-                            
+
                             # 政党情報を取得
                             party_cell = cells[1] if len(cells) > 1 else None
                             party_name = party_cell.get_text(strip=True) if party_cell else None
                             party_name = self.normalize_party_name(party_name)
-                            
+
                             # 選挙区情報を取得
                             constituency_cell = cells[2] if len(cells) > 2 else None
                             constituency_text = constituency_cell.get_text(strip=True) if constituency_cell else None
                             constituency, election_type = self.extract_constituency_info(constituency_text)
-                            
+
                             member_data = SanguinMemberData(
                                 name=name,
                                 house="参議院",
@@ -191,19 +191,19 @@ class CompleteSanguinMemberCollector:
                                 profile_url=profile_url,
                                 is_active=True
                             )
-                            
+
                             members.append(member_data)
-                            
+
                         except Exception as e:
                             print(f"Error parsing member row: {e}")
                             continue
-            
+
             # 追加の議員リストページも確認
             additional_urls = [
                 f"{self.sangiin_base_url}/japanese/joho1/kousei/giin/212/giin2.html",
                 f"{self.sangiin_base_url}/japanese/joho1/kousei/giin/212/giin3.html"
             ]
-            
+
             for url in additional_urls:
                 try:
                     html_content = await self.fetch_html(session, url)
@@ -214,7 +214,7 @@ class CompleteSanguinMemberCollector:
                 except Exception as e:
                     print(f"Error fetching additional page {url}: {e}")
                     continue
-            
+
             # 重複を除去
             unique_members = []
             seen_names = set()
@@ -222,18 +222,18 @@ class CompleteSanguinMemberCollector:
                 if member.name not in seen_names:
                     unique_members.append(member)
                     seen_names.add(member.name)
-            
+
             print(f"Successfully scraped {len(unique_members)} unique Sangiin members")
             return unique_members
-            
+
         except Exception as e:
             print(f"Error scraping Sangiin member list: {e}")
             return members
 
-    async def parse_additional_member_page(self, soup: BeautifulSoup) -> List[SanguinMemberData]:
+    async def parse_additional_member_page(self, soup: BeautifulSoup) -> list[SanguinMemberData]:
         """Parse additional member pages"""
         members = []
-        
+
         # 様々なテーブル構造に対応
         tables = soup.find_all('table')
         for table in tables:
@@ -244,7 +244,7 @@ class CompleteSanguinMemberCollector:
                     try:
                         name_cell = cells[0]
                         name_text = name_cell.get_text(strip=True)
-                        
+
                         # 議員名の妥当性チェック
                         if len(name_text) > 1 and not any(word in name_text.lower() for word in ['氏名', '議員名', 'name', '政党']):
                             member_data = SanguinMemberData(
@@ -253,12 +253,12 @@ class CompleteSanguinMemberCollector:
                                 is_active=True
                             )
                             members.append(member_data)
-                    except Exception as e:
+                    except Exception:
                         continue
-        
+
         return members
 
-    async def get_existing_parties(self, session: aiohttp.ClientSession) -> Dict[str, str]:
+    async def get_existing_parties(self, session: aiohttp.ClientSession) -> dict[str, str]:
         """Get existing parties from Airtable"""
         try:
             await self.rate_limit_delay()
@@ -276,11 +276,11 @@ class CompleteSanguinMemberCollector:
             print(f"Error fetching parties: {e}")
             return {}
 
-    async def create_party_if_not_exists(self, session: aiohttp.ClientSession, party_name: str, existing_parties: Dict[str, str]) -> Optional[str]:
+    async def create_party_if_not_exists(self, session: aiohttp.ClientSession, party_name: str, existing_parties: dict[str, str]) -> str | None:
         """Create party if it doesn't exist"""
         if party_name in existing_parties:
             return existing_parties[party_name]
-        
+
         try:
             await self.rate_limit_delay()
             party_data = {
@@ -292,7 +292,7 @@ class CompleteSanguinMemberCollector:
                     }
                 }]
             }
-            
+
             async with session.post(
                 f"{self.base_url}/Parties (政党)",
                 headers=self.headers,
@@ -311,30 +311,30 @@ class CompleteSanguinMemberCollector:
             print(f"Error creating party {party_name}: {e}")
             return None
 
-    async def insert_members_to_airtable(self, session: aiohttp.ClientSession, members: List[SanguinMemberData]) -> bool:
+    async def insert_members_to_airtable(self, session: aiohttp.ClientSession, members: list[SanguinMemberData]) -> bool:
         """Insert members to Airtable"""
         if not members:
             print("No members to insert")
             return False
-        
+
         try:
             # 既存政党を取得
             existing_parties = await self.get_existing_parties(session)
-            
+
             # バッチサイズを設定
             batch_size = 10
             success_count = 0
-            
+
             for i in range(0, len(members), batch_size):
                 batch = members[i:i + batch_size]
                 records = []
-                
+
                 for member in batch:
                     # 政党IDを取得または作成
                     party_id = None
                     if member.party_name and member.party_name != "無所属":
                         party_id = await self.create_party_if_not_exists(session, member.party_name, existing_parties)
-                    
+
                     # レコードを作成
                     record_fields = {
                         "Name": member.name,
@@ -343,7 +343,7 @@ class CompleteSanguinMemberCollector:
                         "Created_At": datetime.now().isoformat(),
                         "Updated_At": datetime.now().isoformat()
                     }
-                    
+
                     # オプションフィールドを追加
                     if member.name_kana:
                         record_fields["Name_Kana"] = member.name_kana
@@ -367,9 +367,9 @@ class CompleteSanguinMemberCollector:
                         record_fields["Education"] = member.education
                     if member.twitter_handle:
                         record_fields["Twitter_Handle"] = member.twitter_handle
-                    
+
                     records.append({"fields": record_fields})
-                
+
                 # バッチ挿入
                 await self.rate_limit_delay()
                 async with session.post(
@@ -384,23 +384,23 @@ class CompleteSanguinMemberCollector:
                     else:
                         error_text = await response.text()
                         print(f"Failed to insert batch {i//batch_size + 1}: {response.status} - {error_text}")
-                
+
                 # バッチ間の待機
                 await asyncio.sleep(1)
-            
+
             print(f"Total members inserted: {success_count}")
             return success_count > 0
-            
+
         except Exception as e:
             print(f"Error inserting members: {e}")
             return False
 
-    async def save_results_to_file(self, members: List[SanguinMemberData], filename: str = None):
+    async def save_results_to_file(self, members: list[SanguinMemberData], filename: str = None):
         """Save results to JSON file"""
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"sanguin_members_collection_result_{timestamp}.json"
-        
+
         try:
             # Convert to serializable format
             serializable_data = {
@@ -408,13 +408,13 @@ class CompleteSanguinMemberCollector:
                 "total_members": len(members),
                 "members": [asdict(member) for member in members]
             }
-            
+
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(serializable_data, f, indent=2, ensure_ascii=False)
-            
+
             print(f"Results saved to {filename}")
             return filename
-            
+
         except Exception as e:
             print(f"Error saving results: {e}")
             return None
@@ -422,23 +422,23 @@ class CompleteSanguinMemberCollector:
     async def run(self):
         """Main execution method"""
         print("Starting complete Sanguin member data collection...")
-        
+
         async with aiohttp.ClientSession() as session:
             # 参議院議員データを収集
             members = await self.scrape_sangiin_member_list(session)
-            
+
             if not members:
                 print("No members found. Exiting.")
                 return
-            
+
             print(f"Found {len(members)} Sanguin members")
-            
+
             # 結果をファイルに保存
             await self.save_results_to_file(members)
-            
+
             # Airtableに挿入
             success = await self.insert_members_to_airtable(session, members)
-            
+
             if success:
                 print("✅ Successfully completed Sanguin member data collection")
             else:

@@ -5,8 +5,8 @@ Revises: 0003
 Create Date: 2025-07-18 11:00:00.000000
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers
@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     """Create bill_process_history table for tracking bill progress"""
-    
+
     # Create bill_process_history table
     op.create_table(
         'bill_process_history',
@@ -37,28 +37,28 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['bill_id'], ['bills.id'], ondelete='CASCADE'),
     )
-    
+
     # Create indexes for better query performance
     op.create_index('idx_bill_process_history_bill_id', 'bill_process_history', ['bill_id'])
     op.create_index('idx_bill_process_history_stage', 'bill_process_history', ['stage'])
     op.create_index('idx_bill_process_history_house', 'bill_process_history', ['house'])
     op.create_index('idx_bill_process_history_action_date', 'bill_process_history', ['action_date'])
     op.create_index('idx_bill_process_history_action_type', 'bill_process_history', ['action_type'])
-    
+
     # Create composite index for common queries
-    op.create_index('idx_bill_process_history_bill_stage_date', 'bill_process_history', 
+    op.create_index('idx_bill_process_history_bill_stage_date', 'bill_process_history',
                    ['bill_id', 'stage', 'action_date'])
-    op.create_index('idx_bill_process_history_house_date', 'bill_process_history', 
+    op.create_index('idx_bill_process_history_house_date', 'bill_process_history',
                    ['house', 'action_date'])
-    
+
     # Create GIN index for JSONB details field
-    op.create_index('idx_bill_process_history_details_gin', 'bill_process_history', 
+    op.create_index('idx_bill_process_history_details_gin', 'bill_process_history',
                    ['details'], postgresql_using='gin')
 
 
 def downgrade():
     """Drop bill_process_history table"""
-    
+
     # Drop indexes
     op.drop_index('idx_bill_process_history_details_gin', table_name='bill_process_history')
     op.drop_index('idx_bill_process_history_house_date', table_name='bill_process_history')
@@ -68,6 +68,6 @@ def downgrade():
     op.drop_index('idx_bill_process_history_house', table_name='bill_process_history')
     op.drop_index('idx_bill_process_history_stage', table_name='bill_process_history')
     op.drop_index('idx_bill_process_history_bill_id', table_name='bill_process_history')
-    
+
     # Drop table
     op.drop_table('bill_process_history')

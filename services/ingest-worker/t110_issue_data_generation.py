@@ -5,14 +5,15 @@ T110: イシューデータ生成（法案からLLM抽出）
 """
 
 import asyncio
-import aiohttp
+import json
 import os
 import sys
-import json
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional, Any
-from dataclasses import dataclass, asdict
+from typing import Any
+
+import aiohttp
 from dotenv import load_dotenv
 
 # Add src to path for imports
@@ -27,38 +28,38 @@ class IssueData:
     description: str
     category_l1: str  # L1カテゴリ（大分類）
     category_l2: str  # L2カテゴリ（中分類）
-    category_l3: Optional[str] = None  # L3カテゴリ（詳細）
+    category_l3: str | None = None  # L3カテゴリ（詳細）
     priority: str = "medium"  # high/medium/low
     status: str = "active"  # active/inactive/resolved
-    source_bill_id: Optional[str] = None
+    source_bill_id: str | None = None
     impact_level: str = "medium"  # high/medium/low
-    stakeholders: Optional[List[str]] = None
-    estimated_timeline: Optional[str] = None  # 予想解決期間
+    stakeholders: list[str] | None = None
+    estimated_timeline: str | None = None  # 予想解決期間
     ai_confidence: float = 0.8  # AI抽出の信頼度
-    tags: Optional[List[str]] = None
-    related_keywords: Optional[List[str]] = None
+    tags: list[str] | None = None
+    related_keywords: list[str] | None = None
 
 class IssueDataGenerator:
     """イシューデータ生成・投入クラス"""
-    
+
     def __init__(self):
         self.pat = os.getenv("AIRTABLE_PAT")
         self.base_id = os.getenv("AIRTABLE_BASE_ID")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
-        
+
         if not self.pat or not self.base_id:
             raise ValueError("Airtable PAT and base ID are required")
-        
+
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
             "Content-Type": "application/json"
         }
-        
+
         # Rate limiting
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
-    
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs) -> Dict[str, Any]:
+
+    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs) -> dict[str, Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -66,26 +67,26 @@ class IssueDataGenerator:
             time_since_last = now - self._last_request_time
             if time_since_last < 0.3:
                 await asyncio.sleep(0.3 - time_since_last)
-            
+
             async with session.request(method, url, headers=self.headers, **kwargs) as response:
                 self._last_request_time = asyncio.get_event_loop().time()
-                
+
                 if response.status == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
                     await asyncio.sleep(retry_after)
                     return await self._rate_limited_request(session, method, url, **kwargs)
-                
+
                 response.raise_for_status()
                 return await response.json()
-    
-    async def get_bills_for_analysis(self, session: aiohttp.ClientSession) -> List[Dict[str, Any]]:
+
+    async def get_bills_for_analysis(self, session: aiohttp.ClientSession) -> list[dict[str, Any]]:
         """分析用の法案データを取得"""
         bills = []
-        
+
         try:
             bills_url = f"{self.base_url}/Bills (法案)"
             response = await self._rate_limited_request(session, "GET", bills_url, params={"maxRecords": 20})
-            
+
             for record in response.get("records", []):
                 fields = record["fields"]
                 bill = {
@@ -97,18 +98,18 @@ class IssueDataGenerator:
                     "status": fields.get("Status", "")
                 }
                 bills.append(bill)
-                
+
         except Exception as e:
             print(f"⚠️  法案データ取得エラー: {e}")
-        
+
         return bills
-    
-    async def extract_issues_from_bills(self, bills: List[Dict[str, Any]]) -> List[IssueData]:
+
+    async def extract_issues_from_bills(self, bills: list[dict[str, Any]]) -> list[IssueData]:
         """法案からイシューを抽出（LLM風の分析シミュレーション）"""
-        
+
         # 実際の実装ではOpenAI GPT-4やClaude APIを使用してイシュー抽出
         # ここではルールベースの分析をシミュレート
-        
+
         # 3層カテゴリー体系（CAP準拠）
         l1_categories = {
             "社会保障": ["健康保険制度", "年金制度", "高齢者介護", "障害者支援"],
@@ -119,17 +120,17 @@ class IssueDataGenerator:
             "司法・行政": ["司法制度", "行政改革", "地方分権", "公務員制度"],
             "インフラ・交通": ["道路整備", "公共交通", "通信インフラ", "住宅政策"]
         }
-        
+
         issues = []
-        
+
         for bill in bills:
             bill_name = bill.get("name", "")
             bill_summary = bill.get("summary", "")
             bill_category = bill.get("category", "")
-            
+
             # 法案名とカテゴリーからイシューを抽出
             extracted_issues = self._analyze_bill_content(bill_name, bill_summary, bill_category, l1_categories)
-            
+
             for issue_info in extracted_issues:
                 issue = IssueData(
                     title=issue_info["title"],
@@ -148,19 +149,19 @@ class IssueDataGenerator:
                     related_keywords=issue_info.get("keywords", [])
                 )
                 issues.append(issue)
-        
+
         # 追加のイシュー生成（50件達成のため）
         additional_issues = self._generate_additional_issues(l1_categories)
         issues.extend(additional_issues)
-        
+
         print(f"✅ イシューデータ生成完了: {len(issues)}件")
         return issues
-    
-    def _analyze_bill_content(self, bill_name: str, summary: str, category: str, l1_categories: Dict[str, List[str]]) -> List[Dict[str, Any]]:
+
+    def _analyze_bill_content(self, bill_name: str, summary: str, category: str, l1_categories: dict[str, list[str]]) -> list[dict[str, Any]]:
         """法案内容の分析（LLM分析のシミュレーション）"""
-        
+
         issues = []
-        
+
         # キーワードベースの分析ルール
         analysis_rules = {
             "予算": {
@@ -194,17 +195,17 @@ class IssueDataGenerator:
                 "keywords": ["学校", "教育", "授業", "学習"]
             }
         }
-        
+
         # 法案名とサマリーからキーワードマッチング
         content = f"{bill_name} {summary}".lower()
-        
+
         for keyword, rule in analysis_rules.items():
             if keyword in content:
                 issue = {
                     "title": f"{bill_name}に関する{rule['l3']}の課題",
                     "description": f"「{bill_name}」の実施により{rule['l3']}が必要となる政策課題。{rule['stakeholders'][0]}を中心とした制度設計と実施体制の整備が重要。",
                     "l1": rule["l1"],
-                    "l2": rule["l2"], 
+                    "l2": rule["l2"],
                     "l3": rule["l3"],
                     "priority": rule["priority"],
                     "impact": rule["impact"],
@@ -215,7 +216,7 @@ class IssueDataGenerator:
                     "confidence": 0.85
                 }
                 issues.append(issue)
-        
+
         # 法案名のみからもイシュー生成
         if not issues and bill_name:
             default_issue = {
@@ -233,14 +234,14 @@ class IssueDataGenerator:
                 "confidence": 0.7
             }
             issues.append(default_issue)
-        
+
         return issues
-    
-    def _generate_additional_issues(self, l1_categories: Dict[str, List[str]]) -> List[IssueData]:
+
+    def _generate_additional_issues(self, l1_categories: dict[str, list[str]]) -> list[IssueData]:
         """追加イシュー生成（50件達成のため）"""
-        
+
         additional_issues = []
-        
+
         # 各カテゴリーから体系的にイシューを生成
         issue_templates = [
             {
@@ -274,7 +275,7 @@ class IssueDataGenerator:
                 "priority": "medium", "impact": "medium"
             }
         ]
-        
+
         # テンプレートから複数バリエーション生成
         for i, template in enumerate(issue_templates):
             for j in range(10):  # 各テンプレートから10個ずつ
@@ -294,15 +295,15 @@ class IssueDataGenerator:
                     related_keywords=[template["l2"], template["l3"], "政策"]
                 )
                 additional_issues.append(issue)
-        
+
         return additional_issues
-    
-    async def create_issues(self, session: aiohttp.ClientSession, issues: List[IssueData]) -> int:
+
+    async def create_issues(self, session: aiohttp.ClientSession, issues: list[IssueData]) -> int:
         """イシューデータをAirtableに投入"""
-        
+
         issues_url = f"{self.base_url}/Issues (課題)"
         success_count = 0
-        
+
         for i, issue in enumerate(issues, 1):
             try:
                 # Airtableフィールド形式に変換 (original template fields excluded)
@@ -323,34 +324,34 @@ class IssueDataGenerator:
                     "Created_At": datetime.now().isoformat(),
                     "Updated_At": datetime.now().isoformat()
                 }
-                
+
                 # None値を除去
                 issue_fields = {k: v for k, v in issue_fields.items() if v is not None}
-                
+
                 data = {"fields": issue_fields}
-                
+
                 response = await self._rate_limited_request(session, "POST", issues_url, json=data)
                 record_id = response["id"]
                 success_count += 1
-                
+
                 if i <= 5 or i % 10 == 0:
                     print(f"  ✅ イシュー{i:03d}: {issue.title[:50]}... ({record_id})")
-                
+
             except Exception as e:
                 print(f"  ❌ イシュー投入失敗: {issue.title[:30]}... - {e}")
-        
+
         return success_count
-    
-    async def execute_issue_generation(self) -> Dict[str, Any]:
+
+    async def execute_issue_generation(self) -> dict[str, Any]:
         """T110実行: イシューデータ生成・投入"""
-        
+
         start_time = datetime.now()
         print("🚀 T110: イシューデータ生成実行")
         print("=" * 60)
         print(f"📅 開始時刻: {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"🎯 目標: イシューデータ50件以上の生成・投入（法案からLLM抽出）")
+        print("🎯 目標: イシューデータ50件以上の生成・投入（法案からLLM抽出）")
         print()
-        
+
         result = {
             "success": False,
             "total_time": 0.0,
@@ -360,7 +361,7 @@ class IssueDataGenerator:
             "errors": [],
             "start_time": start_time.isoformat()
         }
-        
+
         try:
             async with aiohttp.ClientSession() as session:
                 # Step 1: 法案データ取得
@@ -368,49 +369,49 @@ class IssueDataGenerator:
                 bills = await self.get_bills_for_analysis(session)
                 result["bills_analyzed"] = len(bills)
                 print(f"  取得完了: {len(bills)}件の法案")
-                
+
                 # Step 2: イシューデータ生成
-                print(f"\n🧠 Step 2: LLM風イシュー抽出・生成...")
+                print("\n🧠 Step 2: LLM風イシュー抽出・生成...")
                 issues = await self.extract_issues_from_bills(bills)
                 result["issues_generated"] = len(issues)
-                
+
                 # Step 3: イシューデータ投入
-                print(f"\n💾 Step 3: イシューデータ投入...")
+                print("\n💾 Step 3: イシューデータ投入...")
                 success_count = await self.create_issues(session, issues)
-                
+
                 # 結果計算
                 end_time = datetime.now()
                 result["total_time"] = (end_time - start_time).total_seconds()
                 result["success"] = success_count >= 50
                 result["issues_inserted"] = success_count
                 result["end_time"] = end_time.isoformat()
-                
-                print(f"\n" + "=" * 60)
-                print(f"📊 T110 実行結果")
-                print(f"=" * 60)
+
+                print("\n" + "=" * 60)
+                print("📊 T110 実行結果")
+                print("=" * 60)
                 print(f"✅ 成功: {result['success']}")
                 print(f"⏱️  実行時間: {result['total_time']:.2f}秒")
                 print(f"📋 法案分析数: {result['bills_analyzed']}件")
                 print(f"🧠 イシュー生成: {result['issues_generated']}件")
                 print(f"💾 イシュー投入: {success_count}件")
                 print(f"🎯 目標達成: {'✅ YES' if success_count >= 50 else '❌ NO'}")
-                
+
                 if result["success"]:
-                    print(f"\n🎉 T110 COMPLETE!")
-                    print(f"✅ イシューデータベース基盤完成")
-                    print(f"🔄 EPIC 13 全タスク完了 - MVP準備完了!")
+                    print("\n🎉 T110 COMPLETE!")
+                    print("✅ イシューデータベース基盤完成")
+                    print("🔄 EPIC 13 全タスク完了 - MVP準備完了!")
                 else:
-                    print(f"\n⚠️  T110 PARTIAL: 目標未達成")
-                    print(f"💡 追加イシュー生成が推奨されます")
-                
+                    print("\n⚠️  T110 PARTIAL: 目標未達成")
+                    print("💡 追加イシュー生成が推奨されます")
+
                 return result
-                
+
         except Exception as e:
             end_time = datetime.now()
             result["total_time"] = (end_time - start_time).total_seconds()
             result["success"] = False
             result["errors"].append(str(e))
-            
+
             print(f"❌ T110 実行失敗: {e}")
             return result
 
@@ -419,18 +420,18 @@ async def main():
     try:
         generator = IssueDataGenerator()
         result = await generator.execute_issue_generation()
-        
+
         # 結果をJSONファイルに保存
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         result_file = f"t110_issue_generation_result_{timestamp}.json"
-        
+
         with open(result_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
-        
+
         print(f"\n💾 結果保存: {result_file}")
-        
+
         return 0 if result["success"] else 1
-        
+
     except Exception as e:
         print(f"💥 T110 実行エラー: {e}")
         import traceback

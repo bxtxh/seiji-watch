@@ -2,13 +2,13 @@
 
 import json
 import logging
-import time
 import traceback
-from datetime import datetime
-from typing import Any, Dict, Optional
-from contextvars import ContextVar
-from fastapi import Request
 import uuid
+from contextvars import ContextVar
+from datetime import datetime
+from typing import Any
+
+from fastapi import Request
 
 # Context variables for request tracking
 request_id_context: ContextVar[str] = ContextVar('request_id', default='')
@@ -16,27 +16,27 @@ user_id_context: ContextVar[str] = ContextVar('user_id', default='anonymous')
 
 class StructuredLogger:
     """Structured logging utility with Cloud Logging compatibility."""
-    
+
     def __init__(self, name: str = __name__):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
-        
+
         # Remove existing handlers to avoid duplication
         for handler in self.logger.handlers[:]:
             self.logger.removeHandler(handler)
-        
+
         # Create structured formatter
         handler = logging.StreamHandler()
         handler.setFormatter(StructuredFormatter())
         self.logger.addHandler(handler)
         self.logger.propagate = False
-    
+
     def _create_log_entry(
-        self, 
+        self,
         level: str,
         message: str,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create structured log entry."""
         entry = {
             'timestamp': datetime.utcnow().isoformat() + 'Z',
@@ -47,41 +47,41 @@ class StructuredLogger:
             'service': 'api-gateway',
             'version': '1.0.0'
         }
-        
+
         # Add custom fields
         if kwargs:
             entry.update(kwargs)
-        
+
         return entry
-    
+
     def info(self, message: str, **kwargs):
         """Log info level message."""
         entry = self._create_log_entry('INFO', message, **kwargs)
         self.logger.info(json.dumps(entry))
-    
+
     def warning(self, message: str, **kwargs):
         """Log warning level message."""
         entry = self._create_log_entry('WARNING', message, **kwargs)
         self.logger.warning(json.dumps(entry))
-    
-    def error(self, message: str, error: Optional[Exception] = None, **kwargs):
+
+    def error(self, message: str, error: Exception | None = None, **kwargs):
         """Log error level message."""
         entry = self._create_log_entry('ERROR', message, **kwargs)
-        
+
         if error:
             entry.update({
                 'error_type': type(error).__name__,
                 'error_message': str(error),
                 'stack_trace': traceback.format_exc()
             })
-        
+
         self.logger.error(json.dumps(entry))
-    
+
     def debug(self, message: str, **kwargs):
         """Log debug level message."""
         entry = self._create_log_entry('DEBUG', message, **kwargs)
         self.logger.debug(json.dumps(entry))
-    
+
     def api_request(
         self,
         request: Request,
@@ -102,7 +102,7 @@ class StructuredLogger:
             **kwargs
         )
         self.logger.info(json.dumps(entry))
-    
+
     def security_event(
         self,
         event_type: str,
@@ -119,7 +119,7 @@ class StructuredLogger:
             **kwargs
         )
         self.logger.log(getattr(logging, severity.upper()), json.dumps(entry))
-    
+
     def performance_metric(
         self,
         metric_name: str,
@@ -137,7 +137,7 @@ class StructuredLogger:
             **kwargs
         )
         self.logger.info(json.dumps(entry))
-    
+
     def business_event(
         self,
         event_type: str,
@@ -155,28 +155,28 @@ class StructuredLogger:
 
 class StructuredFormatter(logging.Formatter):
     """Custom formatter for structured logging."""
-    
+
     def format(self, record):
         # Return the message as-is since it's already JSON formatted
         return record.getMessage()
 
 class RequestContextMiddleware:
     """Middleware to set request context for logging."""
-    
+
     def __init__(self, app):
         self.app = app
-    
+
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
             # Generate request ID
             request_id = str(uuid.uuid4())
             request_id_context.set(request_id)
-            
+
             # Set user ID if available (from headers or auth)
             headers = dict(scope["headers"])
             user_id = headers.get(b"x-user-id", b"anonymous").decode()
             user_id_context.set(user_id)
-            
+
             # Add request ID to response headers
             async def send_with_request_id(message):
                 if message["type"] == "http.response.start":
@@ -184,7 +184,7 @@ class RequestContextMiddleware:
                     headers.append([b"x-request-id", request_id.encode()])
                     message["headers"] = headers
                 await send(message)
-            
+
             await self.app(scope, receive, send_with_request_id)
         else:
             await self.app(scope, receive, send)
@@ -201,7 +201,7 @@ def log_warning(message: str, **kwargs):
     """Log warning message."""
     structured_logger.warning(message, **kwargs)
 
-def log_error(message: str, error: Optional[Exception] = None, **kwargs):
+def log_error(message: str, error: Exception | None = None, **kwargs):
     """Log error message."""
     structured_logger.error(message, error=error, **kwargs)
 

@@ -1,50 +1,53 @@
 """FastAPI application for Diet Issue Tracker API Gateway."""
 
-import os
 import logging
+import os
 import time
 from collections import defaultdict
-from fastapi import FastAPI, HTTPException, Request, Response
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from typing import Dict, List, Optional
 
 # Import monitoring utilities
 try:
     from .monitoring.logger import (
-        structured_logger, RequestContextMiddleware,
-        log_api_request, log_error, log_security_event
+        RequestContextMiddleware,
+        log_api_request,
+        log_error,
+        log_security_event,
+        structured_logger,
     )
-    from .monitoring.metrics import (
-        metrics_collector, health_checker, RequestTracker
-    )
+    from .monitoring.metrics import RequestTracker, health_checker, metrics_collector
 except ImportError:
     # Fallback for standalone execution
     from monitoring.logger import (
-        structured_logger, RequestContextMiddleware,
-        log_api_request, log_error, log_security_event
+        RequestContextMiddleware,
+        log_api_request,
+        log_error,
+        log_security_event,
     )
-    from monitoring.metrics import (
-        metrics_collector, health_checker, RequestTracker
-    )
+    from monitoring.metrics import RequestTracker, health_checker, metrics_collector
 
 # Import cache and services
 try:
+    from shared.clients.airtable import AirtableClient
+
+    from .batch.member_tasks import MemberTaskManager
+    from .batch.task_queue import batch_processor, task_queue
     from .cache.redis_client import RedisCache
     from .services.member_service import MemberService
     from .services.policy_analysis_service import PolicyAnalysisService
-    from .batch.task_queue import task_queue, batch_processor
-    from .batch.member_tasks import MemberTaskManager
-    from shared.clients.airtable import AirtableClient
 except ImportError:
     # Fallback for standalone execution
+    from batch.member_tasks import MemberTaskManager
+    from batch.task_queue import task_queue
     from cache.redis_client import RedisCache
+
     from services.member_service import MemberService
     from services.policy_analysis_service import PolicyAnalysisService
-    from batch.task_queue import task_queue, batch_processor
-    from batch.member_tasks import MemberTaskManager
     from shared.clients.airtable import AirtableClient
 
 # Configure logging
@@ -55,7 +58,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Rate limiting storage
-rate_limit_storage: Dict[str, List[float]] = defaultdict(list)
+rate_limit_storage: dict[str, list[float]] = defaultdict(list)
 
 # Initialize services
 redis_cache = RedisCache()
@@ -75,17 +78,17 @@ member_task_manager = MemberTaskManager(task_queue, airtable_config, redis_confi
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
-    
+
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        
+
         # Security headers
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
+
         # Content Security Policy (development-friendly)
         csp = (
             "default-src 'self'; "
@@ -98,49 +101,49 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "frame-ancestors 'none'"
         )
         response.headers["Content-Security-Policy"] = csp
-        
+
         return response
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Rate limiting middleware."""
-    
+
     def __init__(self, app, requests_per_minute: int = 60):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.window_size = 60  # 1 minute window
-    
+
     def get_client_id(self, request: Request) -> str:
         """Get client identifier for rate limiting."""
         # Use forwarded IP if available (for load balancer scenarios)
         forwarded_for = request.headers.get("X-Forwarded-For")
         if forwarded_for:
             return forwarded_for.split(",")[0].strip()
-        
+
         # Fall back to direct client IP
         client_ip = request.client.host if request.client else "unknown"
         return client_ip
-    
+
     def is_rate_limited(self, client_id: str) -> bool:
         """Check if client is rate limited."""
         now = time.time()
-        
+
         # Clean old requests outside the window
         rate_limit_storage[client_id] = [
             timestamp for timestamp in rate_limit_storage[client_id]
             if now - timestamp < self.window_size
         ]
-        
+
         # Check if client exceeded rate limit
         if len(rate_limit_storage[client_id]) >= self.requests_per_minute:
             return True
-        
+
         # Record this request
         rate_limit_storage[client_id].append(now)
         return False
-    
+
     async def dispatch(self, request: Request, call_next):
         client_id = self.get_client_id(request)
-        
+
         if self.is_rate_limited(client_id):
             # Log security event
             log_security_event(
@@ -150,10 +153,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 client_id=client_id[:32],  # Truncate for privacy
                 endpoint=str(request.url.path)
             )
-            
+
             # Record metrics
             metrics_collector.record_rate_limit_violation(client_id, str(request.url.path))
-            
+
             return JSONResponse(
                 status_code=429,
                 content={
@@ -162,7 +165,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     "retry_after": 60
                 }
             )
-        
+
         return await call_next(request)
 
 # Create FastAPI app
@@ -182,14 +185,14 @@ async def startup_event():
         # Initialize Redis connection
         await redis_cache.connect()
         logger.info("Redis cache connected successfully")
-        
+
         # Warm up member cache
         warmup_result = await member_service.warmup_member_cache()
         if warmup_result["success"]:
             logger.info(f"Member cache warmed up with {warmup_result['cached_members']} members")
         else:
             logger.warning(f"Member cache warmup failed: {warmup_result.get('error', 'Unknown error')}")
-            
+
     except Exception as e:
         logger.error(f"Startup initialization failed: {e}")
         # Continue startup even if cache fails (graceful degradation)
@@ -205,17 +208,17 @@ async def shutdown_event():
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging and monitoring requests."""
-    
+
     async def dispatch(self, request: Request, call_next):
         start_time = time.time()
-        
+
         with RequestTracker(metrics_collector):
             try:
                 response = await call_next(request)
-                
+
                 # Calculate response time
                 response_time_ms = (time.time() - start_time) * 1000
-                
+
                 # Log request
                 log_api_request(
                     request,
@@ -223,7 +226,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     response_time_ms,
                     response_size=response.headers.get('content-length', 0)
                 )
-                
+
                 # Record metrics
                 metrics_collector.record_request(
                     request.method,
@@ -231,26 +234,26 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     response.status_code,
                     response_time_ms
                 )
-                
+
                 return response
-                
+
             except Exception as e:
                 response_time_ms = (time.time() - start_time) * 1000
-                
+
                 # Log error
                 log_error(
                     f"Request failed: {request.method} {request.url.path}",
                     error=e,
                     response_time_ms=response_time_ms
                 )
-                
+
                 # Record error metrics
                 metrics_collector.record_error(
                     error_type=type(e).__name__,
                     endpoint=request.url.path,
                     details={'method': request.method}
                 )
-                
+
                 raise
 
 # Trust only specific hosts in production
@@ -276,7 +279,7 @@ app.add_middleware(
     allow_credentials=False,  # Keep False for security
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization", 
+        "accept", "accept-language", "authorization",
         "content-language", "content-type", "x-requested-with",
         "x-csrf-token", "x-request-id"  # Add our custom headers
     ],
@@ -292,12 +295,12 @@ async def health_check():
         # Run all health checks
         health_results = await health_checker.run_checks()
         overall_status = health_checker.get_overall_status(health_results)
-        
+
         # Add Redis and member service health checks
         redis_health = await redis_cache.health_check()
         airtable_health = await airtable_client.health_check()
         member_cache_health = await member_service.get_cache_health()
-        
+
         response_data = {
             "status": overall_status,
             "service": "api-gateway",
@@ -318,11 +321,11 @@ async def health_check():
             },
             "metrics_summary": metrics_collector.get_summary_stats()
         }
-        
+
         # Return appropriate HTTP status (allow degraded as 200 for development)
         status_code = 200 if overall_status in ['healthy', 'degraded'] else 503
         return JSONResponse(content=response_data, status_code=status_code)
-        
+
     except Exception as e:
         log_error("Health check failed", error=e)
         return JSONResponse(
@@ -385,7 +388,16 @@ async def root():
     }
 
 # Include routers
-from .routes import issues, speeches, bills, enhanced_issues, airtable_webhooks, batch_management, monitoring
+from .routes import (
+    airtable_webhooks,
+    batch_management,
+    bills,
+    enhanced_issues,
+    issues,
+    monitoring,
+    speeches,
+)
+
 app.include_router(issues.router)
 app.include_router(enhanced_issues.router)
 app.include_router(airtable_webhooks.router)
@@ -402,10 +414,10 @@ async def get_embedding_stats():
         # Get real data counts from Airtable
         bills = await airtable_client.list_bills(max_records=1000)
         votes = await airtable_client.list_votes(max_records=1000)
-        
+
         bills_count = len(bills)
         votes_count = len(votes)
-        
+
         return {
             "status": "healthy",
             "bills": bills_count,
@@ -431,8 +443,8 @@ async def search_bills(request: Request):
         body = await request.json()
         query = body.get('query', '')
         limit = body.get('limit', 10)
-        min_certainty = body.get('min_certainty', 0.7)
-        
+        body.get('min_certainty', 0.7)
+
         if not query.strip():
             return {
                 "success": False,
@@ -440,7 +452,7 @@ async def search_bills(request: Request):
                 "results": [],
                 "total_found": 0
             }
-        
+
         # Search in Airtable using structured fields
         search_formula = f"""OR(
             SEARCH('{query}', {{Name}}) > 0,
@@ -450,20 +462,20 @@ async def search_bills(request: Request):
             SEARCH('{query}', {{Stage}}) > 0,
             SEARCH('{query}', {{Bill_Number}}) > 0
         )"""
-        
+
         # Get matching bills from Airtable
         matching_bills = await airtable_client.list_bills(
             filter_formula=search_formula,
             max_records=limit * 2  # Get more results to account for processing
         )
-        
+
         # Transform results to expected format
         search_results = []
         for i, bill in enumerate(matching_bills[:limit]):
             fields = bill.get("fields", {})
             name = fields.get("Name", "")
             notes = fields.get("Notes", "")
-            
+
             # Extract basic info from notes if available
             result = {
                 "bill_id": bill.get("id"),
@@ -477,7 +489,7 @@ async def search_bills(request: Request):
                 "related_issues": [query]
             }
             search_results.append(result)
-        
+
         return {
             "success": True,
             "results": search_results,
@@ -485,7 +497,7 @@ async def search_bills(request: Request):
             "query": query,
             "search_method": "airtable_real_data"
         }
-        
+
     except Exception as e:
         log_error("Search request failed", error=e)
         return {
@@ -502,18 +514,18 @@ async def collect_member_profiles(request: Request):
     try:
         body = await request.json()
         house = body.get('house', 'both')
-        
+
         # Trigger member profile collection
         collection_result = await member_service.collect_member_profiles(house)
-        
+
         log_api_request(request, 200, 0, f"Member collection: {collection_result['collected']} collected")
-        
+
         return {
             "success": True,
             "result": collection_result,
             "message": f"Collected {collection_result['collected']} members, updated {collection_result['updated']} members"
         }
-        
+
     except Exception as e:
         log_error("Member profile collection failed", error=e)
         return {
@@ -527,13 +539,13 @@ async def warmup_cache():
     """Manually trigger cache warmup."""
     try:
         warmup_result = await member_service.warmup_member_cache()
-        
+
         return {
             "success": warmup_result["success"],
             "cached_members": warmup_result.get("cached_members", 0),
             "message": "キャッシュウォームアップが完了しました" if warmup_result["success"] else "キャッシュウォームアップに失敗しました"
         }
-        
+
     except Exception as e:
         log_error("Cache warmup failed", error=e)
         return {
@@ -551,7 +563,7 @@ async def get_cache_stats():
             "success": True,
             "cache_health": cache_health
         }
-        
+
     except Exception as e:
         log_error("Failed to get cache stats", error=e)
         return {
@@ -568,16 +580,16 @@ async def schedule_member_statistics_batch(request: Request):
         body = await request.json()
         member_ids = body.get('member_ids', [])
         priority = body.get('priority', 'normal')
-        
+
         if not member_ids:
             return {
                 "success": False,
                 "error": "member_ids is required",
                 "message": "議員IDリストが必要です"
             }
-        
+
         job_id = member_task_manager.schedule_member_statistics_batch(member_ids, priority)
-        
+
         return {
             "success": True,
             "job_id": job_id,
@@ -585,7 +597,7 @@ async def schedule_member_statistics_batch(request: Request):
             "priority": priority,
             "message": f"{len(member_ids)}人の議員統計計算をスケジュールしました"
         }
-        
+
     except Exception as e:
         log_error("Failed to schedule member statistics batch", error=e)
         return {
@@ -602,16 +614,16 @@ async def schedule_policy_stance_analysis(request: Request):
         member_id = body.get('member_id')
         issue_tags = body.get('issue_tags', [])
         priority = body.get('priority', 'normal')
-        
+
         if not member_id:
             return {
                 "success": False,
                 "error": "member_id is required",
                 "message": "議員IDが必要です"
             }
-        
+
         job_id = member_task_manager.schedule_policy_stance_analysis(member_id, issue_tags, priority)
-        
+
         return {
             "success": True,
             "job_id": job_id,
@@ -620,7 +632,7 @@ async def schedule_policy_stance_analysis(request: Request):
             "priority": priority,
             "message": f"議員{member_id}の政策スタンス分析をスケジュールしました"
         }
-        
+
     except Exception as e:
         log_error("Failed to schedule policy stance analysis", error=e)
         return {
@@ -638,7 +650,7 @@ async def get_batch_job_status(job_id: str):
             "success": True,
             "job_status": job_status
         }
-        
+
     except Exception as e:
         log_error(f"Failed to get job status for {job_id}", error=e)
         return {
@@ -656,7 +668,7 @@ async def get_queue_stats():
             "success": True,
             "queue_stats": queue_stats
         }
-        
+
     except Exception as e:
         log_error("Failed to get queue stats", error=e)
         return {
@@ -675,7 +687,7 @@ async def get_failed_jobs():
             "failed_jobs": failed_jobs,
             "count": len(failed_jobs)
         }
-        
+
     except Exception as e:
         log_error("Failed to get failed jobs", error=e)
         return {
@@ -695,7 +707,7 @@ async def get_available_issues():
             "issues": issues,
             "count": len(issues)
         }
-        
+
     except Exception as e:
         log_error("Failed to get available issues", error=e)
         return {
@@ -713,7 +725,7 @@ async def get_member_policy_analysis(member_id: str, force_refresh: bool = False
             "success": True,
             "analysis": analysis
         }
-        
+
     except Exception as e:
         log_error(f"Failed to get policy analysis for member {member_id}", error=e)
         return {
@@ -727,7 +739,7 @@ async def get_member_issue_stance(member_id: str, issue_tag: str):
     """Get member's stance on a specific issue."""
     try:
         position = await policy_analysis_service.get_member_issue_stance(member_id, issue_tag)
-        
+
         if position:
             return {
                 "success": True,
@@ -746,7 +758,7 @@ async def get_member_issue_stance(member_id: str, issue_tag: str):
                 "success": False,
                 "message": f"議員{member_id}の{issue_tag}に関するスタンスが見つかりません"
             }
-        
+
     except Exception as e:
         log_error(f"Failed to get stance for member {member_id} on {issue_tag}", error=e)
         return {
@@ -762,28 +774,28 @@ async def compare_members_on_issue(request: Request):
         body = await request.json()
         member_ids = body.get('member_ids', [])
         issue_tag = body.get('issue_tag')
-        
+
         if not member_ids:
             return {
                 "success": False,
                 "error": "member_ids is required",
                 "message": "議員IDリストが必要です"
             }
-        
+
         if not issue_tag:
             return {
                 "success": False,
                 "error": "issue_tag is required",
                 "message": "イシュータグが必要です"
             }
-        
+
         comparison = await policy_analysis_service.compare_members_on_issue(member_ids, issue_tag)
-        
+
         return {
             "success": True,
             "comparison": comparison
         }
-        
+
     except Exception as e:
         log_error("Failed to compare members on issue", error=e)
         return {
@@ -793,19 +805,19 @@ async def compare_members_on_issue(request: Request):
         }
 
 @app.get("/api/policy/member/{member_id}/similar")
-async def get_similar_members(member_id: str, issue_tags: Optional[str] = None):
+async def get_similar_members(member_id: str, issue_tags: str | None = None):
     """Get members with similar policy positions."""
     try:
         issue_list = issue_tags.split(',') if issue_tags else None
         similar_members = await policy_analysis_service.get_similar_members(member_id, issue_list)
-        
+
         return {
             "success": True,
             "member_id": member_id,
             "similar_members": similar_members,
             "count": len(similar_members)
         }
-        
+
     except Exception as e:
         log_error(f"Failed to get similar members for {member_id}", error=e)
         return {
@@ -819,12 +831,12 @@ async def get_policy_trends(issue_tag: str, days: int = 30):
     """Get policy trends for an issue."""
     try:
         trends = await policy_analysis_service.get_policy_trends(issue_tag, days)
-        
+
         return {
             "success": True,
             "trends": trends
         }
-        
+
     except Exception as e:
         log_error(f"Failed to get policy trends for {issue_tag}", error=e)
         return {
@@ -839,7 +851,7 @@ async def get_member_profile(member_id: str):
     """Get member profile information."""
     try:
         member_data = await member_service.get_member_with_cache(member_id)
-        
+
         if not member_data:
             return JSONResponse(
                 status_code=404,
@@ -849,7 +861,7 @@ async def get_member_profile(member_id: str):
                     "message": "指定された議員が見つかりません"
                 }
             )
-        
+
         return {
             "success": True,
             "member_id": member_id,
@@ -867,7 +879,7 @@ async def get_member_profile(member_id: str):
             "education": member_data.get("Education"),
             "career": member_data.get("Career")
         }
-        
+
     except Exception as e:
         log_error(f"Failed to get member profile for {member_id}", error=e)
         return JSONResponse(
@@ -896,13 +908,13 @@ async def get_member_voting_stats(member_id: str):
                 "absences": 4
             }
         }
-        
+
         return {
             "success": True,
             "member_id": member_id,
             "stats": mock_stats
         }
-        
+
     except Exception as e:
         log_error(f"Failed to get voting stats for {member_id}", error=e)
         return {
@@ -913,17 +925,17 @@ async def get_member_voting_stats(member_id: str):
 
 @app.get("/api/members")
 async def get_members_list(
-    page: int = 1, 
+    page: int = 1,
     limit: int = 50,
-    house: Optional[str] = None,
-    party: Optional[str] = None,
-    search: Optional[str] = None
+    house: str | None = None,
+    party: str | None = None,
+    search: str | None = None
 ):
     """Get paginated list of members with optional filters."""
     try:
         # Calculate offset
         offset = (page - 1) * limit
-        
+
         # For MVP, return mock data
         # In production, this would call member service with filters
         mock_members = [
@@ -938,7 +950,7 @@ async def get_members_list(
             }
             for i in range(1, 51)
         ]
-        
+
         # Apply filters
         filtered_members = mock_members
         if house:
@@ -947,11 +959,11 @@ async def get_members_list(
             filtered_members = [m for m in filtered_members if m["party"] == party]
         if search:
             filtered_members = [m for m in filtered_members if search.lower() in m["name"].lower()]
-        
+
         # Apply pagination
         total_count = len(filtered_members)
         paginated_members = filtered_members[offset:offset + limit]
-        
+
         return {
             "success": True,
             "members": paginated_members,
@@ -968,7 +980,7 @@ async def get_members_list(
                 "search": search
             }
         }
-        
+
     except Exception as e:
         log_error("Failed to get members list", error=e)
         return {
@@ -1033,7 +1045,7 @@ async def search_categories(query: str, max_records: int = 50):
         raise HTTPException(status_code=500, detail="Failed to search categories")
 
 @app.get("/api/bills")
-async def get_bills(max_records: int = 100, category: Optional[str] = None):
+async def get_bills(max_records: int = 100, category: str | None = None):
     """Get bills, optionally filtered by category."""
     try:
         # Build filter for category if specified
@@ -1041,13 +1053,13 @@ async def get_bills(max_records: int = 100, category: Optional[str] = None):
         if category:
             # Assuming category is stored in Notes field based on our data integration
             filter_formula = f"SEARCH('{category}', {{Notes}}) > 0"
-        
+
         # Get real bills from Airtable
         bills = await airtable_client.list_bills(
             filter_formula=filter_formula,
             max_records=max_records
         )
-        
+
         # Transform the data to match expected format
         transformed_bills = []
         for bill in bills:
@@ -1064,10 +1076,10 @@ async def get_bills(max_records: int = 100, category: Optional[str] = None):
                 }
             }
             transformed_bills.append(transformed_bill)
-        
+
         log_api_request(None, 200, 0, f"Bills fetched: {len(transformed_bills)} records")
         return transformed_bills
-        
+
     except Exception as e:
         log_error("Failed to get bills from Airtable", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
@@ -1078,12 +1090,12 @@ async def get_bill_detail(bill_id: str):
     try:
         # Get bill from Airtable
         bill = await airtable_client.get_bill(bill_id)
-        
+
         if not bill:
             raise HTTPException(status_code=404, detail="Bill not found")
-        
+
         fields = bill.get("fields", {})
-        
+
         # Transform bill data for frontend
         bill_detail = {
             "id": bill.get("id"),
@@ -1102,10 +1114,10 @@ async def get_bill_detail(bill_id: str):
                 "record_id": bill.get("id")
             }
         }
-        
+
         log_api_request(None, 200, 0, f"Bill detail fetched: {bill_id}")
         return bill_detail
-        
+
     except HTTPException:
         raise
     except Exception as e:
