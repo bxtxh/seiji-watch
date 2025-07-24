@@ -127,14 +127,16 @@ async def test_bills_endpoints():
                                 )
                             else:
                                 print(
-                                    f"❌ Bill policy categories failed: {rel_response.status}"
+                                    f"❌ Bill policy categories failed: "
+                                    f"{rel_response.status}"
                                 )
                                 print(f"   Response: {await rel_response.text()}")
                     else:
                         print("⚠️  No bills found to test relationships with")
                 else:
                     print(
-                        f"❌ Could not get bills for relationship testing: {bills_response.status}"
+                        f"❌ Could not get bills for relationship testing: "
+                        f"{bills_response.status}"
                     )
         except Exception as e:
             print(f"❌ Bills-PolicyCategory relationship error: {e}")

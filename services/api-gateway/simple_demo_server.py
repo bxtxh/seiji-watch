@@ -204,8 +204,10 @@ DEMO_HTML = """
 
             } catch (error) {
                 console.error('Failed to load categories:', error);
-                document.getElementById('l1-categories').innerHTML =
-                    '<div style="color: red; padding: 20px; text-align: center;">❌ カテゴリの読み込みに失敗しました</div>';
+                document.getElementById('l1-categories').innerHTML = (
+                    '<div style="color: red; padding: 20px; text-align: center;">'
+                    + '❌ カテゴリの読み込みに失敗しました</div>'
+                );
             }
         }
 

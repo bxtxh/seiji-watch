@@ -66,7 +66,10 @@ def analyze_member_policy_stance(
             stance_analysis[issue_tag] = {
                 "stance": "支持",  # 支持/反対/中立
                 "confidence": 0.75,
-                "reasoning": f"{issue_tag}に関する発言と投票行動を分析した結果、支持的な立場を取っていることが確認されました。",
+                "reasoning": (
+        f"{issue_tag}に関する発言と投票行動を分析した結果、"
+        "支持的な立場を取っていることが確認されました。"
+    ),
                 "vote_count": 15,
                 "supporting_votes": 12,
                 "opposing_votes": 2,
@@ -141,7 +144,8 @@ def bulk_calculate_member_statistics(
         }
 
         logger.info(
-            f"Bulk calculated statistics for {len(member_ids)} members: {len(results)} successful, {len(errors)} failed"
+            f"Bulk calculated statistics for {len(member_ids)} members: "
+            f"{len(results)} successful, {len(errors)} failed"
         )
         return {"success": True, "summary": summary}
 
@@ -224,7 +228,8 @@ def refresh_member_voting_data(
         }
 
         logger.info(
-            f"Refreshed voting data for member {member_id}: {refresh_result['votes_updated']} votes updated"
+            f"Refreshed voting data for member {member_id}: "
+            f"{refresh_result['votes_updated']} votes updated"
         )
         return {"success": True, "member_id": member_id, "result": refresh_result}
 
