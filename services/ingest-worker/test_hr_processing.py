@@ -15,11 +15,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from pipeline.hr_data_integration import run_hr_integration_pipeline
+from scraper.enhanced_hr_scraper import EnhancedHRProcessor
+
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from pipeline.hr_data_integration import run_hr_integration_pipeline
-from scraper.enhanced_hr_scraper import EnhancedHRProcessor
 
 # Configure logging
 logging.basicConfig(
@@ -85,10 +86,14 @@ async def test_integration_pipeline():
         if result['success']:
             integration_result = result.get('integration_results')
             if integration_result:
-                logger.info(f"Integration would have processed {integration_result.sessions_processed} sessions")
-                logger.info(f"Integration would have created {integration_result.bills_created} bills")
-                logger.info(f"Integration would have created {integration_result.members_created} members")
-                logger.info(f"Integration would have created {integration_result.votes_created} votes")
+                logger.info(
+                    f"Integration would have processed {integration_result.sessions_processed} sessions")
+                logger.info(
+                    f"Integration would have created {integration_result.bills_created} bills")
+                logger.info(
+                    f"Integration would have created {integration_result.members_created} members")
+                logger.info(
+                    f"Integration would have created {integration_result.votes_created} votes")
 
         return result['success']
 
@@ -148,7 +153,8 @@ async def test_performance():
 
         processing_time = time.time() - start_time
 
-        logger.info(f"Processed {len(sessions)} sessions in {processing_time:.2f} seconds")
+        logger.info(
+            f"Processed {len(sessions)} sessions in {processing_time:.2f} seconds")
 
         if sessions:
             avg_time_per_session = processing_time / len(sessions)

@@ -20,7 +20,10 @@ class LLMService:
         if not self.client.api_key:
             raise ValueError("OpenAI API key is required")
 
-    async def generate_speech_summary(self, text: str, speaker_name: str | None = None) -> str:
+    async def generate_speech_summary(
+            self,
+            text: str,
+            speaker_name: str | None = None) -> str:
         """Generate a one-sentence summary of a speech.
 
         Args:
@@ -76,7 +79,10 @@ class LLMService:
                 fallback += "..."
             return fallback
 
-    async def extract_speech_topics(self, text: str, speaker_name: str | None = None) -> list[str]:
+    async def extract_speech_topics(
+            self,
+            text: str,
+            speaker_name: str | None = None) -> list[str]:
         """Extract 3 key topics/tags from a speech.
 
         Args:
@@ -134,10 +140,12 @@ class LLMService:
             topics_text = response.choices[0].message.content.strip()
 
             # Parse the response into a list
-            topics = [topic.strip() for topic in topics_text.split("、") if topic.strip()]
+            topics = [topic.strip()
+                      for topic in topics_text.split("、") if topic.strip()]
             if len(topics) == 1:
                 # Try comma separation
-                topics = [topic.strip() for topic in topics_text.split(",") if topic.strip()]
+                topics = [topic.strip()
+                          for topic in topics_text.split(",") if topic.strip()]
 
             # Ensure we have exactly 3 topics
             if len(topics) > 3:
@@ -154,9 +162,12 @@ class LLMService:
             # Fallback topics
             return ["一般議論", "国会質疑", "その他"]
 
-    async def batch_process_speeches(self, speeches: list[dict[str, Any]],
-                                   generate_summaries: bool = True,
-                                   extract_topics: bool = True) -> list[dict[str, Any]]:
+    async def batch_process_speeches(self,
+                                     speeches: list[dict[str,
+                                                         Any]],
+                                     generate_summaries: bool = True,
+                                     extract_topics: bool = True) -> list[dict[str,
+                                                                               Any]]:
         """Process multiple speeches in batch for efficiency.
 
         Args:

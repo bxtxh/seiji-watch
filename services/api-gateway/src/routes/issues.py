@@ -17,16 +17,22 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/issues", tags=["Issues"])
 
 # Dependency for Airtable client
+
+
 async def get_airtable_client() -> AirtableClient:
     """Get Airtable client instance."""
     return AirtableClient()
 
 # Dependency for Issue Extractor
+
+
 async def get_issue_extractor() -> IssueExtractor:
     """Get Issue Extractor instance."""
     return IssueExtractor()
 
 # Request/Response models with validation
+
+
 class IssueCreateRequest(BaseModel):
     title: str
     description: str
@@ -54,8 +60,10 @@ class IssueCreateRequest(BaseModel):
     def validate_priority(self, v):
         allowed_priorities = ['low', 'medium', 'high', 'urgent']
         if v not in allowed_priorities:
-            raise ValueError(f'Priority must be one of: {", ".join(allowed_priorities)}')
+            raise ValueError(
+                f'Priority must be one of: {", ".join(allowed_priorities)}')
         return v
+
 
 class IssueExtractRequest(BaseModel):
     bill_content: str
@@ -75,6 +83,7 @@ class IssueExtractRequest(BaseModel):
         if v and len(v) > 500:
             raise ValueError('Bill title too long (max 500 characters)')
         return InputValidator.sanitize_string(v, 500) if v else v
+
 
 class IssueTagCreateRequest(BaseModel):
     name: str
@@ -97,7 +106,8 @@ class IssueTagCreateRequest(BaseModel):
             '経済・産業', '教育・文化', '環境・エネルギー', 'その他'
         ]
         if v not in allowed_categories:
-            raise ValueError(f'Category must be one of: {", ".join(allowed_categories)}')
+            raise ValueError(
+                f'Category must be one of: {", ".join(allowed_categories)}')
         return v
 
     @validator('color_code')
@@ -108,6 +118,8 @@ class IssueTagCreateRequest(BaseModel):
         return v
 
 # Issue endpoints
+
+
 @router.get("/", response_model=list[dict])
 async def list_issues(
     category: str | None = Query(None, description="Filter by category"),
@@ -137,6 +149,7 @@ async def list_issues(
         logger.error(f"Failed to list issues: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch issues")
 
+
 @router.get("/{issue_id}")
 async def get_issue(
     issue_id: str,
@@ -149,6 +162,7 @@ async def get_issue(
     except Exception as e:
         logger.error(f"Failed to get issue {issue_id}: {e}")
         raise HTTPException(status_code=404, detail="Issue not found")
+
 
 @router.post("/")
 async def create_issue(
@@ -163,6 +177,7 @@ async def create_issue(
     except Exception as e:
         logger.error(f"Failed to create issue: {e}")
         raise HTTPException(status_code=500, detail="Failed to create issue")
+
 
 @router.put("/{issue_id}")
 async def update_issue(
@@ -180,6 +195,8 @@ async def update_issue(
         raise HTTPException(status_code=500, detail="Failed to update issue")
 
 # LLM extraction endpoint
+
+
 @router.post("/extract")
 async def extract_issues(
     request: IssueExtractRequest,
@@ -224,6 +241,8 @@ async def extract_issues(
         raise HTTPException(status_code=500, detail="Failed to extract issues")
 
 # Issue Tags endpoints
+
+
 @router.get("/tags/", response_model=list[dict])
 async def list_issue_tags(
     category: str | None = Query(None, description="Filter by category"),
@@ -237,6 +256,7 @@ async def list_issue_tags(
     except Exception as e:
         logger.error(f"Failed to list issue tags: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch issue tags")
+
 
 @router.post("/tags/")
 async def create_issue_tag(
@@ -252,6 +272,7 @@ async def create_issue_tag(
         logger.error(f"Failed to create issue tag: {e}")
         raise HTTPException(status_code=500, detail="Failed to create issue tag")
 
+
 @router.get("/tags/{tag_id}")
 async def get_issue_tag(
     tag_id: str,
@@ -266,6 +287,8 @@ async def get_issue_tag(
         raise HTTPException(status_code=404, detail="Issue tag not found")
 
 # Bills with issues
+
+
 @router.get("/bills/{bill_id}/issues")
 async def get_bill_issues(
     bill_id: str,
@@ -280,6 +303,8 @@ async def get_bill_issues(
         raise HTTPException(status_code=500, detail="Failed to fetch bill issues")
 
 # Issue Categories endpoints
+
+
 @router.get("/categories", response_model=list[dict])
 async def list_issue_categories(
     layer: str | None = Query(None, description="Filter by layer (L1/L2/L3)"),
@@ -305,6 +330,7 @@ async def list_issue_categories(
         logger.error(f"Failed to list issue categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch issue categories")
 
+
 @router.get("/categories/tree")
 async def get_category_tree(
     airtable: AirtableClient = Depends(get_airtable_client)
@@ -316,6 +342,7 @@ async def get_category_tree(
     except Exception as e:
         logger.error(f"Failed to get category tree: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category tree")
+
 
 @router.get("/categories/{category_id}")
 async def get_issue_category(
@@ -330,6 +357,7 @@ async def get_issue_category(
         logger.error(f"Failed to get issue category {category_id}: {e}")
         raise HTTPException(status_code=404, detail="Issue category not found")
 
+
 @router.get("/categories/{category_id}/children")
 async def get_category_children(
     category_id: str,
@@ -342,6 +370,7 @@ async def get_category_children(
     except Exception as e:
         logger.error(f"Failed to get children for category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category children")
+
 
 @router.get("/categories/search")
 async def search_categories(
@@ -378,6 +407,7 @@ async def search_categories(
     except Exception as e:
         logger.error(f"Failed to search categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to search categories")
+
 
 @router.get("/categories/cap/{cap_code}")
 async def get_category_by_cap_code(

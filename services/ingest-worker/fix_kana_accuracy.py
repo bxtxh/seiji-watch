@@ -97,6 +97,7 @@ CORRECT_POLITICIAN_READINGS = {
     "木村明": "きむらあきら"
 }
 
+
 class KanaAccuracyFixer:
     """Fix Name_Kana accuracy issues"""
 
@@ -262,7 +263,8 @@ class KanaAccuracyFixer:
 
                     else:
                         self.fix_results['errors'] += 1
-                        print(f"   ❌ Error updating {record_info['name']}: {response.status}")
+                        print(
+                            f"   ❌ Error updating {record_info['name']}: {response.status}")
 
             except Exception as e:
                 self.fix_results['errors'] += 1
@@ -375,7 +377,8 @@ class KanaAccuracyFixer:
         print(f"   📝 Pattern fixed: {results['pattern_fixed']}")
         print(f"   ❌ Errors: {results['errors']}")
 
-        total_fixed = results['definitely_wrong_fixed'] + results['placeholder_fixed'] + results['pattern_fixed']
+        total_fixed = results['definitely_wrong_fixed'] + \
+            results['placeholder_fixed'] + results['pattern_fixed']
         print(f"\n📈 TOTAL CORRECTIONS APPLIED: {total_fixed}")
 
         # Show key corrections
@@ -383,7 +386,8 @@ class KanaAccuracyFixer:
             print("\n🎯 KEY CORRECTIONS APPLIED:")
             for correction in results['corrections_applied'][:10]:
                 if correction['fix_type'] == 'known_correction':
-                    print(f"   ✅ {correction['name']}: '{correction['current_kana']}' → '{correction['new_kana']}'")
+                    print(
+                        f"   ✅ {correction['name']}: '{correction['current_kana']}' → '{correction['new_kana']}'")
 
         # Calculate new accuracy estimate
         total_analyzed = results['total_processed']
@@ -400,6 +404,7 @@ class KanaAccuracyFixer:
                 print("👍 GOOD! Significant improvement made")
             else:
                 print("⚠️ Further improvements still needed")
+
 
 async def main():
     """Main fix entry point"""

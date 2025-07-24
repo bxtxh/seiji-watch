@@ -137,7 +137,8 @@ class WhisperClient:
                 # Find the downloaded audio file
                 audio_file = None
                 for file_path in output_path.glob("*"):
-                    if file_path.is_file() and file_path.suffix in ['.mp3', '.wav', '.m4a']:
+                    if file_path.is_file() and file_path.suffix in [
+                            '.mp3', '.wav', '.m4a']:
                         audio_file = str(file_path)
                         break
 
@@ -185,13 +186,13 @@ class WhisperClient:
         # Fill the distance matrix
         for i in range(1, len(ref_words) + 1):
             for j in range(1, len(hyp_words) + 1):
-                if ref_words[i-1] == hyp_words[j-1]:
-                    distances[i][j] = distances[i-1][j-1]
+                if ref_words[i - 1] == hyp_words[j - 1]:
+                    distances[i][j] = distances[i - 1][j - 1]
                 else:
                     distances[i][j] = min(
-                        distances[i-1][j] + 1,      # deletion
-                        distances[i][j-1] + 1,      # insertion
-                        distances[i-1][j-1] + 1     # substitution
+                        distances[i - 1][j] + 1,      # deletion
+                        distances[i][j - 1] + 1,      # insertion
+                        distances[i - 1][j - 1] + 1     # substitution
                     )
 
         wer = distances[len(ref_words)][len(hyp_words)] / len(ref_words)
@@ -230,7 +231,8 @@ class WhisperClient:
                 return False
 
         # Check for reasonable Japanese content (basic check)
-        # This is a simplified check - can be improved with proper Japanese text analysis
+        # This is a simplified check - can be improved with proper Japanese text
+        # analysis
         japanese_chars = sum(1 for c in transcription.text if ord(c) > 127)
         if japanese_chars < len(transcription.text) * 0.3:  # At least 30% non-ASCII
             logger.warning("Low Japanese character ratio")

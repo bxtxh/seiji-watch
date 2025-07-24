@@ -7,6 +7,7 @@ import sys
 
 sys.path.append('src')
 
+
 def test_basic_imports():
     """Test basic imports"""
     print("Testing imports...")
@@ -36,6 +37,7 @@ def test_basic_imports():
     except Exception as e:
         print(f"✗ HR voting scraper imports: {e}")
 
+
 def test_service_initialization():
     """Test service initialization"""
     print("\nTesting service initialization...")
@@ -44,7 +46,8 @@ def test_service_initialization():
         from scheduler.scheduler import IngestionScheduler, SchedulerConfig
         config = SchedulerConfig(project_id="", location="asia-northeast1")
         scheduler = IngestionScheduler(config)
-        print(f"✓ Scheduler initialized with {len(scheduler.scheduled_tasks)} default tasks")
+        print(
+            f"✓ Scheduler initialized with {len(scheduler.scheduled_tasks)} default tasks")
     except Exception as e:
         print(f"✗ Scheduler initialization: {e}")
 
@@ -65,6 +68,7 @@ def test_service_initialization():
     except Exception as e:
         print(f"✗ Batch processor initialization: {e}")
 
+
 def test_api_endpoints():
     """Test API endpoint definitions"""
     print("\nTesting API endpoints...")
@@ -81,6 +85,7 @@ def test_api_endpoints():
         print(f"✓ FastAPI app created with {len(app.routes)} routes")
     except Exception as e:
         print(f"✗ API endpoints: {e}")
+
 
 if __name__ == "__main__":
     print("EPIC 2 Implementation Test")

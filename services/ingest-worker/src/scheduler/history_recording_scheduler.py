@@ -147,7 +147,8 @@ class HistoryRecordingScheduler:
         # Daily cleanup task
         schedule.every().day.at("01:00").do(self._cleanup_old_data)
 
-        self.logger.info(f"Scheduled history recording every {self.config.frequency.value}")
+        self.logger.info(
+            f"Scheduled history recording every {self.config.frequency.value}")
 
     def start(self):
         """Start the scheduler"""
@@ -183,7 +184,8 @@ class HistoryRecordingScheduler:
     def _execute_history_recording(self):
         """Execute history recording task"""
         if self.status.is_running:
-            self.logger.warning("History recording is already running, skipping execution")
+            self.logger.warning(
+                "History recording is already running, skipping execution")
             return
 
         start_time = datetime.now()
@@ -219,8 +221,7 @@ class HistoryRecordingScheduler:
             self.logger.info(
                 f"History recording completed successfully: "
                 f"{result.changes_detected} changes detected, "
-                f"{result.history_records_created} records created in {execution_time:.1f}ms"
-            )
+                f"{result.history_records_created} records created in {execution_time:.1f}ms")
 
             # Store detailed execution history
             self._store_execution_history(True, result, execution_time)
@@ -236,8 +237,8 @@ class HistoryRecordingScheduler:
             self._store_execution_history(False, None, 0, str(e))
 
             # Check if we need to alert
-            if (self.config.alert_on_errors and
-                self.status.consecutive_failures >= self.config.max_consecutive_failures):
+            if (self.config.alert_on_errors and self.status.consecutive_failures >=
+                    self.config.max_consecutive_failures):
                 self._send_failure_alert()
 
         finally:
@@ -260,15 +261,16 @@ class HistoryRecordingScheduler:
 
             self.logger.info(
                 f"Full scan completed: {result.changes_detected} changes detected, "
-                f"{result.history_records_created} records created in {execution_time:.1f}ms"
-            )
+                f"{result.history_records_created} records created in {execution_time:.1f}ms")
 
             # Store full scan history
-            self._store_execution_history(True, result, execution_time, execution_type="full_scan")
+            self._store_execution_history(
+                True, result, execution_time, execution_type="full_scan")
 
         except Exception as e:
             self.logger.error(f"Full scan failed: {e}")
-            self._store_execution_history(False, None, 0, str(e), execution_type="full_scan")
+            self._store_execution_history(
+                False, None, 0, str(e), execution_type="full_scan")
 
     def _execute_with_retry(self, operation) -> HistoryRecordingResult:
         """Execute operation with retry logic"""
@@ -287,7 +289,8 @@ class HistoryRecordingScheduler:
                     )
                     time.sleep(self.config.retry_delay_seconds)
                 else:
-                    self.logger.error(f"All {self.config.max_retries + 1} attempts failed")
+                    self.logger.error(
+                        f"All {self.config.max_retries + 1} attempts failed")
 
         # If we get here, all retries failed
         raise last_error
@@ -330,6 +333,7 @@ class HistoryRecordingScheduler:
         execution_time: float,
         error_message: str | None = None,
         execution_type: str = "regular"
+
     ):
         """Store execution history for monitoring"""
         history_entry = {
@@ -380,9 +384,8 @@ class HistoryRecordingScheduler:
             'failed_executions': self.status.failed_executions,
             'consecutive_failures': self.status.consecutive_failures,
             'success_rate': (
-                self.status.successful_executions / self.status.total_executions
-                if self.status.total_executions > 0 else 0
-            ),
+                self.status.successful_executions /
+                self.status.total_executions if self.status.total_executions > 0 else 0),
             'average_execution_time_ms': self.status.average_execution_time_ms,
             'last_execution_time_ms': self.status.last_execution_time_ms,
             'total_changes_recorded': self.status.total_changes_recorded,
@@ -392,13 +395,12 @@ class HistoryRecordingScheduler:
                 'max_execution_time_minutes': self.config.max_execution_time_minutes,
                 'retry_on_failure': self.config.retry_on_failure,
                 'max_retries': self.config.max_retries,
-                'enable_full_scan_weekly': self.config.enable_full_scan_weekly
-            }
-        }
+                'enable_full_scan_weekly': self.config.enable_full_scan_weekly}}
 
     def get_recent_results(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent execution results"""
-        recent_history = self.execution_history[-limit:] if self.execution_history else []
+        recent_history = self.execution_history[-limit:
+                                                ] if self.execution_history else []
         return [
             {
                 'timestamp': entry['timestamp'].isoformat(),
@@ -472,7 +474,8 @@ class HistoryRecordingScheduler:
             execution_time = (datetime.now() - start_time).total_seconds() * 1000
 
             # Store forced execution history
-            self._store_execution_history(True, result, execution_time, execution_type="manual")
+            self._store_execution_history(
+                True, result, execution_time, execution_type="manual")
 
             return {
                 'success': True,
@@ -484,7 +487,8 @@ class HistoryRecordingScheduler:
 
         except Exception as e:
             execution_time = (datetime.now() - start_time).total_seconds() * 1000
-            self._store_execution_history(False, None, execution_time, str(e), execution_type="manual")
+            self._store_execution_history(
+                False, None, execution_time, str(e), execution_type="manual")
 
             return {
                 'success': False,
@@ -496,7 +500,8 @@ class HistoryRecordingScheduler:
         """Update scheduler configuration"""
         self.config = new_config
         self._setup_schedule()
-        self.logger.info(f"Scheduler configuration updated: {new_config.frequency.value}")
+        self.logger.info(
+            f"Scheduler configuration updated: {new_config.frequency.value}")
 
     def get_change_statistics(self, days: int = 7) -> dict[str, Any]:
         """Get change statistics from the history recorder"""

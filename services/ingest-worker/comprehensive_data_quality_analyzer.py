@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class QualityMetrics:
     """Data quality metrics for a table"""
@@ -41,6 +42,7 @@ class QualityMetrics:
     consistency_issues: list[str]
     recommendations: list[str]
 
+
 @dataclass
 class DatabaseQualityReport:
     """Comprehensive database quality report"""
@@ -56,6 +58,7 @@ class DatabaseQualityReport:
     quality_trends: dict[str, Any]
 
     target_achievements: dict[str, bool]
+
 
 class ComprehensiveDataQualityAnalyzer:
     """Advanced data quality analyzer for all tables"""
@@ -83,8 +86,8 @@ class ComprehensiveDataQualityAnalyzer:
                 "target_score": 95.0,
                 "required_fields": ["Name", "House", "Is_Active"],
                 "optional_fields": ["Name_Kana", "Constituency", "Party", "First_Elected",
-                                  "Terms_Served", "Birth_Date", "Gender", "Previous_Occupations",
-                                  "Education", "Website_URL", "Twitter_Handle"],
+                                    "Terms_Served", "Birth_Date", "Gender", "Previous_Occupations",
+                                    "Education", "Website_URL", "Twitter_Handle"],
                 "unique_fields": ["Name", "House"],  # Combined uniqueness
                 "reference_fields": {"Party": "Parties (政党)"},
                 "validation_rules": {
@@ -97,7 +100,7 @@ class ComprehensiveDataQualityAnalyzer:
                 "target_score": 90.0,
                 "required_fields": ["Title", "Bill_Number", "Status", "Session"],
                 "optional_fields": ["Submitter", "Category", "Summary", "Full_Text_URL",
-                                  "Date_Submitted", "Date_Passed", "Vote_Results"],
+                                    "Date_Submitted", "Date_Passed", "Vote_Results"],
                 "unique_fields": ["Bill_Number"],
                 "reference_fields": {"Submitter": "Members (議員)", "Session": "Sessions (会議)"},
                 "validation_rules": {
@@ -145,7 +148,7 @@ class ComprehensiveDataQualityAnalyzer:
                 "reference_fields": {"Related_Bills": "Bills (法案)"},
                 "validation_rules": {
                     "Category_L1": ["社会保障", "経済・産業", "外交・国際", "教育・文化",
-                                   "環境・エネルギー", "法務・司法", "その他"]
+                                    "環境・エネルギー", "法務・司法", "その他"]
                 }
             }
         }
@@ -159,7 +162,9 @@ class ComprehensiveDataQualityAnalyzer:
                 await asyncio.sleep(0.5 - time_since_last)
             self._last_request_time = asyncio.get_event_loop().time()
 
-    async def get_all_records(self, session: aiohttp.ClientSession, table_name: str) -> list[dict]:
+    async def get_all_records(self,
+                              session: aiohttp.ClientSession,
+                              table_name: str) -> list[dict]:
         """Get all records from a specific table"""
         all_records = []
         offset = None
@@ -190,7 +195,8 @@ class ComprehensiveDataQualityAnalyzer:
 
         return all_records
 
-    def calculate_completeness_score(self, records: list[dict], config: dict) -> tuple[float, dict[str, float]]:
+    def calculate_completeness_score(
+            self, records: list[dict], config: dict) -> tuple[float, dict[str, float]]:
         """Calculate data completeness score"""
         if not records:
             return 0.0, {}
@@ -230,7 +236,8 @@ class ComprehensiveDataQualityAnalyzer:
         overall_score = total_weighted_score / total_weight if total_weight > 0 else 0.0
         return overall_score, field_completeness
 
-    def calculate_uniqueness_score(self, records: list[dict], config: dict) -> tuple[float, list[str]]:
+    def calculate_uniqueness_score(
+            self, records: list[dict], config: dict) -> tuple[float, list[str]]:
         """Calculate data uniqueness score"""
         if not records:
             return 1.0, []
@@ -266,7 +273,8 @@ class ComprehensiveDataQualityAnalyzer:
         uniqueness_score = 1.0 - (duplicate_count / len(records))
         return uniqueness_score, duplicate_records
 
-    def calculate_validity_score(self, records: list[dict], config: dict) -> tuple[float, list[str]]:
+    def calculate_validity_score(
+            self, records: list[dict], config: dict) -> tuple[float, list[str]]:
         """Calculate data validity score"""
         if not records:
             return 1.0, []
@@ -318,7 +326,8 @@ class ComprehensiveDataQualityAnalyzer:
                             is_valid = False
                     elif rule.get("pattern"):
                         pattern = rule["pattern"]
-                        is_valid = bool(re.match(pattern, str(value))) if value else False
+                        is_valid = bool(re.match(pattern, str(value))
+                                        ) if value else False
 
                 if is_valid:
                     passed_validations += 1
@@ -328,8 +337,11 @@ class ComprehensiveDataQualityAnalyzer:
         validity_score = passed_validations / total_validations if total_validations > 0 else 1.0
         return validity_score, invalid_records
 
-    async def calculate_consistency_score(self, session: aiohttp.ClientSession,
-                                        records: list[dict], config: dict) -> tuple[float, list[str]]:
+    async def calculate_consistency_score(self,
+                                          session: aiohttp.ClientSession,
+                                          records: list[dict],
+                                          config: dict) -> tuple[float,
+                                                                 list[str]]:
         """Calculate data consistency score (referential integrity)"""
         if not records:
             return 1.0, []
@@ -392,7 +404,8 @@ class ComprehensiveDataQualityAnalyzer:
         if not records:
             return 1.0
 
-        # Simple heuristic: records with more complete required fields are likely more accurate
+        # Simple heuristic: records with more complete required fields are likely
+        # more accurate
         required_fields = config["required_fields"]
         total_score = 0.0
 
@@ -420,19 +433,22 @@ class ComprehensiveDataQualityAnalyzer:
             most_recent = None
             if updated_at:
                 try:
-                    most_recent = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
-                except:
+                    most_recent = datetime.fromisoformat(
+                        updated_at.replace('Z', '+00:00'))
+                except Exception:
                     pass
 
             if not most_recent and created_at:
                 try:
-                    most_recent = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
-                except:
+                    most_recent = datetime.fromisoformat(
+                        created_at.replace('Z', '+00:00'))
+                except Exception:
                     pass
 
             if most_recent:
                 days_old = (now - most_recent.replace(tzinfo=None)).days
-                # Score decreases with age: 1.0 for <30 days, 0.5 for 1 year, 0.0 for >2 years
+                # Score decreases with age: 1.0 for <30 days, 0.5 for 1 year, 0.0 for >2
+                # years
                 if days_old <= 30:
                     score = 1.0
                 elif days_old <= 365:
@@ -447,7 +463,10 @@ class ComprehensiveDataQualityAnalyzer:
 
         return total_score / len(records)
 
-    def generate_recommendations(self, metrics: QualityMetrics, config: dict) -> list[str]:
+    def generate_recommendations(
+            self,
+            metrics: QualityMetrics,
+            config: dict) -> list[str]:
         """Generate improvement recommendations"""
         recommendations = []
 
@@ -487,7 +506,7 @@ class ComprehensiveDataQualityAnalyzer:
         return recommendations
 
     async def analyze_table_quality(self, session: aiohttp.ClientSession,
-                                   table_name: str) -> QualityMetrics:
+                                    table_name: str) -> QualityMetrics:
         """Analyze quality metrics for a single table"""
         print(f"🔍 Analyzing {table_name}...")
 
@@ -505,8 +524,10 @@ class ComprehensiveDataQualityAnalyzer:
         print(f"📊 Found {len(records)} records in {table_name}")
 
         # Calculate all quality dimensions
-        completeness_score, field_completeness = self.calculate_completeness_score(records, config)
-        uniqueness_score, duplicate_records = self.calculate_uniqueness_score(records, config)
+        completeness_score, field_completeness = self.calculate_completeness_score(
+            records, config)
+        uniqueness_score, duplicate_records = self.calculate_uniqueness_score(
+            records, config)
         validity_score, invalid_records = self.calculate_validity_score(records, config)
         consistency_score, consistency_issues = await self.calculate_consistency_score(session, records, config)
         accuracy_score = self.calculate_accuracy_score(records, config)
@@ -547,16 +568,29 @@ class ComprehensiveDataQualityAnalyzer:
             invalid_records=invalid_records,
             consistency_issues=consistency_issues,
             recommendations=self.generate_recommendations(
-                QualityMetrics(table_name, len(records), completeness_score, uniqueness_score,
-                             validity_score, consistency_score, accuracy_score, timeliness_score,
-                             overall_score, field_completeness, duplicate_records, invalid_records,
-                             consistency_issues, []), config)
-        )
+                QualityMetrics(
+                    table_name,
+                    len(records),
+                    completeness_score,
+                    uniqueness_score,
+                    validity_score,
+                    consistency_score,
+                    accuracy_score,
+                    timeliness_score,
+                    overall_score,
+                    field_completeness,
+                    duplicate_records,
+                    invalid_records,
+                    consistency_issues,
+                    []),
+                config))
 
         print(f"✅ {table_name} analysis complete: {overall_score*100:.1f}% quality score")
         return metrics
 
-    def generate_database_report(self, table_metrics: dict[str, QualityMetrics]) -> DatabaseQualityReport:
+    def generate_database_report(self,
+                                 table_metrics: dict[str,
+                                                     QualityMetrics]) -> DatabaseQualityReport:
         """Generate comprehensive database quality report"""
         total_records = sum(m.total_records for m in table_metrics.values())
         total_tables = len(table_metrics)
@@ -607,9 +641,9 @@ class ComprehensiveDataQualityAnalyzer:
 
     def print_quality_report(self, report: DatabaseQualityReport):
         """Print comprehensive quality report"""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("🔍 DATABASE QUALITY ANALYSIS REPORT")
-        print("="*80)
+        print("=" * 80)
         print(f"📅 Analysis Date: {report.analysis_date}")
         print(f"📊 Total Tables: {report.total_tables}")
         print(f"📊 Total Records: {report.total_records:,}")
@@ -625,7 +659,8 @@ class ComprehensiveDataQualityAnalyzer:
 
             print(f"\n{status} {table_name}")
             print(f"   📊 Records: {metrics.total_records:,}")
-            print(f"   🎯 Overall Score: {metrics.overall_quality_score*100:.1f}% (Target: {target}%)")
+            print(
+                f"   🎯 Overall Score: {metrics.overall_quality_score*100:.1f}% (Target: {target}%)")
             print(f"   📈 Completeness: {metrics.completeness_score*100:.1f}%")
             print(f"   🔍 Uniqueness: {metrics.uniqueness_score*100:.1f}%")
             print(f"   ✅ Validity: {metrics.validity_score*100:.1f}%")
@@ -654,14 +689,15 @@ class ComprehensiveDataQualityAnalyzer:
 
         achieved_count = sum(report.target_achievements.values())
         total_count = len(report.target_achievements)
-        print(f"\n🎯 Targets Achieved: {achieved_count}/{total_count} ({achieved_count/total_count*100:.1f}%)")
+        print(
+            f"\n🎯 Targets Achieved: {achieved_count}/{total_count} ({achieved_count/total_count*100:.1f}%)")
 
         print("\n📈 IMPROVEMENT PRIORITIES:")
         print("-" * 40)
         for i, priority in enumerate(report.improvement_priorities[:10], 1):
             print(f"   {i}. {priority}")
 
-        print("="*80)
+        print("=" * 80)
 
     async def save_quality_report(self, report: DatabaseQualityReport) -> str:
         """Save quality report to JSON file"""
@@ -696,7 +732,11 @@ class ComprehensiveDataQualityAnalyzer:
             table_metrics = {}
 
             # Analyze each table (only accessible ones for now)
-            available_tables = ["Members (議員)", "Bills (法案)", "Speeches (発言)", "Parties (政党)"]
+            available_tables = [
+                "Members (議員)",
+                "Bills (法案)",
+                "Speeches (発言)",
+                "Parties (政党)"]
 
             for table_name in available_tables:
                 if table_name in self.table_configs:
@@ -720,6 +760,7 @@ class ComprehensiveDataQualityAnalyzer:
 
             return report
 
+
 async def main():
     """Main entry point"""
     analyzer = ComprehensiveDataQualityAnalyzer()
@@ -729,7 +770,8 @@ async def main():
 
     # Summary recommendations
     if report.critical_issues:
-        print(f"\n⚠️ {len(report.critical_issues)} critical issues require immediate attention")
+        print(
+            f"\n⚠️ {len(report.critical_issues)} critical issues require immediate attention")
     else:
         print("\n🎉 No critical issues detected - database quality is excellent!")
 

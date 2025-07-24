@@ -21,58 +21,142 @@ def upgrade():
 
     # Add new detailed content fields
     op.add_column('bills', sa.Column('bill_outline', sa.Text(), nullable=True,
-                                   comment='議案要旨相当の長文情報'))
+                                     comment='議案要旨相当の長文情報'))
     op.add_column('bills', sa.Column('background_context', sa.Text(), nullable=True,
-                                   comment='提出背景・経緯'))
+                                     comment='提出背景・経緯'))
     op.add_column('bills', sa.Column('expected_effects', sa.Text(), nullable=True,
-                                   comment='期待される効果'))
-    op.add_column('bills', sa.Column('key_provisions', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='主要条項リスト'))
-    op.add_column('bills', sa.Column('related_laws', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='関連法律リスト'))
-    op.add_column('bills', sa.Column('implementation_date', sa.String(length=10), nullable=True,
-                                   comment='施行予定日'))
+                                     comment='期待される効果'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'key_provisions',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='主要条項リスト'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'related_laws',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='関連法律リスト'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'implementation_date',
+            sa.String(
+                length=10),
+            nullable=True,
+            comment='施行予定日'))
 
     # Add submission information fields
-    op.add_column('bills', sa.Column('submitting_members', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='提出議員一覧'))
-    op.add_column('bills', sa.Column('supporting_members', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='賛成議員一覧（衆議院のみ）'))
-    op.add_column('bills', sa.Column('submitting_party', sa.String(length=100), nullable=True,
-                                   comment='提出会派'))
-    op.add_column('bills', sa.Column('sponsoring_ministry', sa.String(length=100), nullable=True,
-                                   comment='主管省庁'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'submitting_members',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='提出議員一覧'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'supporting_members',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='賛成議員一覧（衆議院のみ）'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'submitting_party',
+            sa.String(
+                length=100),
+            nullable=True,
+            comment='提出会派'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'sponsoring_ministry',
+            sa.String(
+                length=100),
+            nullable=True,
+            comment='主管省庁'))
 
     # Add process tracking fields
-    op.add_column('bills', sa.Column('committee_assignments', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='委員会付託情報'))
-    op.add_column('bills', sa.Column('voting_results', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='採決結果'))
-    op.add_column('bills', sa.Column('amendments', postgresql.JSONB(astext_type=sa.Text()), nullable=True,
-                                   comment='修正内容'))
-    op.add_column('bills', sa.Column('inter_house_status', sa.String(length=50), nullable=True,
-                                   comment='両院間の状況'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'committee_assignments',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='委員会付託情報'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'voting_results',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='採決結果'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'amendments',
+            postgresql.JSONB(
+                astext_type=sa.Text()),
+            nullable=True,
+            comment='修正内容'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'inter_house_status',
+            sa.String(
+                length=50),
+            nullable=True,
+            comment='両院間の状況'))
 
     # Add source metadata fields
-    op.add_column('bills', sa.Column('source_house', sa.String(length=10), nullable=True,
-                                   comment='データ取得元議院'))
+    op.add_column(
+        'bills',
+        sa.Column(
+            'source_house',
+            sa.String(
+                length=10),
+            nullable=True,
+            comment='データ取得元議院'))
     op.add_column('bills', sa.Column('source_url', sa.String(length=500), nullable=True,
-                                   comment='元データURL'))
+                                     comment='元データURL'))
     op.add_column('bills', sa.Column('data_quality_score', sa.Float(), nullable=True,
-                                   comment='データ品質スコア'))
+                                     comment='データ品質スコア'))
 
     # Add house of origin field if not exists
     try:
-        op.add_column('bills', sa.Column('house_of_origin', sa.String(length=10), nullable=True,
-                                       comment='提出元議院'))
+        op.add_column(
+            'bills',
+            sa.Column(
+                'house_of_origin',
+                sa.String(
+                    length=10),
+                nullable=True,
+                comment='提出元議院'))
     except sa.exc.InvalidRequestError:
         # Column already exists, skip
         pass
 
     # Add diet session field if not exists
     try:
-        op.add_column('bills', sa.Column('diet_session', sa.String(length=20), nullable=True,
-                                       comment='国会回次'))
+        op.add_column(
+            'bills',
+            sa.Column(
+                'diet_session',
+                sa.String(
+                    length=20),
+                nullable=True,
+                comment='国会回次'))
     except sa.exc.InvalidRequestError:
         # Column already exists, skip
         pass
@@ -96,9 +180,15 @@ def upgrade():
     """)
 
     # Create GIN index for JSONB fields
-    op.create_index('idx_bills_key_provisions_gin', 'bills', ['key_provisions'], postgresql_using='gin')
-    op.create_index('idx_bills_submitting_members_gin', 'bills', ['submitting_members'], postgresql_using='gin')
-    op.create_index('idx_bills_committee_assignments_gin', 'bills', ['committee_assignments'], postgresql_using='gin')
+    op.create_index(
+        'idx_bills_key_provisions_gin',
+        'bills',
+        ['key_provisions'],
+        postgresql_using='gin')
+    op.create_index('idx_bills_submitting_members_gin', 'bills', [
+                    'submitting_members'], postgresql_using='gin')
+    op.create_index('idx_bills_committee_assignments_gin', 'bills', [
+                    'committee_assignments'], postgresql_using='gin')
 
 
 def downgrade():

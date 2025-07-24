@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def check_airtable_status():
     """Check current status of Airtable tables"""
 
@@ -41,7 +42,8 @@ async def check_airtable_status():
                         sample_bill = bills_data['records'][0]
                         print(f"  Sample fields: {list(sample_bill['fields'].keys())}")
                         if 'Name' in sample_bill['fields']:
-                            print(f"  Sample title: {sample_bill['fields']['Name'][:50]}...")
+                            print(
+                                f"  Sample title: {sample_bill['fields']['Name'][:50]}...")
                 else:
                     print(f"  ❌ Error accessing Bills: {response.status}")
                     bills_count = 0
@@ -58,7 +60,8 @@ async def check_airtable_status():
                         sample_vote = votes_data['records'][0]
                         print(f"  Sample fields: {list(sample_vote['fields'].keys())}")
                         if 'Name' in sample_vote['fields']:
-                            print(f"  Sample name: {sample_vote['fields']['Name'][:50]}...")
+                            print(
+                                f"  Sample name: {sample_vote['fields']['Name'][:50]}...")
                 else:
                     print(f"  ❌ Error accessing Votes: {response.status}")
                     votes_count = 0
@@ -84,6 +87,7 @@ async def check_airtable_status():
         except Exception as e:
             print(f"❌ Error checking Airtable status: {e}")
             return False, 0, 0
+
 
 async def main():
     """Check Airtable status"""

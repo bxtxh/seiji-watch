@@ -215,7 +215,8 @@ class SpeechBase(BaseSchema):
     duration_seconds: int | None = Field(None, ge=0)
     speaker_name: str | None = Field(None, max_length=200)
     speaker_title: str | None = Field(None, max_length=200)
-    speaker_type: str = Field(default="member", pattern=r"^(member|minister|official|other)$")
+    speaker_type: str = Field(default="member",
+                              pattern=r"^(member|minister|official|other)$")
     original_text: str = Field(..., min_length=1)
     cleaned_text: str | None = None
     speech_type: str | None = Field(None, max_length=50)

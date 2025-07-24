@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class TableCompletenessImprover:
     """Systematic table completeness improvement system"""
 
@@ -95,7 +96,9 @@ class TableCompletenessImprover:
             }
         }
 
-    async def get_table_records(self, session: aiohttp.ClientSession, table_name: str) -> list[dict]:
+    async def get_table_records(self,
+                                session: aiohttp.ClientSession,
+                                table_name: str) -> list[dict]:
         """Fetch all records from a table"""
         all_records = []
         offset = None
@@ -131,7 +134,10 @@ class TableCompletenessImprover:
 
         return all_records
 
-    def analyze_field_completeness(self, records: list[dict], fields: list[str]) -> dict:
+    def analyze_field_completeness(
+            self,
+            records: list[dict],
+            fields: list[str]) -> dict:
         """Analyze completeness for specific fields"""
         analysis = {
             "total_records": len(records),
@@ -163,12 +169,15 @@ class TableCompletenessImprover:
             }
 
         # Calculate overall completeness
-        total_completeness = sum(fa["completeness_rate"] for fa in analysis["field_analysis"].values())
-        analysis["overall_completeness"] = round(total_completeness / len(fields), 3) if fields else 0
+        total_completeness = sum(fa["completeness_rate"]
+                                 for fa in analysis["field_analysis"].values())
+        analysis["overall_completeness"] = round(
+            total_completeness / len(fields), 3) if fields else 0
 
         return analysis
 
-    def identify_improvement_opportunities(self, table_name: str, analysis: dict) -> list[dict]:
+    def identify_improvement_opportunities(
+            self, table_name: str, analysis: dict) -> list[dict]:
         """Identify specific improvement opportunities"""
         opportunities = []
         strategy = self.table_strategies.get(table_name, {})
@@ -209,7 +218,10 @@ class TableCompletenessImprover:
 
         return opportunities
 
-    async def implement_bills_improvements(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def implement_bills_improvements(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Implement specific improvements for Bills table"""
         improvements = {
             "standardized_statuses": 0,
@@ -226,7 +238,6 @@ class TableCompletenessImprover:
             "廃案": "廃案",
             "": "提出"  # Default for empty
         }
-
 
         for record in records:
             fields = record.get('fields', {})
@@ -285,7 +296,10 @@ class TableCompletenessImprover:
 
         return improvements
 
-    async def implement_members_improvements(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def implement_members_improvements(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Implement specific improvements for Members table"""
         improvements = {
             "standardized_constituencies": 0,
@@ -311,7 +325,8 @@ class TableCompletenessImprover:
             constituency = fields.get('Constituency', '')
             if constituency:
                 for short, full in constituency_mapping.items():
-                    if constituency.startswith(short) and not constituency.startswith(full):
+                    if constituency.startswith(
+                            short) and not constituency.startswith(full):
                         updates['Constituency'] = constituency.replace(short, full)
                         improvements["standardized_constituencies"] += 1
                         break
@@ -326,7 +341,8 @@ class TableCompletenessImprover:
                 try:
                     first_year = int(fields['First_Elected'])
                     current_year = 2025
-                    estimated_terms = max(1, (current_year - first_year) // 4)  # Rough estimate
+                    estimated_terms = max(
+                        1, (current_year - first_year) // 4)  # Rough estimate
                     updates['Terms_Served'] = estimated_terms
                     improvements["calculated_terms"] += 1
                 except (ValueError, TypeError):
@@ -354,7 +370,10 @@ class TableCompletenessImprover:
 
         return improvements
 
-    async def implement_speeches_improvements(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def implement_speeches_improvements(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Implement specific improvements for Speeches table"""
         improvements = {
             "categorized_speeches": 0,
@@ -391,7 +410,8 @@ class TableCompletenessImprover:
             # Enhance AI summaries
             if not fields.get('AI_Summary') and fields.get('Speech_Content'):
                 content = fields['Speech_Content']
-                summary = f"AI要約: {content[:50]}..." if len(content) > 50 else f"AI要約: {content}"
+                summary = f"AI要約: {content[:50]}..." if len(
+                    content) > 50 else f"AI要約: {content}"
                 updates['AI_Summary'] = summary
                 improvements["enhanced_summaries"] += 1
 
@@ -424,7 +444,10 @@ class TableCompletenessImprover:
 
         return improvements
 
-    async def implement_parties_improvements(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def implement_parties_improvements(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Implement specific improvements for Parties table"""
         improvements = {
             "updated_activity_status": 0,
@@ -468,11 +491,12 @@ class TableCompletenessImprover:
         return improvements
 
     async def safe_update_record(self, session: aiohttp.ClientSession, table_name: str,
-                                record_id: str, updates: dict) -> bool:
+                                 record_id: str, updates: dict) -> bool:
         """Safely update a record with error handling"""
         try:
             # Filter out computed fields
-            safe_updates = {k: v for k, v in updates.items() if k != "Attachment Summary"}
+            safe_updates = {k: v for k, v in updates.items() if k !=
+                            "Attachment Summary"}
 
             if not safe_updates:
                 return True
@@ -508,14 +532,16 @@ class TableCompletenessImprover:
                     continue
 
                 # Analyze current completeness
-                all_fields = strategy["priority_fields"] + strategy["enhancement_fields"]
+                all_fields = strategy["priority_fields"] + \
+                    strategy["enhancement_fields"]
                 analysis = self.analyze_field_completeness(records, all_fields)
 
                 print(f"📊 Current completeness: {analysis['overall_completeness']:.1%}")
                 print(f"🎯 Target completeness: {strategy['target_completeness']:.1%}")
 
                 # Identify opportunities
-                opportunities = self.identify_improvement_opportunities(table_name, analysis)
+                opportunities = self.identify_improvement_opportunities(
+                    table_name, analysis)
                 print(f"🔍 Found {len(opportunities)} improvement opportunities")
 
                 # Implement improvements
@@ -532,9 +558,11 @@ class TableCompletenessImprover:
 
                 # Re-analyze after improvements
                 updated_records = await self.get_table_records(session, table_name)
-                updated_analysis = self.analyze_field_completeness(updated_records, all_fields)
+                updated_analysis = self.analyze_field_completeness(
+                    updated_records, all_fields)
 
-                improvement_delta = updated_analysis['overall_completeness'] - analysis['overall_completeness']
+                improvement_delta = updated_analysis['overall_completeness'] - \
+                    analysis['overall_completeness']
 
                 results[table_name] = {
                     "before_completeness": analysis['overall_completeness'],
@@ -542,13 +570,14 @@ class TableCompletenessImprover:
                     "improvement_delta": improvement_delta,
                     "target_achieved": updated_analysis['overall_completeness'] >= strategy['target_completeness'],
                     "improvements_made": improvement_results,
-                    "opportunities_identified": len(opportunities)
-                }
+                    "opportunities_identified": len(opportunities)}
 
                 print(f"✅ Completed {table_name}:")
                 print(f"   📈 Improvement: +{improvement_delta:.1%}")
-                print(f"   🎯 Target achieved: {'✅' if results[table_name]['target_achieved'] else '❌'}")
-                print(f"   🔧 Actions taken: {sum(improvement_results.values()) if improvement_results else 0}")
+                print(
+                    f"   🎯 Target achieved: {'✅' if results[table_name]['target_achieved'] else '❌'}")
+                print(
+                    f"   🔧 Actions taken: {sum(improvement_results.values()) if improvement_results else 0}")
 
         # Generate final report
         await self.generate_improvement_report(results)
@@ -564,18 +593,20 @@ class TableCompletenessImprover:
             "task": "段階的改善 - 各テーブルの完全性向上",
             "summary": {
                 "tables_improved": len(results),
-                "targets_achieved": sum(1 for r in results.values() if r["target_achieved"]),
-                "total_improvements": sum(sum(r["improvements_made"].values()) for r in results.values() if r["improvements_made"]),
-                "average_improvement": sum(r["improvement_delta"] for r in results.values()) / len(results) if results else 0
-            },
+                "targets_achieved": sum(
+                    1 for r in results.values() if r["target_achieved"]),
+                "total_improvements": sum(
+                    sum(
+                        r["improvements_made"].values()) for r in results.values() if r["improvements_made"]),
+                "average_improvement": sum(
+                    r["improvement_delta"] for r in results.values()) /
+                len(results) if results else 0},
             "table_results": results,
             "recommendations": [
                 "Continue with remaining improvement opportunities",
                 "Establish data quality monitoring",
                 "Create automated validation rules",
-                "Schedule regular completeness reviews"
-            ]
-        }
+                "Schedule regular completeness reviews"]}
 
         filename = f"table_improvement_report_{timestamp}.json"
         with open(filename, 'w', encoding='utf-8') as f:
@@ -588,17 +619,20 @@ class TableCompletenessImprover:
         print("📋 TABLE COMPLETENESS IMPROVEMENT SUMMARY")
         print(f"{'='*80}")
         print(f"📊 Tables Improved: {report['summary']['tables_improved']}")
-        print(f"🎯 Targets Achieved: {report['summary']['targets_achieved']}/{len(results)}")
+        print(
+            f"🎯 Targets Achieved: {report['summary']['targets_achieved']}/{len(results)}")
         print(f"🔧 Total Improvements: {report['summary']['total_improvements']}")
         print(f"📈 Average Improvement: +{report['summary']['average_improvement']:.1%}")
 
         for table_name, result in results.items():
             status = "✅" if result["target_achieved"] else "⚠️"
             print(f"\n{status} {table_name}:")
-            print(f"   📊 {result['before_completeness']:.1%} → {result['after_completeness']:.1%} (+{result['improvement_delta']:.1%})")
+            print(
+                f"   📊 {result['before_completeness']:.1%} → {result['after_completeness']:.1%} (+{result['improvement_delta']:.1%})")
             if result["improvements_made"]:
                 actions = sum(result["improvements_made"].values())
                 print(f"   🔧 {actions} improvements applied")
+
 
 async def main():
     """Main entry point"""

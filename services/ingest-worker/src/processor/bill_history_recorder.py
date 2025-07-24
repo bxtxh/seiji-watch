@@ -7,7 +7,7 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from difflib import SequenceMatcher
 from enum import Enum
 from typing import Any
@@ -95,7 +95,8 @@ class BillHistoryRecorder:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Configuration
@@ -141,10 +142,20 @@ class BillHistoryRecorder:
             HistoryChangeType.STATUS_CHANGE: ['status'],
             HistoryChangeType.STAGE_TRANSITION: ['stage'],
             HistoryChangeType.COMMITTEE_ASSIGNMENT: ['committee_assignments'],
-            HistoryChangeType.VOTE_RECORDED: ['vote_results', 'final_vote_date'],
-            HistoryChangeType.DOCUMENT_UPDATE: ['bill_outline', 'background_context', 'expected_effects'],
-            HistoryChangeType.METADATA_UPDATE: ['title', 'submitter', 'diet_session'],
-            HistoryChangeType.IMPLEMENTATION: ['implementation_date', 'promulgated_date'],
+            HistoryChangeType.VOTE_RECORDED: [
+                'vote_results',
+                'final_vote_date'],
+            HistoryChangeType.DOCUMENT_UPDATE: [
+                'bill_outline',
+                'background_context',
+                'expected_effects'],
+            HistoryChangeType.METADATA_UPDATE: [
+                'title',
+                'submitter',
+                'diet_session'],
+            HistoryChangeType.IMPLEMENTATION: [
+                'implementation_date',
+                'promulgated_date'],
             HistoryChangeType.DATA_CORRECTION: ['data_quality_score'],
         }
 
@@ -183,28 +194,31 @@ class BillHistoryRecorder:
 
                     # Merge statistics
                     for change_type, count in batch_result.changes_by_type.items():
-                        result.changes_by_type[change_type] = result.changes_by_type.get(change_type, 0) + count
+                        result.changes_by_type[change_type] = result.changes_by_type.get(
+                            change_type, 0) + count
 
                     for significance, count in batch_result.changes_by_significance.items():
-                        result.changes_by_significance[significance] = result.changes_by_significance.get(significance, 0) + count
+                        result.changes_by_significance[significance] = result.changes_by_significance.get(
+                            significance, 0) + count
 
                     result.bills_with_changes.update(batch_result.bills_with_changes)
 
                 # Calculate processing time
-                result.processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+                result.processing_time_ms = (
+                    datetime.now() - start_time).total_seconds() * 1000
 
                 # Log summary
                 self.logger.info(
                     f"History recording completed: {result.changes_detected} changes detected, "
-                    f"{result.history_records_created} records created from {result.total_bills_checked} bills"
-                )
+                    f"{result.history_records_created} records created from {result.total_bills_checked} bills")
 
                 return result
 
         except Exception as e:
             self.logger.error(f"Error in change detection and recording: {e}")
             result.errors.append(f"System error: {str(e)}")
-            result.processing_time_ms = (datetime.now() - start_time).total_seconds() * 1000
+            result.processing_time_ms = (
+                datetime.now() - start_time).total_seconds() * 1000
             return result
 
     def _get_bills_to_check(
@@ -233,7 +247,10 @@ class BillHistoryRecorder:
 
         return session.execute(query).scalars().all()
 
-    def _process_bill_batch(self, session: Session, bills: list[Bill]) -> HistoryRecordingResult:
+    def _process_bill_batch(
+            self,
+            session: Session,
+            bills: list[Bill]) -> HistoryRecordingResult:
         """Process a batch of bills for change detection"""
         result = HistoryRecordingResult()
 
@@ -263,8 +280,10 @@ class BillHistoryRecorder:
 
                     # Count by type and significance
                     for change in changes:
-                        result.changes_by_type[change.change_type] = result.changes_by_type.get(change.change_type, 0) + 1
-                        result.changes_by_significance[change.significance] = result.changes_by_significance.get(change.significance, 0) + 1
+                        result.changes_by_type[change.change_type] = result.changes_by_type.get(
+                            change.change_type, 0) + 1
+                        result.changes_by_significance[change.significance] = result.changes_by_significance.get(
+                            change.significance, 0) + 1
 
                 # Store current snapshot for future comparisons
                 self._store_snapshot(session, current_snapshot)
@@ -291,7 +310,8 @@ class BillHistoryRecorder:
                 value = getattr(bill, field_name)
                 # Convert complex types to strings for comparison
                 if isinstance(value, dict | list):
-                    tracked_fields[field_name] = json.dumps(value, sort_keys=True, default=str)
+                    tracked_fields[field_name] = json.dumps(
+                        value, sort_keys=True, default=str)
                 else:
                     tracked_fields[field_name] = value
 
@@ -325,8 +345,9 @@ class BillHistoryRecorder:
                     snapshot_time=latest_history.recorded_at,
                     data_hash="",
                     tracked_fields=latest_history.previous_values,
-                    quality_score=latest_history.previous_values.get('data_quality_score', 0.0)
-                )
+                    quality_score=latest_history.previous_values.get(
+                        'data_quality_score',
+                        0.0))
 
             return None
 
@@ -356,17 +377,31 @@ class BillHistoryRecorder:
                     field_name=field_name,
                     old_value=last_value,
                     new_value=current_value,
-                    change_type=self._determine_change_type(field_name, last_value, current_value),
-                    significance=self.field_significance.get(field_name, ChangeSignificance.MINOR),
-                    confidence=self._calculate_change_confidence(field_name, last_value, current_value),
+                    change_type=self._determine_change_type(
+                        field_name,
+                        last_value,
+                        current_value),
+                    significance=self.field_significance.get(
+                        field_name,
+                        ChangeSignificance.MINOR),
+                    confidence=self._calculate_change_confidence(
+                        field_name,
+                        last_value,
+                        current_value),
                     detected_at=current_snapshot.snapshot_time,
-                    change_reason=self._infer_change_reason(field_name, last_value, current_value)
-                )
+                    change_reason=self._infer_change_reason(
+                        field_name,
+                        last_value,
+                        current_value))
                 changes.append(change)
 
         return changes
 
-    def _is_significant_change(self, field_name: str, old_value: Any, new_value: Any) -> bool:
+    def _is_significant_change(
+            self,
+            field_name: str,
+            old_value: Any,
+            new_value: Any) -> bool:
         """Determine if a change is significant enough to record"""
         # Handle None values
         if old_value is None and new_value is None:
@@ -384,7 +419,11 @@ class BillHistoryRecorder:
         # Direct comparison for other types
         return old_value != new_value
 
-    def _determine_change_type(self, field_name: str, old_value: Any, new_value: Any) -> HistoryChangeType:
+    def _determine_change_type(
+            self,
+            field_name: str,
+            old_value: Any,
+            new_value: Any) -> HistoryChangeType:
         """Determine the type of change based on field and values"""
         # Check patterns
         for change_type, patterns in self.change_patterns.items():
@@ -394,7 +433,11 @@ class BillHistoryRecorder:
         # Default to generic update
         return HistoryChangeType.DATA_CORRECTION
 
-    def _calculate_change_confidence(self, field_name: str, old_value: Any, new_value: Any) -> float:
+    def _calculate_change_confidence(
+            self,
+            field_name: str,
+            old_value: Any,
+            new_value: Any) -> float:
         """Calculate confidence score for the change detection"""
         # Base confidence
         confidence = 0.8
@@ -415,7 +458,11 @@ class BillHistoryRecorder:
 
         return max(0.0, min(1.0, confidence))
 
-    def _infer_change_reason(self, field_name: str, old_value: Any, new_value: Any) -> str | None:
+    def _infer_change_reason(
+            self,
+            field_name: str,
+            old_value: Any,
+            new_value: Any) -> str | None:
         """Infer the reason for the change"""
         if old_value is None and new_value is not None:
             return "Data added"
@@ -430,7 +477,10 @@ class BillHistoryRecorder:
         else:
             return f"Field {field_name} updated"
 
-    def _create_history_records(self, bill: Bill, changes: list[BillChange]) -> list[BillProcessHistory]:
+    def _create_history_records(
+            self,
+            bill: Bill,
+            changes: list[BillChange]) -> list[BillProcessHistory]:
         """Create history records from detected changes"""
         history_records = []
 
@@ -480,7 +530,8 @@ class BillHistoryRecorder:
         """Store snapshot for future comparisons"""
         # In a full implementation, this would store to a dedicated snapshots table
         # For now, we'll log the snapshot creation
-        self.logger.debug(f"Snapshot created for bill {snapshot.bill_id} at {snapshot.snapshot_time}")
+        self.logger.debug(
+            f"Snapshot created for bill {snapshot.bill_id} at {snapshot.snapshot_time}")
 
     def cleanup_old_snapshots(self, retention_days: int = 30):
         """Clean up old snapshots to manage storage"""
@@ -532,13 +583,16 @@ class BillHistoryRecorder:
                     # Count by change type
                     for record in recent_records:
                         change_type = record.change_type.value
-                        stats['changes_by_type'][change_type] = stats['changes_by_type'].get(change_type, 0) + 1
+                        stats['changes_by_type'][change_type] = stats['changes_by_type'].get(
+                            change_type, 0) + 1
 
                         event_type = record.event_type.value
-                        stats['changes_by_event'][event_type] = stats['changes_by_event'].get(event_type, 0) + 1
+                        stats['changes_by_event'][event_type] = stats['changes_by_event'].get(
+                            event_type, 0) + 1
 
                     # Calculate average confidence
-                    total_confidence = sum(r.confidence_score or 0.0 for r in recent_records)
+                    total_confidence = sum(
+                        r.confidence_score or 0.0 for r in recent_records)
                     stats['average_confidence'] = total_confidence / len(recent_records)
 
                 return stats
@@ -585,7 +639,8 @@ class BillHistoryRecorder:
                 session.add(history_record)
                 session.commit()
 
-                self.logger.info(f"Manual change recorded for bill {bill_id}: {change_reason}")
+                self.logger.info(
+                    f"Manual change recorded for bill {bill_id}: {change_reason}")
                 return history_record
 
         except Exception as e:

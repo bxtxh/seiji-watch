@@ -23,8 +23,7 @@ class MemberService:
         # Official Diet member roster URLs
         self.member_urls = {
             "house_of_representatives": "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/kaiha_m.htm",
-            "house_of_councillors": "https://www.sangiin.go.jp/japanese/joho1/kousei/giin/212/giin.htm"
-        }
+            "house_of_councillors": "https://www.sangiin.go.jp/japanese/joho1/kousei/giin/212/giin.htm"}
 
     async def collect_member_profiles(self, house: str = "both") -> dict[str, Any]:
         """Collect comprehensive member profiles from official sources."""
@@ -96,8 +95,10 @@ class MemberService:
                     await self.member_cache.invalidate_member(member_id)
 
                 except Exception as e:
-                    logger.error(f"Failed to process member {member_data.get('name', 'Unknown')}: {e}")
-                    results["errors"].append(f"Member {member_data.get('name', 'Unknown')}: {str(e)}")
+                    logger.error(
+                        f"Failed to process member {member_data.get('name', 'Unknown')}: {e}")
+                    results["errors"].append(
+                        f"Member {member_data.get('name', 'Unknown')}: {str(e)}")
 
         except Exception as e:
             logger.error(f"House {house} member collection failed: {e}")
@@ -108,40 +109,37 @@ class MemberService:
     async def _get_mock_member_data(self, house: str) -> list[dict[str, Any]]:
         """Mock member data for demonstration (replace with actual scraping)."""
         # In real implementation, this would scrape from official Diet websites
-        mock_data = [
-            {
-                "name": "田中太郎",
-                "name_kana": "たなか　たろう",
-                "house": house,
-                "constituency": "東京都第1区" if house == "house_of_representatives" else "東京都",
-                "party_name": "自由民主党",
-                "birth_date": "1970-01-01",
-                "first_elected": "2009-08-30",
-                "terms_served": 5,
-                "education": "東京大学法学部",
-                "previous_occupations": ["弁護士", "会社員"],
-                "website_url": "https://example.com/tanaka",
-                "status": "active"
-            },
-            {
-                "name": "佐藤花子",
-                "name_kana": "さとう　はなこ",
-                "house": house,
-                "constituency": "大阪府第2区" if house == "house_of_representatives" else "大阪府",
-                "party_name": "立憲民主党",
-                "birth_date": "1975-03-15",
-                "first_elected": "2017-10-22",
-                "terms_served": 2,
-                "education": "京都大学経済学部",
-                "previous_occupations": ["記者", "市議会議員"],
-                "website_url": "https://example.com/sato",
-                "status": "active"
-            }
-        ]
+        mock_data = [{"name": "田中太郎",
+                      "name_kana": "たなか　たろう",
+                      "house": house,
+                      "constituency": "東京都第1区" if house == "house_of_representatives" else "東京都",
+                      "party_name": "自由民主党",
+                      "birth_date": "1970-01-01",
+                      "first_elected": "2009-08-30",
+                      "terms_served": 5,
+                      "education": "東京大学法学部",
+                      "previous_occupations": ["弁護士",
+                                               "会社員"],
+                      "website_url": "https://example.com/tanaka",
+                      "status": "active"},
+                     {"name": "佐藤花子",
+                      "name_kana": "さとう　はなこ",
+                      "house": house,
+                      "constituency": "大阪府第2区" if house == "house_of_representatives" else "大阪府",
+                      "party_name": "立憲民主党",
+                      "birth_date": "1975-03-15",
+                      "first_elected": "2017-10-22",
+                      "terms_served": 2,
+                      "education": "京都大学経済学部",
+                      "previous_occupations": ["記者",
+                                               "市議会議員"],
+                      "website_url": "https://example.com/sato",
+                      "status": "active"}]
 
         return mock_data
 
-    async def get_member_with_cache(self, member_id: str, force_refresh: bool = False) -> dict[str, Any] | None:
+    async def get_member_with_cache(
+            self, member_id: str, force_refresh: bool = False) -> dict[str, Any] | None:
         """Get member data with intelligent caching."""
         cache_key = f"member:{member_id}"
 
@@ -180,7 +178,7 @@ class MemberService:
             logger.error(f"Background refresh failed for member {member_id}: {e}")
 
     async def get_members_list(self, filters: dict[str, Any] | None = None,
-                             force_refresh: bool = False) -> list[dict[str, Any]]:
+                               force_refresh: bool = False) -> list[dict[str, Any]]:
         """Get members list with caching and filtering."""
         filter_key = self._build_filter_key(filters or {})
 
@@ -229,7 +227,7 @@ class MemberService:
                     birth_date = datetime.fromisoformat(fields["Birth_Date"])
                     age = (datetime.now() - birth_date).days // 365
                     enriched["computed_age"] = age
-                except:
+                except Exception:
                     pass
 
             # Calculate tenure
@@ -238,7 +236,7 @@ class MemberService:
                     first_elected = datetime.fromisoformat(fields["First_Elected"])
                     tenure_years = (datetime.now() - first_elected).days // 365
                     enriched["computed_tenure_years"] = tenure_years
-                except:
+                except Exception:
                     pass
 
             # Add display name with furigana
@@ -295,7 +293,8 @@ class MemberService:
 
         return "AND(" + ", ".join(filter_parts) + ")"
 
-    async def search_members(self, query: str, filters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    async def search_members(
+            self, query: str, filters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         """Search members by name or other criteria."""
         # Build search filter
         search_filters = filters or {}

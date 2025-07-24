@@ -232,8 +232,13 @@ class MetricsCollector:
         self.system_metrics_enabled = True
         self.last_cleanup = datetime.now()
 
-    def record_metric(self, name: str, value: int | float,
-                     metric_type: MetricType, tags: dict[str, str] = None):
+    def record_metric(
+        self,
+        name: str,
+        value: int | float,
+        metric_type: MetricType,
+        tags: dict[str, str] = None
+    ):
         """Record a metric value."""
         if tags is None:
             tags = {}
@@ -266,7 +271,8 @@ class MetricsCollector:
         """Record a timing metric."""
         self.record_metric(name, duration_ms, MetricType.TIMER, tags)
 
-    def record_histogram(self, name: str, value: int | float, tags: dict[str, str] = None):
+    def record_histogram(self, name: str, value: int |
+                         float, tags: dict[str, str] = None):
         """Record a histogram metric."""
         self.record_metric(name, value, MetricType.HISTOGRAM, tags)
 
@@ -295,7 +301,9 @@ class MetricsCollector:
             try:
                 network = psutil.net_io_counters()
                 self.increment_counter("system.network.bytes_sent", network.bytes_sent)
-                self.increment_counter("system.network.bytes_received", network.bytes_recv)
+                self.increment_counter(
+                    "system.network.bytes_received",
+                    network.bytes_recv)
             except Exception:
                 pass  # Network stats not available on all systems
 
@@ -377,7 +385,8 @@ class AlertManager:
             return
 
         self.alerts[alert.id] = alert
-        logger.warning(f"Alert triggered: {alert.title} (severity: {alert.severity.value})")
+        logger.warning(
+            f"Alert triggered: {alert.title} (severity: {alert.severity.value})")
 
         # Send notifications
         for handler in self.notification_handlers:
@@ -402,10 +411,15 @@ class AlertManager:
                     try:
                         await handler(alert)
                     except Exception as e:
-                        logger.error(f"Failed to send alert resolution notification: {e}")
+                        logger.error(
+                            f"Failed to send alert resolution notification: {e}")
 
-    async def evaluate_alert_rules(self, health_results: dict[str, HealthCheckResult],
-                                 metrics: dict[str, Any], sla_metrics: list[SLAMetric]):
+    async def evaluate_alert_rules(
+        self,
+        health_results: dict[str, HealthCheckResult],
+        metrics: dict[str, Any],
+        sla_metrics: list[SLAMetric]
+    ):
         """Evaluate all alert rules."""
 
         for rule_func in self.alert_rules:
@@ -560,7 +574,8 @@ class MonitoringAlertingSystem:
             except Exception:
                 return False
 
-        self.health_checker.register_check("error_recovery_system", error_recovery_health)
+        self.health_checker.register_check(
+            "error_recovery_system", error_recovery_health)
         self.health_checker.register_check("system_resources", system_resources_health)
 
     def _setup_default_alert_rules(self):
@@ -572,14 +587,15 @@ class MonitoringAlertingSystem:
             # Check for high error rates
             error_rate_metric = metrics.get('error_rate', {})
             if error_rate_metric.get('latest', 0) > 5.0:  # 5% error rate
-                alerts.append(Alert(
-                    id="high_error_rate",
-                    title="High Error Rate Detected",
-                    description=f"Error rate is {error_rate_metric['latest']:.1f}%, exceeding 5% threshold",
-                    severity=AlertSeverity.HIGH,
-                    component="system",
-                    metadata={'error_rate': error_rate_metric['latest']}
-                ))
+                alerts.append(
+                    Alert(
+                        id="high_error_rate",
+                        title="High Error Rate Detected",
+                        description=f"Error rate is {error_rate_metric['latest']:.1f}%, exceeding 5% threshold",
+                        severity=AlertSeverity.HIGH,
+                        component="system",
+                        metadata={
+                            'error_rate': error_rate_metric['latest']}))
 
             return alerts
 
@@ -588,14 +604,15 @@ class MonitoringAlertingSystem:
 
             for component_name, result in health_results.items():
                 if result.status == HealthStatus.UNHEALTHY:
-                    alerts.append(Alert(
-                        id=f"component_unhealthy_{component_name}",
-                        title=f"Component {component_name} Unhealthy",
-                        description=f"Health check failed: {result.error_message or 'Unknown error'}",
-                        severity=AlertSeverity.CRITICAL,
-                        component=component_name,
-                        metadata={'response_time_ms': result.response_time_ms}
-                    ))
+                    alerts.append(
+                        Alert(
+                            id=f"component_unhealthy_{component_name}",
+                            title=f"Component {component_name} Unhealthy",
+                            description=f"Health check failed: {result.error_message or 'Unknown error'}",
+                            severity=AlertSeverity.CRITICAL,
+                            component=component_name,
+                            metadata={
+                                'response_time_ms': result.response_time_ms}))
 
             return alerts
 
@@ -604,14 +621,17 @@ class MonitoringAlertingSystem:
 
             for sla in sla_metrics:
                 if sla.is_violation():
-                    alerts.append(Alert(
-                        id=f"sla_violation_{sla.name}",
-                        title=f"SLA Violation: {sla.name}",
-                        description=f"SLA {sla.name} violated: {sla.current_value} vs target {sla.target_value}",
-                        severity=AlertSeverity.HIGH,
-                        component="sla",
-                        metadata={'sla_name': sla.name, 'current': sla.current_value, 'target': sla.target_value}
-                    ))
+                    alerts.append(
+                        Alert(
+                            id=f"sla_violation_{sla.name}",
+                            title=f"SLA Violation: {sla.name}",
+                            description=f"SLA {sla.name} violated: {sla.current_value} vs target {sla.target_value}",
+                            severity=AlertSeverity.HIGH,
+                            component="sla",
+                            metadata={
+                                'sla_name': sla.name,
+                                'current': sla.current_value,
+                                'target': sla.target_value}))
 
             return alerts
 
@@ -651,9 +671,12 @@ class MonitoringAlertingSystem:
 
         # Calculate system uptime based on health checks
         healthy_components = sum(1 for result in health_results.values()
-                               if result.status == HealthStatus.HEALTHY)
+                                 if result.status == HealthStatus.HEALTHY)
         total_components = len(health_results)
-        uptime_percentage = (healthy_components / total_components * 100) if total_components > 0 else 100
+        uptime_percentage = (
+            healthy_components /
+            total_components *
+            100) if total_components > 0 else 100
 
         self.sla_monitor.update_sla_metric('system_uptime', uptime_percentage)
 
@@ -661,7 +684,8 @@ class MonitoringAlertingSystem:
         api_metrics = self.metrics_collector.get_metric_summary('api_response_time', 60)
         if api_metrics:
             # Use max as P95 approximation (simplified)
-            self.sla_monitor.update_sla_metric('api_response_time_p95', api_metrics.get('max', 0))
+            self.sla_monitor.update_sla_metric(
+                'api_response_time_p95', api_metrics.get('max', 0))
 
     async def get_dashboard_data(self) -> dict[str, Any]:
         """Get comprehensive dashboard data."""
@@ -686,22 +710,22 @@ class MonitoringAlertingSystem:
         return {
             'overall_health': overall_health.value,
             'timestamp': datetime.now().isoformat(),
-            'health_checks': {name: result.to_dict() for name, result in health_results.items()},
+            'health_checks': {
+                name: result.to_dict() for name,
+                result in health_results.items()},
             'metrics': current_metrics,
             'alerts': {
                 'active_count': len(active_alerts),
-                'active_alerts': [alert.to_dict() for alert in active_alerts],
-                'statistics': alert_stats
-            },
+                'active_alerts': [
+                    alert.to_dict() for alert in active_alerts],
+                'statistics': alert_stats},
             'sla': sla_status,
             'error_recovery': error_recovery_status,
             'system_info': {
                 'platform': platform.platform(),
                 'python_version': platform.python_version(),
                 'monitoring_enabled': self.monitoring_enabled,
-                'last_full_check': self.last_full_check.isoformat()
-            }
-        }
+                'last_full_check': self.last_full_check.isoformat()}}
 
     async def health_check(self) -> bool:
         """Health check for the monitoring system itself."""

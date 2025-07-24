@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def add_member_fields():
     """Add required fields to Members table"""
 
@@ -99,7 +100,8 @@ async def add_member_fields():
                                 success_count += 1
                             else:
                                 error_text = await add_response.text()
-                                print(f"  ❌ Failed to add {field['name']}: {add_response.status}")
+                                print(
+                                    f"  ❌ Failed to add {field['name']}: {add_response.status}")
                                 if "already exists" in error_text.lower():
                                     print("    (Field already exists, skipping)")
                                     success_count += 1
@@ -122,6 +124,7 @@ async def add_member_fields():
             else:
                 print(f"❌ Failed to get table info: {response.status}")
                 return False
+
 
 async def main():
     """Main function"""

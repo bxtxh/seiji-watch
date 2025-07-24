@@ -13,6 +13,7 @@ from pathlib import Path
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir / "src"))
 
+
 def load_env_file(env_file_path):
     """Load environment variables from .env file"""
     if not os.path.exists(env_file_path):
@@ -26,6 +27,7 @@ def load_env_file(env_file_path):
                 value = value.strip('"\'')
                 os.environ[key] = value
     return True
+
 
 async def test_correct_airtable_integration():
     """正しい環境変数名でAirtable統合をテスト"""
@@ -77,6 +79,7 @@ async def test_correct_airtable_integration():
     except Exception as e:
         print(f"❌ AirtableClient初期化失敗: {str(e)}")
         return False
+
 
 async def run_bills_integration_with_correct_client():
     """正しいクライアントで法案データ統合を実行"""
@@ -132,13 +135,15 @@ async def run_bills_integration_with_correct_client():
             print("\n📊 統合結果:")
             print(f"  ✅ 成功: {successful_count}件")
             print(f"  ❌ 失敗: {failed_count}件")
-            print(f"  📈 成功率: {successful_count/(successful_count+failed_count)*100:.1f}%")
+            print(
+                f"  📈 成功率: {successful_count/(successful_count+failed_count)*100:.1f}%")
 
             return successful_count > 0
 
     except Exception as e:
         print(f"❌ 統合エラー: {str(e)}")
         return False
+
 
 async def main():
     """メイン実行"""

@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class BillsImprovementExecutor:
     """Bills table systematic improvement execution"""
 
@@ -36,29 +37,26 @@ class BillsImprovementExecutor:
             "status_standardization": {
                 "description": "Standardize Bill_Status values to consistent vocabulary",
                 "priority": "high",
-                "target_fields": ["Bill_Status"]
-            },
+                "target_fields": ["Bill_Status"]},
             "category_classification": {
                 "description": "Auto-classify bills into policy categories based on title analysis",
                 "priority": "high",
-                "target_fields": ["Category"]
-            },
+                "target_fields": ["Category"]},
             "priority_scoring": {
                 "description": "Intelligent priority assignment based on bill characteristics",
                 "priority": "medium",
-                "target_fields": ["Priority"]
-            },
+                "target_fields": ["Priority"]},
             "session_normalization": {
                 "description": "Normalize Diet_Session format for consistency",
                 "priority": "medium",
-                "target_fields": ["Diet_Session"]
-            },
+                "target_fields": ["Diet_Session"]},
             "completeness_enhancement": {
                 "description": "Fill missing essential fields with intelligent defaults",
                 "priority": "high",
-                "target_fields": ["Stage", "Bill_Type", "Process_Method"]
-            }
-        }
+                "target_fields": [
+                            "Stage",
+                            "Bill_Type",
+                            "Process_Method"]}}
 
         # Standard vocabularies and mappings
         self.status_mapping = {
@@ -173,8 +171,10 @@ class BillsImprovementExecutor:
                     "type": "completeness",
                     "current_rate": completeness_rate,
                     "missing_count": empty_count,
-                    "priority": "high" if field in ["Title", "Bill_Status", "Category"] else "medium"
-                }
+                    "priority": "high" if field in [
+                        "Title",
+                        "Bill_Status",
+                        "Category"] else "medium"}
 
         return analysis
 
@@ -241,7 +241,10 @@ class BillsImprovementExecutor:
         }
         return stage_mapping.get(status, "Backlog")
 
-    async def execute_status_standardization(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def execute_status_standardization(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Execute status standardization improvements"""
         print("\n🔧 Executing status standardization...")
 
@@ -275,7 +278,10 @@ class BillsImprovementExecutor:
 
         return improvements
 
-    async def execute_category_classification(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def execute_category_classification(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Execute category classification improvements"""
         print("\n🔧 Executing category classification...")
 
@@ -312,7 +318,10 @@ class BillsImprovementExecutor:
 
         return improvements
 
-    async def execute_priority_scoring(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def execute_priority_scoring(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Execute priority scoring improvements"""
         print("\n🔧 Executing priority scoring...")
 
@@ -349,7 +358,10 @@ class BillsImprovementExecutor:
 
         return improvements
 
-    async def execute_completeness_enhancement(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def execute_completeness_enhancement(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Execute completeness enhancement improvements"""
         print("\n🔧 Executing completeness enhancement...")
 
@@ -392,7 +404,10 @@ class BillsImprovementExecutor:
 
         return improvements
 
-    async def execute_session_normalization(self, session: aiohttp.ClientSession, records: list[dict]) -> dict:
+    async def execute_session_normalization(
+            self,
+            session: aiohttp.ClientSession,
+            records: list[dict]) -> dict:
         """Execute session normalization improvements"""
         print("\n🔧 Executing session normalization...")
 
@@ -423,11 +438,16 @@ class BillsImprovementExecutor:
 
         return improvements
 
-    async def safe_update_record(self, session: aiohttp.ClientSession, record_id: str, updates: dict) -> bool:
+    async def safe_update_record(
+            self,
+            session: aiohttp.ClientSession,
+            record_id: str,
+            updates: dict) -> bool:
         """Safely update a record with error handling"""
         try:
             # Filter out computed fields
-            safe_updates = {k: v for k, v in updates.items() if k != "Attachment Summary"}
+            safe_updates = {k: v for k, v in updates.items() if k !=
+                            "Attachment Summary"}
 
             if not safe_updates:
                 return True
@@ -457,19 +477,29 @@ class BillsImprovementExecutor:
 
         # Calculate overall completeness
         completeness_scores = []
-        essential_fields = ["Title", "Bill_Number", "Bill_Status", "Diet_Session", "House", "Category", "Priority"]
+        essential_fields = [
+            "Title",
+            "Bill_Number",
+            "Bill_Status",
+            "Diet_Session",
+            "House",
+            "Category",
+            "Priority"]
 
         for field in essential_fields:
-            rate = updated_analysis["field_completeness"].get(field, {}).get("completeness_rate", 0)
+            rate = updated_analysis["field_completeness"].get(
+                field, {}).get("completeness_rate", 0)
             completeness_scores.append(rate)
 
-        overall_completeness = sum(completeness_scores) / len(completeness_scores) if completeness_scores else 0
+        overall_completeness = sum(completeness_scores) / \
+            len(completeness_scores) if completeness_scores else 0
 
         verification = {
             "total_records": updated_analysis["total_records"],
             "overall_completeness": round(overall_completeness, 3),
             "field_completeness": updated_analysis["field_completeness"],
-            "estimated_quality_score": round(overall_completeness * 0.8 + 0.2, 3)  # Rough estimate
+            # Rough estimate
+            "estimated_quality_score": round(overall_completeness * 0.8 + 0.2, 3)
         }
 
         return verification
@@ -500,7 +530,8 @@ class BillsImprovementExecutor:
             execution_results["initial_analysis"] = initial_analysis
 
             print(f"📊 Found {initial_analysis['total_records']} Bills records")
-            print(f"📈 Current overall completeness: {sum(fc['completeness_rate'] for fc in initial_analysis['field_completeness'].values()) / len(initial_analysis['field_completeness']):.1%}")
+            print(
+                f"📈 Current overall completeness: {sum(fc['completeness_rate'] for fc in initial_analysis['field_completeness'].values()) / len(initial_analysis['field_completeness']):.1%}")
 
             # Step 2: Execute improvement strategies
             print("\n📋 Step 2: Executing improvement strategies...")
@@ -543,7 +574,9 @@ class BillsImprovementExecutor:
             )
 
             # Calculate improvement
-            initial_completeness = sum(fc['completeness_rate'] for fc in initial_analysis['field_completeness'].values()) / len(initial_analysis['field_completeness'])
+            initial_completeness = sum(
+                fc['completeness_rate'] for fc in initial_analysis['field_completeness'].values()) / len(
+                initial_analysis['field_completeness'])
             final_completeness = verification["overall_completeness"]
             improvement_delta = final_completeness - initial_completeness
 
@@ -611,6 +644,7 @@ class BillsImprovementExecutor:
             print(f"   Remaining gap: {remaining_gap:.1%} to reach 90% target")
             print("   Focus areas: Data validation, advanced categorization")
             print("   Estimated effort: 2-4 hours additional improvement")
+
 
 async def main():
     """Main entry point"""

@@ -80,6 +80,7 @@ CORRECT_POLITICIAN_READINGS = {
     "小此木八郎": "おこのぎはちろう"
 }
 
+
 class KanaAccuracyAnalyzer:
     """Name_Kana accuracy analysis and correction system"""
 
@@ -306,8 +307,8 @@ class KanaAccuracyAnalyzer:
                 "corrections_needed": self.analysis_results["corrections_needed"],
                 "verified_correct": len(self.analysis_results["verified_correct"]),
                 "accuracy_rate": (len(self.analysis_results["verified_correct"]) /
-                                (len(self.analysis_results["verified_correct"]) + self.analysis_results["corrections_needed"]) * 100)
-                                if (len(self.analysis_results["verified_correct"]) + self.analysis_results["corrections_needed"]) > 0 else 0
+                                  (len(self.analysis_results["verified_correct"]) + self.analysis_results["corrections_needed"]) * 100)
+                if (len(self.analysis_results["verified_correct"]) + self.analysis_results["corrections_needed"]) > 0 else 0
             }
         }
 
@@ -315,6 +316,7 @@ class KanaAccuracyAnalyzer:
             json.dump(analysis_data, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Detailed analysis saved: {filename}")
+
 
 async def main():
     """Main analysis entry point"""

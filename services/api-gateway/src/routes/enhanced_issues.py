@@ -13,12 +13,20 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, validator
 
-from ..security.validation import InputValidator
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'ingest-worker', 'src'))
-
 from services.airtable_issue_manager import AirtableIssueManager
 from services.policy_issue_extractor import BillData, PolicyIssueExtractor
+
+from ..security.validation import InputValidator
+
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        '..',
+        '..',
+        'ingest-worker',
+        'src'))
+
 
 logger = logging.getLogger(__name__)
 
@@ -348,7 +356,9 @@ async def batch_extract_issues(
     """Batch extract issues from multiple bills."""
     try:
         if len(requests) > 10:  # Limit batch size
-            raise HTTPException(status_code=400, detail="Batch size limited to 10 bills")
+            raise HTTPException(
+                status_code=400,
+                detail="Batch size limited to 10 bills")
 
         # Convert to BillData objects
         bills = []
@@ -380,7 +390,8 @@ async def batch_extract_issues(
 
                 created_pairs = []
                 for j, issue_data in enumerate(extracted_issues):
-                    quality_score = quality_scores[j] if j < len(quality_scores) else 0.0
+                    quality_score = quality_scores[j] if j < len(
+                        quality_scores) else 0.0
 
                     from services.policy_issue_extractor import DualLevelIssue
                     dual_issue = DualLevelIssue(**issue_data)
@@ -417,8 +428,7 @@ async def batch_extract_issues(
         return {
             "message": f"Processed {len(requests)} bills, {successful_count} successful",
             "total_issues_created": total_issues,
-            "results": processed_results
-        }
+            "results": processed_results}
 
     except HTTPException:
         raise
@@ -445,7 +455,8 @@ async def update_issue_status(
         )
 
         if not success:
-            raise HTTPException(status_code=404, detail="Issue not found or update failed")
+            raise HTTPException(status_code=404,
+                                detail="Issue not found or update failed")
 
         return {
             "success": True,
@@ -524,9 +535,10 @@ async def get_issue_statistics(
 
 @router.get("/pending/count")
 async def get_pending_count(
-    exclude_failed_validation: bool = Query(True, description="Exclude failed validation"),
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
-):
+        exclude_failed_validation: bool = Query(
+            True,
+            description="Exclude failed validation"),
+        airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)):
     """Get count of pending issues for notifications."""
     try:
         count = await airtable_manager.count_pending_issues(exclude_failed_validation)

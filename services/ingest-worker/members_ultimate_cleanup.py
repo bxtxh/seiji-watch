@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def members_ultimate_cleanup():
     """Ultimate cleanup to guarantee 95% quality target"""
 
@@ -87,7 +88,8 @@ async def members_ultimate_cleanup():
                         fields = record.get('fields', {})
 
                         # Count filled fields
-                        filled_count = sum(1 for v in fields.values() if v and str(v).strip())
+                        filled_count = sum(
+                            1 for v in fields.values() if v and str(v).strip())
 
                         # Prefer recent updates
                         updated_at = fields.get('Updated_At', '')
@@ -118,10 +120,11 @@ async def members_ultimate_cleanup():
                                     duplicates_processed += 1
 
                                     if duplicates_processed % 5 == 0:
-                                        print(f"   🗑️ Processed {duplicates_processed} duplicates in iteration {iteration}")
+                                        print(
+                                            f"   🗑️ Processed {duplicates_processed} duplicates in iteration {iteration}")
                                 else:
                                     errors += 1
-                        except:
+                        except Exception:
                             errors += 1
 
                         await asyncio.sleep(0.1)
@@ -129,7 +132,8 @@ async def members_ultimate_cleanup():
                     if duplicates_processed >= 25:
                         break
 
-            print(f"🔍 Iteration {iteration}: Found {duplicates_found} duplicates, processed {duplicates_processed}")
+            print(
+                f"🔍 Iteration {iteration}: Found {duplicates_found} duplicates, processed {duplicates_processed}")
 
             if duplicates_processed == 0:
                 print("✅ No more duplicates found - cleanup complete!")
@@ -171,7 +175,8 @@ async def members_ultimate_cleanup():
                 any(char.isdigit() for char in name) or  # Contains numbers
                 len(name) <= 2 or  # Very short names
                 name in ['テスト', 'Test', 'test'] or  # Test keywords
-                name.count('太郎') > 0 and any(char.isdigit() for char in name)  # Numbered Taro patterns
+                name.count('太郎') > 0 and any(char.isdigit()
+                                             for char in name)  # Numbered Taro patterns
             )
 
             if is_synthetic and synthetic_removed < 10:  # Limit to prevent over-deletion
@@ -185,7 +190,7 @@ async def members_ultimate_cleanup():
                             deleted_count += 1
                         else:
                             errors += 1
-                except:
+                except Exception:
                     errors += 1
 
                 await asyncio.sleep(0.1)
@@ -231,7 +236,8 @@ async def members_ultimate_cleanup():
     print("\n📈 Quality Projection:")
     print("   Before: 91.6% (A)")
     print(f"   Estimated After: {estimated_quality:.1f}%")
-    print(f"   Target Status: {'✅ ACHIEVED' if estimated_quality >= 95.0 else '🎯 VERY CLOSE'}")
+    print(
+        f"   Target Status: {'✅ ACHIEVED' if estimated_quality >= 95.0 else '🎯 VERY CLOSE'}")
 
     # Final recommendation
     if estimated_quality >= 95.0:

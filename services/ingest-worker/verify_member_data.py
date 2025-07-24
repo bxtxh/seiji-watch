@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class MemberDataVerifier:
     """Member data verification tool"""
 
@@ -70,7 +71,8 @@ class MemberDataVerifier:
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    return {record['id']: record['fields']['Name'] for record in data.get('records', [])}
+                    return {record['id']: record['fields']['Name']
+                            for record in data.get('records', [])}
                 else:
                     print(f"Error fetching parties: {response.status}")
                     return {}
@@ -106,7 +108,8 @@ class MemberDataVerifier:
             # Party distribution
             party_links = fields.get('Party', [])
             if party_links:
-                party_id = party_links[0] if isinstance(party_links, list) else party_links
+                party_id = party_links[0] if isinstance(
+                    party_links, list) else party_links
                 party_name = parties.get(party_id, 'Unknown Party')
                 stats['party_distribution'][party_name] += 1
             else:
@@ -118,9 +121,18 @@ class MemberDataVerifier:
 
             # Data completeness analysis
             required_fields = ['Name', 'House', 'Is_Active']
-            optional_fields = ['Name_Kana', 'Constituency', 'Party', 'First_Elected',
-                             'Terms_Served', 'Birth_Date', 'Gender', 'Previous_Occupations',
-                             'Education', 'Website_URL', 'Twitter_Handle']
+            optional_fields = [
+                'Name_Kana',
+                'Constituency',
+                'Party',
+                'First_Elected',
+                'Terms_Served',
+                'Birth_Date',
+                'Gender',
+                'Previous_Occupations',
+                'Education',
+                'Website_URL',
+                'Twitter_Handle']
 
             for field in required_fields:
                 if field in fields and fields[field]:
@@ -141,9 +153,9 @@ class MemberDataVerifier:
 
     def print_verification_report(self, stats: dict):
         """Print verification report"""
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("🔍 議員データベース検証レポート")
-        print("="*60)
+        print("=" * 60)
         print(f"📊 総議員数: {stats['total_members']:,}名")
         print(f"📅 検証日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -155,7 +167,10 @@ class MemberDataVerifier:
 
         # Party distribution
         print("\n🏛️ 政党別分布:")
-        sorted_parties = sorted(stats['party_distribution'].items(), key=lambda x: x[1], reverse=True)
+        sorted_parties = sorted(
+            stats['party_distribution'].items(),
+            key=lambda x: x[1],
+            reverse=True)
         for party, count in sorted_parties:
             percentage = (count / stats['total_members']) * 100
             print(f"  {party}: {count:,}名 ({percentage:.1f}%)")
@@ -163,7 +178,7 @@ class MemberDataVerifier:
         # Constituency distribution (top 10)
         print("\n🗺️ 選挙区別分布（上位10）:")
         sorted_constituencies = sorted(stats['constituency_distribution'].items(),
-                                     key=lambda x: x[1], reverse=True)[:10]
+                                       key=lambda x: x[1], reverse=True)[:10]
         for constituency, count in sorted_constituencies:
             percentage = (count / stats['total_members']) * 100
             print(f"  {constituency}: {count:,}名 ({percentage:.1f}%)")
@@ -171,23 +186,34 @@ class MemberDataVerifier:
         # Data completeness
         print("\n📈 データ完全性:")
         required_fields = ['Name', 'House', 'Is_Active']
-        optional_fields = ['Name_Kana', 'Constituency', 'Party', 'First_Elected',
-                         'Terms_Served', 'Birth_Date', 'Gender', 'Previous_Occupations',
-                         'Education', 'Website_URL', 'Twitter_Handle']
+        optional_fields = [
+            'Name_Kana',
+            'Constituency',
+            'Party',
+            'First_Elected',
+            'Terms_Served',
+            'Birth_Date',
+            'Gender',
+            'Previous_Occupations',
+            'Education',
+            'Website_URL',
+            'Twitter_Handle']
 
         print("  必須フィールド:")
         for field in required_fields:
             count = stats['data_completeness'][field]
             percentage = (count / stats['total_members']) * 100
             status = "✅" if percentage >= 95 else "⚠️" if percentage >= 80 else "❌"
-            print(f"    {status} {field}: {count:,}/{stats['total_members']:,} ({percentage:.1f}%)")
+            print(
+                f"    {status} {field}: {count:,}/{stats['total_members']:,} ({percentage:.1f}%)")
 
         print("  オプションフィールド:")
         for field in optional_fields:
             count = stats['data_completeness'][field]
             percentage = (count / stats['total_members']) * 100
             status = "✅" if percentage >= 70 else "⚠️" if percentage >= 30 else "❌"
-            print(f"    {status} {field}: {count:,}/{stats['total_members']:,} ({percentage:.1f}%)")
+            print(
+                f"    {status} {field}: {count:,}/{stats['total_members']:,} ({percentage:.1f}%)")
 
         # Missing data alerts
         print("\n⚠️ 欠損データアラート:")
@@ -197,19 +223,22 @@ class MemberDataVerifier:
                 if len(missing_names) <= 5:
                     print(f"    対象: {', '.join(missing_names)}")
                 else:
-                    print(f"    対象: {', '.join(missing_names[:5])}...他{len(missing_names)-5}名")
+                    print(
+                        f"    対象: {', '.join(missing_names[:5])}...他{len(missing_names)-5}名")
 
         # Duplicates
         if stats['duplicates']:
             print("\n🔍 重複データ検出:")
             for duplicate in stats['duplicates']:
-                print(f"  ⚠️ {duplicate['name']}: {len(duplicate['ids'])}件 (ID: {', '.join(duplicate['ids'])})")
+                print(
+                    f"  ⚠️ {duplicate['name']}: {len(duplicate['ids'])}件 (ID: {', '.join(duplicate['ids'])})")
         else:
             print("\n✅ 重複データなし")
 
         # Overall health score
         total_fields = len(required_fields) + len(optional_fields)
-        completeness_score = sum(stats['data_completeness'].values()) / (stats['total_members'] * total_fields) * 100
+        completeness_score = sum(stats['data_completeness'].values(
+        )) / (stats['total_members'] * total_fields) * 100
 
         print(f"\n🎯 データ品質スコア: {completeness_score:.1f}%")
 
@@ -220,7 +249,7 @@ class MemberDataVerifier:
         else:
             print("❌ 要改善: データ品質の向上が必要です")
 
-        print("="*60)
+        print("=" * 60)
 
     async def run(self):
         """Main execution method"""
@@ -242,6 +271,7 @@ class MemberDataVerifier:
             self.print_verification_report(stats)
 
             print("\n✅ 検証完了")
+
 
 async def main():
     """Main entry point"""

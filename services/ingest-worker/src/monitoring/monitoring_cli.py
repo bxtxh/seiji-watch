@@ -10,9 +10,6 @@ import os
 import sys
 from datetime import datetime
 
-# Add the project root to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
-
 from services.ingest_worker.src.monitoring.data_quality_dashboard import (
     DataQualityDashboard,
 )
@@ -20,6 +17,9 @@ from services.ingest_worker.src.monitoring.monitoring_manager import (
     MonitoringConfiguration,
     MonitoringManager,
 )
+
+# Add the project root to the path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
 
 def setup_logging():
@@ -75,7 +75,8 @@ def cmd_dashboard(args):
                     'info': 'ℹ️'
                 }.get(metric['severity'], '📊')
 
-                print(f"   {severity_emoji} {metric['name']}: {metric['value']}{metric['unit']}")
+                print(
+                    f"   {severity_emoji} {metric['name']}: {metric['value']}{metric['unit']}")
                 print(f"      {metric['description']}")
 
         # Display alerts
@@ -141,7 +142,8 @@ def cmd_alerts(args):
                     'info': 'ℹ️'
                 }.get(alert['severity'], '📢')
 
-                print(f"\n{severity_emoji} [{alert['severity'].upper()}] {alert['title']}")
+                print(
+                    f"\n{severity_emoji} [{alert['severity'].upper()}] {alert['title']}")
                 print(f"   ID: {alert['alert_id']}")
                 print(f"   Type: {alert['alert_type']}")
                 print(f"   Message: {alert['message']}")
@@ -151,7 +153,8 @@ def cmd_alerts(args):
                     print(f"   Resolved: {alert['resolved_at']}")
 
                 if alert.get('acknowledged_at'):
-                    print(f"   Acknowledged: {alert['acknowledged_at']} by {alert.get('acknowledged_by', 'unknown')}")
+                    print(
+                        f"   Acknowledged: {alert['acknowledged_at']} by {alert.get('acknowledged_by', 'unknown')}")
 
         # Handle alert actions
         if args.acknowledge:
@@ -351,10 +354,14 @@ def cmd_status(args):
         configuration = status.get('configuration', {})
         if configuration:
             print("\n⚙️  Configuration:")
-            print(f"   Dashboard refresh: {configuration.get('dashboard_refresh_interval', 'N/A')}s")
-            print(f"   Alert evaluation: {configuration.get('alert_evaluation_interval', 'N/A')}s")
-            print(f"   Health check interval: {configuration.get('health_check_interval', 'N/A')}s")
-            print(f"   Quality threshold: {configuration.get('quality_score_threshold', 'N/A')}")
+            print(
+                f"   Dashboard refresh: {configuration.get('dashboard_refresh_interval', 'N/A')}s")
+            print(
+                f"   Alert evaluation: {configuration.get('alert_evaluation_interval', 'N/A')}s")
+            print(
+                f"   Health check interval: {configuration.get('health_check_interval', 'N/A')}s")
+            print(
+                f"   Quality threshold: {configuration.get('quality_score_threshold', 'N/A')}")
             print(f"   Email alerts: {configuration.get('enable_email_alerts', 'N/A')}")
             print(f"   Slack alerts: {configuration.get('enable_slack_alerts', 'N/A')}")
 
@@ -383,10 +390,12 @@ def cmd_performance(args):
         if migration_perf:
             print("\n🔄 Migration Performance:")
             print(f"   Total migrations: {migration_perf.get('total_migrations', 0)}")
-            print(f"   Successful migrations: {migration_perf.get('successful_migrations', 0)}")
+            print(
+                f"   Successful migrations: {migration_perf.get('successful_migrations', 0)}")
             print(f"   Failed migrations: {migration_perf.get('failed_migrations', 0)}")
             print(f"   Success rate: {migration_perf.get('success_rate', 0):.1%}")
-            print(f"   Tasks completed: {migration_perf.get('total_tasks_completed', 0)}")
+            print(
+                f"   Tasks completed: {migration_perf.get('total_tasks_completed', 0)}")
             print(f"   Tasks failed: {migration_perf.get('total_tasks_failed', 0)}")
 
         # Display completion performance
@@ -397,7 +406,8 @@ def cmd_performance(args):
             print(f"   Total tasks: {completion_perf.get('total_tasks', 0)}")
             print(f"   Completed tasks: {completion_perf.get('completed_tasks', 0)}")
             print(f"   Success rate: {completion_perf.get('success_rate', 0):.1%}")
-            print(f"   Avg processing time: {completion_perf.get('average_processing_time_ms', 0):.1f}ms")
+            print(
+                f"   Avg processing time: {completion_perf.get('average_processing_time_ms', 0):.1f}ms")
 
         # Display processing performance
         processing_perf = metrics.get('processing_performance', {})
@@ -439,7 +449,8 @@ def cmd_audit(args):
                     'info': 'ℹ️'
                 }.get(metric_data.get('severity', 'info'), '📊')
 
-                print(f"   {severity_emoji} {metric_name}: {metric_data.get('value', 'N/A')}{metric_data.get('unit', '')}")
+                print(
+                    f"   {severity_emoji} {metric_name}: {metric_data.get('value', 'N/A')}{metric_data.get('unit', '')}")
                 print(f"      {metric_data.get('description', 'No description')}")
 
         # Display recommendations
@@ -526,13 +537,23 @@ Examples:
 
     # Dashboard command
     dashboard_parser = subparsers.add_parser('dashboard', help='Show dashboard data')
-    dashboard_parser.add_argument('--export', action='store_true', help='Export dashboard data')
+    dashboard_parser.add_argument(
+        '--export',
+        action='store_true',
+        help='Export dashboard data')
     dashboard_parser.set_defaults(func=cmd_dashboard)
 
     # Alerts command
     alerts_parser = subparsers.add_parser('alerts', help='Show alerts')
-    alerts_parser.add_argument('--history', action='store_true', help='Show alert history')
-    alerts_parser.add_argument('--limit', type=int, default=50, help='Limit number of alerts')
+    alerts_parser.add_argument(
+        '--history',
+        action='store_true',
+        help='Show alert history')
+    alerts_parser.add_argument(
+        '--limit',
+        type=int,
+        default=50,
+        help='Limit number of alerts')
     alerts_parser.add_argument('--acknowledge', help='Acknowledge alert by ID')
     alerts_parser.add_argument('--resolve', help='Resolve alert by ID')
     alerts_parser.set_defaults(func=cmd_alerts)
@@ -543,15 +564,48 @@ Examples:
 
     # Start command
     start_parser = subparsers.add_parser('start', help='Start monitoring service')
-    start_parser.add_argument('--daemon', action='store_true', help='Run in daemon mode')
-    start_parser.add_argument('--refresh-interval', type=int, default=300, help='Dashboard refresh interval (seconds)')
-    start_parser.add_argument('--alert-interval', type=int, default=300, help='Alert evaluation interval (seconds)')
-    start_parser.add_argument('--health-interval', type=int, default=60, help='Health check interval (seconds)')
-    start_parser.add_argument('--quality-threshold', type=float, default=0.7, help='Quality score threshold')
-    start_parser.add_argument('--completeness-threshold', type=float, default=0.8, help='Completeness threshold')
-    start_parser.add_argument('--error-threshold', type=float, default=0.05, help='Error rate threshold')
-    start_parser.add_argument('--email-alerts', action='store_true', help='Enable email alerts')
-    start_parser.add_argument('--slack-alerts', action='store_true', help='Enable Slack alerts')
+    start_parser.add_argument(
+        '--daemon',
+        action='store_true',
+        help='Run in daemon mode')
+    start_parser.add_argument(
+        '--refresh-interval',
+        type=int,
+        default=300,
+        help='Dashboard refresh interval (seconds)')
+    start_parser.add_argument(
+        '--alert-interval',
+        type=int,
+        default=300,
+        help='Alert evaluation interval (seconds)')
+    start_parser.add_argument(
+        '--health-interval',
+        type=int,
+        default=60,
+        help='Health check interval (seconds)')
+    start_parser.add_argument(
+        '--quality-threshold',
+        type=float,
+        default=0.7,
+        help='Quality score threshold')
+    start_parser.add_argument(
+        '--completeness-threshold',
+        type=float,
+        default=0.8,
+        help='Completeness threshold')
+    start_parser.add_argument(
+        '--error-threshold',
+        type=float,
+        default=0.05,
+        help='Error rate threshold')
+    start_parser.add_argument(
+        '--email-alerts',
+        action='store_true',
+        help='Enable email alerts')
+    start_parser.add_argument(
+        '--slack-alerts',
+        action='store_true',
+        help='Enable Slack alerts')
     start_parser.set_defaults(func=cmd_start)
 
     # Stop command
@@ -563,18 +617,31 @@ Examples:
     status_parser.set_defaults(func=cmd_status)
 
     # Performance command
-    performance_parser = subparsers.add_parser('performance', help='Show performance metrics')
-    performance_parser.add_argument('--hours', type=int, default=24, help='Time period in hours')
+    performance_parser = subparsers.add_parser(
+        'performance', help='Show performance metrics')
+    performance_parser.add_argument(
+        '--hours',
+        type=int,
+        default=24,
+        help='Time period in hours')
     performance_parser.set_defaults(func=cmd_performance)
 
     # Audit command
     audit_parser = subparsers.add_parser('audit', help='Run quality audit')
-    audit_parser.add_argument('--export', action='store_true', help='Export audit results')
+    audit_parser.add_argument(
+        '--export',
+        action='store_true',
+        help='Export audit results')
     audit_parser.set_defaults(func=cmd_audit)
 
     # Cleanup command
-    cleanup_parser = subparsers.add_parser('cleanup', help='Clean up old monitoring data')
-    cleanup_parser.add_argument('--days', type=int, default=90, help='Data retention days')
+    cleanup_parser = subparsers.add_parser(
+        'cleanup', help='Clean up old monitoring data')
+    cleanup_parser.add_argument(
+        '--days',
+        type=int,
+        default=90,
+        help='Data retention days')
     cleanup_parser.set_defaults(func=cmd_cleanup)
 
     # Parse arguments

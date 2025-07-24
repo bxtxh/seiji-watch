@@ -61,18 +61,28 @@ class DiscordNotificationBot:
             hour, minute = map(int, notification_time_str.split(":"))
             notification_time = time(hour, minute)
         except ValueError:
-            self.logger.warning(f"Invalid notification time format: {notification_time_str}, using default 14:00")
+            self.logger.warning(
+                f"Invalid notification time format: {notification_time_str}, using default 14:00")
             notification_time = time(14, 0)
 
         return DiscordNotificationConfig(
             webhook_url=webhook_url,
             channel_id=os.getenv("DISCORD_CHANNEL_ID"),
             notification_time=notification_time,
-            timezone=os.getenv("DISCORD_TIMEZONE", "Asia/Tokyo"),
-            enabled=os.getenv("DISCORD_NOTIFICATIONS_ENABLED", "true").lower() == "true",
-            retry_attempts=int(os.getenv("DISCORD_RETRY_ATTEMPTS", "3")),
-            retry_delay=float(os.getenv("DISCORD_RETRY_DELAY", "60.0"))
-        )
+            timezone=os.getenv(
+                "DISCORD_TIMEZONE",
+                "Asia/Tokyo"),
+            enabled=os.getenv(
+                "DISCORD_NOTIFICATIONS_ENABLED",
+                "true").lower() == "true",
+            retry_attempts=int(
+                os.getenv(
+                    "DISCORD_RETRY_ATTEMPTS",
+                    "3")),
+            retry_delay=float(
+                os.getenv(
+                    "DISCORD_RETRY_DELAY",
+                    "60.0")))
 
     async def start(self):
         """Start the notification scheduler."""
@@ -87,7 +97,8 @@ class DiscordNotificationBot:
         self.is_running = True
         self.notification_task = asyncio.create_task(self._notification_scheduler())
 
-        self.logger.info(f"Discord notification bot started - notifications at {self.config.notification_time} {self.config.timezone}")
+        self.logger.info(
+            f"Discord notification bot started - notifications at {self.config.notification_time} {self.config.timezone}")
 
     async def stop(self):
         """Stop the notification scheduler."""
@@ -118,7 +129,8 @@ class DiscordNotificationBot:
                 wait_seconds = (next_notification - current_time).total_seconds()
 
                 if wait_seconds > 0:
-                    self.logger.info(f"Next notification scheduled for {next_notification.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+                    self.logger.info(
+                        f"Next notification scheduled for {next_notification.strftime('%Y-%m-%d %H:%M:%S %Z')}")
 
                     # Wait until next notification time
                     await asyncio.sleep(wait_seconds)
@@ -174,14 +186,16 @@ class DiscordNotificationBot:
             success = await self._send_discord_message(message)
 
             if success:
-                self.logger.info(f"Daily notification sent successfully - {pending_count} pending issues")
+                self.logger.info(
+                    f"Daily notification sent successfully - {pending_count} pending issues")
             else:
                 self.logger.error("Failed to send daily notification after all retries")
 
         except Exception as e:
             self.logger.error(f"Error sending daily notification: {e}")
 
-    def _create_notification_message(self, pending_count: int, stats: dict[str, Any]) -> dict[str, Any]:
+    def _create_notification_message(
+            self, pending_count: int, stats: dict[str, Any]) -> dict[str, Any]:
         """Create Discord message for notification."""
 
         # Get current date in JST
@@ -261,7 +275,8 @@ class DiscordNotificationBot:
         if pending_count > 0:
             # Note: Discord webhook doesn't support interactive components,
             # but we can include helpful links in the description
-            airtable_url = os.getenv("AIRTABLE_REVIEW_URL", "https://airtable.com/your-base-id/your-table-id")
+            airtable_url = os.getenv("AIRTABLE_REVIEW_URL",
+                                     "https://airtable.com/your-base-id/your-table-id")
             embed["description"] += f"\n\n👉 [Airtableでレビューする]({airtable_url})"
 
         # Add next notification info
@@ -287,11 +302,13 @@ class DiscordNotificationBot:
                             return True
                         elif response.status == 429:  # Rate limited
                             retry_after = int(response.headers.get("Retry-After", 60))
-                            self.logger.warning(f"Discord rate limited, waiting {retry_after} seconds")
+                            self.logger.warning(
+                                f"Discord rate limited, waiting {retry_after} seconds")
                             await asyncio.sleep(retry_after)
                         else:
                             response_text = await response.text()
-                            self.logger.error(f"Discord webhook failed (attempt {attempt + 1}): {response.status} - {response_text}")
+                            self.logger.error(
+                                f"Discord webhook failed (attempt {attempt + 1}): {response.status} - {response_text}")
 
             except TimeoutError:
                 self.logger.error(f"Discord webhook timeout (attempt {attempt + 1})")
@@ -318,8 +335,10 @@ class DiscordNotificationBot:
 
             # Add test indicator
             if message["embeds"]:
-                message["embeds"][0]["title"] = "🧪 " + message["embeds"][0]["title"] + " (テスト)"
-                message["embeds"][0]["description"] = "これはテスト通知です。\n\n" + message["embeds"][0]["description"]
+                message["embeds"][0]["title"] = "🧪 " + \
+                    message["embeds"][0]["title"] + " (テスト)"
+                message["embeds"][0]["description"] = "これはテスト通知です。\n\n" + \
+                    message["embeds"][0]["description"]
 
             # Send message
             success = await self._send_discord_message(message)
@@ -336,7 +355,7 @@ class DiscordNotificationBot:
             return False
 
     async def send_custom_notification(self, title: str, message: str,
-                                     color: int = 0x3498db) -> bool:
+                                       color: int = 0x3498db) -> bool:
         """Send a custom notification message."""
         try:
             embed = {
@@ -388,10 +407,10 @@ class DiscordNotificationBot:
             "notification_time": self.config.notification_time.strftime("%H:%M"),
             "timezone": self.config.timezone,
             "next_notification": next_notification.isoformat() if next_notification else None,
-            "webhook_configured": bool(self.config.webhook_url),
+            "webhook_configured": bool(
+                self.config.webhook_url),
             "retry_attempts": self.config.retry_attempts,
-            "retry_delay": self.config.retry_delay
-        }
+            "retry_delay": self.config.retry_delay}
 
 
 # CLI utility functions for standalone operation

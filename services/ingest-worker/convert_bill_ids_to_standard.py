@@ -200,11 +200,13 @@ def analyze_legacy_ids(bills: list[BillRecord]) -> dict:
 
         # カテゴリ統計
         if bill.category:
-            analysis["categories"][bill.category] = analysis["categories"].get(bill.category, 0) + 1
+            analysis["categories"][bill.category] = analysis["categories"].get(
+                bill.category, 0) + 1
 
         # 提出者統計
         if bill.submitter:
-            analysis["submitters"][bill.submitter] = analysis["submitters"].get(bill.submitter, 0) + 1
+            analysis["submitters"][bill.submitter] = analysis["submitters"].get(
+                bill.submitter, 0) + 1
 
     return analysis
 
@@ -262,12 +264,16 @@ def main():
 
         # カテゴリ統計
         print("\n  カテゴリ別統計 (上位10件):")
-        for category, count in sorted(analysis['categories'].items(), key=lambda x: x[1], reverse=True)[:10]:
+        for category, count in sorted(
+                analysis['categories'].items(), key=lambda x: x[1], reverse=True)[
+                :10]:
             print(f"    {category}: {count}件")
 
         # 提出者統計
         print("\n  提出者別統計 (上位10件):")
-        for submitter, count in sorted(analysis['submitters'].items(), key=lambda x: x[1], reverse=True)[:10]:
+        for submitter, count in sorted(
+                analysis['submitters'].items(), key=lambda x: x[1], reverse=True)[
+                :10]:
             print(f"    {submitter}: {count}件")
 
         # 標準形式への変換
@@ -289,7 +295,8 @@ def main():
                 for i, result in enumerate(successful[:10]):
                     print(f"    {i+1}. {result['legacy_id']} → {result['standard_id']}")
                     print(f"       {result['title']}")
-                    print(f"       提出者: {result['submitter']}, カテゴリ: {result['category']}")
+                    print(
+                        f"       提出者: {result['submitter']}, カテゴリ: {result['category']}")
                     print()
 
             # 変換後のパターン分析
@@ -329,7 +336,8 @@ def main():
             with open(csv_file, 'w', encoding='utf-8') as f:
                 f.write("legacy_id,standard_id,title,submitter,category\n")
                 for result in successful:
-                    f.write(f'"{result["legacy_id"]}","{result["standard_id"]}","{result["title"]}","{result["submitter"]}","{result["category"]}"\n')
+                    f.write(
+                        f'"{result["legacy_id"]}","{result["standard_id"]}","{result["title"]}","{result["submitter"]}","{result["category"]}"\n')
 
             print(f"📄 CSV形式保存: {csv_file}")
 

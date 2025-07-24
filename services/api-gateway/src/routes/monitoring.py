@@ -11,14 +11,21 @@ import sys
 from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from monitoring.error_recovery_system import error_recovery_system
+from monitoring.monitoring_alerting_system import monitoring_system
 from pydantic import BaseModel, Field, validator
 
 from ..security.validation import InputValidator
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'ingest-worker', 'src'))
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        '..',
+        '..',
+        'ingest-worker',
+        'src'))
 
-from monitoring.error_recovery_system import error_recovery_system
-from monitoring.monitoring_alerting_system import monitoring_system
 
 logger = logging.getLogger(__name__)
 
@@ -73,12 +80,13 @@ async def get_error_recovery_system():
 # Health Check Endpoints
 @router.get("/health")
 async def get_system_health(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get overall system health status."""
     try:
         health_results = await monitoring_sys.health_checker.run_all_checks()
-        overall_status = monitoring_sys.health_checker.get_overall_status(health_results)
+        overall_status = monitoring_sys.health_checker.get_overall_status(
+            health_results)
 
         return {
             "success": True,
@@ -103,7 +111,7 @@ async def get_system_health(
 async def trigger_health_checks(
     request: HealthCheckRequest,
     background_tasks: BackgroundTasks,
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Trigger health checks for specific components or all components."""
     try:
@@ -141,7 +149,7 @@ async def trigger_health_checks(
 @router.get("/health/{component}")
 async def get_component_health(
     component: str,
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get health status for a specific component."""
     try:
@@ -170,7 +178,7 @@ async def get_component_health(
 @router.get("/metrics")
 async def get_system_metrics(
     period_minutes: int = Query(60, ge=5, le=1440),
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get system metrics for the specified period."""
     try:
@@ -192,7 +200,7 @@ async def get_system_metrics(
 @router.post("/metrics/query")
 async def query_metrics(
     request: MetricsQueryRequest,
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Query specific metrics with filtering."""
     try:
@@ -208,7 +216,8 @@ async def query_metrics(
                     results[metric_name] = summary
         else:
             # Get all metrics
-            results = monitoring_sys.metrics_collector.get_all_metrics(request.period_minutes)
+            results = monitoring_sys.metrics_collector.get_all_metrics(
+                request.period_minutes)
 
         return {
             "success": True,
@@ -225,7 +234,7 @@ async def query_metrics(
 
 @router.get("/metrics/system")
 async def get_system_resource_metrics(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get current system resource metrics."""
     try:
@@ -243,7 +252,8 @@ async def get_system_resource_metrics(
         ]
 
         for metric_name in metric_names:
-            summary = monitoring_sys.metrics_collector.get_metric_summary(metric_name, 5)  # Last 5 minutes
+            summary = monitoring_sys.metrics_collector.get_metric_summary(
+                metric_name, 5)  # Last 5 minutes
             if summary:
                 system_metrics[metric_name] = summary
 
@@ -255,7 +265,8 @@ async def get_system_resource_metrics(
 
     except Exception as e:
         logger.error(f"Failed to get system resource metrics: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch system resource metrics")
+        raise HTTPException(status_code=500,
+                            detail="Failed to fetch system resource metrics")
 
 
 # Alert Endpoints
@@ -265,7 +276,7 @@ async def get_alerts(
     component: str | None = Query(None),
     status: str = Query("active"),
     limit: int = Query(50, ge=1, le=200),
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get alerts with optional filtering."""
     try:
@@ -275,14 +286,17 @@ async def get_alerts(
         filtered_alerts = all_alerts
 
         if status:
-            filtered_alerts = [alert for alert in filtered_alerts if alert.status == status]
+            filtered_alerts = [
+                alert for alert in filtered_alerts if alert.status == status]
 
         if severity:
-            filtered_alerts = [alert for alert in filtered_alerts if alert.severity.value == severity]
+            filtered_alerts = [
+                alert for alert in filtered_alerts if alert.severity.value == severity]
 
         if component:
             component = InputValidator.sanitize_string(component, 100)
-            filtered_alerts = [alert for alert in filtered_alerts if alert.component == component]
+            filtered_alerts = [
+                alert for alert in filtered_alerts if alert.component == component]
 
         # Sort by triggered_at (newest first)
         filtered_alerts.sort(key=lambda x: x.triggered_at, reverse=True)
@@ -310,7 +324,7 @@ async def get_alerts(
 @router.get("/alerts/{alert_id}")
 async def get_alert_details(
     alert_id: str,
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get details for a specific alert."""
     try:
@@ -335,7 +349,7 @@ async def get_alert_details(
 @router.post("/alerts/{alert_id}/resolve")
 async def resolve_alert(
     alert_id: str,
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Resolve an active alert."""
     try:
@@ -357,7 +371,7 @@ async def resolve_alert(
 
 @router.get("/alerts/statistics")
 async def get_alert_statistics(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get alert statistics and trends."""
     try:
@@ -377,7 +391,7 @@ async def get_alert_statistics(
 # SLA Endpoints
 @router.get("/sla")
 async def get_sla_status(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get SLA monitoring status."""
     try:
@@ -396,7 +410,7 @@ async def get_sla_status(
 
 @router.get("/sla/violations")
 async def get_sla_violations(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get current SLA violations."""
     try:
@@ -429,7 +443,7 @@ async def get_sla_violations(
 # Error Recovery Endpoints
 @router.get("/error-recovery")
 async def get_error_recovery_status(
-    error_recovery_sys = Depends(get_error_recovery_system)
+    error_recovery_sys=Depends(get_error_recovery_system)
 ):
     """Get error recovery system status."""
     try:
@@ -443,12 +457,13 @@ async def get_error_recovery_status(
 
     except Exception as e:
         logger.error(f"Failed to get error recovery status: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch error recovery status")
+        raise HTTPException(status_code=500,
+                            detail="Failed to fetch error recovery status")
 
 
 @router.get("/error-recovery/circuit-breakers")
 async def get_circuit_breaker_status(
-    error_recovery_sys = Depends(get_error_recovery_system)
+    error_recovery_sys=Depends(get_error_recovery_system)
 ):
     """Get circuit breaker statuses."""
     try:
@@ -465,12 +480,13 @@ async def get_circuit_breaker_status(
 
     except Exception as e:
         logger.error(f"Failed to get circuit breaker status: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch circuit breaker status")
+        raise HTTPException(status_code=500,
+                            detail="Failed to fetch circuit breaker status")
 
 
 @router.get("/error-recovery/dead-letter-queue")
 async def get_dlq_status(
-    error_recovery_sys = Depends(get_error_recovery_system)
+    error_recovery_sys=Depends(get_error_recovery_system)
 ):
     """Get dead letter queue status."""
     try:
@@ -490,7 +506,7 @@ async def get_dlq_status(
 @router.post("/error-recovery/process-dlq")
 async def process_dlq_retries(
     background_tasks: BackgroundTasks,
-    error_recovery_sys = Depends(get_error_recovery_system)
+    error_recovery_sys=Depends(get_error_recovery_system)
 ):
     """Trigger processing of dead letter queue retries."""
     try:
@@ -511,7 +527,7 @@ async def process_dlq_retries(
 # Dashboard Endpoint
 @router.get("/dashboard")
 async def get_monitoring_dashboard(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Get comprehensive monitoring dashboard data."""
     try:
@@ -530,7 +546,7 @@ async def get_monitoring_dashboard(
 # System Control Endpoints
 @router.post("/system/monitoring/enable")
 async def enable_monitoring(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Enable system monitoring."""
     try:
@@ -549,7 +565,7 @@ async def enable_monitoring(
 
 @router.post("/system/monitoring/disable")
 async def disable_monitoring(
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Disable system monitoring."""
     try:
@@ -569,7 +585,7 @@ async def disable_monitoring(
 @router.post("/system/full-check")
 async def trigger_full_monitoring_cycle(
     background_tasks: BackgroundTasks,
-    monitoring_sys = Depends(get_monitoring_system)
+    monitoring_sys=Depends(get_monitoring_system)
 ):
     """Trigger a full monitoring cycle."""
     try:
@@ -584,14 +600,15 @@ async def trigger_full_monitoring_cycle(
 
     except Exception as e:
         logger.error(f"Failed to trigger full monitoring cycle: {e}")
-        raise HTTPException(status_code=500, detail="Failed to trigger full monitoring cycle")
+        raise HTTPException(status_code=500,
+                            detail="Failed to trigger full monitoring cycle")
 
 
 # Health check for monitoring API itself
 @router.get("/health-check")
 async def monitoring_api_health_check(
-    monitoring_sys = Depends(get_monitoring_system),
-    error_recovery_sys = Depends(get_error_recovery_system)
+    monitoring_sys=Depends(get_monitoring_system),
+    error_recovery_sys=Depends(get_error_recovery_system)
 ):
     """Health check for the monitoring API itself."""
     try:
@@ -604,10 +621,8 @@ async def monitoring_api_health_check(
             "status": "healthy" if overall_healthy else "unhealthy",
             "components": {
                 "monitoring_system": "healthy" if monitoring_healthy else "unhealthy",
-                "error_recovery_system": "healthy" if error_recovery_healthy else "unhealthy"
-            },
-            "timestamp": datetime.now().isoformat()
-        }
+                "error_recovery_system": "healthy" if error_recovery_healthy else "unhealthy"},
+            "timestamp": datetime.now().isoformat()}
 
     except Exception as e:
         logger.error(f"Monitoring API health check failed: {e}")

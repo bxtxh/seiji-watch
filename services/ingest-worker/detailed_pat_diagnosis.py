@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def detailed_pat_analysis():
     """PATの詳細分析"""
     print("🔬 PAT詳細分析")
@@ -82,6 +83,7 @@ def detailed_pat_analysis():
     print(f"  Base ID長さ変化: {len(base_id)} → {len(clean_base_id)}")
 
     return clean_pat, clean_base_id
+
 
 def test_clean_authentication(clean_pat, clean_base_id):
     """クリーンなPATでテスト"""
@@ -143,6 +145,7 @@ def test_clean_authentication(clean_pat, clean_base_id):
 
     return False
 
+
 def test_direct_curl_equivalent(clean_pat, clean_base_id):
     """curl相当の最小テスト"""
     print("\n🔧 最小curl相当テスト")
@@ -171,6 +174,7 @@ def test_direct_curl_equivalent(clean_pat, clean_base_id):
         print(f"❌ エラー: {str(e)}")
 
     return False
+
 
 def main():
     """メイン診断プロセス"""
@@ -213,6 +217,7 @@ def main():
         print("❌ 認証: 失敗")
         print("🔧 PAT再生成推奨")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

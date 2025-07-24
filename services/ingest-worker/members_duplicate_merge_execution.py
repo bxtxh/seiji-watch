@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class MembersDuplicateMerger:
     """Members table duplicate merge execution system"""
 
@@ -77,7 +78,8 @@ class MembersDuplicateMerger:
 
         return all_records
 
-    def identify_simple_merge_candidates(self, records: list[dict]) -> dict[str, list[dict]]:
+    def identify_simple_merge_candidates(
+            self, records: list[dict]) -> dict[str, list[dict]]:
         """Identify simple merge candidates (timestamp-only conflicts)"""
         name_groups = {}
 
@@ -131,7 +133,13 @@ class MembersDuplicateMerger:
             name = fields.get('Name', '').strip()
 
             # Skip obvious test data
-            if name and not any(test in name for test in ['議員', 'Test', 'test', '田中太郎', '佐藤三郎']):
+            if name and not any(
+                test in name for test in [
+                    '議員',
+                    'Test',
+                    'test',
+                    '田中太郎',
+                    '佐藤三郎']):
                 if name not in name_groups:
                     name_groups[name] = []
                 name_groups[name].append(record)
@@ -151,7 +159,7 @@ class MembersDuplicateMerger:
         return obvious_duplicates
 
     async def execute_simple_merge(self, session: aiohttp.ClientSession,
-                                  name: str, records: list[dict]) -> bool:
+                                   name: str, records: list[dict]) -> bool:
         """Execute simple merge for identical records"""
         if len(records) != 2:
             return False
@@ -172,7 +180,8 @@ class MembersDuplicateMerger:
             keep_record = record2
             delete_record = record1
 
-        print(f"   🔄 Merging {name}: Keeping {keep_record['id']}, deleting {delete_record['id']}")
+        print(
+            f"   🔄 Merging {name}: Keeping {keep_record['id']}, deleting {delete_record['id']}")
 
         try:
             # Delete the duplicate record
@@ -195,7 +204,7 @@ class MembersDuplicateMerger:
             return False
 
     async def execute_obvious_duplicate_cleanup(self, session: aiohttp.ClientSession,
-                                              name: str, records: list[dict]) -> bool:
+                                                name: str, records: list[dict]) -> bool:
         """Execute cleanup for obvious politician duplicates"""
         if len(records) < 2:
             return False
@@ -227,7 +236,8 @@ class MembersDuplicateMerger:
         keep_record = scored_records[0]['record']
         delete_records = [sr['record'] for sr in scored_records[1:]]
 
-        print(f"   🔄 Cleaning {name}: Keeping {keep_record['id']}, deleting {len(delete_records)} duplicates")
+        print(
+            f"   🔄 Cleaning {name}: Keeping {keep_record['id']}, deleting {len(delete_records)} duplicates")
 
         success_count = 0
         for delete_record in delete_records:
@@ -240,7 +250,8 @@ class MembersDuplicateMerger:
                         success_count += 1
                         self.merge_results["records_deleted"] += 1
                     else:
-                        print(f"   ❌ Delete failed for {delete_record['id']}: {response.status}")
+                        print(
+                            f"   ❌ Delete failed for {delete_record['id']}: {response.status}")
                         self.merge_results["errors"] += 1
 
             except Exception as e:
@@ -256,7 +267,7 @@ class MembersDuplicateMerger:
         return False
 
     async def remove_test_data_records(self, session: aiohttp.ClientSession,
-                                     records: list[dict]) -> int:
+                                       records: list[dict]) -> int:
         """Remove obvious test data records"""
         test_patterns = [
             '議員01', '議員02', '議員03', '議員04', '議員05',
@@ -381,7 +392,8 @@ class MembersDuplicateMerger:
             "final_record_count": final_count,
             "total_records_removed": total_removed,
             "merge_results": self.merge_results,
-            "estimated_quality_improvement": min(95.0, 89.7 + (total_removed * 0.05))  # Rough estimate
+            # Rough estimate
+            "estimated_quality_improvement": min(95.0, 89.7 + (total_removed * 0.05))
         }
 
         # Save report
@@ -405,7 +417,8 @@ class MembersDuplicateMerger:
         print(f"{'='*80}")
 
         print(f"⏱️ Execution Time: {report['execution_time_seconds']:.1f} seconds")
-        print(f"📊 Records: {report['initial_record_count']} → {report['final_record_count']} (-{report['total_records_removed']})")
+        print(
+            f"📊 Records: {report['initial_record_count']} → {report['final_record_count']} (-{report['total_records_removed']})")
 
         results = report["merge_results"]
         print("\n🔧 MERGE RESULTS:")
@@ -422,13 +435,15 @@ class MembersDuplicateMerger:
         print("\n📈 QUALITY IMPROVEMENT:")
         print("   Before: 89.7% (B+)")
         print(f"   Estimated After: {estimated_quality:.1f}%")
-        print(f"   Target Status: {'✅ ACHIEVED' if target_achieved else '⚠️ IN PROGRESS'}")
+        print(
+            f"   Target Status: {'✅ ACHIEVED' if target_achieved else '⚠️ IN PROGRESS'}")
 
         if not target_achieved:
             remaining_duplicates = 625 - report['total_records_removed']
             print("\n📋 NEXT STEPS:")
             print(f"   Remaining duplicates: ~{remaining_duplicates}")
             print("   Recommended: Continue with complex merge processing")
+
 
 async def main():
     """Main entry point"""

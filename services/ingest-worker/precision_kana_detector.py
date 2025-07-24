@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class PrecisionKanaDetector:
     """Precision detection system for incomplete kana readings"""
 
@@ -130,7 +131,8 @@ class PrecisionKanaDetector:
 
         normalized_kana = self.normalize_kana(name_kana)
 
-        # Check if kana exactly matches a known surname AND name starts with that surname kanji
+        # Check if kana exactly matches a known surname AND name starts with that
+        # surname kanji
         for surname_kana, surname_kanji in self.common_surnames.items():
             if normalized_kana == surname_kana and name.startswith(surname_kanji):
                 return True, f"Perfect surname match: {surname_kana} = {surname_kanji}"
@@ -240,7 +242,8 @@ class PrecisionKanaDetector:
                 print("❌ No records found!")
                 return
 
-            print(f"📊 Analyzing {len(all_records)} Members records with precision rules")
+            print(
+                f"📊 Analyzing {len(all_records)} Members records with precision rules")
 
             # Apply precision detection to each record
             for record in all_records:
@@ -251,7 +254,8 @@ class PrecisionKanaDetector:
                 if name:
                     self.detection_results["total_analyzed"] += 1
 
-                    flags, confidence, score = self.comprehensive_detection(name, name_kana)
+                    flags, confidence, score = self.comprehensive_detection(
+                        name, name_kana)
 
                     record_info = {
                         'id': record['id'],
@@ -270,11 +274,13 @@ class PrecisionKanaDetector:
                     if confidence == "CRITICAL":
                         self.detection_results["critical_issues"].append(record_info)
                     elif confidence == "HIGH":
-                        self.detection_results["combined_high_confidence"].append(record_info)
+                        self.detection_results["combined_high_confidence"].append(
+                            record_info)
                     elif confidence == "MEDIUM":
                         self.detection_results["fuzzy_length_flags"].append(record_info)
                     elif confidence == "LOW":
-                        self.detection_results["morpheme_count_flags"].append(record_info)
+                        self.detection_results["morpheme_count_flags"].append(
+                            record_info)
                     else:
                         self.detection_results["already_complete"].append(record_info)
 
@@ -297,15 +303,16 @@ class PrecisionKanaDetector:
         print("📊 DETECTION SUMMARY:")
         print(f"   Total analyzed: {results['total_analyzed']}")
         print(f"   🚨 CRITICAL issues: {len(results['critical_issues'])}")
-        print(f"   ⚠️ HIGH confidence flags: {len(results['combined_high_confidence'])}")
+        print(
+            f"   ⚠️ HIGH confidence flags: {len(results['combined_high_confidence'])}")
         print(f"   📝 MEDIUM confidence: {len(results['fuzzy_length_flags'])}")
         print(f"   💡 LOW confidence: {len(results['morpheme_count_flags'])}")
         print(f"   ✅ Complete readings: {len(results['already_complete'])}")
 
         total_flagged = (len(results['critical_issues']) +
-                        len(results['combined_high_confidence']) +
-                        len(results['fuzzy_length_flags']) +
-                        len(results['morpheme_count_flags']))
+                         len(results['combined_high_confidence']) +
+                         len(results['fuzzy_length_flags']) +
+                         len(results['morpheme_count_flags']))
 
         print(f"   🎯 Total requiring fixes: {total_flagged}")
 
@@ -315,7 +322,8 @@ class PrecisionKanaDetector:
             for i, item in enumerate(results['critical_issues'][:10], 1):
                 print(f"   {i:2d}. {item['name']} → '{item['current_kana']}'")
                 print(f"       Flags: {'; '.join(item['flags'])}")
-                print(f"       Confidence: {item['confidence']} (Score: {item['score']})")
+                print(
+                    f"       Confidence: {item['confidence']} (Score: {item['score']})")
                 print(f"       ({item['house']}, {item['constituency']})")
 
         # Show high confidence issues
@@ -324,13 +332,16 @@ class PrecisionKanaDetector:
             for i, item in enumerate(results['combined_high_confidence'][:10], 1):
                 print(f"   {i:2d}. {item['name']} → '{item['current_kana']}'")
                 print(f"       Flags: {'; '.join(item['flags'])}")
-                print(f"       Confidence: {item['confidence']} (Score: {item['score']})")
+                print(
+                    f"       Confidence: {item['confidence']} (Score: {item['score']})")
 
         # Calculate precision metrics
         if results['total_analyzed'] > 0:
-            critical_rate = (len(results['critical_issues']) / results['total_analyzed']) * 100
+            critical_rate = (len(results['critical_issues']) /
+                             results['total_analyzed']) * 100
             flagged_rate = (total_flagged / results['total_analyzed']) * 100
-            complete_rate = (len(results['already_complete']) / results['total_analyzed']) * 100
+            complete_rate = (len(results['already_complete']
+                                 ) / results['total_analyzed']) * 100
 
             print("\n📈 PRECISION METRICS:")
             print(f"   Critical issues rate: {critical_rate:.1f}%")
@@ -374,9 +385,9 @@ class PrecisionKanaDetector:
                 "critical_issues": len(self.detection_results["critical_issues"]),
                 "high_confidence": len(self.detection_results["combined_high_confidence"]),
                 "total_flagged": (len(self.detection_results["critical_issues"]) +
-                                len(self.detection_results["combined_high_confidence"]) +
-                                len(self.detection_results["fuzzy_length_flags"]) +
-                                len(self.detection_results["morpheme_count_flags"])),
+                                  len(self.detection_results["combined_high_confidence"]) +
+                                  len(self.detection_results["fuzzy_length_flags"]) +
+                                  len(self.detection_results["morpheme_count_flags"])),
                 "complete_readings": len(self.detection_results["already_complete"])
             }
         }
@@ -386,6 +397,7 @@ class PrecisionKanaDetector:
 
         print(f"\n💾 Precision detection report saved: {filename}")
 
+
 async def main():
     """Main precision detection entry point"""
     detector = PrecisionKanaDetector()
@@ -394,16 +406,20 @@ async def main():
     print("\n✅ Precision Name_Kana detection completed!")
 
     total_flagged = (len(results["critical_issues"]) +
-                    len(results["combined_high_confidence"]) +
-                    len(results["fuzzy_length_flags"]) +
-                    len(results["morpheme_count_flags"]))
+                     len(results["combined_high_confidence"]) +
+                     len(results["fuzzy_length_flags"]) +
+                     len(results["morpheme_count_flags"]))
 
     if total_flagged > 0:
         print("\n📋 NEXT STEPS FOR ZERO-DEFECT QUALITY:")
-        print(f"   1. 🚨 Fix {len(results['critical_issues'])} CRITICAL surname-only issues")
-        print(f"   2. ⚠️ Fix {len(results['combined_high_confidence'])} HIGH confidence issues")
-        print(f"   3. 📝 Review {len(results['fuzzy_length_flags'])} MEDIUM confidence cases")
-        print(f"   4. 💡 Manual review {len(results['morpheme_count_flags'])} LOW confidence cases")
+        print(
+            f"   1. 🚨 Fix {len(results['critical_issues'])} CRITICAL surname-only issues")
+        print(
+            f"   2. ⚠️ Fix {len(results['combined_high_confidence'])} HIGH confidence issues")
+        print(
+            f"   3. 📝 Review {len(results['fuzzy_length_flags'])} MEDIUM confidence cases")
+        print(
+            f"   4. 💡 Manual review {len(results['morpheme_count_flags'])} LOW confidence cases")
         print("\n🎯 Target: Achieve 100% complete full-name readings for national political database")
     else:
         print("🎉 All Name_Kana readings passed precision detection!")

@@ -98,7 +98,8 @@ class DataQualityAuditor:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Quality thresholds
@@ -161,7 +162,8 @@ class DataQualityAuditor:
                 recommendations = self._generate_recommendations(issues, field_metrics)
 
                 # Determine improvement priorities
-                priorities = self._determine_improvement_priorities(issues, field_metrics)
+                priorities = self._determine_improvement_priorities(
+                    issues, field_metrics)
 
                 # Create report
                 report = QualityReport(
@@ -177,7 +179,8 @@ class DataQualityAuditor:
                 # Add statistics
                 report.issues_by_type = self._count_issues_by_type(issues)
                 report.issues_by_severity = self._count_issues_by_severity(issues)
-                report.most_problematic_fields = self._identify_problematic_fields(field_metrics)
+                report.most_problematic_fields = self._identify_problematic_fields(
+                    field_metrics)
 
                 self.logger.info(f"Audit completed: {len(issues)} issues found")
                 return report
@@ -226,7 +229,10 @@ class DataQualityAuditor:
 
         return field_metrics
 
-    def _calculate_field_metrics(self, bills: list[Bill], field_name: str) -> QualityMetrics:
+    def _calculate_field_metrics(
+            self,
+            bills: list[Bill],
+            field_name: str) -> QualityMetrics:
         """Calculate quality metrics for a specific field"""
         total_records = len(bills)
         valid_records = 0
@@ -285,27 +291,27 @@ class DataQualityAuditor:
             value = getattr(bill, field_name, None)
 
             if value is None:
-                issues.append(QualityIssue(
-                    bill_id=bill.bill_id,
-                    issue_type=QualityIssueType.MISSING_REQUIRED_FIELD,
-                    severity=QualityIssueSeverity.CRITICAL,
-                    field_name=field_name,
-                    description=f"Required field '{field_name}' is missing",
-                    current_value=None,
-                    suggested_fix=f"Populate '{field_name}' field with appropriate data",
-                    confidence=1.0
-                ))
+                issues.append(
+                    QualityIssue(
+                        bill_id=bill.bill_id,
+                        issue_type=QualityIssueType.MISSING_REQUIRED_FIELD,
+                        severity=QualityIssueSeverity.CRITICAL,
+                        field_name=field_name,
+                        description=f"Required field '{field_name}' is missing",
+                        current_value=None,
+                        suggested_fix=f"Populate '{field_name}' field with appropriate data",
+                        confidence=1.0))
             elif isinstance(value, str) and not value.strip():
-                issues.append(QualityIssue(
-                    bill_id=bill.bill_id,
-                    issue_type=QualityIssueType.EMPTY_FIELD,
-                    severity=QualityIssueSeverity.HIGH,
-                    field_name=field_name,
-                    description=f"Required field '{field_name}' is empty",
-                    current_value=value,
-                    suggested_fix=f"Populate '{field_name}' field with appropriate data",
-                    confidence=1.0
-                ))
+                issues.append(
+                    QualityIssue(
+                        bill_id=bill.bill_id,
+                        issue_type=QualityIssueType.EMPTY_FIELD,
+                        severity=QualityIssueSeverity.HIGH,
+                        field_name=field_name,
+                        description=f"Required field '{field_name}' is empty",
+                        current_value=value,
+                        suggested_fix=f"Populate '{field_name}' field with appropriate data",
+                        confidence=1.0))
 
         return issues
 
@@ -329,16 +335,16 @@ class DataQualityAuditor:
                         confidence=0.9
                     ))
                 elif isinstance(value, str) and len(value.strip()) < self.quality_thresholds['text_min_length']:
-                    issues.append(QualityIssue(
-                        bill_id=bill.bill_id,
-                        issue_type=QualityIssueType.POOR_JAPANESE_TEXT,
-                        severity=QualityIssueSeverity.MEDIUM,
-                        field_name=field_name,
-                        description=f"Field '{field_name}' has insufficient content",
-                        current_value=value,
-                        suggested_fix=f"Expand '{field_name}' content with more detailed information",
-                        confidence=0.8
-                    ))
+                    issues.append(
+                        QualityIssue(
+                            bill_id=bill.bill_id,
+                            issue_type=QualityIssueType.POOR_JAPANESE_TEXT,
+                            severity=QualityIssueSeverity.MEDIUM,
+                            field_name=field_name,
+                            description=f"Field '{field_name}' has insufficient content",
+                            current_value=value,
+                            suggested_fix=f"Expand '{field_name}' content with more detailed information",
+                            confidence=0.8))
 
         return issues
 
@@ -349,16 +355,16 @@ class DataQualityAuditor:
         # Check date consistency
         if bill.submitted_date and bill.updated_at:
             if bill.submitted_date > bill.updated_at.date():
-                issues.append(QualityIssue(
-                    bill_id=bill.bill_id,
-                    issue_type=QualityIssueType.INCONSISTENT_DATA,
-                    severity=QualityIssueSeverity.HIGH,
-                    field_name="submitted_date",
-                    description="Submitted date is after last updated date",
-                    current_value=f"submitted: {bill.submitted_date}, updated: {bill.updated_at}",
-                    suggested_fix="Verify and correct date fields",
-                    confidence=0.95
-                ))
+                issues.append(
+                    QualityIssue(
+                        bill_id=bill.bill_id,
+                        issue_type=QualityIssueType.INCONSISTENT_DATA,
+                        severity=QualityIssueSeverity.HIGH,
+                        field_name="submitted_date",
+                        description="Submitted date is after last updated date",
+                        current_value=f"submitted: {bill.submitted_date}, updated: {bill.updated_at}",
+                        suggested_fix="Verify and correct date fields",
+                        confidence=0.95))
 
         # Check status consistency
         if bill.status == "成立" and bill.stage != "enacted":
@@ -379,7 +385,11 @@ class DataQualityAuditor:
         """Check Japanese text quality"""
         issues = []
 
-        text_fields = ['title', 'bill_outline', 'background_context', 'expected_effects']
+        text_fields = [
+            'title',
+            'bill_outline',
+            'background_context',
+            'expected_effects']
 
         for field_name in text_fields:
             value = getattr(bill, field_name, None)
@@ -575,19 +585,26 @@ class DataQualityAuditor:
             return bill.source_house in ["参議院", "衆議院"]
         return True
 
-    def _generate_recommendations(self, issues: list[QualityIssue], field_metrics: dict[str, QualityMetrics]) -> list[str]:
+    def _generate_recommendations(self,
+                                  issues: list[QualityIssue],
+                                  field_metrics: dict[str,
+                                                      QualityMetrics]) -> list[str]:
         """Generate improvement recommendations"""
         recommendations = []
 
         # Critical issues
-        critical_issues = [issue for issue in issues if issue.severity == QualityIssueSeverity.CRITICAL]
+        critical_issues = [
+            issue for issue in issues if issue.severity == QualityIssueSeverity.CRITICAL]
         if critical_issues:
-            recommendations.append(f"Address {len(critical_issues)} critical data quality issues immediately")
+            recommendations.append(
+                f"Address {len(critical_issues)} critical data quality issues immediately")
 
         # Missing enhanced fields
-        enhanced_field_issues = [issue for issue in issues if issue.field_name in self.enhanced_fields]
+        enhanced_field_issues = [
+            issue for issue in issues if issue.field_name in self.enhanced_fields]
         if enhanced_field_issues:
-            recommendations.append("Implement enhanced data extraction for missing bill outline and context fields")
+            recommendations.append(
+                "Implement enhanced data extraction for missing bill outline and context fields")
 
         # Poor completeness
         poor_completeness_fields = [
@@ -595,21 +612,29 @@ class DataQualityAuditor:
             if metrics.completeness_rate < self.quality_thresholds['completeness_min']
         ]
         if poor_completeness_fields:
-            recommendations.append(f"Improve data completeness for fields: {', '.join(poor_completeness_fields)}")
+            recommendations.append(
+                f"Improve data completeness for fields: {', '.join(poor_completeness_fields)}")
 
         # Outdated data
-        outdated_issues = [issue for issue in issues if issue.issue_type == QualityIssueType.OUTDATED_DATA]
+        outdated_issues = [
+            issue for issue in issues if issue.issue_type == QualityIssueType.OUTDATED_DATA]
         if outdated_issues:
-            recommendations.append("Implement automated data refresh for outdated bills")
+            recommendations.append(
+                "Implement automated data refresh for outdated bills")
 
         return recommendations
 
-    def _determine_improvement_priorities(self, issues: list[QualityIssue], field_metrics: dict[str, QualityMetrics]) -> list[dict[str, Any]]:
+    def _determine_improvement_priorities(self,
+                                          issues: list[QualityIssue],
+                                          field_metrics: dict[str,
+                                                              QualityMetrics]) -> list[dict[str,
+                                                                                            Any]]:
         """Determine improvement priorities"""
         priorities = []
 
         # Priority 1: Critical issues
-        critical_count = len([issue for issue in issues if issue.severity == QualityIssueSeverity.CRITICAL])
+        critical_count = len(
+            [issue for issue in issues if issue.severity == QualityIssueSeverity.CRITICAL])
         if critical_count > 0:
             priorities.append({
                 'priority': 1,
@@ -620,7 +645,8 @@ class DataQualityAuditor:
             })
 
         # Priority 2: Enhanced fields
-        enhanced_missing = len([issue for issue in issues if issue.field_name in self.enhanced_fields])
+        enhanced_missing = len(
+            [issue for issue in issues if issue.field_name in self.enhanced_fields])
         if enhanced_missing > 0:
             priorities.append({
                 'priority': 2,
@@ -631,7 +657,8 @@ class DataQualityAuditor:
             })
 
         # Priority 3: Data consistency
-        consistency_issues = len([issue for issue in issues if issue.issue_type == QualityIssueType.INCONSISTENT_DATA])
+        consistency_issues = len(
+            [issue for issue in issues if issue.issue_type == QualityIssueType.INCONSISTENT_DATA])
         if consistency_issues > 0:
             priorities.append({
                 'priority': 3,
@@ -657,7 +684,8 @@ class DataQualityAuditor:
             counts[issue.severity.value] += 1
         return dict(counts)
 
-    def _identify_problematic_fields(self, field_metrics: dict[str, QualityMetrics]) -> list[str]:
+    def _identify_problematic_fields(
+            self, field_metrics: dict[str, QualityMetrics]) -> list[str]:
         """Identify most problematic fields"""
         field_scores = [
             (field, metrics.overall_quality_score)
@@ -713,11 +741,13 @@ class DataQualityAuditor:
                 # Determine trend
                 scores = list(daily_scores.values())
                 if len(scores) > 1:
-                    first_half = scores[:len(scores)//2]
-                    second_half = scores[len(scores)//2:]
+                    first_half = scores[:len(scores) // 2]
+                    second_half = scores[len(scores) // 2:]
 
-                    first_avg = sum(s['avg_score'] for s in first_half) / len(first_half)
-                    second_avg = sum(s['avg_score'] for s in second_half) / len(second_half)
+                    first_avg = sum(s['avg_score']
+                                    for s in first_half) / len(first_half)
+                    second_avg = sum(s['avg_score']
+                                     for s in second_half) / len(second_half)
 
                     if second_avg > first_avg + 0.05:
                         trend = 'improving'
@@ -733,8 +763,9 @@ class DataQualityAuditor:
                     'period_days': days,
                     'total_bills': len(recent_bills),
                     'daily_scores': daily_scores,
-                    'overall_average': sum(s['avg_score'] for s in scores) / len(scores) if scores else 0
-                }
+                    'overall_average': sum(
+                        s['avg_score'] for s in scores) /
+                    len(scores) if scores else 0}
 
         except Exception as e:
             self.logger.error(f"Error calculating quality trend: {e}")
@@ -751,7 +782,9 @@ class DataQualityAuditor:
             value = getattr(bill, field_name, None)
 
             if self._is_field_value_valid(field_name, value):
-                if isinstance(value, str) and self._is_japanese_text_quality_good(value):
+                if isinstance(
+                        value,
+                        str) and self._is_japanese_text_quality_good(value):
                     score += weight
                 elif not isinstance(value, str):
                     score += weight
@@ -760,7 +793,8 @@ class DataQualityAuditor:
 
         return score / max_score if max_score > 0 else 0.0
 
-    def export_report(self, report: QualityReport, format: str = "json") -> dict[str, Any]:
+    def export_report(self, report: QualityReport,
+                      format: str = "json") -> dict[str, Any]:
         """Export quality report in various formats"""
         if format == "json":
             return {

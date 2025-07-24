@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def fix_members_table():
     """Delete and recreate Members table with proper schema"""
 
@@ -71,7 +72,8 @@ async def fix_members_table():
                         }},
                         {"name": "Constituency", "type": "singleLineText"},
                         {"name": "Diet_Member_ID", "type": "singleLineText"},
-                        {"name": "Birth_Date", "type": "date", "options": {"dateFormat": {"name": "iso"}}},
+                        {"name": "Birth_Date", "type": "date",
+                            "options": {"dateFormat": {"name": "iso"}}},
                         {"name": "Gender", "type": "singleSelect", "options": {
                             "choices": [
                                 {"name": "男性"},
@@ -80,13 +82,15 @@ async def fix_members_table():
                             ]
                         }},
                         {"name": "First_Elected", "type": "singleLineText"},
-                        {"name": "Terms_Served", "type": "number", "options": {"precision": 0}},
+                        {"name": "Terms_Served", "type": "number",
+                            "options": {"precision": 0}},
                         {"name": "Previous_Occupations", "type": "multilineText"},
                         {"name": "Education", "type": "multilineText"},
                         {"name": "Website_URL", "type": "url"},
                         {"name": "Twitter_Handle", "type": "singleLineText"},
                         {"name": "Facebook_URL", "type": "url"},
-                        {"name": "Is_Active", "type": "checkbox", "options": {"icon": "check", "color": "greenBright"}},
+                        {"name": "Is_Active", "type": "checkbox", "options": {
+                            "icon": "check", "color": "greenBright"}},
                         {"name": "Status", "type": "singleSelect", "options": {
                             "choices": [
                                 {"name": "active"},
@@ -94,9 +98,12 @@ async def fix_members_table():
                                 {"name": "deceased"}
                             ]
                         }},
-                        {"name": "Party", "type": "multipleRecordLinks", "options": {"linkedTableId": None}},  # Will be updated
-                        {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                        {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
+                        {"name": "Party", "type": "multipleRecordLinks",
+                            "options": {"linkedTableId": None}},  # Will be updated
+                        {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {
+                            "name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
+                        {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {
+                            "name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
                     ]
                 }
 
@@ -130,6 +137,7 @@ async def fix_members_table():
             else:
                 print(f"❌ Failed to get table info: {response.status}")
                 return False
+
 
 async def main():
     """Main function"""

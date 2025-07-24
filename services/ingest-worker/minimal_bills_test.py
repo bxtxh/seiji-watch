@@ -25,6 +25,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def main():
     """メイン実行"""
     print("🎯 最小限フィールド法案統合テスト")
@@ -113,6 +114,7 @@ def main():
         import traceback
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

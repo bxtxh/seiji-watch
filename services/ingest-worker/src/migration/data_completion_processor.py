@@ -95,7 +95,8 @@ class DataCompletionProcessor:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -129,7 +130,9 @@ class DataCompletionProcessor:
         self.execution_history: list[BatchCompletionResult] = []
         self.max_history_entries = 100
 
-    def generate_completion_plan(self, quality_issues: list[QualityIssue] | None = None) -> list[CompletionTask]:
+    def generate_completion_plan(
+            self,
+            quality_issues: list[QualityIssue] | None = None) -> list[CompletionTask]:
         """Generate comprehensive completion plan based on quality issues"""
         self.logger.info("Generating data completion plan")
 
@@ -157,10 +160,13 @@ class DataCompletionProcessor:
             self.logger.error(f"Error generating completion plan: {e}")
             raise
 
-    def execute_completion_plan(self, tasks: list[CompletionTask]) -> BatchCompletionResult:
+    def execute_completion_plan(
+            self,
+            tasks: list[CompletionTask]) -> BatchCompletionResult:
         """Execute completion plan with batch processing"""
         batch_id = f"batch_{int(datetime.now().timestamp())}"
-        self.logger.info(f"Executing completion plan {batch_id} with {len(tasks)} tasks")
+        self.logger.info(
+            f"Executing completion plan {batch_id} with {len(tasks)} tasks")
 
         start_time = time.time()
 
@@ -170,7 +176,8 @@ class DataCompletionProcessor:
 
             for i in range(0, len(tasks), self.config['batch_size']):
                 batch_tasks = tasks[i:i + self.config['batch_size']]
-                self.logger.info(f"Processing batch {i//self.config['batch_size'] + 1} with {len(batch_tasks)} tasks")
+                self.logger.info(
+                    f"Processing batch {i//self.config['batch_size'] + 1} with {len(batch_tasks)} tasks")
 
                 # Process batch with concurrency
                 batch_result = self._process_batch(batch_tasks)
@@ -202,7 +209,8 @@ class DataCompletionProcessor:
             # Store execution history
             self._store_execution_history(result)
 
-            self.logger.info(f"Batch completion finished: {completed_tasks}/{len(tasks)} tasks completed")
+            self.logger.info(
+                f"Batch completion finished: {completed_tasks}/{len(tasks)} tasks completed")
             return result
 
         except Exception as e:
@@ -220,7 +228,8 @@ class DataCompletionProcessor:
                 errors=[str(e)]
             )
 
-    def _group_issues_by_bill(self, issues: list[QualityIssue]) -> dict[str, list[QualityIssue]]:
+    def _group_issues_by_bill(
+            self, issues: list[QualityIssue]) -> dict[str, list[QualityIssue]]:
         """Group quality issues by bill ID"""
         bill_issues = {}
         for issue in issues:
@@ -229,7 +238,10 @@ class DataCompletionProcessor:
             bill_issues[issue.bill_id].append(issue)
         return bill_issues
 
-    def _create_completion_tasks(self, bill_id: str, issues: list[QualityIssue]) -> list[CompletionTask]:
+    def _create_completion_tasks(
+            self,
+            bill_id: str,
+            issues: list[QualityIssue]) -> list[CompletionTask]:
         """Create completion tasks for a bill based on its issues"""
         tasks = []
 
@@ -239,7 +251,9 @@ class DataCompletionProcessor:
         poor_quality_fields = []
 
         for issue in issues:
-            if issue.issue_type in [QualityIssueType.MISSING_REQUIRED_FIELD, QualityIssueType.EMPTY_FIELD]:
+            if issue.issue_type in [
+                    QualityIssueType.MISSING_REQUIRED_FIELD,
+                    QualityIssueType.EMPTY_FIELD]:
                 missing_fields.append(issue.field_name)
             elif issue.issue_type == QualityIssueType.INCONSISTENT_DATA:
                 inconsistent_fields.append(issue.field_name)
@@ -260,15 +274,16 @@ class DataCompletionProcessor:
             ))
 
         if inconsistent_fields:
-            tasks.append(CompletionTask(
-                bill_id=bill_id,
-                strategy=CompletionStrategy.VALIDATE_AND_FIX,
-                priority=CompletionPriority.HIGH,
-                target_fields=inconsistent_fields,
-                description=f"Fix inconsistent fields: {', '.join(inconsistent_fields)}",
-                estimated_effort=len(inconsistent_fields) * 5,
-                metadata={'issue_types': ['inconsistent_data']}
-            ))
+            tasks.append(
+                CompletionTask(
+                    bill_id=bill_id,
+                    strategy=CompletionStrategy.VALIDATE_AND_FIX,
+                    priority=CompletionPriority.HIGH,
+                    target_fields=inconsistent_fields,
+                    description=f"Fix inconsistent fields: {', '.join(inconsistent_fields)}",
+                    estimated_effort=len(inconsistent_fields) * 5,
+                    metadata={
+                        'issue_types': ['inconsistent_data']}))
 
         if poor_quality_fields:
             tasks.append(CompletionTask(
@@ -313,7 +328,8 @@ class DataCompletionProcessor:
             CompletionPriority.LOW: 3
         }
 
-        return sorted(tasks, key=lambda t: (priority_order[t.priority], t.estimated_effort))
+        return sorted(tasks, key=lambda t: (
+            priority_order[t.priority], t.estimated_effort))
 
     def _process_batch(self, tasks: list[CompletionTask]) -> list[CompletionResult]:
         """Process a batch of tasks with concurrency"""
@@ -416,7 +432,8 @@ class DataCompletionProcessor:
                 error_message=str(e)
             )
 
-    def _scrape_missing_data(self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
+    def _scrape_missing_data(
+            self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
         """Scrape missing data for specified fields"""
         try:
             completed_fields = []
@@ -466,7 +483,8 @@ class DataCompletionProcessor:
                 'error': str(e)
             }
 
-    def _enhance_existing_data(self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
+    def _enhance_existing_data(
+            self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
         """Enhance existing data quality"""
         try:
             completed_fields = []
@@ -502,7 +520,8 @@ class DataCompletionProcessor:
                 'error': str(e)
             }
 
-    def _validate_and_fix_data(self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
+    def _validate_and_fix_data(
+            self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
         """Validate and fix data inconsistencies"""
         try:
             completed_fields = []
@@ -662,7 +681,12 @@ class DataCompletionProcessor:
 
         return score / max_score if max_score > 0 else 0.0
 
-    def _record_completion_history(self, bill: Bill, task: CompletionTask, result: CompletionResult):
+    def _record_completion_history(
+        self,
+        bill: Bill,
+        task: CompletionTask,
+        result: CompletionResult
+    ):
         """Record completion in bill history"""
         try:
             with self.SessionLocal() as session:
@@ -693,7 +717,8 @@ class DataCompletionProcessor:
         except Exception as e:
             self.logger.error(f"Error recording completion history: {e}")
 
-    def _calculate_performance_metrics(self, results: list[CompletionResult]) -> dict[str, Any]:
+    def _calculate_performance_metrics(
+            self, results: list[CompletionResult]) -> dict[str, Any]:
         """Calculate performance metrics from results"""
         if not results:
             return {}
@@ -701,8 +726,10 @@ class DataCompletionProcessor:
         total_time = sum(r.processing_time_ms for r in results)
         avg_time = total_time / len(results)
 
-        quality_improvements = [r.quality_improvement for r in results if r.quality_improvement]
-        avg_quality_improvement = sum(quality_improvements) / len(quality_improvements) if quality_improvements else 0
+        quality_improvements = [
+            r.quality_improvement for r in results if r.quality_improvement]
+        avg_quality_improvement = sum(
+            quality_improvements) / len(quality_improvements) if quality_improvements else 0
 
         return {
             'average_processing_time_ms': avg_time,
@@ -746,17 +773,21 @@ class DataCompletionProcessor:
             'total_batches': total_batches,
             'total_tasks': total_tasks,
             'completed_tasks': completed_tasks,
-            'failed_tasks': sum(r.failed_tasks for r in recent_results),
+            'failed_tasks': sum(
+                r.failed_tasks for r in recent_results),
             'success_rate': completed_tasks / total_tasks if total_tasks > 0 else 0,
-            'average_processing_time_ms': sum(r.total_processing_time_ms for r in recent_results) / total_batches,
-            'total_processing_time_ms': sum(r.total_processing_time_ms for r in recent_results)
-        }
+            'average_processing_time_ms': sum(
+                r.total_processing_time_ms for r in recent_results) / total_batches,
+            'total_processing_time_ms': sum(
+                r.total_processing_time_ms for r in recent_results)}
 
     def get_recent_completions(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent completion results"""
-        recent_results = self.execution_history[-limit:] if self.execution_history else []
+        recent_results = self.execution_history[-limit:
+                                                ] if self.execution_history else []
 
         return [
+
             {
                 'batch_id': result.batch_id,
                 'completed_at': result.completed_at.isoformat(),
@@ -765,10 +796,15 @@ class DataCompletionProcessor:
                 'success_rate': result.success_rate,
                 'processing_time_ms': result.total_processing_time_ms
             }
+
             for result in recent_results
+
         ]
 
-    def export_completion_report(self, batch_result: BatchCompletionResult, format: str = "json") -> dict[str, Any]:
+    def export_completion_report(self,
+                                 batch_result: BatchCompletionResult,
+                                 format: str = "json") -> dict[str,
+                                                               Any]:
         """Export completion report"""
         if format == "json":
             return {

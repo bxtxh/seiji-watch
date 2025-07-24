@@ -12,9 +12,6 @@ import sys
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from batch.issue_relationship_batch import IssueRelationshipBatchProcessor
 
 from services.airtable_issue_manager import AirtableIssueManager
@@ -25,6 +22,8 @@ from services.policy_issue_extractor import (
     DualLevelIssue,
     PolicyIssueExtractor,
 )
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 
 @pytest.mark.asyncio
@@ -203,7 +202,8 @@ class TestCompleteExtractionWorkflow:
             assert notification_sent is True
 
             # Step 3: Update issue status (simulating human review)
-            mock_components["airtable_client"]._rate_limited_request.return_value = {"id": "rec_1"}
+            mock_components["airtable_client"]._rate_limited_request.return_value = {
+                "id": "rec_1"}
 
             success = await issue_manager.update_issue_status(
                 "rec_1", "approved", "High quality issue"
@@ -284,7 +284,8 @@ class TestCompleteExtractionWorkflow:
                 CircuitBreaker,
                 CircuitBreakerConfig,
             )
-            config = CircuitBreakerConfig(failure_threshold=2, success_threshold=1, timeout=1.0)
+            config = CircuitBreakerConfig(
+                failure_threshold=2, success_threshold=1, timeout=1.0)
             circuit_breaker = CircuitBreaker("airtable_api", config)
             error_recovery_system.circuit_breakers["airtable_api"] = circuit_breaker
 
@@ -319,7 +320,8 @@ class TestCompleteExtractionWorkflow:
         async def test_component_health():
             return True
 
-        monitoring_system.health_checker.register_check("test_component", test_component_health)
+        monitoring_system.health_checker.register_check(
+            "test_component", test_component_health)
 
         # Run health checks
         health_results = await monitoring_system.health_checker.run_all_checks()
@@ -328,7 +330,8 @@ class TestCompleteExtractionWorkflow:
         assert health_results["test_component"].status.value == "healthy"
 
         # Test metrics collection
-        monitoring_system.metrics_collector.increment_counter("test_extraction_count", 1)
+        monitoring_system.metrics_collector.increment_counter(
+            "test_extraction_count", 1)
         monitoring_system.metrics_collector.set_gauge("test_confidence_score", 0.85)
 
         metrics = monitoring_system.metrics_collector.get_all_metrics(5)
@@ -585,7 +588,7 @@ class TestDataConsistency:
         for i, version in enumerate(history):
             assert version.version_number == i + 1
             if i > 0:
-                assert version.previous_version_id == history[i-1].version_id
+                assert version.previous_version_id == history[i - 1].version_id
 
 
 # Test configuration

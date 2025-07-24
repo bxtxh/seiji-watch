@@ -26,6 +26,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 async def execute_simplified_production_scraping(diet_scraper, voting_scraper, target):
     """Execute simplified production scraping without complex dependencies"""
     start_time = datetime.now()
@@ -49,8 +50,7 @@ async def execute_simplified_production_scraping(diet_scraper, voting_scraper, t
                 'url': bill.url,
                 'summary': bill.summary,
                 'submission_date': bill.submission_date.isoformat() if bill.submission_date else None,
-                'collected_at': datetime.now().isoformat()
-            }
+                'collected_at': datetime.now().isoformat()}
             bills_data.append(bill_data)
 
         print(f"✅ Collected {len(bills_data)} bills")
@@ -94,7 +94,8 @@ async def execute_simplified_production_scraping(diet_scraper, voting_scraper, t
             total_vote_records += len(session_data['vote_records'])
             voting_data.append(session_data)
 
-        print(f"✅ Collected {len(voting_data)} voting sessions with {total_vote_records} vote records")
+        print(
+            f"✅ Collected {len(voting_data)} voting sessions with {total_vote_records} vote records")
 
         # Calculate execution time
         end_time = datetime.now()
@@ -141,6 +142,7 @@ async def execute_simplified_production_scraping(diet_scraper, voting_scraper, t
             'data': {}
         }
 
+
 async def execute_production_scraping():
     """Execute production scraping for June 2025 full month"""
     print("🚀 Production Scraping - June 2025 Full Month")
@@ -173,7 +175,8 @@ async def execute_production_scraping():
         }
 
         print("⚙️  Production Configuration:")
-        print(f"   📅 Period: {target['start_date'].strftime('%Y-%m-%d')} to {target['end_date'].strftime('%Y-%m-%d')}")
+        print(
+            f"   📅 Period: {target['start_date'].strftime('%Y-%m-%d')} to {target['end_date'].strftime('%Y-%m-%d')}")
         print(f"   📊 Max Bills: {target['max_bills']}")
         print(f"   🗳️  Max Voting Sessions: {target['max_voting_sessions']}")
         print(f"   🎤 Max Speeches: {target['max_speeches']}")
@@ -270,10 +273,12 @@ async def execute_production_scraping():
             print()
             print("🎯 Key Achievements:")
             print(f"  • {result['bills_collected']} bills collected and processed")
-            print(f"  • {result['voting_sessions_collected']} voting sessions with member data")
+            print(
+                f"  • {result['voting_sessions_collected']} voting sessions with member data")
             print(f"  • {result['speeches_processed']} speeches processed")
             print(f"  • {result['embeddings_generated']} vector embeddings generated")
-            print(f"  • {result['transcriptions_completed']} audio transcriptions completed")
+            print(
+                f"  • {result['transcriptions_completed']} audio transcriptions completed")
             print(f"  • Processing time: {result['total_time']:.2f}s")
 
             completion_rate = result_data['data_quality_summary']['overall_success_rate']
@@ -304,6 +309,7 @@ async def execute_production_scraping():
         import traceback
         traceback.print_exc()
         return False
+
 
 async def main():
     """Main execution function"""

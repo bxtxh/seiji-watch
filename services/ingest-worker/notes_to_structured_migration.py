@@ -28,6 +28,7 @@ class BillData:
     date: str | None = None
     data_source: str | None = None
 
+
 class NotesPatternParser:
     """Notesフィールドのパターン解析クラス"""
 
@@ -156,6 +157,7 @@ class NotesPatternParser:
 
         return data
 
+
 class AirtableMigrator:
     """Airtableデータマイグレーションクラス"""
 
@@ -163,7 +165,9 @@ class AirtableMigrator:
         self.pat = pat
         self.base_id = base_id
         self.base_url = f"https://api.airtable.com/v0/{base_id}"
-        self.headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
+        self.headers = {
+            "Authorization": f"Bearer {pat}",
+            "Content-Type": "application/json"}
         self.parser = NotesPatternParser()
         self.rate_limit_delay = 0.3  # 300ms between requests
 
@@ -201,10 +205,18 @@ class AirtableMigrator:
         analysis = {
             'total_records': len(records),
             'notes_records': 0,
-            'patterns': {'structured_emoji': 0, 'pipe_separated': 0, 'detailed_newline': 0, 'other': 0},
-            'extractable_fields': {'bill_id': 0, 'status': 0, 'category': 0, 'submitter': 0, 'url': 0},
-            'records_to_migrate': []
-        }
+            'patterns': {
+                'structured_emoji': 0,
+                'pipe_separated': 0,
+                'detailed_newline': 0,
+                'other': 0},
+            'extractable_fields': {
+                'bill_id': 0,
+                'status': 0,
+                'category': 0,
+                'submitter': 0,
+                'url': 0},
+            'records_to_migrate': []}
 
         for record in records:
             fields = record.get('fields', {})
@@ -242,7 +254,11 @@ class AirtableMigrator:
 
         return analysis
 
-    def update_record(self, record_id: str, fields_to_update: dict, dry_run: bool = True) -> bool:
+    def update_record(
+            self,
+            record_id: str,
+            fields_to_update: dict,
+            dry_run: bool = True) -> bool:
         """レコードを更新（ドライラン対応）"""
         if dry_run:
             print(f"  [DRY RUN] レコード {record_id} を更新予定: {fields_to_update}")
@@ -293,7 +309,8 @@ class AirtableMigrator:
         # Bill_Statusは権限エラーが起きやすいため、別途処理
         # まず安全なフィールドで更新を試み、その後必要に応じてBill_Statusを追加
         if fields_to_update:
-            return self.update_record(record_info['record_id'], fields_to_update, dry_run)
+            return self.update_record(
+                record_info['record_id'], fields_to_update, dry_run)
 
         return True
 
@@ -353,6 +370,7 @@ class AirtableMigrator:
             'analysis': analysis
         }
 
+
 def load_env_file(env_file_path):
     if not os.path.exists(env_file_path):
         return False
@@ -366,13 +384,24 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Notes フィールドから構造化フィールドへのマイグレーション')
-    parser.add_argument('--execute', action='store_true', help='実際にマイグレーションを実行（デフォルトはドライラン）')
-    parser.add_argument('--pattern', choices=['structured_emoji', 'pipe_separated', 'detailed_newline', 'all'],
-                       default='all', help='処理するパターンを指定')
+    parser.add_argument(
+        '--execute',
+        action='store_true',
+        help='実際にマイグレーションを実行（デフォルトはドライラン）')
+    parser.add_argument(
+        '--pattern',
+        choices=[
+            'structured_emoji',
+            'pipe_separated',
+            'detailed_newline',
+            'all'],
+        default='all',
+        help='処理するパターンを指定')
 
     args = parser.parse_args()
 
@@ -397,6 +426,7 @@ def main():
     except Exception as e:
         print(f"❌ マイグレーション実行エラー: {str(e)}")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

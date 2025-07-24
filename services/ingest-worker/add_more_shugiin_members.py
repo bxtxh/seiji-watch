@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class ShugiinMemberData:
     """Shugiin member data structure"""
@@ -23,6 +24,7 @@ class ShugiinMemberData:
     first_elected: str
     terms_served: int
     is_active: bool = True
+
 
 class ShugiinMemberAdder:
     """Add more Shugiin members"""
@@ -41,7 +43,13 @@ class ShugiinMemberAdder:
         self._request_semaphore = asyncio.Semaphore(5)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs):
+    async def _rate_limited_request(
+        self,
+        session: aiohttp.ClientSession,
+        method: str,
+        url: str, **kwargs
+
+    ):
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             now = asyncio.get_event_loop().time()
@@ -204,7 +212,12 @@ class ShugiinMemberAdder:
 
         return party_id_map
 
-    async def insert_batch_members(self, session: aiohttp.ClientSession, members: list[ShugiinMemberData], party_id_map: dict[str, str], batch_start: int) -> int:
+    async def insert_batch_members(self,
+                                   session: aiohttp.ClientSession,
+                                   members: list[ShugiinMemberData],
+                                   party_id_map: dict[str,
+                                                      str],
+                                   batch_start: int) -> int:
         """Insert a batch of members"""
 
         members_url = f"{self.base_url}/Members (議員)"
@@ -234,7 +247,8 @@ class ShugiinMemberAdder:
                 success_count += 1
 
                 if i % 20 == 0 or i <= 10:
-                    print(f"    ✅ {i:03d}: {member.name} ({member.constituency}) - {member.party_name}")
+                    print(
+                        f"    ✅ {i:03d}: {member.name} ({member.constituency}) - {member.party_name}")
 
             except Exception as e:
                 print(f"    ❌ {i:03d}: {member.name} - {e}")
@@ -324,6 +338,7 @@ class ShugiinMemberAdder:
 
             print(f"❌ 拡充失敗: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

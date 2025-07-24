@@ -346,14 +346,23 @@ class TestBillDataMerger:
             data_quality_score=0.7
         )
 
-    def test_calculate_similarity_score(self, merger, sample_sangiin_bill, sample_shugiin_bill):
+    def test_calculate_similarity_score(
+            self,
+            merger,
+            sample_sangiin_bill,
+            sample_shugiin_bill):
         """Test similarity score calculation"""
-        score = merger._calculate_similarity_score(sample_sangiin_bill, sample_shugiin_bill)
+        score = merger._calculate_similarity_score(
+            sample_sangiin_bill, sample_shugiin_bill)
 
         assert score > 0.8  # Should be high similarity
         assert score <= 1.0
 
-    def test_find_matching_bills(self, merger, sample_sangiin_bill, sample_shugiin_bill):
+    def test_find_matching_bills(
+            self,
+            merger,
+            sample_sangiin_bill,
+            sample_shugiin_bill):
         """Test bill matching"""
         sangiin_bills = [sample_sangiin_bill]
         shugiin_bills = [sample_shugiin_bill]
@@ -409,25 +418,36 @@ class TestBillDataMerger:
         mock_results = [
             MergeResult(
                 merged_bill=EnhancedBillData(
-                    bill_id="1", title="法案1", submission_date=None,
-                    status="審議中", stage="審議中", submitter="政府",
-                    category="その他", url="http://example.com"
-                ),
+                    bill_id="1",
+                    title="法案1",
+                    submission_date=None,
+                    status="審議中",
+                    stage="審議中",
+                    submitter="政府",
+                    category="その他",
+                    url="http://example.com"),
                 conflicts=[],
                 merge_quality_score=0.9,
-                source_info={'sources': ['sangiin', 'shugiin'], 'primary_source': 'sangiin'}
-            ),
+                source_info={
+                    'sources': [
+                        'sangiin',
+                        'shugiin'],
+                    'primary_source': 'sangiin'}),
             MergeResult(
                 merged_bill=EnhancedBillData(
-                    bill_id="2", title="法案2", submission_date=None,
-                    status="審議中", stage="審議中", submitter="政府",
-                    category="その他", url="http://example.com"
-                ),
+                    bill_id="2",
+                    title="法案2",
+                    submission_date=None,
+                    status="審議中",
+                    stage="審議中",
+                    submitter="政府",
+                    category="その他",
+                    url="http://example.com"),
                 conflicts=[],
                 merge_quality_score=0.8,
-                source_info={'sources': ['sangiin'], 'primary_source': 'sangiin'}
-            )
-        ]
+                source_info={
+                    'sources': ['sangiin'],
+                    'primary_source': 'sangiin'})]
 
         stats = merger.get_merge_statistics(mock_results)
 
@@ -484,19 +504,22 @@ class TestBillDataValidator:
         """Test required field validation"""
         # Valid bill
         result = validator.validate_bill(valid_bill, 'standard')
-        required_issues = [issue for issue in result.issues if issue.issue_type == 'missing_required_field']
+        required_issues = [
+            issue for issue in result.issues if issue.issue_type == 'missing_required_field']
         assert len(required_issues) == 0
 
         # Invalid bill
         result = validator.validate_bill(invalid_bill, 'standard')
-        required_issues = [issue for issue in result.issues if issue.issue_type == 'missing_required_field']
+        required_issues = [
+            issue for issue in result.issues if issue.issue_type == 'missing_required_field']
         assert len(required_issues) > 0
 
     def test_validate_field_formats(self, validator, invalid_bill):
         """Test field format validation"""
         result = validator.validate_bill(invalid_bill, 'standard')
 
-        format_issues = [issue for issue in result.issues if issue.issue_type == 'invalid_format']
+        format_issues = [
+            issue for issue in result.issues if issue.issue_type == 'invalid_format']
         assert len(format_issues) > 0
 
     def test_validate_data_consistency(self, validator, invalid_bill):
@@ -527,7 +550,8 @@ class TestBillDataValidator:
         assert valid_score > 0.7
 
         # Invalid bill should have low completeness
-        invalid_score = validator._calculate_completeness_score(invalid_bill, 'standard')
+        invalid_score = validator._calculate_completeness_score(
+            invalid_bill, 'standard')
         assert invalid_score < 0.5
 
     def test_validate_bills(self, validator, valid_bill, invalid_bill):
@@ -566,7 +590,8 @@ class TestIntegration:
 
     @pytest.fixture
     def merger(self):
-        return BillDataMerger(conflict_strategy=ConflictResolutionStrategy.MOST_COMPLETE)
+        return BillDataMerger(
+            conflict_strategy=ConflictResolutionStrategy.MOST_COMPLETE)
 
     @pytest.fixture
     def validator(self):

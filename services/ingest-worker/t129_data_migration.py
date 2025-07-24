@@ -22,16 +22,17 @@ CATEGORY_MAPPING = {
     "予算・決算": "1.1",  # Budget, Fiscal Policy
     "税制": "1.2",        # Tax Policy
     "社会保障": "13.1",   # Social Security, Healthcare
-    "外交・国際": "19.1", # International Relations
-    "経済・産業": "15.1", # Economic Policy, Industry
+    "外交・国際": "19.1",  # International Relations
+    "経済・産業": "15.1",  # Economic Policy, Industry
     "教育・文化": "2.1",  # Education, Culture
-    "環境・エネルギー": "7.1", # Environment, Energy
+    "環境・エネルギー": "7.1",  # Environment, Energy
     "農林水産": "4.1",    # Agriculture, Food
-    "司法・法務": "12.1", # Justice, Legal Affairs
+    "司法・法務": "12.1",  # Justice, Legal Affairs
     "防衛": "16.1",       # Defense
     "その他": "20.1",     # Others
     "憲法・統治": "11.1"  # Constitution, Governance
 }
+
 
 async def analyze_bills_categories():
     """Analyze existing Bills data to understand category distribution."""
@@ -104,7 +105,8 @@ async def analyze_bills_categories():
                 print(f"   {category}: {count} bills ({percentage:.1f}%) → CAP {cap_code}")
 
             # Show unmapped categories
-            unmapped_categories = [cat for cat in category_counts.keys() if cat not in CATEGORY_MAPPING]
+            unmapped_categories = [
+                cat for cat in category_counts.keys() if cat not in CATEGORY_MAPPING]
             if unmapped_categories:
                 print(f"\n⚠️  Unmapped categories: {', '.join(unmapped_categories)}")
 
@@ -117,6 +119,7 @@ async def analyze_bills_categories():
         except Exception as e:
             print(f"❌ Error analyzing bills: {e}")
             return False
+
 
 async def fetch_issue_categories():
     """Fetch all IssueCategories to understand the target mapping."""
@@ -176,7 +179,10 @@ async def fetch_issue_categories():
             print(f"❌ Error fetching IssueCategories: {e}")
             return False
 
-async def create_bills_policy_category_relationships(bills_data: dict[str, Any], cap_mapping: dict[str, Any]):
+
+async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
+                                                     cap_mapping: dict[str, Any]
+                                                     ):
     """Create Bills-PolicyCategory relationships based on mapping."""
 
     print("\n🔄 Creating Bills-PolicyCategory Relationships")
@@ -203,7 +209,8 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
                     print("❌ Bills_PolicyCategories table not found. Need to create it first.")
                     return False
                 elif response.status != 200:
-                    print(f"❌ Error accessing Bills_PolicyCategories table: {response.status}")
+                    print(
+                        f"❌ Error accessing Bills_PolicyCategories table: {response.status}")
                     return False
 
                 print("✅ Bills_PolicyCategories table found and accessible")
@@ -226,7 +233,8 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
                 continue
 
             policy_category = cap_mapping[cap_code]
-            print(f"\n📎 Mapping {category} → {policy_category['title_ja']} ({cap_code})")
+            print(
+                f"\n📎 Mapping {category} → {policy_category['title_ja']} ({cap_code})")
 
             # Create relationships for all bills in this category
             for bill in bills_list:
@@ -257,7 +265,7 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
         error_count = 0
 
         for i in range(0, len(relationships_to_create), 10):
-            batch = relationships_to_create[i:i+10]
+            batch = relationships_to_create[i:i + 10]
 
             # Prepare batch data
             records_data = []
@@ -283,7 +291,8 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
                         response_data = await response.json()
                         batch_created = len(response_data.get("records", []))
                         created_count += batch_created
-                        print(f"✅ Batch {i//10 + 1}: Created {batch_created} relationships")
+                        print(
+                            f"✅ Batch {i//10 + 1}: Created {batch_created} relationships")
                     else:
                         error_text = await response.text()
                         print(f"❌ Batch {i//10 + 1} failed: {response.status}")
@@ -302,6 +311,7 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
         print(f"   Errors: {error_count}")
 
         return created_count > 0
+
 
 async def verify_migration():
     """Verify the created relationships."""
@@ -356,7 +366,8 @@ async def verify_migration():
                         confidence = fields.get("Confidence_Score", 0)
                         source = fields.get("Source", "Unknown")
 
-                        print(f"   {i+1}. Bill {bill_id} → PolicyCategory {policy_cat_id} (conf: {confidence}, source: {source})")
+                        print(
+                            f"   {i+1}. Bill {bill_id} → PolicyCategory {policy_cat_id} (conf: {confidence}, source: {source})")
 
                     return True
 
@@ -367,6 +378,7 @@ async def verify_migration():
         except Exception as e:
             print(f"❌ Verification error: {e}")
             return False
+
 
 async def main():
     """Main migration execution."""

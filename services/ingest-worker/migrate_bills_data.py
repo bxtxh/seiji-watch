@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class BillDataMigrator:
     """Migrate bill data from Notes to structured fields"""
 
@@ -33,7 +34,13 @@ class BillDataMigrator:
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs):
+    async def _rate_limited_request(
+        self,
+        session: aiohttp.ClientSession,
+        method: str,
+        url: str, **kwargs
+
+    ):
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -115,7 +122,7 @@ class BillDataMigrator:
             try:
                 # Parse ISO format date
                 parsed_data['Collection_Date'] = date_str
-            except:
+            except Exception:
                 pass
 
         # Extract Data Source
@@ -207,7 +214,8 @@ class BillDataMigrator:
                         if i <= 5 or i % 5 == 0:
                             bill_id = parsed_data.get('Bill_ID', 'N/A')
                             status = parsed_data.get('Bill_Status', 'N/A')
-                            print(f"  ✅ Bill {i:02d}: {bill_name[:30]}... (ID:{bill_id}, Status:{status})")
+                            print(
+                                f"  ✅ Bill {i:02d}: {bill_name[:30]}... (ID:{bill_id}, Status:{status})")
 
                     except Exception as e:
                         print(f"  ❌ Bill {i} migration failed: {e}")
@@ -227,7 +235,8 @@ class BillDataMigrator:
                 print(f"⏱️  実行時間: {result['total_time']:.2f}秒")
                 print(f"📋 処理議案数: {result['bills_processed']}件")
                 print(f"🔄 移行成功: {success_count}件")
-                print(f"📈 成功率: {(success_count/len(bills)*100):.1f}%" if bills else "0%")
+                print(
+                    f"📈 成功率: {(success_count/len(bills)*100):.1f}%" if bills else "0%")
 
                 if result["success"]:
                     print("\n🎉 MIGRATION COMPLETE!")
@@ -247,6 +256,7 @@ class BillDataMigrator:
 
             print(f"❌ Migration failed: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

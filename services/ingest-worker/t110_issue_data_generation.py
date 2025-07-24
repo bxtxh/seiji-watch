@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class IssueData:
     """イシューデータ構造"""
@@ -38,6 +39,7 @@ class IssueData:
     ai_confidence: float = 0.8  # AI抽出の信頼度
     tags: list[str] | None = None
     related_keywords: list[str] | None = None
+
 
 class IssueDataGenerator:
     """イシューデータ生成・投入クラス"""
@@ -59,7 +61,12 @@ class IssueDataGenerator:
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs) -> dict[str, Any]:
+    async def _rate_limited_request(self,
+                                    session: aiohttp.ClientSession,
+                                    method: str,
+                                    url: str,
+                                    **kwargs) -> dict[str,
+                                                      Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -79,7 +86,8 @@ class IssueDataGenerator:
                 response.raise_for_status()
                 return await response.json()
 
-    async def get_bills_for_analysis(self, session: aiohttp.ClientSession) -> list[dict[str, Any]]:
+    async def get_bills_for_analysis(
+            self, session: aiohttp.ClientSession) -> list[dict[str, Any]]:
         """分析用の法案データを取得"""
         bills = []
 
@@ -104,7 +112,8 @@ class IssueDataGenerator:
 
         return bills
 
-    async def extract_issues_from_bills(self, bills: list[dict[str, Any]]) -> list[IssueData]:
+    async def extract_issues_from_bills(
+            self, bills: list[dict[str, Any]]) -> list[IssueData]:
         """法案からイシューを抽出（LLM風の分析シミュレーション）"""
 
         # 実際の実装ではOpenAI GPT-4やClaude APIを使用してイシュー抽出
@@ -129,7 +138,8 @@ class IssueDataGenerator:
             bill_category = bill.get("category", "")
 
             # 法案名とカテゴリーからイシューを抽出
-            extracted_issues = self._analyze_bill_content(bill_name, bill_summary, bill_category, l1_categories)
+            extracted_issues = self._analyze_bill_content(
+                bill_name, bill_summary, bill_category, l1_categories)
 
             for issue_info in extracted_issues:
                 issue = IssueData(
@@ -157,7 +167,13 @@ class IssueDataGenerator:
         print(f"✅ イシューデータ生成完了: {len(issues)}件")
         return issues
 
-    def _analyze_bill_content(self, bill_name: str, summary: str, category: str, l1_categories: dict[str, list[str]]) -> list[dict[str, Any]]:
+    def _analyze_bill_content(self,
+                              bill_name: str,
+                              summary: str,
+                              category: str,
+                              l1_categories: dict[str,
+                                                  list[str]]) -> list[dict[str,
+                                                                           Any]]:
         """法案内容の分析（LLM分析のシミュレーション）"""
 
         issues = []
@@ -213,8 +229,7 @@ class IssueDataGenerator:
                     "stakeholders": rule["stakeholders"],
                     "tags": rule["tags"],
                     "keywords": rule["keywords"],
-                    "confidence": 0.85
-                }
+                    "confidence": 0.85}
                 issues.append(issue)
 
         # 法案名のみからもイシュー生成
@@ -237,7 +252,8 @@ class IssueDataGenerator:
 
         return issues
 
-    def _generate_additional_issues(self, l1_categories: dict[str, list[str]]) -> list[IssueData]:
+    def _generate_additional_issues(
+            self, l1_categories: dict[str, list[str]]) -> list[IssueData]:
         """追加イシュー生成（50件達成のため）"""
 
         additional_issues = []
@@ -298,7 +314,10 @@ class IssueDataGenerator:
 
         return additional_issues
 
-    async def create_issues(self, session: aiohttp.ClientSession, issues: list[IssueData]) -> int:
+    async def create_issues(
+            self,
+            session: aiohttp.ClientSession,
+            issues: list[IssueData]) -> int:
         """イシューデータをAirtableに投入"""
 
         issues_url = f"{self.base_url}/Issues (課題)"
@@ -316,14 +335,16 @@ class IssueDataGenerator:
                     "Priority": issue.priority,
                     "Source_Bill_ID": issue.source_bill_id,
                     "Impact_Level": issue.impact_level,
-                    "Stakeholders": ", ".join(issue.stakeholders) if issue.stakeholders else None,
+                    "Stakeholders": ", ".join(
+                        issue.stakeholders) if issue.stakeholders else None,
                     "Estimated_Timeline": issue.estimated_timeline,
                     "AI_Confidence": issue.ai_confidence,
-                    "Tags": ", ".join(issue.tags) if issue.tags else None,
-                    "Related_Keywords": ", ".join(issue.related_keywords) if issue.related_keywords else None,
+                    "Tags": ", ".join(
+                        issue.tags) if issue.tags else None,
+                    "Related_Keywords": ", ".join(
+                        issue.related_keywords) if issue.related_keywords else None,
                     "Created_At": datetime.now().isoformat(),
-                    "Updated_At": datetime.now().isoformat()
-                }
+                    "Updated_At": datetime.now().isoformat()}
 
                 # None値を除去
                 issue_fields = {k: v for k, v in issue_fields.items() if v is not None}
@@ -414,6 +435,7 @@ class IssueDataGenerator:
 
             print(f"❌ T110 実行失敗: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

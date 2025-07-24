@@ -110,7 +110,8 @@ class TestFullTextSearchEngine:
         assert "bill_outline" in vector
 
         # Test with specific fields
-        vector = search_engine._build_search_vector([SearchField.TITLE, SearchField.OUTLINE])
+        vector = search_engine._build_search_vector(
+            [SearchField.TITLE, SearchField.OUTLINE])
         assert "title" in vector
         assert "bill_outline" in vector
 
@@ -175,8 +176,10 @@ class TestFullTextSearchEngine:
         query = SearchQuery(query="テスト", mode=SearchMode.SIMPLE)
         snippet = search_engine._generate_snippet(mock_row, query)
 
-        assert len(snippet) <= search_engine.search_config['snippet_length'] + 3  # +3 for "..."
-        assert "..." in snippet or len(snippet) <= search_engine.search_config['snippet_length']
+        # +3 for "..."
+        assert len(snippet) <= search_engine.search_config['snippet_length'] + 3
+        assert "..." in snippet or len(
+            snippet) <= search_engine.search_config['snippet_length']
 
 
 class TestAdvancedFilterEngine:
@@ -202,7 +205,8 @@ class TestAdvancedFilterEngine:
         assert result == date(2021, 1, 1)
 
         # Test datetime to date
-        result = filter_engine._convert_value('submitted_date', datetime(2021, 1, 1, 12, 0, 0))
+        result = filter_engine._convert_value(
+            'submitted_date', datetime(2021, 1, 1, 12, 0, 0))
         assert result == date(2021, 1, 1)
 
         # Test invalid date
@@ -361,7 +365,7 @@ class TestIntegratedSearchAPI:
         """Create test search API"""
         mock_ft_engine, mock_filter_engine = mock_engines
         with patch('services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine', return_value=mock_ft_engine), \
-             patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine', return_value=mock_filter_engine):
+                patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine', return_value=mock_filter_engine):
             return IntegratedSearchAPI("postgresql://test")
 
     def test_validate_search_request(self, search_api):
@@ -574,12 +578,14 @@ class TestIntegratedSearchAPI:
     def test_get_field_suggestions(self, search_api):
         """Test field suggestions"""
         # Mock filter engine response
-        search_api.filter_engine.get_filter_suggestions.return_value = ['予算・決算', '税制', '社会保障']
+        search_api.filter_engine.get_filter_suggestions.return_value = [
+            '予算・決算', '税制', '社会保障']
 
         suggestions = search_api.get_field_suggestions('category', '予算', 5)
 
         assert isinstance(suggestions, list)
-        search_api.filter_engine.get_filter_suggestions.assert_called_once_with('category', '予算', 5)
+        search_api.filter_engine.get_filter_suggestions.assert_called_once_with(
+            'category', '予算', 5)
 
 
 class TestIntegrationScenarios:
@@ -599,7 +605,7 @@ class TestIntegrationScenarios:
 
         # Mock all components
         with patch('services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine') as mock_ft, \
-             patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine') as mock_filter:
+                patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine') as mock_filter:
 
             # Setup mock responses
             mock_ft_instance = Mock()
@@ -674,7 +680,7 @@ class TestIntegrationScenarios:
         engine, session = mock_database
 
         with patch('services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine') as mock_ft, \
-             patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine') as mock_filter:
+                patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine') as mock_filter:
 
             # Setup mock with performance data
             mock_ft_instance = Mock()
@@ -716,7 +722,7 @@ class TestIntegrationScenarios:
         engine, session = mock_database
 
         with patch('services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine') as mock_ft, \
-             patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine') as mock_filter:
+                patch('services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine') as mock_filter:
 
             # Setup mock to raise exception
             mock_ft_instance = Mock()
@@ -725,7 +731,8 @@ class TestIntegrationScenarios:
             mock_filter.return_value = mock_filter_instance
 
             # Mock search exception
-            mock_ft_instance.search.side_effect = Exception("Database connection failed")
+            mock_ft_instance.search.side_effect = Exception(
+                "Database connection failed")
 
             # Create search API
             search_api = IntegratedSearchAPI("postgresql://test")

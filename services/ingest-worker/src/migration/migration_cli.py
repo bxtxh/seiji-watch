@@ -10,13 +10,13 @@ import os
 import sys
 from datetime import datetime
 
-# Add the project root to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
-
 from services.ingest_worker.src.migration.data_migration_service import (
     DataMigrationService,
 )
 from services.ingest_worker.src.migration.data_quality_auditor import DataQualityAuditor
+
+# Add the project root to the path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
 
 def setup_logging():
@@ -56,7 +56,8 @@ def cmd_audit(args):
         # Display summary
         print("\n📊 Quality Audit Summary:")
         print(f"  Total bills: {report.total_bills}")
-        print(f"  Overall quality score: {report.overall_metrics.overall_quality_score:.2f}")
+        print(
+            f"  Overall quality score: {report.overall_metrics.overall_quality_score:.2f}")
         print(f"  Completeness rate: {report.overall_metrics.completeness_rate:.2f}")
         print(f"  Accuracy rate: {report.overall_metrics.accuracy_rate:.2f}")
         print(f"  Issues found: {len(report.issues)}")
@@ -294,7 +295,8 @@ def cmd_status(args):
                 status = exec_data['status']
                 completed = exec_data['tasks_completed']
                 failed = exec_data['tasks_failed']
-                print(f"  {exec_data['execution_id']}: {status} ({completed} completed, {failed} failed)")
+                print(
+                    f"  {exec_data['execution_id']}: {status} ({completed} completed, {failed} failed)")
 
         # Show statistics
         stats = report['statistics']
@@ -392,21 +394,37 @@ Examples:
 
     # Audit command
     audit_parser = subparsers.add_parser('audit', help='Run data quality audit')
-    audit_parser.add_argument('--export', action='store_true', help='Export audit report')
-    audit_parser.add_argument('--format', default='json', choices=['json'], help='Export format')
+    audit_parser.add_argument(
+        '--export',
+        action='store_true',
+        help='Export audit report')
+    audit_parser.add_argument(
+        '--format',
+        default='json',
+        choices=['json'],
+        help='Export format')
     audit_parser.set_defaults(func=cmd_audit)
 
     # Plan command
     plan_parser = subparsers.add_parser('plan', help='Generate migration plan')
-    plan_parser.add_argument('--bills', help='Comma-separated list of bill IDs to target')
-    plan_parser.add_argument('--export', action='store_true', help='Export migration plan')
+    plan_parser.add_argument(
+        '--bills',
+        help='Comma-separated list of bill IDs to target')
+    plan_parser.add_argument(
+        '--export',
+        action='store_true',
+        help='Export migration plan')
     plan_parser.set_defaults(func=cmd_plan)
 
     # Execute command
     execute_parser = subparsers.add_parser('execute', help='Execute migration')
     execute_parser.add_argument('--plan-file', help='Path to migration plan file')
-    execute_parser.add_argument('--bills', help='Comma-separated list of bill IDs to target')
-    execute_parser.add_argument('--yes', action='store_true', help='Skip confirmation prompt')
+    execute_parser.add_argument(
+        '--bills', help='Comma-separated list of bill IDs to target')
+    execute_parser.add_argument(
+        '--yes',
+        action='store_true',
+        help='Skip confirmation prompt')
     execute_parser.set_defaults(func=cmd_execute)
 
     # Status command
@@ -415,12 +433,17 @@ Examples:
 
     # Cleanup command
     cleanup_parser = subparsers.add_parser('cleanup', help='Clean up old reports')
-    cleanup_parser.add_argument('--days', type=int, default=90, help='Report retention days')
+    cleanup_parser.add_argument(
+        '--days',
+        type=int,
+        default=90,
+        help='Report retention days')
     cleanup_parser.set_defaults(func=cmd_cleanup)
 
     # Trend command
     trend_parser = subparsers.add_parser('trend', help='Show quality trend')
-    trend_parser.add_argument('--days', type=int, default=30, help='Analysis period in days')
+    trend_parser.add_argument('--days', type=int, default=30,
+                              help='Analysis period in days')
     trend_parser.set_defaults(func=cmd_trend)
 
     # Parse arguments

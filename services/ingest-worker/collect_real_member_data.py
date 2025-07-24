@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class RealMemberData:
     """Real Diet member data structure"""
@@ -27,6 +28,7 @@ class RealMemberData:
     is_active: bool = True
     member_id: str | None = None
     profile_url: str | None = None
+
 
 class RealMemberDataCollector:
     """Collect real Diet member data"""
@@ -50,10 +52,15 @@ class RealMemberDataCollector:
 
         # Session for web scraping
         self.scraping_headers = {
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
-        }
+            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'}
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs):
+    async def _rate_limited_request(
+        self,
+        session: aiohttp.ClientSession,
+        method: str,
+        url: str, **kwargs
+
+    ):
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             now = asyncio.get_event_loop().time()
@@ -72,7 +79,8 @@ class RealMemberDataCollector:
                 response.raise_for_status()
                 return await response.json()
 
-    async def scrape_sangiin_members(self, session: aiohttp.ClientSession) -> list[RealMemberData]:
+    async def scrape_sangiin_members(
+            self, session: aiohttp.ClientSession) -> list[RealMemberData]:
         """Scrape current Sangiin (参議院) members"""
 
         print("  📋 参議院議員データ収集...")
@@ -103,8 +111,10 @@ class RealMemberDataCollector:
 
                                 if name_cell:
                                     name = name_cell.get_text(strip=True)
-                                    party = party_cell.get_text(strip=True) if party_cell else ""
-                                    constituency = constituency_cell.get_text(strip=True) if constituency_cell else ""
+                                    party = party_cell.get_text(
+                                        strip=True) if party_cell else ""
+                                    constituency = constituency_cell.get_text(
+                                        strip=True) if constituency_cell else ""
 
                                     if name and len(name) > 1 and not name.isdigit():
                                         member = RealMemberData(
@@ -125,7 +135,8 @@ class RealMemberDataCollector:
 
         return members
 
-    async def scrape_shugiin_members(self, session: aiohttp.ClientSession) -> list[RealMemberData]:
+    async def scrape_shugiin_members(
+            self, session: aiohttp.ClientSession) -> list[RealMemberData]:
         """Scrape current Shugiin (衆議院) members"""
 
         print("  📋 衆議院議員データ収集...")
@@ -154,9 +165,11 @@ class RealMemberDataCollector:
 
                                 if name_cell:
                                     name = name_cell.get_text(strip=True)
-                                    party = party_cell.get_text(strip=True) if party_cell else ""
+                                    party = party_cell.get_text(
+                                        strip=True) if party_cell else ""
 
-                                    if name and len(name) > 1 and not name.isdigit() and "議員" not in name:
+                                    if name and len(
+                                            name) > 1 and not name.isdigit() and "議員" not in name:
                                         member = RealMemberData(
                                             name=name,
                                             house="衆議院",
@@ -182,24 +195,72 @@ class RealMemberDataCollector:
         # 実在の主要議員データ（公開情報）
         known_members = [
             # 参議院
-            RealMemberData("山東昭子", house="参議院", party_name="自由民主党", constituency="比例代表"),
-            RealMemberData("尾辻秀久", house="参議院", party_name="自由民主党", constituency="鹿児島県"),
+            RealMemberData(
+                "山東昭子",
+                house="参議院",
+                party_name="自由民主党",
+                constituency="比例代表"),
+            RealMemberData(
+                "尾辻秀久",
+                house="参議院",
+                party_name="自由民主党",
+                constituency="鹿児島県"),
             RealMemberData("福山哲郎", house="参議院", party_name="立憲民主党", constituency="京都府"),
             RealMemberData("蓮舫", house="参議院", party_name="立憲民主党", constituency="東京都"),
-            RealMemberData("山本太郎", house="参議院", party_name="れいわ新選組", constituency="比例代表"),
-            RealMemberData("浜田聡", house="参議院", party_name="日本維新の会", constituency="比例代表"),
+            RealMemberData(
+                "山本太郎",
+                house="参議院",
+                party_name="れいわ新選組",
+                constituency="比例代表"),
+            RealMemberData(
+                "浜田聡",
+                house="参議院",
+                party_name="日本維新の会",
+                constituency="比例代表"),
             RealMemberData("竹谷とし子", house="参議院", party_name="公明党", constituency="比例代表"),
-            RealMemberData("田村智子", house="参議院", party_name="日本共産党", constituency="比例代表"),
-            RealMemberData("榛葉賀津也", house="参議院", party_name="国民民主党", constituency="静岡県"),
-            RealMemberData("福島みずほ", house="参議院", party_name="社会民主党", constituency="比例代表"),
+            RealMemberData(
+                "田村智子",
+                house="参議院",
+                party_name="日本共産党",
+                constituency="比例代表"),
+            RealMemberData(
+                "榛葉賀津也",
+                house="参議院",
+                party_name="国民民主党",
+                constituency="静岡県"),
+            RealMemberData(
+                "福島みずほ",
+                house="参議院",
+                party_name="社会民主党",
+                constituency="比例代表"),
 
             # 衆議院
-            RealMemberData("細田博之", house="衆議院", party_name="自由民主党", constituency="島根県第1区"),
-            RealMemberData("泉健太", house="衆議院", party_name="立憲民主党", constituency="京都府第3区"),
-            RealMemberData("馬場伸幸", house="衆議院", party_name="日本維新の会", constituency="大阪府第17区"),
+            RealMemberData(
+                "細田博之",
+                house="衆議院",
+                party_name="自由民主党",
+                constituency="島根県第1区"),
+            RealMemberData(
+                "泉健太",
+                house="衆議院",
+                party_name="立憲民主党",
+                constituency="京都府第3区"),
+            RealMemberData(
+                "馬場伸幸",
+                house="衆議院",
+                party_name="日本維新の会",
+                constituency="大阪府第17区"),
             RealMemberData("石井啓一", house="衆議院", party_name="公明党", constituency="比例代表"),
-            RealMemberData("志位和夫", house="衆議院", party_name="日本共産党", constituency="比例代表"),
-            RealMemberData("玉木雄一郎", house="衆議院", party_name="国民民主党", constituency="香川県第2区"),
+            RealMemberData(
+                "志位和夫",
+                house="衆議院",
+                party_name="日本共産党",
+                constituency="比例代表"),
+            RealMemberData(
+                "玉木雄一郎",
+                house="衆議院",
+                party_name="国民民主党",
+                constituency="香川県第2区"),
 
             # 追加で35名程度のパターン生成（実在の議員名を使用）
         ]
@@ -208,7 +269,17 @@ class RealMemberDataCollector:
         additional_members = []
         real_surnames = ["田中", "山田", "佐藤", "鈴木", "高橋", "渡辺", "伊藤", "中村", "小林", "加藤"]
         real_given_names = ["一郎", "二郎", "三郎", "太郎", "花子", "美咲", "健一", "洋子", "博", "明"]
-        constituencies = ["東京都", "大阪府", "神奈川県", "愛知県", "埼玉県", "千葉県", "兵庫県", "北海道", "福岡県", "静岡県"]
+        constituencies = [
+            "東京都",
+            "大阪府",
+            "神奈川県",
+            "愛知県",
+            "埼玉県",
+            "千葉県",
+            "兵庫県",
+            "北海道",
+            "福岡県",
+            "静岡県"]
         parties = ["自由民主党", "立憲民主党", "日本維新の会", "公明党", "国民民主党", "日本共産党"]
         houses = ["参議院", "衆議院"]
 
@@ -267,7 +338,11 @@ class RealMemberDataCollector:
             print(f"    ❌ ダミーデータ削除エラー: {e}")
             return False
 
-    async def insert_real_members(self, session: aiohttp.ClientSession, members: list[RealMemberData], party_id_map: dict[str, str]) -> int:
+    async def insert_real_members(self,
+                                  session: aiohttp.ClientSession,
+                                  members: list[RealMemberData],
+                                  party_id_map: dict[str,
+                                                     str]) -> int:
         """Insert real member data into Airtable"""
 
         print("  💾 実議員データ投入...")
@@ -295,7 +370,8 @@ class RealMemberDataCollector:
                     member_fields["Party"] = [party_id_map[member.party_name]]
 
                 # Remove None values
-                member_fields = {k: v for k, v in member_fields.items() if v is not None}
+                member_fields = {k: v for k,
+                                 v in member_fields.items() if v is not None}
 
                 data = {"fields": member_fields}
 
@@ -304,7 +380,8 @@ class RealMemberDataCollector:
                 success_count += 1
 
                 if i <= 5 or i % 10 == 0:
-                    print(f"    ✅ 議員{i:02d}: {member.name} ({member.house}) - {member.party_name}")
+                    print(
+                        f"    ✅ 議員{i:02d}: {member.name} ({member.house}) - {member.party_name}")
 
             except Exception as e:
                 print(f"    ❌ 議員投入失敗: {member.name} - {e}")
@@ -415,6 +492,7 @@ class RealMemberDataCollector:
 
             print(f"❌ データ収集・置換失敗: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

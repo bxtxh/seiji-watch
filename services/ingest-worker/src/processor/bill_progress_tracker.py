@@ -60,9 +60,11 @@ class ProgressTrackingResult:
 class BillProgressTracker:
     """Advanced bill progress tracking system"""
 
-    def __init__(self,
-                 update_interval_hours: int = 24,
-                 enable_alerts: bool = True):
+    def __init__(
+        self,
+        update_interval_hours: int = 24,
+        enable_alerts: bool = True
+    ):
         self.update_interval_hours = update_interval_hours
         self.enable_alerts = enable_alerts
         self.logger = logging.getLogger(__name__)
@@ -134,7 +136,9 @@ class BillProgressTracker:
             BillProcessResult.POSTPONED: [r'延期', r'保留'],
         }
 
-    def track_bill_progress(self, bill_data: EnhancedBillData) -> ProgressTrackingResult:
+    def track_bill_progress(
+            self,
+            bill_data: EnhancedBillData) -> ProgressTrackingResult:
         """Track progress for a single bill"""
         try:
             # Create current snapshot
@@ -150,7 +154,8 @@ class BillProgressTracker:
             stage_transitions = self._analyze_stage_transitions(progress_history)
 
             # Generate alerts
-            alerts = self._generate_alerts(bill_data, current_snapshot, stage_transitions)
+            alerts = self._generate_alerts(
+                bill_data, current_snapshot, stage_transitions)
 
             return ProgressTrackingResult(
                 bill_id=bill_data.bill_id,
@@ -163,7 +168,8 @@ class BillProgressTracker:
             )
 
         except Exception as e:
-            self.logger.error(f"Error tracking progress for bill {bill_data.bill_id}: {e}")
+            self.logger.error(
+                f"Error tracking progress for bill {bill_data.bill_id}: {e}")
             return ProgressTrackingResult(
                 bill_id=bill_data.bill_id,
                 tracking_status=ProgressTrackingStatus.ERROR,
@@ -178,7 +184,8 @@ class BillProgressTracker:
                 alerts=[f"Error tracking progress: {str(e)}"]
             )
 
-    def _create_progress_snapshot(self, bill_data: EnhancedBillData) -> BillProgressSnapshot:
+    def _create_progress_snapshot(
+            self, bill_data: EnhancedBillData) -> BillProgressSnapshot:
         """Create a progress snapshot from bill data"""
 
         # Determine current stage
@@ -191,7 +198,8 @@ class BillProgressTracker:
         last_action, last_action_date = self._extract_last_action(bill_data)
 
         # Predict next expected action
-        next_expected_action = self._predict_next_action(current_stage, bill_data.house_of_origin)
+        next_expected_action = self._predict_next_action(
+            current_stage, bill_data.house_of_origin)
 
         # Calculate confidence score
         confidence_score = self._calculate_confidence_score(bill_data)
@@ -211,7 +219,8 @@ class BillProgressTracker:
             data_source=bill_data.source_house or "unknown"
         )
 
-    def _determine_tracking_status(self, bill_data: EnhancedBillData) -> ProgressTrackingStatus:
+    def _determine_tracking_status(
+            self, bill_data: EnhancedBillData) -> ProgressTrackingStatus:
         """Determine the tracking status for a bill"""
 
         if bill_data.status in ['成立', '可決成立', 'passed']:
@@ -225,7 +234,8 @@ class BillProgressTracker:
         else:
             return ProgressTrackingStatus.ACTIVE
 
-    def _generate_progress_history(self, bill_data: EnhancedBillData) -> list[BillProcessHistory]:
+    def _generate_progress_history(
+            self, bill_data: EnhancedBillData) -> list[BillProcessHistory]:
         """Generate progress history from bill data"""
         history = []
 
@@ -315,7 +325,8 @@ class BillProgressTracker:
 
         return sorted(history, key=lambda x: x.action_date)
 
-    def _analyze_stage_transitions(self, progress_history: list[BillProcessHistory]) -> list[dict[str, Any]]:
+    def _analyze_stage_transitions(
+            self, progress_history: list[BillProcessHistory]) -> list[dict[str, Any]]:
         """Analyze stage transitions from progress history"""
         transitions = []
 
@@ -339,9 +350,9 @@ class BillProgressTracker:
         return transitions
 
     def _generate_alerts(self,
-                        bill_data: EnhancedBillData,
-                        snapshot: BillProgressSnapshot,
-                        transitions: list[dict[str, Any]]) -> list[str]:
+                         bill_data: EnhancedBillData,
+                         snapshot: BillProgressSnapshot,
+                         transitions: list[dict[str, Any]]) -> list[str]:
         """Generate alerts based on bill progress"""
         alerts = []
 
@@ -357,7 +368,8 @@ class BillProgressTracker:
         # Check for unusual delays
         for transition in transitions:
             if transition['duration_days'] > 60:
-                alerts.append(f"{transition['from_stage']}から{transition['to_stage']}への移行が{transition['duration_days']}日かかりました")
+                alerts.append(
+                    f"{transition['from_stage']}から{transition['to_stage']}への移行が{transition['duration_days']}日かかりました")
 
         # Check for low confidence
         if snapshot.confidence_score < 0.5:
@@ -404,7 +416,8 @@ class BillProgressTracker:
             if isinstance(bill_data.committee_assignments, dict):
                 committees = bill_data.committee_assignments.get('committees', [])
                 if committees:
-                    return committees[0] if isinstance(committees, list) else str(committees)
+                    return committees[0] if isinstance(
+                        committees, list) else str(committees)
 
         # Check bill outline for committee mentions
         if bill_data.bill_outline:
@@ -416,7 +429,8 @@ class BillProgressTracker:
 
         return None
 
-    def _extract_last_action(self, bill_data: EnhancedBillData) -> tuple[str | None, datetime | None]:
+    def _extract_last_action(
+            self, bill_data: EnhancedBillData) -> tuple[str | None, datetime | None]:
         """Extract last action and date from bill data"""
 
         # Check voting results
@@ -429,7 +443,8 @@ class BillProgressTracker:
         if bill_data.amendments:
             latest_amendment = bill_data.amendments[-1]
             if isinstance(latest_amendment, dict):
-                return latest_amendment.get('description', '修正'), latest_amendment.get('date')
+                return latest_amendment.get(
+                    'description', '修正'), latest_amendment.get('date')
 
         # Fall back to status
         return bill_data.status, bill_data.final_vote_date or bill_data.committee_report_date
@@ -437,7 +452,8 @@ class BillProgressTracker:
     def _predict_next_action(self, current_stage: str, house: str) -> str | None:
         """Predict next expected action based on current stage"""
 
-        stage_progression = self.stage_progressions.get(house, self.stage_progressions['参議院'])
+        stage_progression = self.stage_progressions.get(
+            house, self.stage_progressions['参議院'])
 
         try:
             current_index = stage_progression.index(current_stage)
@@ -524,7 +540,8 @@ class BillProgressTracker:
         else:
             return BillProcessResult.NOTED
 
-    async def track_multiple_bills(self, bills: list[EnhancedBillData]) -> list[ProgressTrackingResult]:
+    async def track_multiple_bills(
+            self, bills: list[EnhancedBillData]) -> list[ProgressTrackingResult]:
         """Track progress for multiple bills asynchronously"""
         results = []
 
@@ -542,7 +559,8 @@ class BillProgressTracker:
 
         return results
 
-    def get_progress_summary(self, tracking_results: list[ProgressTrackingResult]) -> dict[str, Any]:
+    def get_progress_summary(
+            self, tracking_results: list[ProgressTrackingResult]) -> dict[str, Any]:
         """Get summary statistics for progress tracking results"""
 
         if not tracking_results:
@@ -567,8 +585,10 @@ class BillProgressTracker:
         bills_with_alerts = sum(1 for result in tracking_results if result.alerts)
 
         # Confidence analysis
-        confidence_scores = [result.current_snapshot.confidence_score for result in tracking_results]
-        avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0.0
+        confidence_scores = [
+            result.current_snapshot.confidence_score for result in tracking_results]
+        avg_confidence = sum(confidence_scores) / \
+            len(confidence_scores) if confidence_scores else 0.0
 
         return {
             'total_bills': total_bills,

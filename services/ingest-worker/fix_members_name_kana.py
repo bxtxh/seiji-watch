@@ -23,6 +23,7 @@ except ImportError:
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class MembersNameKanaFixer:
     """Fix Name_Kana field for Members table"""
 
@@ -109,7 +110,7 @@ class MembersNameKanaFixer:
         try:
             kana_reading = self.conv.do(name)
             return kana_reading
-        except:
+        except Exception:
             # Fallback - return original name if conversion fails
             return name
 
@@ -263,11 +264,12 @@ class MembersNameKanaFixer:
             total_fixed = 0
 
             for i in range(0, len(records_to_fix), batch_size):
-                batch = records_to_fix[i:i+batch_size]
+                batch = records_to_fix[i:i + batch_size]
                 batch_fixed = await self.fix_name_kana_batch(session, batch)
                 total_fixed += batch_fixed
 
-                print(f"   ✅ Batch {i//batch_size + 1}: Fixed {batch_fixed}/{len(batch)} records")
+                print(
+                    f"   ✅ Batch {i//batch_size + 1}: Fixed {batch_fixed}/{len(batch)} records")
 
             self.results["total_processed"] = len(records_to_fix)
             self.results["already_good"] = analysis["good"]
@@ -307,9 +309,11 @@ class MembersNameKanaFixer:
         print(f"❌ Errors: {self.results['errors']}")
         print(f"💾 Backup created: {'✅' if self.results['backup_created'] else '❌'}")
 
-        self.results['already_good'] + self.results['placeholder_fixed'] + self.results['empty_fixed']
+        self.results['already_good'] + \
+            self.results['placeholder_fixed'] + self.results['empty_fixed']
         if self.results['total_processed'] > 0:
-            success_rate = ((self.results['placeholder_fixed'] + self.results['empty_fixed']) / self.results['total_processed']) * 100
+            success_rate = (
+                (self.results['placeholder_fixed'] + self.results['empty_fixed']) / self.results['total_processed']) * 100
             print(f"\n📈 Fix Success Rate: {success_rate:.1f}%")
 
         if self.results['errors'] == 0 and self.results['total_processed'] > 0:
@@ -318,6 +322,7 @@ class MembersNameKanaFixer:
             print(f"👍 Mostly successful - {self.results['errors']} minor errors")
         else:
             print(f"⚠️ Some issues - {self.results['errors']} errors need attention")
+
 
 async def main():
     """Main entry point"""

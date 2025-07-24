@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def members_final_cleanup():
     """Final cleanup to achieve 95% quality target for Members table"""
 
@@ -104,7 +105,7 @@ async def members_final_cleanup():
                             print(f"   🗑️ Removed {i + 1} synthetic records...")
                     else:
                         cleanup_results["errors"] += 1
-            except:
+            except Exception:
                 cleanup_results["errors"] += 1
 
             await asyncio.sleep(0.05)
@@ -145,7 +146,8 @@ async def members_final_cleanup():
                 name_groups[name].append(record)
 
         # Process duplicate groups
-        duplicate_groups = {name: group for name, group in name_groups.items() if len(group) > 1}
+        duplicate_groups = {name: group for name,
+                            group in name_groups.items() if len(group) > 1}
         print(f"🔍 Found {len(duplicate_groups)} duplicate name groups")
 
         processed_groups = 0
@@ -172,7 +174,9 @@ async def members_final_cleanup():
                     else:
                         keep, delete = record1, record2
                 else:
-                    keep, delete = (record1, record2) if filled1 > filled2 else (record2, record1)
+                    keep, delete = (
+                        record1, record2) if filled1 > filled2 else (
+                        record2, record1)
 
                 # Delete the duplicate
                 try:
@@ -182,10 +186,11 @@ async def members_final_cleanup():
                     ) as response:
                         if response.status == 200:
                             cleanup_results["obvious_duplicates_merged"] += 1
-                            print(f"   ✅ Merged {name}: Kept {keep['id']}, deleted {delete['id']}")
+                            print(
+                                f"   ✅ Merged {name}: Kept {keep['id']}, deleted {delete['id']}")
                         else:
                             cleanup_results["errors"] += 1
-                except:
+                except Exception:
                     cleanup_results["errors"] += 1
 
                 processed_groups += 1
@@ -242,7 +247,7 @@ async def members_final_cleanup():
                         cleanup_results["low_quality_records_removed"] += 1
                     else:
                         cleanup_results["errors"] += 1
-            except:
+            except Exception:
                 cleanup_results["errors"] += 1
 
             await asyncio.sleep(0.05)
@@ -278,8 +283,10 @@ async def members_final_cleanup():
     print("📋 MEMBERS FINAL CLEANUP SUMMARY")
     print(f"{'='*70}")
     print(f"🗑️ Synthetic data removed: {cleanup_results['synthetic_data_removed']}")
-    print(f"🔄 Obvious duplicates merged: {cleanup_results['obvious_duplicates_merged']}")
-    print(f"📉 Low-quality records removed: {cleanup_results['low_quality_records_removed']}")
+    print(
+        f"🔄 Obvious duplicates merged: {cleanup_results['obvious_duplicates_merged']}")
+    print(
+        f"📉 Low-quality records removed: {cleanup_results['low_quality_records_removed']}")
     print(f"❌ Errors: {cleanup_results['errors']}")
     print(f"\n📊 Records: {len(all_records)} → {final_count} (-{total_removed})")
 
@@ -290,7 +297,8 @@ async def members_final_cleanup():
     print("\n📈 Expected Quality Improvement:")
     print("   Before: 90.1% (A)")
     print(f"   Estimated After: {estimated_quality:.1f}%")
-    print(f"   Target Status: {'✅ ACHIEVED' if estimated_quality >= 95.0 else '⚠️ CLOSE'}")
+    print(
+        f"   Target Status: {'✅ ACHIEVED' if estimated_quality >= 95.0 else '⚠️ CLOSE'}")
 
     # Save report
     report = {

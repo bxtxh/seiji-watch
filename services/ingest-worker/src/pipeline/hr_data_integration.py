@@ -23,14 +23,15 @@ from typing import Any
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..', 'shared', 'src'))
-
 from shared.database.session import get_db_session
 from shared.models.bill import Bill
 from shared.models.member import Member
 from shared.models.vote import Vote, VoteRecord
 
 from ..scraper.enhanced_hr_scraper import EnhancedHRProcessor, EnhancedVotingSession
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..', 'shared', 'src'))
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,10 @@ class IntegrationResult:
 class HRDataIntegrator:
     """Integrates House of Representatives voting data into the database"""
 
-    def __init__(self, conflict_strategy: DataConflictStrategy = DataConflictStrategy.MERGE):
+    def __init__(
+        self,
+        conflict_strategy: DataConflictStrategy = DataConflictStrategy.MERGE
+    ):
         self.conflict_strategy = conflict_strategy
         self.stats = {
             'total_sessions_processed': 0,
@@ -228,7 +232,9 @@ class HRDataIntegrator:
 
             if existing_bill:
                 # Update existing bill with HR data if needed
-                if self.conflict_strategy in [DataConflictStrategy.OVERWRITE, DataConflictStrategy.MERGE]:
+                if self.conflict_strategy in [
+                        DataConflictStrategy.OVERWRITE,
+                        DataConflictStrategy.MERGE]:
                     existing_bill.title = session.base_session.bill_title
                     existing_bill.house_origin = "衆議院"  # House of Representatives
                     existing_bill.updated_at = datetime.now()
@@ -294,16 +300,19 @@ class HRDataIntegrator:
                         conflicts = []
 
                         if (existing_member.party != vote_record.party_name and
-                            vote_record.party_name != "不明"):
-                            conflicts.append(f"Party: {existing_member.party} vs {vote_record.party_name}")
+                                vote_record.party_name != "不明"):
+                            conflicts.append(
+                                f"Party: {existing_member.party} vs {vote_record.party_name}")
 
                         if (existing_member.constituency != vote_record.constituency and
-                            vote_record.constituency != "不明"):
-                            conflicts.append(f"Constituency: {existing_member.constituency} vs {vote_record.constituency}")
+                                vote_record.constituency != "不明"):
+                            conflicts.append(
+                                f"Constituency: {existing_member.constituency} vs {vote_record.constituency}")
 
                         if conflicts:
                             result['conflicts'] += 1
-                            logger.warning(f"Member data conflicts for {member_name}: {conflicts}")
+                            logger.warning(
+                                f"Member data conflicts for {member_name}: {conflicts}")
 
                             # Apply conflict resolution strategy
                             if self.conflict_strategy == DataConflictStrategy.OVERWRITE:
@@ -380,21 +389,33 @@ class HRDataIntegrator:
             vote_summary = session.base_session.vote_summary
 
             new_vote = Vote(
-                id=str(uuid.uuid4()),
+                id=str(
+                    uuid.uuid4()),
                 bill_id=bill.id if bill else None,
                 vote_date=session.base_session.vote_date,
                 vote_type=session.base_session.vote_type,
                 house="衆議院",
                 committee_name=session.base_session.committee_name,
                 total_members=session.base_session.total_members,
-                votes_for=vote_summary.get('賛成', 0),
-                votes_against=vote_summary.get('反対', 0),
-                abstentions=vote_summary.get('棄権', 0),
-                absent=vote_summary.get('欠席', 0),
-                result="可決" if vote_summary.get('賛成', 0) > vote_summary.get('反対', 0) else "否決",
+                votes_for=vote_summary.get(
+                    '賛成',
+                    0),
+                votes_against=vote_summary.get(
+                    '反対',
+                    0),
+                abstentions=vote_summary.get(
+                    '棄権',
+                    0),
+                absent=vote_summary.get(
+                    '欠席',
+                    0),
+                result="可決" if vote_summary.get(
+                    '賛成',
+                    0) > vote_summary.get(
+                    '反対',
+                    0) else "否決",
                 created_at=datetime.now(),
-                updated_at=datetime.now()
-            )
+                updated_at=datetime.now())
 
             if not dry_run:
                 db_session.add(new_vote)
@@ -430,7 +451,8 @@ class HRDataIntegrator:
                     ).first()
 
                     if not member:
-                        logger.warning(f"Member not found for vote record: {vote_record.member_name}")
+                        logger.warning(
+                            f"Member not found for vote record: {vote_record.member_name}")
                         continue
 
                     # Check if vote record already exists
@@ -447,8 +469,7 @@ class HRDataIntegrator:
                             result['conflicts'] += 1
                             logger.warning(
                                 f"Vote conflict for {member.name}: "
-                                f"{existing_record.vote_result} vs {vote_record.vote_result}"
-                            )
+                                f"{existing_record.vote_result} vs {vote_record.vote_result}")
 
                             if self.conflict_strategy == DataConflictStrategy.OVERWRITE:
                                 existing_record.vote_result = vote_record.vote_result
@@ -476,7 +497,8 @@ class HRDataIntegrator:
                     result['created'] += 1
 
                 except Exception as e:
-                    logger.error(f"Failed to process vote record for {vote_record.member_name}: {e}")
+                    logger.error(
+                        f"Failed to process vote record for {vote_record.member_name}: {e}")
                     continue
 
             return result
@@ -579,7 +601,8 @@ async def run_hr_integration_pipeline(
 
     try:
         # Phase 1: Enhanced processing
-        logger.info(f"Starting HR integration pipeline (days_back={days_back}, dry_run={dry_run})")
+        logger.info(
+            f"Starting HR integration pipeline (days_back={days_back}, dry_run={dry_run})")
 
         processor = EnhancedHRProcessor()
         enhanced_sessions = await processor.process_enhanced_hr_data(
@@ -596,7 +619,8 @@ async def run_hr_integration_pipeline(
             dry_run=dry_run
         )
 
-        logger.info(f"Integration completed: {integration_result.sessions_processed} sessions processed")
+        logger.info(
+            f"Integration completed: {integration_result.sessions_processed} sessions processed")
 
         pipeline_result['success'] = integration_result.success
         pipeline_result['processing_results'] = processor.get_processing_statistics()

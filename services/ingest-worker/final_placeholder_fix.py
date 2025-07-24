@@ -96,6 +96,7 @@ ADVANCED_PATTERNS = {
     '靖一': 'やすかず'
 }
 
+
 class FinalPlaceholderFixer:
     """Final elimination of remaining placeholder patterns"""
 
@@ -178,7 +179,11 @@ class FinalPlaceholderFixer:
         remaining = name
 
         # Sort by length (longest first)
-        sorted_patterns = sorted(ADVANCED_PATTERNS.items(), key=lambda x: len(x[0]), reverse=True)
+        sorted_patterns = sorted(
+            ADVANCED_PATTERNS.items(),
+            key=lambda x: len(
+                x[0]),
+            reverse=True)
 
         while remaining:
             matched = False
@@ -247,7 +252,8 @@ class FinalPlaceholderFixer:
 
                     else:
                         self.fix_results['errors'] += 1
-                        print(f"   ❌ Error updating {record_info['name']}: {response.status}")
+                        print(
+                            f"   ❌ Error updating {record_info['name']}: {response.status}")
 
             except Exception as e:
                 self.fix_results['errors'] += 1
@@ -316,7 +322,8 @@ class FinalPlaceholderFixer:
             # Show preview
             print("\n👀 Preview of final placeholder fixes:")
             for i, item in enumerate(records_to_fix, 1):
-                politician_status = "🏛️ REAL POLITICIAN" if item['name'] in REMAINING_POLITICIAN_READINGS else "📝 PATTERN"
+                politician_status = "🏛️ REAL POLITICIAN" if item[
+                    'name'] in REMAINING_POLITICIAN_READINGS else "📝 PATTERN"
                 print(f"   {i:2d}. {item['name']} {politician_status}")
                 print(f"       Before: '{item['current_kana']}'")
                 print(f"       After:  '{item['new_kana']}'")
@@ -366,6 +373,7 @@ class FinalPlaceholderFixer:
                 print("👍 VERY GOOD! Strong Name_Kana quality")
             else:
                 print("⚠️ Good progress - further optimization possible")
+
 
 async def main():
     """Main final fix entry point"""

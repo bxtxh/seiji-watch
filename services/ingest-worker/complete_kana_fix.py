@@ -145,6 +145,7 @@ ENHANCED_KANJI_PATTERNS = {
     '島': 'しま', '橋': 'はし', '本': 'もと', '元': 'もと', '末': 'すえ'
 }
 
+
 class CompleteKanaFixer:
     """Complete and thorough Name_Kana fixing system"""
 
@@ -233,7 +234,8 @@ class CompleteKanaFixer:
 
         # Check for specific surname-only patterns
         common_surnames = ['たなか', 'さとう', 'おかだ', 'まつもと', 'なかがわ', 'わたなべ', 'たかはし', 'おおた']
-        if any(surname in name_kana and len(name_kana) <= len(surname) + 1 for surname in common_surnames):
+        if any(surname in name_kana and len(name_kana) <= len(
+                surname) + 1 for surname in common_surnames):
             if name_len > 2:
                 return True, "surname_only"
 
@@ -253,7 +255,11 @@ class CompleteKanaFixer:
         remaining = name
 
         # Sort patterns by length (longest first)
-        sorted_patterns = sorted(ENHANCED_KANJI_PATTERNS.items(), key=lambda x: len(x[0]), reverse=True)
+        sorted_patterns = sorted(
+            ENHANCED_KANJI_PATTERNS.items(),
+            key=lambda x: len(
+                x[0]),
+            reverse=True)
 
         # Try to match patterns
         while remaining:
@@ -327,7 +333,8 @@ class CompleteKanaFixer:
 
                     else:
                         self.fix_results['errors'] += 1
-                        print(f"   ❌ Error updating {record_info['name']}: {response.status}")
+                        print(
+                            f"   ❌ Error updating {record_info['name']}: {response.status}")
 
             except Exception as e:
                 self.fix_results['errors'] += 1
@@ -419,7 +426,8 @@ class CompleteKanaFixer:
                 print(f"       ({item['fix_type']})")
 
             if len(records_to_fix) > 20:
-                print(f"   ... and {len(records_to_fix) - 20} more complete corrections")
+                print(
+                    f"   ... and {len(records_to_fix) - 20} more complete corrections")
 
             # Apply fixes
             print("\n🚀 Applying complete kana corrections...")
@@ -449,14 +457,16 @@ class CompleteKanaFixer:
         print(f"   ⚠️ Could not improve: {results['could_not_improve']}")
         print(f"   ❌ Errors: {results['errors']}")
 
-        total_fixed = results['surname_only_fixed'] + results['incomplete_fixed'] + results['pattern_improved']
+        total_fixed = results['surname_only_fixed'] + \
+            results['incomplete_fixed'] + results['pattern_improved']
         print(f"\n📈 TOTAL COMPLETE CORRECTIONS APPLIED: {total_fixed}")
 
         # Show key corrections
         if results['corrections_applied']:
             print("\n🎯 KEY COMPLETE CORRECTIONS APPLIED:")
             for correction in results['corrections_applied'][:15]:
-                print(f"   ✅ {correction['name']}: '{correction['current_kana']}' → '{correction['new_kana']}'")
+                print(
+                    f"   ✅ {correction['name']}: '{correction['current_kana']}' → '{correction['new_kana']}'")
 
         # Calculate final completeness estimate
         total_complete = results['already_complete'] + total_fixed
@@ -472,6 +482,7 @@ class CompleteKanaFixer:
                 print("👍 VERY GOOD! High completeness achieved")
             else:
                 print("⚠️ Good progress but more improvements needed")
+
 
 async def main():
     """Main complete fix entry point"""

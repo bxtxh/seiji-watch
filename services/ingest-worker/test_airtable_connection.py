@@ -7,10 +7,10 @@ import asyncio
 import sys
 from pathlib import Path
 
+from shared.clients.airtable import AirtableClient
+
 # Add parent directories to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
-
-from shared.clients.airtable import AirtableClient
 
 
 async def test_airtable_connection():

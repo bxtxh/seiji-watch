@@ -34,7 +34,9 @@ class AirtableClient:
         self._request_semaphore = asyncio.Semaphore(5)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self, method: str, url: str, **kwargs) -> dict[str, Any]:
+    async def _rate_limited_request(
+        self, method: str, url: str, **kwargs
+    ) -> dict[str, Any]:
         """Make rate-limited request to Airtable API."""
         async with self._request_semaphore:
             # Ensure we don't exceed 5 requests per second
@@ -44,7 +46,9 @@ class AirtableClient:
                 await asyncio.sleep(0.2 - time_since_last)
 
             async with aiohttp.ClientSession() as session:
-                async with session.request(method, url, headers=self.headers, **kwargs) as response:
+                async with session.request(
+                    method, url, headers=self.headers, **kwargs
+                ) as response:
                     self._last_request_time = asyncio.get_event_loop().time()
 
                     if response.status == 429:  # Too Many Requests
@@ -95,7 +99,9 @@ class AirtableClient:
         url = f"{self.base_url}/Parties/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def update_party(self, record_id: str, party_data: dict[str, Any]) -> dict[str, Any]:
+    async def update_party(
+        self, record_id: str, party_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update a party record."""
         url = f"{self.base_url}/Parties/{record_id}"
         data = {
@@ -108,8 +114,11 @@ class AirtableClient:
         response = await self._rate_limited_request("PATCH", url, json=data)
         return response
 
-    async def list_parties(self, filter_formula: str | None = None,
-                          max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_parties(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List party records with optional filtering."""
         url = f"{self.base_url}/Parties"
         params = {"maxRecords": max_records}
@@ -162,7 +171,9 @@ class AirtableClient:
         url = f"{self.base_url}/Members/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def update_member(self, record_id: str, member_data: dict[str, Any]) -> dict[str, Any]:
+    async def update_member(
+        self, record_id: str, member_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update a member record."""
         url = f"{self.base_url}/Members/{record_id}"
         data = {
@@ -175,8 +186,11 @@ class AirtableClient:
         response = await self._rate_limited_request("PATCH", url, json=data)
         return response
 
-    async def list_members(self, filter_formula: str | None = None,
-                          max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_members(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List member records with optional filtering."""
         url = f"{self.base_url}/Members"
         params = {"maxRecords": max_records}
@@ -217,12 +231,15 @@ class AirtableClient:
 
         # Handle date fields
         if "submitted_date" in bill_data and bill_data["submitted_date"]:
-            data["fields"]["Submitted_Date"] = self._serialize_value(bill_data["submitted_date"])
+            data["fields"]["Submitted_Date"] = self._serialize_value(
+                bill_data["submitted_date"]
+            )
 
         # Handle JSON fields
         for json_field in ["submitting_members", "related_bills", "key_points", "tags"]:
             if json_field in bill_data and bill_data[json_field]:
-                data["fields"][json_field.replace("_", " ").title().replace(" ", "_")] = json.dumps(bill_data[json_field])
+                field_name = json_field.replace("_", " ").title().replace(" ", "_")
+                data["fields"][field_name] = json.dumps(bill_data[json_field])
 
         # Remove None values
         data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
@@ -235,8 +252,11 @@ class AirtableClient:
         url = f"{self.base_url}/Bills (法案)/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_bills(self, filter_formula: str | None = None,
-                        max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_bills(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List bill records with optional filtering."""
         url = f"{self.base_url}/Bills (法案)"
         params = {"maxRecords": max_records}
@@ -278,12 +298,16 @@ class AirtableClient:
         # Handle time fields
         for time_field in ["start_time", "end_time"]:
             if time_field in meeting_data and meeting_data[time_field]:
-                data["fields"][time_field.replace("_", " ").title().replace(" ", "_")] = self._serialize_value(meeting_data[time_field])
+                field_name = time_field.replace("_", " ").title().replace(" ", "_")
+                data["fields"][field_name] = self._serialize_value(
+                    meeting_data[time_field]
+                )
 
         # Handle JSON fields
         for json_field in ["agenda", "documents_urls"]:
             if json_field in meeting_data and meeting_data[json_field]:
-                data["fields"][json_field.replace("_", " ").title().replace(" ", "_")] = json.dumps(meeting_data[json_field])
+                field_name = json_field.replace("_", " ").title().replace(" ", "_")
+                data["fields"][field_name] = json.dumps(meeting_data[json_field])
 
         # Remove None values
         data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
@@ -328,12 +352,16 @@ class AirtableClient:
         # Handle time fields
         for time_field in ["start_time", "end_time"]:
             if time_field in speech_data and speech_data[time_field]:
-                data["fields"][time_field.replace("_", " ").title().replace(" ", "_")] = self._serialize_value(speech_data[time_field])
+                field_name = time_field.replace("_", " ").title().replace(" ", "_")
+                data["fields"][field_name] = self._serialize_value(
+                    speech_data[time_field]
+                )
 
         # Handle JSON fields
         for json_field in ["key_points", "topics"]:
             if json_field in speech_data and speech_data[json_field]:
-                data["fields"][json_field.replace("_", " ").title().replace(" ", "_")] = json.dumps(speech_data[json_field])
+                field_name = json_field.replace("_", " ").title().replace(" ", "_")
+                data["fields"][field_name] = json.dumps(speech_data[json_field])
 
         # Remove None values
         data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
@@ -346,8 +374,11 @@ class AirtableClient:
         url = f"{self.base_url}/Speeches/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_speeches(self, filter_formula: str | None = None,
-                           max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_speeches(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List speech records with optional filtering."""
         url = f"{self.base_url}/Speeches"
         params = {"maxRecords": max_records}
@@ -394,8 +425,11 @@ class AirtableClient:
         url = f"{self.base_url}/Issues/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_issues(self, filter_formula: str | None = None,
-                         max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_issues(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List issue records with optional filtering."""
         url = f"{self.base_url}/Issues"
         params = {"maxRecords": max_records}
@@ -405,7 +439,9 @@ class AirtableClient:
         response = await self._rate_limited_request("GET", url, params=params)
         return response.get("records", [])
 
-    async def update_issue(self, record_id: str, issue_data: dict[str, Any]) -> dict[str, Any]:
+    async def update_issue(
+        self, record_id: str, issue_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update an issue record."""
         url = f"{self.base_url}/Issues/{record_id}"
         data = {
@@ -444,8 +480,11 @@ class AirtableClient:
         url = f"{self.base_url}/IssueTags/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_issue_tags(self, filter_formula: str | None = None,
-                             max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_issue_tags(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List issue tag records with optional filtering."""
         url = f"{self.base_url}/IssueTags"
         params = {"maxRecords": max_records}
@@ -535,8 +574,11 @@ class AirtableClient:
         url = f"{self.base_url}/Votes (投票)/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_votes(self, filter_formula: str | None = None,
-                        max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_votes(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List vote records with optional filtering."""
         url = f"{self.base_url}/Votes (投票)"
         params = {"maxRecords": max_records}
@@ -546,7 +588,9 @@ class AirtableClient:
         response = await self._rate_limited_request("GET", url, params=params)
         return response.get("records", [])
 
-    async def find_member_by_name(self, member_name: str, party_name: str | None = None) -> dict[str, Any] | None:
+    async def find_member_by_name(
+        self, member_name: str, party_name: str | None = None
+    ) -> dict[str, Any] | None:
         """Find member by name and optionally party."""
         filter_parts = [f"{{Name}} = '{member_name}'"]
         if party_name:
@@ -558,14 +602,18 @@ class AirtableClient:
 
         return members[0] if members else None
 
-    async def find_party_by_name(self, party_name: str) -> dict[str, Any] | None:
+    async def find_party_by_name(
+        self, party_name: str
+    ) -> dict[str, Any] | None:
         """Find party by name."""
         filter_formula = f"{{Name}} = '{party_name}'"
         parties = await self.list_parties(filter_formula=filter_formula, max_records=1)
 
         return parties[0] if parties else None
 
-    async def find_bill_by_number(self, bill_number: str) -> dict[str, Any] | None:
+    async def find_bill_by_number(
+        self, bill_number: str
+    ) -> dict[str, Any] | None:
         """Find bill by bill number."""
         filter_formula = f"{{Bill_Number}} = '{bill_number}'"
         bills = await self.list_bills(filter_formula=filter_formula, max_records=1)
@@ -573,7 +621,9 @@ class AirtableClient:
         return bills[0] if bills else None
 
     # Issue Category operations
-    async def create_issue_category(self, category_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_issue_category(
+        self, category_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Create a new issue category record."""
         url = f"{self.base_url}/IssueCategories"
         data = {
@@ -590,7 +640,10 @@ class AirtableClient:
         }
 
         # Handle parent relationship
-        if "parent_category_id" in category_data and category_data["parent_category_id"]:
+        if (
+            "parent_category_id" in category_data
+            and category_data["parent_category_id"]
+        ):
             data["fields"]["Parent_Category"] = [category_data["parent_category_id"]]
 
         # Remove None values
@@ -604,8 +657,11 @@ class AirtableClient:
         url = f"{self.base_url}/IssueCategories/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_issue_categories(self, filter_formula: str | None = None,
-                                   max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_issue_categories(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List issue category records with optional filtering."""
         url = f"{self.base_url}/IssueCategories"
         params = {"maxRecords": max_records}
@@ -615,7 +671,9 @@ class AirtableClient:
         response = await self._rate_limited_request("GET", url, params=params)
         return response.get("records", [])
 
-    async def update_issue_category(self, record_id: str, category_data: dict[str, Any]) -> dict[str, Any]:
+    async def update_issue_category(
+        self, record_id: str, category_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Update an issue category record."""
         url = f"{self.base_url}/IssueCategories/{record_id}"
         data = {
@@ -631,17 +689,27 @@ class AirtableClient:
     async def get_categories_by_layer(self, layer: str) -> list[dict[str, Any]]:
         """Get all categories for a specific layer (L1/L2/L3)."""
         filter_formula = f"{{Layer}} = '{layer}'"
-        return await self.list_issue_categories(filter_formula=filter_formula, max_records=1000)
+        return await self.list_issue_categories(
+            filter_formula=filter_formula, max_records=1000
+        )
 
     async def get_category_children(self, parent_id: str) -> list[dict[str, Any]]:
         """Get child categories for a specific parent category."""
-        filter_formula = f"FIND('{parent_id}', ARRAYJOIN({{Parent_Category}})) > 0"
-        return await self.list_issue_categories(filter_formula=filter_formula, max_records=1000)
+        filter_formula = (
+            f"FIND('{parent_id}', ARRAYJOIN({{Parent_Category}})) > 0"
+        )
+        return await self.list_issue_categories(
+            filter_formula=filter_formula, max_records=1000
+        )
 
-    async def find_category_by_cap_code(self, cap_code: str) -> dict[str, Any] | None:
+    async def find_category_by_cap_code(
+        self, cap_code: str
+    ) -> dict[str, Any] | None:
         """Find category by CAP code."""
         filter_formula = f"{{CAP_Code}} = '{cap_code}'"
-        categories = await self.list_issue_categories(filter_formula=filter_formula, max_records=1)
+        categories = await self.list_issue_categories(
+            filter_formula=filter_formula, max_records=1
+        )
 
         return categories[0] if categories else None
 
@@ -661,18 +729,24 @@ class AirtableClient:
 
         # Sort by CAP code for consistent ordering
         for layer in tree:
-            tree[layer].sort(key=lambda x: x.get("fields", {}).get("CAP_Code", ""))
+            tree[layer].sort(
+                key=lambda x: x.get("fields", {}).get("CAP_Code", "")
+            )
 
         return tree
 
     # Bills_PolicyCategories relationship table operations
-    async def create_bill_policy_category_relationship(self, relationship_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_bill_policy_category_relationship(
+        self, relationship_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """Create a new bill-policy category relationship."""
         url = f"{self.base_url}/Bills_PolicyCategories"
         data = {
             "fields": {
                 "Bill_ID": relationship_data["bill_id"],  # Link to Bills table
-                "PolicyCategory_ID": relationship_data["policy_category_id"],  # Link to IssueCategories table
+                "PolicyCategory_ID": relationship_data[
+                    "policy_category_id"
+                ],  # Link to IssueCategories table
                 "Confidence_Score": relationship_data.get("confidence_score", 0.8),
                 "Is_Manual": relationship_data.get("is_manual", False),
                 "Source": relationship_data.get("source", "auto_migration"),
@@ -682,10 +756,18 @@ class AirtableClient:
         }
 
         # Handle relationship links
-        if "bill_record_id" in relationship_data and relationship_data["bill_record_id"]:
+        if (
+            "bill_record_id" in relationship_data
+            and relationship_data["bill_record_id"]
+        ):
             data["fields"]["Bill"] = [relationship_data["bill_record_id"]]
-        if "policy_category_record_id" in relationship_data and relationship_data["policy_category_record_id"]:
-            data["fields"]["PolicyCategory"] = [relationship_data["policy_category_record_id"]]
+        if (
+            "policy_category_record_id" in relationship_data
+            and relationship_data["policy_category_record_id"]
+        ):
+            data["fields"]["PolicyCategory"] = [
+                relationship_data["policy_category_record_id"]
+            ]
 
         # Remove None values
         data["fields"] = {k: v for k, v in data["fields"].items() if v is not None}
@@ -693,13 +775,18 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_bill_policy_category_relationship(self, record_id: str) -> dict[str, Any]:
+    async def get_bill_policy_category_relationship(
+        self, record_id: str
+    ) -> dict[str, Any]:
         """Get a bill-policy category relationship by ID."""
         url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
         return await self._rate_limited_request("GET", url)
 
-    async def list_bill_policy_category_relationships(self, filter_formula: str | None = None,
-                                                     max_records: int = 100) -> list[dict[str, Any]]:
+    async def list_bill_policy_category_relationships(
+        self,
+        filter_formula: str | None = None,
+        max_records: int = 100,
+    ) -> list[dict[str, Any]]:
         """List bill-policy category relationships with optional filtering."""
         url = f"{self.base_url}/Bills_PolicyCategories"
         params = {"maxRecords": max_records}
@@ -709,18 +796,34 @@ class AirtableClient:
         response = await self._rate_limited_request("GET", url, params=params)
         return response.get("records", [])
 
-    async def get_bill_policy_categories(self, bill_record_id: str) -> list[dict[str, Any]]:
+    async def get_bill_policy_categories(
+        self, bill_record_id: str
+    ) -> list[dict[str, Any]]:
         """Get all policy categories linked to a specific bill."""
-        filter_formula = f"FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0"
-        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+        filter_formula = (
+            f"FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0"
+        )
+        return await self.list_bill_policy_category_relationships(
+            filter_formula=filter_formula
+        )
 
-    async def get_policy_category_bills(self, policy_category_record_id: str) -> list[dict[str, Any]]:
+    async def get_policy_category_bills(
+        self, policy_category_record_id: str
+    ) -> list[dict[str, Any]]:
         """Get all bills linked to a specific policy category."""
-        filter_formula = f"FIND('{policy_category_record_id}', ARRAYJOIN({{PolicyCategory}})) > 0"
-        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+        filter_formula = (
+            f"FIND('{policy_category_record_id}', "
+            f"ARRAYJOIN({{PolicyCategory}})) > 0"
+        )
+        return await self.list_bill_policy_category_relationships(
+            filter_formula=filter_formula
+        )
 
-    async def update_bill_policy_category_relationship(self, record_id: str,
-                                                      relationship_data: dict[str, Any]) -> dict[str, Any]:
+    async def update_bill_policy_category_relationship(
+        self,
+        record_id: str,
+        relationship_data: dict[str, Any],
+    ) -> dict[str, Any]:
         """Update a bill-policy category relationship."""
         url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
         data = {
@@ -733,26 +836,42 @@ class AirtableClient:
         response = await self._rate_limited_request("PATCH", url, json=data)
         return response
 
-    async def delete_bill_policy_category_relationship(self, record_id: str) -> dict[str, Any]:
+    async def delete_bill_policy_category_relationship(
+        self, record_id: str
+    ) -> dict[str, Any]:
         """Delete a bill-policy category relationship."""
         url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
         return await self._rate_limited_request("DELETE", url)
 
-    async def find_bill_policy_category_relationship(self, bill_record_id: str,
-                                                    policy_category_record_id: str) -> dict[str, Any] | None:
+    async def find_bill_policy_category_relationship(
+        self,
+        bill_record_id: str,
+        policy_category_record_id: str,
+    ) -> dict[str, Any] | None:
         """Find existing relationship between a bill and policy category."""
-        filter_formula = f"AND(FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0, FIND('{policy_category_record_id}', ARRAYJOIN({{PolicyCategory}})) > 0)"
-        relationships = await self.list_bill_policy_category_relationships(filter_formula=filter_formula, max_records=1)
+        filter_formula = (
+            f"AND(FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0, "
+            f"FIND('{policy_category_record_id}', "
+            f"ARRAYJOIN({{PolicyCategory}})) > 0)"
+        )
+        relationships = await self.list_bill_policy_category_relationships(
+            filter_formula=filter_formula, max_records=1
+        )
 
         return relationships[0] if relationships else None
 
-    async def bulk_create_bill_policy_category_relationships(self, relationships: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Bulk create bill-policy category relationships (max 10 at a time due to Airtable limits)."""
+    async def bulk_create_bill_policy_category_relationships(
+        self, relationships: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Bulk create bill-policy category relationships.
+
+        Max 10 at a time due to Airtable limits.
+        """
         results = []
 
         # Process in batches of 10 (Airtable limit)
         for i in range(0, len(relationships), 10):
-            batch = relationships[i:i+10]
+            batch = relationships[i:i + 10]
 
             url = f"{self.base_url}/Bills_PolicyCategories"
             records_data = []
@@ -773,11 +892,19 @@ class AirtableClient:
                 # Handle relationship links
                 if "bill_record_id" in rel and rel["bill_record_id"]:
                     record_data["fields"]["Bill"] = [rel["bill_record_id"]]
-                if "policy_category_record_id" in rel and rel["policy_category_record_id"]:
-                    record_data["fields"]["PolicyCategory"] = [rel["policy_category_record_id"]]
+                if (
+                    "policy_category_record_id" in rel
+                    and rel["policy_category_record_id"]
+                ):
+                    record_data["fields"]["PolicyCategory"] = [
+                        rel["policy_category_record_id"]
+                    ]
 
                 # Remove None values
-                record_data["fields"] = {k: v for k, v in record_data["fields"].items() if v is not None}
+                record_data["fields"] = {
+                    k: v for k, v in record_data["fields"].items()
+                    if v is not None
+                }
                 records_data.append(record_data)
 
             data = {"records": records_data}
@@ -792,16 +919,28 @@ class AirtableClient:
         return results
 
     # Additional methods for Bills API routes
-    async def get_bills_by_policy_category(self, policy_category_id: str) -> list[dict[str, Any]]:
+    async def get_bills_by_policy_category(
+        self, policy_category_id: str
+    ) -> list[dict[str, Any]]:
         """Get all bills linked to a specific policy category by PolicyCategory_ID."""
         filter_formula = f"{{PolicyCategory_ID}} = '{policy_category_id}'"
-        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+        return await self.list_bill_policy_category_relationships(
+            filter_formula=filter_formula
+        )
 
-    async def get_policy_categories_by_bill(self, bill_id: str) -> list[dict[str, Any]]:
+    async def get_policy_categories_by_bill(
+        self, bill_id: str
+    ) -> list[dict[str, Any]]:
         """Get all policy categories linked to a specific bill by Bill_ID."""
         filter_formula = f"{{Bill_ID}} = '{bill_id}'"
-        return await self.list_bill_policy_category_relationships(filter_formula=filter_formula)
+        return await self.list_bill_policy_category_relationships(
+            filter_formula=filter_formula
+        )
 
-    async def list_bills_policy_categories(self, max_records: int = 1000) -> list[dict[str, Any]]:
+    async def list_bills_policy_categories(
+        self, max_records: int = 1000
+    ) -> list[dict[str, Any]]:
         """List all Bills-PolicyCategory relationships."""
-        return await self.list_bill_policy_category_relationships(max_records=max_records)
+        return await self.list_bill_policy_category_relationships(
+            max_records=max_records
+        )

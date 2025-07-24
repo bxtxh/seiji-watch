@@ -23,6 +23,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_table_schema(pat, base_id):
     """テーブルスキーマ取得"""
     url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -36,6 +37,7 @@ def get_table_schema(pat, base_id):
             if table.get('name') == "Bills (法案)":
                 return table
     return None
+
 
 def debug_field_deletion(pat, base_id, table_id, field_id, field_name):
     """フィールド削除のデバッグ"""
@@ -51,6 +53,7 @@ def debug_field_deletion(pat, base_id, table_id, field_id, field_name):
     print(f"  Response: {response.text}")
 
     return response.status_code == 200
+
 
 def main():
     print("🔍 フィールド削除エラー調査")
@@ -109,6 +112,7 @@ def main():
     print("  現在のPAT権限を確認してください")
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

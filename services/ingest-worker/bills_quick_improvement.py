@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def quick_bills_improvement():
     """Quick Bills table improvement with batch processing"""
 
@@ -102,7 +103,9 @@ async def quick_bills_improvement():
 
                 # 4. Stage filling
                 if not fields.get('Stage'):
-                    bill_status = updates.get('Bill_Status', fields.get('Bill_Status', ''))
+                    bill_status = updates.get(
+                        'Bill_Status', fields.get(
+                            'Bill_Status', ''))
                     if bill_status == '提出':
                         updates['Stage'] = 'Backlog'
                     elif bill_status == '審議中':
@@ -149,16 +152,23 @@ async def quick_bills_improvement():
                 verification_records = data.get('records', [])
 
                 # Calculate completeness
-                essential_fields = ["Title", "Bill_Status", "Category", "Priority", "Stage"]
+                essential_fields = [
+                    "Title",
+                    "Bill_Status",
+                    "Category",
+                    "Priority",
+                    "Stage"]
                 total_completeness = 0
 
                 for record in verification_records:
                     fields = record.get('fields', {})
-                    filled_count = sum(1 for field in essential_fields if fields.get(field))
+                    filled_count = sum(
+                        1 for field in essential_fields if fields.get(field))
                     completeness = filled_count / len(essential_fields)
                     total_completeness += completeness
 
-                avg_completeness = total_completeness / len(verification_records) if verification_records else 0
+                avg_completeness = total_completeness / \
+                    len(verification_records) if verification_records else 0
 
                 print(f"📈 Sample completeness: {avg_completeness:.1%}")
 
@@ -181,8 +191,7 @@ async def quick_bills_improvement():
         "type": "quick_improvement_batch_1",
         "records_processed": 20,
         "improvements": improvements,
-        "notes": "First batch of quick improvements focusing on essential field completion"
-    }
+        "notes": "First batch of quick improvements focusing on essential field completion"}
 
     filename = f"bills_quick_improvement_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(filename, 'w', encoding='utf-8') as f:

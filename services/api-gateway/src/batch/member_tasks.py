@@ -9,7 +9,8 @@ from shared.clients.airtable import AirtableClient
 logger = logging.getLogger(__name__)
 
 
-def calculate_member_voting_statistics(member_id: str, airtable_config: dict[str, str]) -> dict[str, Any]:
+def calculate_member_voting_statistics(
+        member_id: str, airtable_config: dict[str, str]) -> dict[str, Any]:
     """Calculate voting statistics for a member (synchronous task)."""
     try:
         # Initialize clients (sync versions needed for RQ)
@@ -60,7 +61,7 @@ def calculate_member_voting_statistics(member_id: str, airtable_config: dict[str
 
 
 def analyze_member_policy_stance(member_id: str, issue_tags: list[str],
-                               airtable_config: dict[str, str]) -> dict[str, Any]:
+                                 airtable_config: dict[str, str]) -> dict[str, Any]:
     """Analyze member's policy stance for specific issues (synchronous task)."""
     try:
         # Mock LLM analysis implementation
@@ -89,7 +90,8 @@ def analyze_member_policy_stance(member_id: str, issue_tags: list[str],
             "analysis_method": "llm_voting_pattern"
         }
 
-        logger.info(f"Analyzed policy stance for member {member_id} on {len(issue_tags)} issues")
+        logger.info(
+            f"Analyzed policy stance for member {member_id} on {len(issue_tags)} issues")
         return {
             "success": True,
             "member_id": member_id,
@@ -134,7 +136,7 @@ def update_member_cache(member_id: str, redis_config: dict[str, str]) -> dict[st
 
 
 def bulk_calculate_member_statistics(member_ids: list[str],
-                                   airtable_config: dict[str, str]) -> dict[str, Any]:
+                                     airtable_config: dict[str, str]) -> dict[str, Any]:
     """Calculate statistics for multiple members (batch task)."""
     try:
         results = []
@@ -142,7 +144,8 @@ def bulk_calculate_member_statistics(member_ids: list[str],
 
         for member_id in member_ids:
             try:
-                stats_result = calculate_member_voting_statistics(member_id, airtable_config)
+                stats_result = calculate_member_voting_statistics(
+                    member_id, airtable_config)
                 results.append(stats_result)
 
             except Exception as e:
@@ -162,7 +165,8 @@ def bulk_calculate_member_statistics(member_ids: list[str],
             "processed_at": datetime.now().isoformat()
         }
 
-        logger.info(f"Bulk calculated statistics for {len(member_ids)} members: {len(results)} successful, {len(errors)} failed")
+        logger.info(
+            f"Bulk calculated statistics for {len(member_ids)} members: {len(results)} successful, {len(errors)} failed")
         return {
             "success": True,
             "summary": summary
@@ -177,7 +181,7 @@ def bulk_calculate_member_statistics(member_ids: list[str],
 
 
 def generate_member_profile_report(member_id: str,
-                                 airtable_config: dict[str, str]) -> dict[str, Any]:
+                                   airtable_config: dict[str, str]) -> dict[str, Any]:
     """Generate comprehensive member profile report (synchronous task)."""
     try:
         # Mock comprehensive report generation
@@ -239,7 +243,7 @@ def generate_member_profile_report(member_id: str,
 
 
 def refresh_member_voting_data(member_id: str,
-                             airtable_config: dict[str, str]) -> dict[str, Any]:
+                               airtable_config: dict[str, str]) -> dict[str, Any]:
     """Refresh member voting data from source (synchronous task)."""
     try:
         # Mock data refresh implementation
@@ -255,7 +259,8 @@ def refresh_member_voting_data(member_id: str,
             "refreshed_at": datetime.now().isoformat()
         }
 
-        logger.info(f"Refreshed voting data for member {member_id}: {refresh_result['votes_updated']} votes updated")
+        logger.info(
+            f"Refreshed voting data for member {member_id}: {refresh_result['votes_updated']} votes updated")
         return {
             "success": True,
             "member_id": member_id,
@@ -274,13 +279,14 @@ def refresh_member_voting_data(member_id: str,
 class MemberTaskManager:
     """Manager for member-related batch tasks."""
 
-    def __init__(self, task_queue, airtable_config: dict[str, str], redis_config: dict[str, str]):
+    def __init__(self, task_queue,
+                 airtable_config: dict[str, str], redis_config: dict[str, str]):
         self.task_queue = task_queue
         self.airtable_config = airtable_config
         self.redis_config = redis_config
 
     def schedule_member_statistics_batch(self, member_ids: list[str],
-                                       priority: str = "normal") -> str:
+                                         priority: str = "normal") -> str:
         """Schedule batch calculation of member statistics."""
         from .task_queue import TaskPriority
 
@@ -297,7 +303,7 @@ class MemberTaskManager:
         return job_id
 
     def schedule_policy_stance_analysis(self, member_id: str, issue_tags: list[str],
-                                      priority: str = "normal") -> str:
+                                        priority: str = "normal") -> str:
         """Schedule policy stance analysis for a member."""
         from .task_queue import TaskPriority
 
@@ -314,7 +320,7 @@ class MemberTaskManager:
         return job_id
 
     def schedule_member_profile_report(self, member_id: str,
-                                     priority: str = "normal") -> str:
+                                       priority: str = "normal") -> str:
         """Schedule comprehensive profile report generation."""
         from .task_queue import TaskPriority
 
@@ -331,7 +337,7 @@ class MemberTaskManager:
         return job_id
 
     def schedule_voting_data_refresh(self, member_id: str,
-                                   priority: str = "high") -> str:
+                                     priority: str = "high") -> str:
         """Schedule voting data refresh for a member."""
         from .task_queue import TaskPriority
 

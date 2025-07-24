@@ -115,14 +115,18 @@ class ShugiinScraper:
             soup = BeautifulSoup(response.content, 'html.parser')
             bills = self._parse_bill_list(soup, session_number)
 
-            self.logger.info(f"Fetched {len(bills)} bills from Shugiin session {session_number}")
+            self.logger.info(
+                f"Fetched {len(bills)} bills from Shugiin session {session_number}")
             return bills
 
         except Exception as e:
             self.logger.error(f"Error fetching Shugiin bill list: {e}")
             return []
 
-    def _parse_bill_list(self, soup: BeautifulSoup, session_number: str) -> list[ShugiinBillData]:
+    def _parse_bill_list(
+            self,
+            soup: BeautifulSoup,
+            session_number: str) -> list[ShugiinBillData]:
         """Parse bill list from HTML"""
         bills = []
 
@@ -424,7 +428,9 @@ class ShugiinScraper:
         documents = []
 
         # Find PDF and document links
-        doc_links = soup.find_all('a', href=re.compile(r'\.(pdf|doc|docx|xls|xlsx)$', re.I))
+        doc_links = soup.find_all(
+            'a', href=re.compile(
+                r'\.(pdf|doc|docx|xls|xlsx)$', re.I))
 
         for link in doc_links:
             doc_url = urljoin(self.BASE_URL, link.get('href'))
@@ -701,7 +707,8 @@ class ShugiinScraper:
                 bill_data.supporting_members = details.get('supporting_members', [])
                 bill_data.sponsoring_ministry = details.get('sponsoring_ministry', '')
                 bill_data.committee_assignments = details.get('committee_info', {})
-                bill_data.voting_results = self._convert_voting_history_to_results(details.get('voting_history', []))
+                bill_data.voting_results = self._convert_voting_history_to_results(
+                    details.get('voting_history', []))
                 bill_data.amendments = details.get('amendments', [])
 
                 # Extract implementation date from schedule
@@ -793,7 +800,8 @@ class ShugiinScraper:
         import hashlib
         return hashlib.md5(url.encode()).hexdigest()[:8]
 
-    def _convert_voting_history_to_results(self, voting_history: list[dict[str, Any]]) -> dict[str, Any]:
+    def _convert_voting_history_to_results(
+            self, voting_history: list[dict[str, Any]]) -> dict[str, Any]:
         """Convert voting history to results format"""
         results = {}
 
@@ -849,7 +857,8 @@ class ShugiinScraper:
             return round(score / total_fields, 2)
         return 0.0
 
-    async def fetch_bills_async(self, session_numbers: list[str]) -> list[ShugiinBillData]:
+    async def fetch_bills_async(
+            self, session_numbers: list[str]) -> list[ShugiinBillData]:
         """Fetch bills from multiple sessions asynchronously"""
         all_bills = []
 
@@ -867,7 +876,8 @@ class ShugiinScraper:
 
         return all_bills
 
-    async def fetch_enhanced_bills_async(self, bill_urls: list[str]) -> list[ShugiinBillData]:
+    async def fetch_enhanced_bills_async(
+            self, bill_urls: list[str]) -> list[ShugiinBillData]:
         """Fetch enhanced bill data for multiple URLs asynchronously"""
         enhanced_bills = []
 

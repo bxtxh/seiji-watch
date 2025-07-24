@@ -19,10 +19,18 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field, validator
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'ingest-worker', 'src'))
-
 from services.airtable_issue_manager import AirtableIssueManager
 from services.discord_notification_bot import DiscordNotificationBot
+
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        '..',
+        '..',
+        'ingest-worker',
+        'src'))
+
 
 logger = logging.getLogger(__name__)
 
@@ -169,8 +177,8 @@ def extract_issue_changes(payload: AirtableWebhookPayload) -> list[dict[str, Any
 
 
 async def process_status_change(change: dict[str, Any],
-                              airtable_manager: AirtableIssueManager,
-                              discord_bot: DiscordNotificationBot) -> dict[str, Any]:
+                                airtable_manager: AirtableIssueManager,
+                                discord_bot: DiscordNotificationBot) -> dict[str, Any]:
     """Process a single status change event."""
     result = {
         'record_id': change['record_id'],
@@ -184,7 +192,8 @@ async def process_status_change(change: dict[str, Any],
         new_status = change['new_status']
         old_status = change.get('old_status')
 
-        logger.info(f"Processing status change for {record_id}: {old_status} -> {new_status}")
+        logger.info(
+            f"Processing status change for {record_id}: {old_status} -> {new_status}")
 
         # Get the full issue record for context
         issue_record = await airtable_manager.get_issue_record(record_id)
@@ -213,9 +222,9 @@ async def process_status_change(change: dict[str, Any],
                 await discord_bot.send_custom_notification(
                     title="🎯 高品質イシューが承認されました",
                     message=f"品質スコア {issue_record.quality_score:.2f} のイシューが承認されました:\n\n"
-                           f"**Level 1:** {issue_record.label_lv1}\n"
-                           f"**Level 2:** {issue_record.label_lv2}\n"
-                           f"**関連法案:** {issue_record.source_bill_id}",
+                    f"**Level 1:** {issue_record.label_lv1}\n"
+                    f"**Level 2:** {issue_record.label_lv2}\n"
+                    f"**関連法案:** {issue_record.source_bill_id}",
                     color=0x00ff00
                 )
                 result['actions_taken'].append('notification_sent')
@@ -303,7 +312,10 @@ async def handle_issue_status_changes(
             logger.warning("Webhook request missing signature header")
             raise HTTPException(status_code=401, detail="Missing signature")
 
-        if not verify_webhook_signature(raw_payload, signature, webhook_config.webhook_secret):
+        if not verify_webhook_signature(
+                raw_payload,
+                signature,
+                webhook_config.webhook_secret):
             logger.error("Webhook signature verification failed")
             raise HTTPException(status_code=401, detail="Invalid signature")
 
@@ -317,8 +329,11 @@ async def handle_issue_status_changes(
 
         # Validate timestamp (prevent replay attacks)
         try:
-            webhook_time = datetime.fromisoformat(payload.timestamp.replace('Z', '+00:00'))
-            time_diff = abs((datetime.now().astimezone() - webhook_time).total_seconds())
+            webhook_time = datetime.fromisoformat(
+                payload.timestamp.replace('Z', '+00:00'))
+            time_diff = abs(
+                (datetime.now().astimezone() -
+                 webhook_time).total_seconds())
 
             if time_diff > webhook_config.timestamp_tolerance:
                 logger.warning(f"Webhook timestamp too old: {time_diff} seconds")
@@ -328,18 +343,16 @@ async def handle_issue_status_changes(
             raise HTTPException(status_code=400, detail="Invalid timestamp")
 
         # Log webhook receipt
-        logger.info(f"Received Airtable webhook from {client_ip}: {payload.webhook.get('id', 'unknown')}")
+        logger.info(
+            f"Received Airtable webhook from {client_ip}: {payload.webhook.get('id', 'unknown')}")
 
         # Extract issue changes
         changes = extract_issue_changes(payload)
 
         if not changes:
             return WebhookProcessingResult(
-                success=True,
-                processed_changes=0,
-                notifications_sent=0,
-                processing_time_ms=int((datetime.now() - start_time).total_seconds() * 1000)
-            )
+                success=True, processed_changes=0, notifications_sent=0, processing_time_ms=int(
+                    (datetime.now() - start_time).total_seconds() * 1000))
 
         # Process changes in background
         background_tasks.add_task(
@@ -366,8 +379,8 @@ async def handle_issue_status_changes(
 
 
 async def process_changes_background(changes: list[dict[str, Any]],
-                                   airtable_manager: AirtableIssueManager,
-                                   discord_bot: DiscordNotificationBot):
+                                     airtable_manager: AirtableIssueManager,
+                                     discord_bot: DiscordNotificationBot):
     """Process webhook changes in background."""
     try:
         results = []
@@ -385,8 +398,9 @@ async def process_changes_background(changes: list[dict[str, Any]],
         successful_changes = sum(1 for r in results if r['success'])
         total_changes = len(results)
 
-        logger.info(f"Background processing complete: {successful_changes}/{total_changes} successful, "
-                   f"{notifications_sent} notifications sent")
+        logger.info(
+            f"Background processing complete: {successful_changes}/{total_changes} successful, "
+            f"{notifications_sent} notifications sent")
 
     except Exception as e:
         logger.error(f"Background processing error: {e}")
@@ -447,10 +461,8 @@ async def webhook_health_check():
             "components": {
                 "airtable_manager": "healthy" if airtable_healthy else "unhealthy",
                 "discord_bot": "healthy" if discord_healthy else "unhealthy",
-                "webhook_config": "healthy" if webhook_config.webhook_secret else "warning"
-            },
-            "timestamp": datetime.now().isoformat()
-        }
+                "webhook_config": "healthy" if webhook_config.webhook_secret else "warning"},
+            "timestamp": datetime.now().isoformat()}
 
     except Exception as e:
         logger.error(f"Webhook health check failed: {e}")

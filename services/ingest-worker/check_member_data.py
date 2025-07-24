@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def check_member_data():
     """Check current member data quality"""
 
@@ -62,7 +63,8 @@ async def check_member_data():
                     else:
                         real_count += 1
 
-                    print(f"  {i:2d}. {status} | {name} ({name_kana}) | {house} | {constituency}")
+                    print(
+                        f"  {i:2d}. {status} | {name} ({name_kana}) | {house} | {constituency}")
 
                 print("\n📊 データ分析 (サンプル10件):")
                 print(f"  🤖 ダミーデータ: {dummy_count}件")
@@ -87,7 +89,8 @@ async def check_member_data():
                 total_real = len(records) - total_dummy
 
                 print("📊 全体統計:")
-                print(f"  🤖 ダミーデータ: {total_dummy}件 ({total_dummy/len(records)*100:.1f}%)")
+                print(
+                    f"  🤖 ダミーデータ: {total_dummy}件 ({total_dummy/len(records)*100:.1f}%)")
                 print(f"  👤 実データ: {total_real}件 ({total_real/len(records)*100:.1f}%)")
 
                 if total_dummy > total_real:

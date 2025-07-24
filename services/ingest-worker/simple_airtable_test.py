@@ -1,4 +1,4 @@
-#\!/usr/bin/env python3
+# \!/usr/bin/env python3
 """Simple Airtable connection test without SQLAlchemy dependencies."""
 
 import asyncio
@@ -8,6 +8,7 @@ import aiohttp
 
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
+
 
 async def test_airtable_tables():
     """Test access to different Airtable tables."""
@@ -50,6 +51,7 @@ async def test_airtable_tables():
 
             except Exception as e:
                 print(f"❌ {table_name}: Error - {e}")
+
 
 async def main():
     """Main execution."""

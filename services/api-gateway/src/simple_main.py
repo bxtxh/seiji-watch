@@ -27,19 +27,32 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization",
-        "content-language", "content-type", "x-requested-with",
-        "x-csrf-token", "x-request-id"
-    ],
+        "accept",
+        "accept-language",
+        "authorization",
+        "content-language",
+        "content-type",
+        "x-requested-with",
+        "x-csrf-token",
+        "x-request-id"],
     expose_headers=["X-Total-Count"],
-    max_age=600
-)
+    max_age=600)
 
 # Root endpoint
+
+
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -50,6 +63,8 @@ async def root():
     }
 
 # Health check endpoint
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -61,6 +76,8 @@ async def health_check():
     }
 
 # Mock Issue Category API endpoints
+
+
 @app.get("/api/issues/categories")
 async def get_categories(max_records: int = 100):
     """Get all issue categories (mock data)."""
@@ -105,6 +122,7 @@ async def get_categories(max_records: int = 100):
     except Exception as e:
         logger.error(f"Failed to get categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch categories")
+
 
 @app.get("/api/issues/categories/tree")
 async def get_category_tree():
@@ -173,6 +191,7 @@ async def get_category_tree():
         logger.error(f"Failed to get category tree: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category tree")
 
+
 @app.get("/api/issues/categories/{category_id}")
 async def get_category_detail(category_id: str):
     """Get specific category details (mock data)."""
@@ -186,13 +205,12 @@ async def get_category_detail(category_id: str):
                 "Title_JA": "マクロ経済学",
                 "Title_EN": "Macroeconomics",
                 "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野です。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
-                "Is_Seed": True
-            }
-        }
+                "Is_Seed": True}}
         return mock_category
     except Exception as e:
         logger.error(f"Failed to get category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category")
+
 
 @app.get("/api/issues/categories/{category_id}/children")
 async def get_category_children(category_id: str):
@@ -228,6 +246,7 @@ async def get_category_children(category_id: str):
         logger.error(f"Failed to get children for category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category children")
 
+
 @app.get("/api/bills")
 async def get_bills(max_records: int = 100, category: str | None = None):
     """Get bills, optionally filtered by category (mock data)."""
@@ -251,7 +270,9 @@ async def get_bills(max_records: int = 100, category: str | None = None):
 
         # Filter by category if specified
         if category:
-            mock_bills = [bill for bill in mock_bills if category in bill["fields"].get("Category", "")]
+            mock_bills = [
+                bill for bill in mock_bills if category in bill["fields"].get(
+                    "Category", "")]
 
         return mock_bills
     except Exception as e:
@@ -259,6 +280,8 @@ async def get_bills(max_records: int = 100, category: str | None = None):
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
 
 # Global exception handler
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""

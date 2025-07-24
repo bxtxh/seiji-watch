@@ -98,7 +98,7 @@ class LimitedScrapeCoordinator:
             start_date=start_date,
             end_date=end_date,
             max_bills=200,          # Increased for full month
-            max_voting_sessions=50, # Increased for full month
+            max_voting_sessions=50,  # Increased for full month
             max_speeches=500,       # Increased for full month
             enable_stt=True,        # Enable STT for production
             enable_embeddings=True  # Enable embeddings for search
@@ -116,8 +116,10 @@ class LimitedScrapeCoordinator:
 
         start_time = datetime.now()
         self.logger.info("Starting limited scraping pipeline")
-        self.logger.info(f"Target period: {target.start_date.date()} to {target.end_date.date()}")
-        self.logger.info(f"Limits: {target.max_bills} bills, {target.max_voting_sessions} sessions, {target.max_speeches} speeches")
+        self.logger.info(
+            f"Target period: {target.start_date.date()} to {target.end_date.date()}")
+        self.logger.info(
+            f"Limits: {target.max_bills} bills, {target.max_voting_sessions} sessions, {target.max_speeches} speeches")
         self.logger.info(f"Dry run: {dry_run}")
 
         result = PipelineResult(
@@ -196,9 +198,9 @@ class LimitedScrapeCoordinator:
             ingest_metrics.record_pipeline_execution(
                 pipeline_name="limited_scraping",
                 duration_seconds=result.total_time,
-                items_processed=result.bills_collected + result.voting_sessions_collected,
-                success=result.success
-            )
+                items_processed=result.bills_collected +
+                result.voting_sessions_collected,
+                success=result.success)
 
             self.logger.info("Limited scraping pipeline completed:")
             self.logger.info(f"  Success: {result.success}")
@@ -220,7 +222,8 @@ class LimitedScrapeCoordinator:
             self.logger.error(f"Limited scraping pipeline failed: {e}")
             return result
 
-    async def _collect_bills_limited(self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
+    async def _collect_bills_limited(
+            self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
         """Collect limited bill data with volume controls"""
         try:
             self.logger.info(f"Fetching up to {target.max_bills} bills...")
@@ -235,7 +238,8 @@ class LimitedScrapeCoordinator:
             # Apply volume limit
             limited_bills = bills_data[:target.max_bills]
 
-            self.logger.info(f"Collected {len(limited_bills)} bills (limited from {len(bills_data)})")
+            self.logger.info(
+                f"Collected {len(limited_bills)} bills (limited from {len(bills_data)})")
 
             # TODO: Store in Airtable
             # For now, just log the data
@@ -256,10 +260,12 @@ class LimitedScrapeCoordinator:
                 'errors': [f"Bill collection error: {str(e)}"]
             }
 
-    async def _collect_voting_data_limited(self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
+    async def _collect_voting_data_limited(
+            self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
         """Collect limited voting data with volume controls"""
         try:
-            self.logger.info(f"Fetching up to {target.max_voting_sessions} voting sessions...")
+            self.logger.info(
+                f"Fetching up to {target.max_voting_sessions} voting sessions...")
 
             if dry_run:
                 self.logger.info("DRY RUN: Would fetch voting data from Diet website")
@@ -272,12 +278,15 @@ class LimitedScrapeCoordinator:
             # For now, apply volume limit
             limited_sessions = voting_sessions[:target.max_voting_sessions]
 
-            self.logger.info(f"Collected {len(limited_sessions)} voting sessions (limited from {len(voting_sessions)})")
+            self.logger.info(
+                f"Collected {len(limited_sessions)} voting sessions (limited from {len(voting_sessions)})")
 
             # TODO: Store in Airtable
             # For now, just log the data
-            for i, session in enumerate(limited_sessions[:2]):  # Log first 2 for verification
-                self.logger.debug(f"Session {i+1}: {session.bill_number} - {session.bill_title[:50]}...")
+            for i, session in enumerate(
+                    limited_sessions[:2]):  # Log first 2 for verification
+                self.logger.debug(
+                    f"Session {i+1}: {session.bill_number} - {session.bill_title[:50]}...")
                 self.logger.debug(f"  Votes: {len(session.vote_records)} records")
 
             return {
@@ -294,11 +303,15 @@ class LimitedScrapeCoordinator:
                 'errors': [f"Voting collection error: {str(e)}"]
             }
 
-    async def _process_speeches_limited(self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
+    async def _process_speeches_limited(
+            self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
         """Process limited speech data with STT"""
         try:
             if not self.whisper_client:
-                return {'count': 0, 'transcriptions': 0, 'errors': ['Whisper client not available']}
+                return {
+                    'count': 0,
+                    'transcriptions': 0,
+                    'errors': ['Whisper client not available']}
 
             self.logger.info(f"Processing up to {target.max_speeches} speeches...")
 
@@ -324,7 +337,8 @@ class LimitedScrapeCoordinator:
                 'errors': [f"Speech processing error: {str(e)}"]
             }
 
-    async def _generate_embeddings_limited(self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
+    async def _generate_embeddings_limited(
+            self, target: ScrapeTarget, dry_run: bool) -> dict[str, Any]:
         """Generate limited embeddings for collected content"""
         try:
             if not self.vector_client:
@@ -361,7 +375,8 @@ class LimitedScrapeCoordinator:
                     }
 
                     # Store in Weaviate
-                    uuid = self.vector_client.store_bill_embedding(test_metadata, embedding)
+                    uuid = self.vector_client.store_bill_embedding(
+                        test_metadata, embedding)
                     if uuid:
                         embeddings_generated += 1
                         self.logger.debug(f"Generated embedding {i+1}: {uuid}")

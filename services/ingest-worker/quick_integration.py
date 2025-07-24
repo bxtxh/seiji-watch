@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def main():
     print("⚡ 迅速50件統合")
 
@@ -64,7 +65,7 @@ def main():
 
             time.sleep(0.1)  # 高速処理
 
-        except:
+        except Exception:
             pass
 
     print(f"\n📊 結果: {success}/50 成功")
@@ -72,6 +73,7 @@ def main():
     print("✅ 日次自動更新システム動作確認済み")
 
     return 0
+
 
 if __name__ == "__main__":
     main()

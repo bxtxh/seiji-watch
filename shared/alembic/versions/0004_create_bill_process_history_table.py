@@ -39,32 +39,51 @@ def upgrade():
     )
 
     # Create indexes for better query performance
-    op.create_index('idx_bill_process_history_bill_id', 'bill_process_history', ['bill_id'])
+    op.create_index(
+        'idx_bill_process_history_bill_id',
+        'bill_process_history',
+        ['bill_id'])
     op.create_index('idx_bill_process_history_stage', 'bill_process_history', ['stage'])
     op.create_index('idx_bill_process_history_house', 'bill_process_history', ['house'])
-    op.create_index('idx_bill_process_history_action_date', 'bill_process_history', ['action_date'])
-    op.create_index('idx_bill_process_history_action_type', 'bill_process_history', ['action_type'])
+    op.create_index(
+        'idx_bill_process_history_action_date',
+        'bill_process_history',
+        ['action_date'])
+    op.create_index(
+        'idx_bill_process_history_action_type',
+        'bill_process_history',
+        ['action_type'])
 
     # Create composite index for common queries
     op.create_index('idx_bill_process_history_bill_stage_date', 'bill_process_history',
-                   ['bill_id', 'stage', 'action_date'])
+                    ['bill_id', 'stage', 'action_date'])
     op.create_index('idx_bill_process_history_house_date', 'bill_process_history',
-                   ['house', 'action_date'])
+                    ['house', 'action_date'])
 
     # Create GIN index for JSONB details field
     op.create_index('idx_bill_process_history_details_gin', 'bill_process_history',
-                   ['details'], postgresql_using='gin')
+                    ['details'], postgresql_using='gin')
 
 
 def downgrade():
     """Drop bill_process_history table"""
 
     # Drop indexes
-    op.drop_index('idx_bill_process_history_details_gin', table_name='bill_process_history')
-    op.drop_index('idx_bill_process_history_house_date', table_name='bill_process_history')
-    op.drop_index('idx_bill_process_history_bill_stage_date', table_name='bill_process_history')
-    op.drop_index('idx_bill_process_history_action_type', table_name='bill_process_history')
-    op.drop_index('idx_bill_process_history_action_date', table_name='bill_process_history')
+    op.drop_index(
+        'idx_bill_process_history_details_gin',
+        table_name='bill_process_history')
+    op.drop_index(
+        'idx_bill_process_history_house_date',
+        table_name='bill_process_history')
+    op.drop_index(
+        'idx_bill_process_history_bill_stage_date',
+        table_name='bill_process_history')
+    op.drop_index(
+        'idx_bill_process_history_action_type',
+        table_name='bill_process_history')
+    op.drop_index(
+        'idx_bill_process_history_action_date',
+        table_name='bill_process_history')
     op.drop_index('idx_bill_process_history_house', table_name='bill_process_history')
     op.drop_index('idx_bill_process_history_stage', table_name='bill_process_history')
     op.drop_index('idx_bill_process_history_bill_id', table_name='bill_process_history')

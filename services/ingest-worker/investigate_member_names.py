@@ -12,7 +12,8 @@ from typing import Any
 import requests
 
 
-def get_airtable_records(base_id: str, table_name: str, pat: str) -> list[dict[str, Any]]:
+def get_airtable_records(base_id: str, table_name: str,
+                         pat: str) -> list[dict[str, Any]]:
     """Fetch all records from Airtable table."""
     url = f"https://api.airtable.com/v0/{base_id}/{table_name}"
     headers = {
@@ -103,11 +104,13 @@ def print_analysis_report(analysis: dict[str, Any]):
     print("=" * 80)
 
     print(f"\nTOTAL RECORDS: {analysis['total_records']}")
-    print(f"RECORDS WITH TRAILING NUMBERS: {len(analysis['records_with_trailing_numbers'])}")
+    print(
+        f"RECORDS WITH TRAILING NUMBERS: {len(analysis['records_with_trailing_numbers'])}")
     print(f"CLEAN RECORDS: {len(analysis['clean_records'])}")
 
     if analysis['records_with_trailing_numbers']:
-        print(f"\nPERCENTAGE AFFECTED: {len(analysis['records_with_trailing_numbers']) / analysis['total_records'] * 100:.1f}%")
+        print(
+            f"\nPERCENTAGE AFFECTED: {len(analysis['records_with_trailing_numbers']) / analysis['total_records'] * 100:.1f}%")
 
         print("\n" + "=" * 40)
         print("EXAMPLES OF PROBLEMATIC NAMES")
@@ -115,10 +118,12 @@ def print_analysis_report(analysis: dict[str, Any]):
 
         # Show first 10 examples
         for i, record in enumerate(analysis['records_with_trailing_numbers'][:10]):
-            print(f"{i+1:2d}. '{record['full_name']}' -> '{record['base_name']}' (number: {record['trailing_number']})")
+            print(
+                f"{i+1:2d}. '{record['full_name']}' -> '{record['base_name']}' (number: {record['trailing_number']})")
 
         if len(analysis['records_with_trailing_numbers']) > 10:
-            print(f"    ... and {len(analysis['records_with_trailing_numbers']) - 10} more")
+            print(
+                f"    ... and {len(analysis['records_with_trailing_numbers']) - 10} more")
 
         print("\n" + "=" * 40)
         print("NUMBER DISTRIBUTION")

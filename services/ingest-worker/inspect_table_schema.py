@@ -12,6 +12,7 @@ import aiohttp
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 
+
 async def inspect_table_schema(table_name: str, table_id: str):
     """Inspect table schema using metadata API."""
 
@@ -72,6 +73,7 @@ async def inspect_table_schema(table_name: str, table_id: str):
         except Exception as e:
             print(f"❌ Error inspecting schema: {e}")
             return False
+
 
 async def main():
     """Main execution."""

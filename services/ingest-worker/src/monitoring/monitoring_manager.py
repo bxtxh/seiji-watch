@@ -52,14 +52,18 @@ class MonitoringConfiguration:
 class MonitoringManager:
     """Central monitoring manager"""
 
-    def __init__(self, database_url: str, config: MonitoringConfiguration | None = None):
+    def __init__(
+            self,
+            database_url: str,
+            config: MonitoringConfiguration | None = None):
         self.database_url = database_url
         self.config = config or MonitoringConfiguration()
         self.logger = logging.getLogger(__name__)
 
         # Initialize services
         self.dashboard = DataQualityDashboard(database_url)
-        self.monitoring_service = MonitoringService(database_url, self._create_monitoring_config())
+        self.monitoring_service = MonitoringService(
+            database_url, self._create_monitoring_config())
         self.migration_service = DataMigrationService(database_url)
 
         # Service state
@@ -146,8 +150,7 @@ class MonitoringManager:
                 condition=f"overall_quality_score < {self.config.quality_score_threshold}",
                 threshold=self.config.quality_score_threshold,
                 evaluation_window=10,
-                notification_channels=self._get_enabled_channels()
-            )
+                notification_channels=self._get_enabled_channels())
 
             self.monitoring_service.add_alert_rule(quality_rule)
 
@@ -161,8 +164,7 @@ class MonitoringManager:
                 condition=f"data_completeness < {self.config.completeness_threshold}",
                 threshold=self.config.completeness_threshold,
                 evaluation_window=15,
-                notification_channels=self._get_enabled_channels()
-            )
+                notification_channels=self._get_enabled_channels())
 
             self.monitoring_service.add_alert_rule(completeness_rule)
 
@@ -176,8 +178,7 @@ class MonitoringManager:
                 condition=f"processing_error_rate > {self.config.error_rate_threshold}",
                 threshold=self.config.error_rate_threshold,
                 evaluation_window=5,
-                notification_channels=self._get_enabled_channels()
-            )
+                notification_channels=self._get_enabled_channels())
 
             self.monitoring_service.add_alert_rule(error_rule)
 
@@ -199,7 +200,8 @@ class MonitoringManager:
 
         return channels
 
-    def get_dashboard_data(self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
+    def get_dashboard_data(
+            self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
         """Get dashboard data"""
         try:
             return self.dashboard.get_dashboard_data(dashboard_id)
@@ -264,7 +266,8 @@ class MonitoringManager:
                         quality_metrics[metric['name']] = metric['value']
 
             # Calculate overall health score
-            overall_health = self._calculate_overall_health(health_status, quality_metrics)
+            overall_health = self._calculate_overall_health(
+                health_status, quality_metrics)
 
             return {
                 'overall_health': overall_health,
@@ -274,9 +277,9 @@ class MonitoringManager:
                 'service_status': {
                     'is_running': self.is_running,
                     'start_time': self.start_time.isoformat() if self.start_time else None,
-                    'uptime_seconds': (datetime.now() - self.start_time).total_seconds() if self.start_time else 0
-                }
-            }
+                    'uptime_seconds': (
+                        datetime.now() -
+                        self.start_time).total_seconds() if self.start_time else 0}}
 
         except Exception as e:
             self.logger.error(f"Error getting system health: {e}")
@@ -288,7 +291,8 @@ class MonitoringManager:
                 'service_status': {'is_running': False}
             }
 
-    def _calculate_overall_health(self, health_status: dict[str, Any], quality_metrics: dict[str, Any]) -> float:
+    def _calculate_overall_health(
+            self, health_status: dict[str, Any], quality_metrics: dict[str, Any]) -> float:
         """Calculate overall system health score"""
         try:
             health_score = 0.0
@@ -306,7 +310,13 @@ class MonitoringManager:
                 accuracy = quality_metrics.get('Data Accuracy', 0)
 
                 # Weighted average of quality metrics
-                quality_weight = (quality_score * 0.4 + completeness * 0.3 + accuracy * 0.3)
+                quality_weight = (
+                    quality_score *
+                    0.4 +
+                    completeness *
+                    0.3 +
+                    accuracy *
+                    0.3)
                 health_score += quality_weight * 0.7
                 total_weight += 0.7
 
@@ -320,10 +330,12 @@ class MonitoringManager:
         """Get performance metrics for the specified period"""
         try:
             # Get migration statistics
-            migration_stats = self.migration_service.get_migration_statistics(hours // 24)
+            migration_stats = self.migration_service.get_migration_statistics(
+                hours // 24)
 
             # Get completion processor statistics
-            completion_stats = self.migration_service.completion_processor.get_completion_statistics(hours // 24)
+            completion_stats = self.migration_service.completion_processor.get_completion_statistics(
+                hours // 24)
 
             # Get dashboard metrics
             dashboard_data = self.dashboard.get_dashboard_data()
@@ -391,33 +403,41 @@ class MonitoringManager:
                 'error': str(e)
             }
 
-    def _generate_audit_recommendations(self, quality_metrics: dict[str, Any]) -> list[str]:
+    def _generate_audit_recommendations(
+            self, quality_metrics: dict[str, Any]) -> list[str]:
         """Generate recommendations based on quality metrics"""
         recommendations = []
 
         try:
             # Check overall quality score
-            overall_score = quality_metrics.get('Overall Quality Score', {}).get('value', 0)
+            overall_score = quality_metrics.get(
+                'Overall Quality Score', {}).get(
+                'value', 0)
             if overall_score < 0.7:
-                recommendations.append("Consider running data completion migration to improve overall quality")
+                recommendations.append(
+                    "Consider running data completion migration to improve overall quality")
 
             # Check completeness
             completeness = quality_metrics.get('Data Completeness', {}).get('value', 0)
             if completeness < 0.8:
-                recommendations.append("Run data completion processor to fill missing bill information")
+                recommendations.append(
+                    "Run data completion processor to fill missing bill information")
 
             # Check accuracy
             accuracy = quality_metrics.get('Data Accuracy', {}).get('value', 0)
             if accuracy < 0.9:
-                recommendations.append("Review data validation rules and fix accuracy issues")
+                recommendations.append(
+                    "Review data validation rules and fix accuracy issues")
 
             # Check consistency
             consistency = quality_metrics.get('Data Consistency', {}).get('value', 0)
             if consistency < 0.85:
-                recommendations.append("Investigate data consistency issues between sources")
+                recommendations.append(
+                    "Investigate data consistency issues between sources")
 
             if not recommendations:
-                recommendations.append("Data quality is good - maintain current monitoring")
+                recommendations.append(
+                    "Data quality is good - maintain current monitoring")
 
         except Exception as e:
             self.logger.error(f"Error generating recommendations: {e}")
@@ -436,7 +456,8 @@ class MonitoringManager:
             # Restart monitoring service with new configuration
             if self.is_running:
                 self.monitoring_service.stop_monitoring()
-                self.monitoring_service = MonitoringService(self.database_url, self._create_monitoring_config())
+                self.monitoring_service = MonitoringService(
+                    self.database_url, self._create_monitoring_config())
                 self.monitoring_service.start_monitoring()
                 self._setup_custom_alert_rules()
 
@@ -453,13 +474,10 @@ class MonitoringManager:
             return {
                 'monitoring_config': self.config.to_dict(),
                 'alert_rules': [
-                    rule.to_dict() for rule in self.monitoring_service.alert_rules.values()
-                ],
+                    rule.to_dict() for rule in self.monitoring_service.alert_rules.values()],
                 'health_checks': [
-                    check.to_dict() for check in self.monitoring_service.health_checks.values()
-                ],
-                'exported_at': datetime.now().isoformat()
-            }
+                    check.to_dict() for check in self.monitoring_service.health_checks.values()],
+                'exported_at': datetime.now().isoformat()}
 
         except Exception as e:
             self.logger.error(f"Error exporting configuration: {e}")
@@ -472,12 +490,12 @@ class MonitoringManager:
                 'manager_status': {
                     'is_running': self.is_running,
                     'start_time': self.start_time.isoformat() if self.start_time else None,
-                    'uptime_seconds': (datetime.now() - self.start_time).total_seconds() if self.start_time else 0
-                },
+                    'uptime_seconds': (
+                        datetime.now() -
+                        self.start_time).total_seconds() if self.start_time else 0},
                 'monitoring_service_status': self.monitoring_service.get_service_status(),
                 'dashboard_status': self.dashboard.get_dashboard_status(),
-                'configuration': self.config.to_dict()
-            }
+                'configuration': self.config.to_dict()}
 
         except Exception as e:
             self.logger.error(f"Error getting service status: {e}")
@@ -493,7 +511,8 @@ class MonitoringManager:
         try:
             retention_days = retention_days or self.config.data_retention_days
 
-            self.logger.info(f"Cleaning up monitoring data older than {retention_days} days")
+            self.logger.info(
+                f"Cleaning up monitoring data older than {retention_days} days")
 
             # Clean up migration service data
             self.migration_service.cleanup_old_reports(retention_days)

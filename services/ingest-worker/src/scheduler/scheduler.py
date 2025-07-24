@@ -131,13 +131,15 @@ class IngestionScheduler:
             try:
                 self.publisher_client = pubsub_v1.PublisherClient()
                 self.scheduler_client = scheduler_v1.CloudSchedulerClient()
-                logger.info(f"Initialized Google Cloud clients for project: {self.config.project_id}")
+                logger.info(
+                    f"Initialized Google Cloud clients for project: {self.config.project_id}")
             except Exception as e:
                 logger.warning(f"Failed to initialize Google Cloud clients: {e}")
                 logger.warning("Scheduler will operate in local mode only")
         else:
             if not GOOGLE_CLOUD_AVAILABLE:
-                logger.warning("Google Cloud libraries not available, running in local mode")
+                logger.warning(
+                    "Google Cloud libraries not available, running in local mode")
             else:
                 logger.warning("No project ID provided, running in local mode")
 
@@ -147,6 +149,7 @@ class IngestionScheduler:
     def _create_default_tasks(self) -> list[ScheduledTask]:
         """Create default scheduled tasks configuration"""
         return [
+
             # Daily bill scraping at 7 AM JST
             ScheduledTask(
                 task_id="daily_bill_scraping",
@@ -196,6 +199,7 @@ class IngestionScheduler:
                 timeout_minutes=5,
                 payload={"check_dependencies": True}
             )
+
         ]
 
     async def setup_cloud_scheduler(self) -> bool:
@@ -218,7 +222,8 @@ class IngestionScheduler:
                 if task.enabled:
                     await self._create_scheduler_job(task)
 
-            logger.info(f"Successfully set up {len([t for t in self.scheduled_tasks if t.enabled])} Cloud Scheduler jobs")
+            logger.info(
+                f"Successfully set up {len([t for t in self.scheduled_tasks if t.enabled])} Cloud Scheduler jobs")
             return True
 
         except Exception as e:
@@ -352,7 +357,8 @@ class IngestionScheduler:
             logger.error(f"Failed to handle Pub/Sub message: {e}")
             return False
 
-    async def _execute_task(self, task_type: TaskType, payload: dict[str, Any]) -> dict[str, Any]:
+    async def _execute_task(self, task_type: TaskType,
+                            payload: dict[str, Any]) -> dict[str, Any]:
         """
         Execute a specific task type with the given payload
 
@@ -418,7 +424,8 @@ class IngestionScheduler:
             "execution_time": datetime.now().isoformat()
         }
 
-    async def _execute_batch_transcribe(self, payload: dict[str, Any]) -> dict[str, Any]:
+    async def _execute_batch_transcribe(
+            self, payload: dict[str, Any]) -> dict[str, Any]:
         """Execute batch transcription task"""
         logger.info("Executing scheduled batch transcription task")
 
@@ -428,7 +435,8 @@ class IngestionScheduler:
         batch_size = payload.get("batch_size", 10)
         max_duration_hours = payload.get("max_duration_hours", 4)
 
-        logger.info(f"Batch transcription: max {batch_size} items, max {max_duration_hours} hours")
+        logger.info(
+            f"Batch transcription: max {batch_size} items, max {max_duration_hours} hours")
 
         return {
             "task_type": "batch_transcribe",
@@ -438,7 +446,8 @@ class IngestionScheduler:
             "execution_time": datetime.now().isoformat()
         }
 
-    async def _execute_batch_embeddings(self, payload: dict[str, Any]) -> dict[str, Any]:
+    async def _execute_batch_embeddings(
+            self, payload: dict[str, Any]) -> dict[str, Any]:
         """Execute batch embedding generation task"""
         logger.info("Executing scheduled batch embedding generation task")
 
@@ -448,7 +457,8 @@ class IngestionScheduler:
         batch_size = payload.get("batch_size", 50)
         regenerate_existing = payload.get("regenerate_existing", False)
 
-        logger.info(f"Batch embeddings: max {batch_size} items, regenerate: {regenerate_existing}")
+        logger.info(
+            f"Batch embeddings: max {batch_size} items, regenerate: {regenerate_existing}")
 
         return {
             "task_type": "batch_embeddings",
@@ -493,7 +503,8 @@ class IngestionScheduler:
         try:
             import aiohttp
             async with aiohttp.ClientSession() as session:
-                async with session.get("https://www.sangiin.go.jp/", timeout=10) as response:
+                async with session.get(
+                        "https://www.sangiin.go.jp/", timeout=10) as response:
                     dependencies["diet_website"] = response.status == 200
         except Exception:
             dependencies["diet_website"] = False

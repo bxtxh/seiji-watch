@@ -113,7 +113,8 @@ class AnomalyDetector:
     def __init__(self, window_size: int = 100, sensitivity: float = 2.0):
         self.window_size = window_size
         self.sensitivity = sensitivity  # Standard deviations for outlier detection
-        self.metric_history: dict[str, deque] = defaultdict(lambda: deque(maxlen=window_size))
+        self.metric_history: dict[str, deque] = defaultdict(
+            lambda: deque(maxlen=window_size))
 
     def add_value(self, metric_name: str, value: float):
         """Add a metric value to the history."""
@@ -296,10 +297,13 @@ class AlertManager:
     def suppress_rule(self, rule_name: str, duration_minutes: int = 60):
         """Temporarily suppress an alert rule."""
         if rule_name in self.rules:
-            self.suppressed_rules[rule_name] = datetime.utcnow() + timedelta(minutes=duration_minutes)
-            log_info(f"Suppressed alert rule {rule_name} for {duration_minutes} minutes")
+            self.suppressed_rules[rule_name] = datetime.utcnow(
+            ) + timedelta(minutes=duration_minutes)
+            log_info(
+                f"Suppressed alert rule {rule_name} for {duration_minutes} minutes")
 
-    def configure_notification(self, channel: NotificationChannel, config: dict[str, Any]):
+    def configure_notification(
+            self, channel: NotificationChannel, config: dict[str, Any]):
         """Configure a notification channel."""
         self.notification_configs[channel] = NotificationConfig(
             channel=channel,
@@ -348,7 +352,8 @@ class AlertManager:
         if rule.condition == "anomaly":
             # Add to anomaly detector
             self.anomaly_detector.add_value(rule.metric_name, current_value)
-            should_alert = self.anomaly_detector.is_anomaly(rule.metric_name, current_value)
+            should_alert = self.anomaly_detector.is_anomaly(
+                rule.metric_name, current_value)
         else:
             # Threshold-based conditions
             if rule.condition == "gt" and current_value > rule.threshold:
@@ -373,7 +378,10 @@ class AlertManager:
             # Resolve existing alert
             await self._resolve_alert(alert_key)
 
-    def _get_recent_metric_values(self, metric_name: str, window_minutes: int) -> list[float]:
+    def _get_recent_metric_values(
+            self,
+            metric_name: str,
+            window_minutes: int) -> list[float]:
         """Get recent metric values within the time window."""
         cutoff_time = datetime.utcnow() - timedelta(minutes=window_minutes)
 
@@ -446,13 +454,13 @@ class AlertManager:
             baseline = self.anomaly_detector.get_baseline_stats(rule.metric_name)
             if baseline:
                 return (f"{rule.description}. Current value: {value:.2f}, "
-                       f"baseline mean: {baseline.get('mean', 0):.2f} "
-                       f"(±{baseline.get('stdev', 0):.2f})")
+                        f"baseline mean: {baseline.get('mean', 0):.2f} "
+                        f"(±{baseline.get('stdev', 0):.2f})")
             else:
                 return f"{rule.description}. Current value: {value:.2f} (anomalous)"
         else:
             return (f"{rule.description}. Current value: {value:.2f}, "
-                   f"threshold: {rule.threshold:.2f}")
+                    f"threshold: {rule.threshold:.2f}")
 
     async def _send_notifications(self, alert: Alert):
         """Send notifications for an alert."""
@@ -490,7 +498,13 @@ class AlertManager:
 
     async def _send_email_notification(self, alert: Alert, config: dict[str, Any]):
         """Send email notification."""
-        if not all(k in config for k in ['smtp_server', 'smtp_port', 'username', 'password', 'to_emails']):
+        if not all(
+            k in config for k in [
+                'smtp_server',
+                'smtp_port',
+                'username',
+                'password',
+                'to_emails']):
             return
 
         severity_emojis = {
@@ -679,7 +693,9 @@ def configure_email_notifications(smtp_config: dict[str, Any]):
 
 def configure_slack_notifications(webhook_url: str):
     """Configure Slack notifications."""
-    alert_manager.configure_notification(NotificationChannel.SLACK, {'webhook_url': webhook_url})
+    alert_manager.configure_notification(
+        NotificationChannel.SLACK, {
+            'webhook_url': webhook_url})
 
 
 def get_active_alerts():

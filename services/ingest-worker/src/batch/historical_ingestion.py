@@ -87,10 +87,12 @@ class HistoricalDataIngester:
     SESSION_217_END = date(2025, 6, 21)
     SESSION_NUMBER = 217
 
-    def __init__(self,
-                 progress_file: str = "batch_progress.pkl",
-                 output_dir: str = "batch_output",
-                 batch_size: int = 50):
+    def __init__(
+        self,
+        progress_file: str = "batch_progress.pkl",
+        output_dir: str = "batch_output",
+        batch_size: int = 50
+    ):
         self.logger = logging.getLogger(__name__)
         self.progress_file = Path(progress_file)
         self.output_dir = Path(output_dir)
@@ -107,7 +109,8 @@ class HistoricalDataIngester:
         # Ensure output directory exists
         self.output_dir.mkdir(exist_ok=True)
 
-        self.logger.info(f"Historical ingester initialized - Target: 第{self.SESSION_NUMBER}回国会")
+        self.logger.info(
+            f"Historical ingester initialized - Target: 第{self.SESSION_NUMBER}回国会")
 
     async def __aenter__(self):
         """Async context manager entry"""
@@ -132,7 +135,8 @@ class HistoricalDataIngester:
             try:
                 with open(self.progress_file, 'rb') as f:
                     progress = pickle.load(f)
-                self.logger.info(f"Loaded existing progress: {progress.completion_percentage:.1f}% complete")
+                self.logger.info(
+                    f"Loaded existing progress: {progress.completion_percentage:.1f}% complete")
                 return progress
             except Exception as e:
                 self.logger.warning(f"Failed to load progress file: {e}")
@@ -182,7 +186,8 @@ class HistoricalDataIngester:
                 break
 
             all_meetings.extend(meetings)
-            self.logger.info(f"Found {len(meetings)} meetings (total: {len(all_meetings)})")
+            self.logger.info(
+                f"Found {len(meetings)} meetings (total: {len(all_meetings)})")
 
             if len(meetings) < batch_size:
                 break
@@ -226,7 +231,8 @@ class HistoricalDataIngester:
             # 2. Check if meeting already exists
             existing_meeting = await self._find_existing_meeting(meeting.meeting_id)
             if existing_meeting:
-                self.logger.info(f"Meeting {meeting.meeting_id} already exists, skipping")
+                self.logger.info(
+                    f"Meeting {meeting.meeting_id} already exists, skipping")
                 return True, stats
 
             # 3. Create meeting record
@@ -238,11 +244,13 @@ class HistoricalDataIngester:
             stats["speeches_count"] = len(speeches)
 
             if not speeches:
-                self.logger.warning(f"No speeches found for meeting {meeting.meeting_id}")
+                self.logger.warning(
+                    f"No speeches found for meeting {meeting.meeting_id}")
                 return True, stats
 
             # 5. Map speeches in batches
-            batch_result = self.data_mapper.batch_map_speeches(speeches, meeting_record_id)
+            batch_result = self.data_mapper.batch_map_speeches(
+                speeches, meeting_record_id)
             stats["members_count"] = batch_result["statistics"]["unique_members"]
             stats["parties_count"] = batch_result["statistics"]["unique_parties"]
             stats["warnings"].extend(batch_result["warnings"])
@@ -270,7 +278,8 @@ class HistoricalDataIngester:
                 batch_result["parties"]
             )
 
-            self.logger.info(f"✅ Processed meeting {meeting.meeting_id}: {len(mapped_speeches)} speeches")
+            self.logger.info(
+                f"✅ Processed meeting {meeting.meeting_id}: {len(mapped_speeches)} speeches")
             return True, stats
 
         except Exception as e:
@@ -291,7 +300,8 @@ class HistoricalDataIngester:
             self.logger.warning(f"Failed to check existing meeting: {e}")
             return None
 
-    async def _process_members_and_parties(self, members: list[dict], parties: list[dict]):
+    async def _process_members_and_parties(
+            self, members: list[dict], parties: list[dict]):
         """Process unique members and parties"""
         # Process parties first (members reference parties)
         for party_data in parties:
@@ -301,7 +311,8 @@ class HistoricalDataIngester:
                     await self.airtable_client.create_party(party_data)
                     self.logger.debug(f"Created party: {party_data['name']}")
             except Exception as e:
-                self.logger.warning(f"Failed to process party {party_data['name']}: {e}")
+                self.logger.warning(
+                    f"Failed to process party {party_data['name']}: {e}")
 
         # Process members
         for member_data in members:
@@ -311,7 +322,8 @@ class HistoricalDataIngester:
                     await self.airtable_client.create_member(member_data)
                     self.logger.debug(f"Created member: {member_data['name']}")
             except Exception as e:
-                self.logger.warning(f"Failed to process member {member_data['name']}: {e}")
+                self.logger.warning(
+                    f"Failed to process member {member_data['name']}: {e}")
 
     async def _find_existing_party(self, party_name: str) -> dict[str, Any] | None:
         """Check if party already exists"""
@@ -367,10 +379,11 @@ class HistoricalDataIngester:
 
         # Filter meetings to resume from correct position
         if self.progress.last_processed_date:
-            meetings = [m for m in meetings
-                       if m.meeting_date and m.meeting_date > self.progress.last_processed_date]
+            meetings = [m for m in meetings if m.meeting_date and m.meeting_date >
+                        self.progress.last_processed_date]
 
-        self.logger.info(f"Starting batch processing: {len(meetings)} meetings to process")
+        self.logger.info(
+            f"Starting batch processing: {len(meetings)} meetings to process")
 
         # Statistics tracking
         total_speeches = 0
@@ -401,13 +414,15 @@ class HistoricalDataIngester:
                 # Save progress periodically
                 if (i + 1) % 10 == 0:
                     self.save_progress(self.progress)
-                    self.logger.info(f"Progress: {self.progress.completion_percentage:.1f}% complete")
+                    self.logger.info(
+                        f"Progress: {self.progress.completion_percentage:.1f}% complete")
 
                 # Rate limiting between meetings
                 await asyncio.sleep(0.5)
 
             except Exception as e:
-                self.logger.error(f"Unexpected error processing meeting {meeting.meeting_id}: {e}")
+                self.logger.error(
+                    f"Unexpected error processing meeting {meeting.meeting_id}: {e}")
                 processing_errors += 1
                 self.progress.failed_meetings.append(meeting.meeting_id)
 
@@ -433,7 +448,7 @@ class HistoricalDataIngester:
 
         self.logger.info(f"✅ Batch ingestion completed in {processing_time:.1f}s")
         self.logger.info(f"📊 Processed {statistics.total_meetings_processed} meetings, "
-                        f"{statistics.total_speeches_processed} speeches")
+                         f"{statistics.total_speeches_processed} speeches")
 
         return statistics
 
@@ -463,9 +478,19 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Historical Diet Data Ingestion")
-    parser.add_argument("--resume", action="store_true", help="Resume from existing progress")
-    parser.add_argument("--batch-size", type=int, default=50, help="Batch size for processing")
-    parser.add_argument("--progress-file", default="batch_progress.pkl", help="Progress file path")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from existing progress")
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=50,
+        help="Batch size for processing")
+    parser.add_argument(
+        "--progress-file",
+        default="batch_progress.pkl",
+        help="Progress file path")
     parser.add_argument("--output-dir", default="batch_output", help="Output directory")
     parser.add_argument("--log-level", default="INFO", help="Log level")
 

@@ -108,8 +108,10 @@ class PolicyAnalysisService:
             }
         }
 
-    async def analyze_member_policy_positions(self, member_id: str,
-                                            force_refresh: bool = False) -> PolicyAnalysisResult:
+    async def analyze_member_policy_positions(
+            self,
+            member_id: str,
+            force_refresh: bool = False) -> PolicyAnalysisResult:
         """Analyze member's policy positions across all issues."""
         cache_key = f"policy_analysis:{member_id}"
 
@@ -123,7 +125,8 @@ class PolicyAnalysisService:
         analysis_result = await self._generate_mvp_analysis(member_id)
 
         # Cache the result
-        await self.redis.set(cache_key, analysis_result.__dict__, ttl=3600)  # 1 hour TTL
+        # 1 hour TTL
+        await self.redis.set(cache_key, analysis_result.__dict__, ttl=3600)
 
         return analysis_result
 
@@ -233,7 +236,10 @@ class PolicyAnalysisService:
             last_updated=datetime.now() - timedelta(days=random.randint(1, 30))
         )
 
-    def _generate_mock_evidence(self, issue_tag: str, stance: PolicyStance) -> list[str]:
+    def _generate_mock_evidence(
+            self,
+            issue_tag: str,
+            stance: PolicyStance) -> list[str]:
         """Generate mock evidence for a stance."""
         evidence_templates = {
             PolicyStance.STRONG_SUPPORT: [
@@ -266,7 +272,10 @@ class PolicyAnalysisService:
         templates = evidence_templates.get(stance, [f"{issue_tag}に関する発言"])
         return random.sample(templates, min(len(templates), 2))
 
-    async def get_member_issue_stance(self, member_id: str, issue_tag: str) -> IssuePosition | None:
+    async def get_member_issue_stance(
+            self,
+            member_id: str,
+            issue_tag: str) -> IssuePosition | None:
         """Get member's stance on a specific issue."""
         analysis = await self.analyze_member_policy_positions(member_id)
 
@@ -277,7 +286,7 @@ class PolicyAnalysisService:
         return None
 
     async def compare_members_on_issue(self, member_ids: list[str],
-                                     issue_tag: str) -> dict[str, Any]:
+                                       issue_tag: str) -> dict[str, Any]:
         """Compare multiple members on a specific issue."""
         comparisons = []
 
@@ -307,7 +316,7 @@ class PolicyAnalysisService:
         }
 
     async def get_similar_members(self, member_id: str,
-                                issue_tags: list[str] = None) -> list[dict[str, Any]]:
+                                  issue_tags: list[str] = None) -> list[dict[str, Any]]:
         """Find members with similar policy positions."""
         await self.analyze_member_policy_positions(member_id)
 
@@ -342,7 +351,7 @@ class PolicyAnalysisService:
         return similar_members
 
     async def get_policy_trends(self, issue_tag: str,
-                              time_range_days: int = 30) -> dict[str, Any]:
+                                time_range_days: int = 30) -> dict[str, Any]:
         """Get policy trends for an issue over time."""
         # Mock trend data
         return {

@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class AirtableSchemaInspector:
     """Airtable schema and field constraint inspector"""
 
@@ -47,11 +48,15 @@ class AirtableSchemaInspector:
             print(f"⚠️ Error fetching base schema: {e}")
             return {}
 
-    async def inspect_table_fields(self, session: aiohttp.ClientSession, table_name: str) -> dict:
+    async def inspect_table_fields(
+            self,
+            session: aiohttp.ClientSession,
+            table_name: str) -> dict:
         """Inspect table fields by examining existing records"""
         try:
             url = f"{self.base_url}/{table_name}"
-            params = {"maxRecords": 5}  # Just need a few records to understand structure
+            # Just need a few records to understand structure
+            params = {"maxRecords": 5}
 
             async with session.get(url, headers=self.headers, params=params) as response:
                 if response.status == 200:
@@ -91,33 +96,44 @@ class AirtableSchemaInspector:
                                     field_analysis[field_name]["is_empty_count"] += 1
                                 else:
                                     # Store sample values (max 3)
-                                    if len(field_analysis[field_name]["sample_values"]) < 3:
-                                        field_analysis[field_name]["sample_values"].append(value)
+                                    if len(
+                                            field_analysis[field_name]["sample_values"]) < 3:
+                                        field_analysis[field_name]["sample_values"].append(
+                                            value)
 
                                     # Track value types
                                     if isinstance(value, list):
-                                        field_analysis[field_name]["value_types"].add("array")
+                                        field_analysis[field_name]["value_types"].add(
+                                            "array")
                                         if value and isinstance(value[0], dict):
-                                            field_analysis[field_name]["value_types"].add("linked_record")
+                                            field_analysis[field_name]["value_types"].add(
+                                                "linked_record")
                                         elif value and isinstance(value[0], str):
-                                            field_analysis[field_name]["value_types"].add("attachment")
+                                            field_analysis[field_name]["value_types"].add(
+                                                "attachment")
                                     elif isinstance(value, dict):
-                                        field_analysis[field_name]["value_types"].add("object")
+                                        field_analysis[field_name]["value_types"].add(
+                                            "object")
                                     elif isinstance(value, str):
-                                        field_analysis[field_name]["value_types"].add("string")
+                                        field_analysis[field_name]["value_types"].add(
+                                            "string")
                                         field_analysis[field_name]["max_length"] = max(
                                             field_analysis[field_name]["max_length"], len(value)
                                         )
                                     elif isinstance(value, int | float):
-                                        field_analysis[field_name]["value_types"].add("number")
+                                        field_analysis[field_name]["value_types"].add(
+                                            "number")
                                     elif isinstance(value, bool):
-                                        field_analysis[field_name]["value_types"].add("boolean")
+                                        field_analysis[field_name]["value_types"].add(
+                                            "boolean")
                                     else:
-                                        field_analysis[field_name]["value_types"].add(type(value).__name__)
+                                        field_analysis[field_name]["value_types"].add(
+                                            type(value).__name__)
 
                     # Convert sets to lists for JSON serialization
                     for field_name in field_analysis:
-                        field_analysis[field_name]["value_types"] = list(field_analysis[field_name]["value_types"])
+                        field_analysis[field_name]["value_types"] = list(
+                            field_analysis[field_name]["value_types"])
 
                     return {
                         "total_records_analyzed": len(records),
@@ -132,7 +148,10 @@ class AirtableSchemaInspector:
             print(f"❌ Error inspecting {table_name}: {e}")
             return {"error": str(e)}
 
-    async def test_field_updates(self, session: aiohttp.ClientSession, table_name: str) -> dict:
+    async def test_field_updates(
+            self,
+            session: aiohttp.ClientSession,
+            table_name: str) -> dict:
         """Test different field update patterns to identify constraints"""
         try:
             # Get a sample record first
@@ -158,7 +177,8 @@ class AirtableSchemaInspector:
                 # Test 1: Update only basic text fields
                 basic_fields = {}
                 for field_name, value in original_fields.items():
-                    if isinstance(value, str) and len(field_name) < 20:  # Simple field names
+                    if isinstance(value, str) and len(
+                            field_name) < 20:  # Simple field names
                         basic_fields[field_name] = value  # Keep original value
                         break  # Test with just one field first
 
@@ -203,7 +223,7 @@ class AirtableSchemaInspector:
             return {"error": f"Test failed: {e}"}
 
     async def test_single_update(self, session: aiohttp.ClientSession, table_name: str,
-                                record_id: str, test_fields: dict) -> dict:
+                                 record_id: str, test_fields: dict) -> dict:
         """Test a single update operation"""
         try:
             update_data = {"fields": test_fields}
@@ -244,7 +264,8 @@ class AirtableSchemaInspector:
             print(f"❌ Error: {schema_info['error']}")
             return
 
-        print(f"📊 Total Records Analyzed: {schema_info.get('total_records_analyzed', 0)}")
+        print(
+            f"📊 Total Records Analyzed: {schema_info.get('total_records_analyzed', 0)}")
         print(f"📊 Total Fields: {schema_info.get('total_fields', 0)}")
 
         fields = schema_info.get('fields', {})
@@ -296,7 +317,11 @@ class AirtableSchemaInspector:
         """Run comprehensive schema inspection"""
         print("🔍 Starting Airtable schema inspection...")
 
-        tables_to_inspect = ["Bills (法案)", "Members (議員)", "Parties (政党)", "Speeches (発言)"]
+        tables_to_inspect = [
+            "Bills (法案)",
+            "Members (議員)",
+            "Parties (政党)",
+            "Speeches (発言)"]
 
         async with aiohttp.ClientSession() as session:
             for table_name in tables_to_inspect:
@@ -328,6 +353,7 @@ class AirtableSchemaInspector:
 
                 # Rate limiting
                 await asyncio.sleep(2)
+
 
 async def main():
     """Main entry point"""

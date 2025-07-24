@@ -44,15 +44,21 @@ class WeaviateClient:
         self.SPEECH_CLASS = "DietSpeech"
         self.BILL_CLASS = "DietBill"
 
-    async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
+    async def _request(
+        self, method: str, endpoint: str, **kwargs
+    ) -> dict[str, Any]:
         """Make request to Weaviate API."""
         url = f"{self.cluster_url}/v1/{endpoint}"
 
         async with aiohttp.ClientSession() as session:
-            async with session.request(method, url, headers=self.headers, **kwargs) as response:
+            async with session.request(
+                method, url, headers=self.headers, **kwargs
+            ) as response:
                 if response.status >= 400:
                     error_text = await response.text()
-                    raise Exception(f"Weaviate API error {response.status}: {error_text}")
+                    raise Exception(
+                        f"Weaviate API error {response.status}: {error_text}"
+                    )
 
                 return await response.json()
 
@@ -87,7 +93,9 @@ class WeaviateClient:
                 {
                     "name": "speechType",
                     "dataType": ["text"],
-                    "description": "Type of speech (question, answer, discussion, etc.)"
+                    "description": (
+                        "Type of speech (question, answer, discussion, etc.)"
+                    )
                 },
                 {
                     "name": "sentiment",
@@ -183,8 +191,13 @@ class WeaviateClient:
             if "already exists" not in str(e):
                 logger.error(f"Failed to create {self.BILL_CLASS} class: {e}")
 
-    async def add_speech_embedding(self, airtable_record_id: str, content: str,
-                                  embedding: list[float], metadata: dict[str, Any]) -> str:
+    async def add_speech_embedding(
+        self,
+        airtable_record_id: str,
+        content: str,
+        embedding: list[float],
+        metadata: dict[str, Any],
+    ) -> str:
         """Add speech embedding to Weaviate."""
 
         object_data = {
@@ -205,8 +218,13 @@ class WeaviateClient:
         response = await self._request("POST", "objects", json=object_data)
         return response["id"]
 
-    async def add_bill_embedding(self, airtable_record_id: str, content: str,
-                                embedding: list[float], metadata: dict[str, Any]) -> str:
+    async def add_bill_embedding(
+        self,
+        airtable_record_id: str,
+        content: str,
+        embedding: list[float],
+        metadata: dict[str, Any],
+    ) -> str:
         """Add bill embedding to Weaviate."""
 
         object_data = {
@@ -228,8 +246,12 @@ class WeaviateClient:
         response = await self._request("POST", "objects", json=object_data)
         return response["id"]
 
-    async def search_speeches(self, query_vector: list[float], limit: int = 10,
-                             filters: dict[str, Any] | None = None) -> list[SearchResult]:
+    async def search_speeches(
+        self,
+        query_vector: list[float],
+        limit: int = 10,
+        filters: dict[str, Any] | None = None,
+    ) -> list[SearchResult]:
         """Search for similar speeches using vector similarity."""
 
         where_filter = {}
@@ -239,10 +261,15 @@ class WeaviateClient:
             for key, value in filters.items():
                 if isinstance(value, list):
                     # Multiple values - use OR
-                    or_conditions = [{"path": [key], "operator": "Equal", "valueText": v} for v in value]
+                    or_conditions = [
+                        {"path": [key], "operator": "Equal", "valueText": v}
+                        for v in value
+                    ]
                     conditions.append({"operator": "Or", "operands": or_conditions})
                 else:
-                    conditions.append({"path": [key], "operator": "Equal", "valueText": value})
+                    conditions.append(
+                        {"path": [key], "operator": "Equal", "valueText": value}
+                    )
 
             if len(conditions) == 1:
                 where_filter = conditions[0]
@@ -256,7 +283,10 @@ class WeaviateClient:
                     {self.SPEECH_CLASS}(
                         nearVector: {{vector: {query_vector}}}
                         limit: {limit}
-                        {f'where: {json.dumps(where_filter)}' if where_filter else ''}
+                        {(
+                            f'where: {json.dumps(where_filter)}'
+                            if where_filter else ''
+                        )}
                     ) {{
                         airtableRecordId
                         content
@@ -291,13 +321,19 @@ class WeaviateClient:
                         "sentiment": item.get("sentiment", ""),
                         "topics": item.get("topics", [])
                     },
-                    similarity=1.0 - item["_additional"]["distance"]  # Convert distance to similarity
+                    similarity=(
+                        1.0 - item["_additional"]["distance"]
+                    )  # Convert distance to similarity
                 ))
 
         return results
 
-    async def search_bills(self, query_vector: list[float], limit: int = 10,
-                          filters: dict[str, Any] | None = None) -> list[SearchResult]:
+    async def search_bills(
+        self,
+        query_vector: list[float],
+        limit: int = 10,
+        filters: dict[str, Any] | None = None,
+    ) -> list[SearchResult]:
         """Search for similar bills using vector similarity."""
 
         where_filter = {}
@@ -305,10 +341,15 @@ class WeaviateClient:
             conditions = []
             for key, value in filters.items():
                 if isinstance(value, list):
-                    or_conditions = [{"path": [key], "operator": "Equal", "valueText": v} for v in value]
+                    or_conditions = [
+                        {"path": [key], "operator": "Equal", "valueText": v}
+                        for v in value
+                    ]
                     conditions.append({"operator": "Or", "operands": or_conditions})
                 else:
-                    conditions.append({"path": [key], "operator": "Equal", "valueText": value})
+                    conditions.append(
+                        {"path": [key], "operator": "Equal", "valueText": value}
+                    )
 
             if len(conditions) == 1:
                 where_filter = conditions[0]
@@ -322,7 +363,10 @@ class WeaviateClient:
                     {self.BILL_CLASS}(
                         nearVector: {{vector: {query_vector}}}
                         limit: {limit}
-                        {f'where: {json.dumps(where_filter)}' if where_filter else ''}
+                        {(
+                            f'where: {json.dumps(where_filter)}'
+                            if where_filter else ''
+                        )}
                     ) {{
                         airtableRecordId
                         billNumber
@@ -364,12 +408,19 @@ class WeaviateClient:
 
         return results
 
-    async def hybrid_search(self, query_text: str, query_vector: list[float],
-                           content_type: str = "speech", limit: int = 10,
-                           alpha: float = 0.7) -> list[SearchResult]:
+    async def hybrid_search(
+        self,
+        query_text: str,
+        query_vector: list[float],
+        content_type: str = "speech",
+        limit: int = 10,
+        alpha: float = 0.7,
+    ) -> list[SearchResult]:
         """Perform hybrid search combining text and vector similarity."""
 
-        class_name = self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
+        class_name = (
+            self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
+        )
 
         query = {
             "query": f"""
@@ -385,7 +436,11 @@ class WeaviateClient:
                     ) {{
                         airtableRecordId
                         content
-                        {"speakerName meetingId speechType sentiment topics" if content_type == "speech" else "billNumber title category status dietSession tags"}
+                        {(
+                            "speakerName meetingId speechType sentiment topics"
+                            if content_type == "speech"
+                            else "billNumber title category status dietSession tags"
+                        )}
                         _additional {{
                             id
                             score
@@ -429,19 +484,28 @@ class WeaviateClient:
 
         return results
 
-    async def update_object(self, object_id: str, properties: dict[str, Any]) -> None:
+    async def update_object(
+        self, object_id: str, properties: dict[str, Any]
+    ) -> None:
         """Update an existing object in Weaviate."""
-        await self._request("PATCH", f"objects/{object_id}", json={"properties": properties})
+        await self._request(
+            "PATCH", f"objects/{object_id}", json={"properties": properties}
+        )
 
     async def delete_object(self, object_id: str) -> None:
         """Delete an object from Weaviate."""
         await self._request("DELETE", f"objects/{object_id}")
 
-    async def get_object_by_airtable_id(self, airtable_record_id: str,
-                                       content_type: str = "speech") -> dict[str, Any] | None:
+    async def get_object_by_airtable_id(
+        self,
+        airtable_record_id: str,
+        content_type: str = "speech",
+    ) -> dict[str, Any] | None:
         """Get Weaviate object by Airtable record ID."""
 
-        class_name = self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
+        class_name = (
+            self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
+        )
 
         query = {
             "query": f"""
@@ -487,11 +551,15 @@ class WeaviateClient:
         """Get current schema information."""
         return await self._request("GET", "schema")
 
-    async def get_object_count(self, class_name: str | None = None) -> dict[str, int]:
+    async def get_object_count(
+        self, class_name: str | None = None
+    ) -> dict[str, int]:
         """Get object count for classes."""
         counts = {}
 
-        classes = [class_name] if class_name else [self.SPEECH_CLASS, self.BILL_CLASS]
+        classes = (
+            [class_name] if class_name else [self.SPEECH_CLASS, self.BILL_CLASS]
+        )
 
         for cls in classes:
             query = {
@@ -512,7 +580,9 @@ class WeaviateClient:
                 response = await self._request("POST", "graphql", json=query)
                 if "data" in response and "Aggregate" in response["data"]:
                     count_data = response["data"]["Aggregate"][cls]
-                    counts[cls] = count_data[0]["meta"]["count"] if count_data else 0
+                    counts[cls] = (
+                        count_data[0]["meta"]["count"] if count_data else 0
+                    )
                 else:
                     counts[cls] = 0
             except Exception as e:

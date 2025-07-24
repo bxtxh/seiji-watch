@@ -11,6 +11,16 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from .routes import (
+    airtable_webhooks,
+    batch_management,
+    bills,
+    enhanced_issues,
+    issues,
+    monitoring,
+    speeches,
+)
+
 # Import monitoring utilities
 try:
     from .monitoring.logger import (
@@ -76,6 +86,7 @@ redis_config = {
 }
 member_task_manager = MemberTaskManager(task_queue, airtable_config, redis_config)
 
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
 
@@ -103,6 +114,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Content-Security-Policy"] = csp
 
         return response
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Rate limiting middleware."""
@@ -155,7 +167,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             )
 
             # Record metrics
-            metrics_collector.record_rate_limit_violation(client_id, str(request.url.path))
+            metrics_collector.record_rate_limit_violation(
+                client_id, str(request.url.path))
 
             return JSONResponse(
                 status_code=429,
@@ -168,6 +181,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+
 # Create FastAPI app
 app = FastAPI(
     title="Diet Issue Tracker API",
@@ -178,6 +192,8 @@ app = FastAPI(
 )
 
 # Application lifecycle events
+
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup."""
@@ -189,13 +205,16 @@ async def startup_event():
         # Warm up member cache
         warmup_result = await member_service.warmup_member_cache()
         if warmup_result["success"]:
-            logger.info(f"Member cache warmed up with {warmup_result['cached_members']} members")
+            logger.info(
+                f"Member cache warmed up with {warmup_result['cached_members']} members")
         else:
-            logger.warning(f"Member cache warmup failed: {warmup_result.get('error', 'Unknown error')}")
+            logger.warning(
+                f"Member cache warmup failed: {warmup_result.get('error', 'Unknown error')}")
 
     except Exception as e:
         logger.error(f"Startup initialization failed: {e}")
         # Continue startup even if cache fails (graceful degradation)
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -205,6 +224,7 @@ async def shutdown_event():
         logger.info("Redis cache disconnected")
     except Exception as e:
         logger.error(f"Shutdown cleanup failed: {e}")
+
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging and monitoring requests."""
@@ -256,6 +276,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
                 raise
 
+
 # Trust only specific hosts in production
 allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
@@ -275,7 +296,11 @@ app.add_middleware(RateLimitMiddleware, requests_per_minute=1000)
 # CORS middleware - Step 2: Specific origin and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],  # Support frontend ports
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080"],
+    # Support frontend ports
     allow_credentials=False,  # Keep False for security
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
@@ -288,6 +313,8 @@ app.add_middleware(
 )
 
 # Health check endpoint
+
+
 @app.get("/health")
 async def health_check():
     """Comprehensive health check endpoint."""
@@ -339,6 +366,8 @@ async def health_check():
         )
 
 # Metrics endpoints
+
+
 @app.get("/metrics")
 async def get_metrics():
     """Get metrics in Prometheus format."""
@@ -352,6 +381,7 @@ async def get_metrics():
         log_error("Failed to export metrics", error=e)
         raise HTTPException(status_code=500, detail="Failed to export metrics")
 
+
 @app.get("/metrics/json")
 async def get_metrics_json():
     """Get metrics in JSON format."""
@@ -361,6 +391,7 @@ async def get_metrics_json():
     except Exception as e:
         log_error("Failed to export metrics as JSON", error=e)
         raise HTTPException(status_code=500, detail="Failed to export metrics")
+
 
 @app.get("/status")
 async def get_status():
@@ -378,6 +409,8 @@ async def get_status():
         raise HTTPException(status_code=500, detail="Failed to get system status")
 
 # Root endpoint
+
+
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -388,15 +421,6 @@ async def root():
     }
 
 # Include routers
-from .routes import (
-    airtable_webhooks,
-    batch_management,
-    bills,
-    enhanced_issues,
-    issues,
-    monitoring,
-    speeches,
-)
 
 app.include_router(issues.router)
 app.include_router(enhanced_issues.router)
@@ -407,6 +431,8 @@ app.include_router(speeches.router)
 app.include_router(bills.router)
 
 # Basic API endpoints for MVP
+
+
 @app.get("/embeddings/stats")
 async def get_embedding_stats():
     """Get embedding statistics from real Airtable data."""
@@ -434,6 +460,7 @@ async def get_embedding_stats():
             "speeches": 0,
             "message": f"Failed to fetch real data: {str(e)}"
         }
+
 
 @app.post("/search")
 async def search_bills(request: Request):
@@ -508,6 +535,8 @@ async def search_bills(request: Request):
         }
 
 # Member data collection endpoints
+
+
 @app.post("/admin/members/collect")
 async def collect_member_profiles(request: Request):
     """Manually trigger member profile collection."""
@@ -518,7 +547,11 @@ async def collect_member_profiles(request: Request):
         # Trigger member profile collection
         collection_result = await member_service.collect_member_profiles(house)
 
-        log_api_request(request, 200, 0, f"Member collection: {collection_result['collected']} collected")
+        log_api_request(
+            request,
+            200,
+            0,
+            f"Member collection: {collection_result['collected']} collected")
 
         return {
             "success": True,
@@ -534,6 +567,7 @@ async def collect_member_profiles(request: Request):
             "message": "議員プロフィール収集に失敗しました"
         }
 
+
 @app.post("/admin/cache/warmup")
 async def warmup_cache():
     """Manually trigger cache warmup."""
@@ -542,9 +576,10 @@ async def warmup_cache():
 
         return {
             "success": warmup_result["success"],
-            "cached_members": warmup_result.get("cached_members", 0),
-            "message": "キャッシュウォームアップが完了しました" if warmup_result["success"] else "キャッシュウォームアップに失敗しました"
-        }
+            "cached_members": warmup_result.get(
+                "cached_members",
+                0),
+            "message": "キャッシュウォームアップが完了しました" if warmup_result["success"] else "キャッシュウォームアップに失敗しました"}
 
     except Exception as e:
         log_error("Cache warmup failed", error=e)
@@ -553,6 +588,7 @@ async def warmup_cache():
             "error": str(e),
             "message": "キャッシュウォームアップに失敗しました"
         }
+
 
 @app.get("/admin/cache/stats")
 async def get_cache_stats():
@@ -573,6 +609,8 @@ async def get_cache_stats():
         }
 
 # Batch processing endpoints
+
+
 @app.post("/admin/batch/member-statistics")
 async def schedule_member_statistics_batch(request: Request):
     """Schedule batch calculation of member statistics."""
@@ -588,7 +626,8 @@ async def schedule_member_statistics_batch(request: Request):
                 "message": "議員IDリストが必要です"
             }
 
-        job_id = member_task_manager.schedule_member_statistics_batch(member_ids, priority)
+        job_id = member_task_manager.schedule_member_statistics_batch(
+            member_ids, priority)
 
         return {
             "success": True,
@@ -606,6 +645,7 @@ async def schedule_member_statistics_batch(request: Request):
             "message": "議員統計バッチ処理のスケジュールに失敗しました"
         }
 
+
 @app.post("/admin/batch/policy-stance")
 async def schedule_policy_stance_analysis(request: Request):
     """Schedule policy stance analysis for a member."""
@@ -622,7 +662,8 @@ async def schedule_policy_stance_analysis(request: Request):
                 "message": "議員IDが必要です"
             }
 
-        job_id = member_task_manager.schedule_policy_stance_analysis(member_id, issue_tags, priority)
+        job_id = member_task_manager.schedule_policy_stance_analysis(
+            member_id, issue_tags, priority)
 
         return {
             "success": True,
@@ -640,6 +681,7 @@ async def schedule_policy_stance_analysis(request: Request):
             "error": str(e),
             "message": "政策スタンス分析のスケジュールに失敗しました"
         }
+
 
 @app.get("/admin/batch/job/{job_id}")
 async def get_batch_job_status(job_id: str):
@@ -659,6 +701,7 @@ async def get_batch_job_status(job_id: str):
             "message": "ジョブステータスの取得に失敗しました"
         }
 
+
 @app.get("/admin/batch/queues")
 async def get_queue_stats():
     """Get queue statistics."""
@@ -676,6 +719,7 @@ async def get_queue_stats():
             "error": str(e),
             "message": "キュー統計の取得に失敗しました"
         }
+
 
 @app.get("/admin/batch/failed-jobs")
 async def get_failed_jobs():
@@ -697,6 +741,8 @@ async def get_failed_jobs():
         }
 
 # Policy analysis endpoints
+
+
 @app.get("/api/policy/issues")
 async def get_available_issues():
     """Get list of available policy issues."""
@@ -716,6 +762,7 @@ async def get_available_issues():
             "message": "政策イシューの取得に失敗しました"
         }
 
+
 @app.get("/api/policy/member/{member_id}/analysis")
 async def get_member_policy_analysis(member_id: str, force_refresh: bool = False):
     """Get comprehensive policy analysis for a member."""
@@ -733,6 +780,7 @@ async def get_member_policy_analysis(member_id: str, force_refresh: bool = False
             "error": str(e),
             "message": "政策分析の取得に失敗しました"
         }
+
 
 @app.get("/api/policy/member/{member_id}/stance/{issue_tag}")
 async def get_member_issue_stance(member_id: str, issue_tag: str):
@@ -760,12 +808,15 @@ async def get_member_issue_stance(member_id: str, issue_tag: str):
             }
 
     except Exception as e:
-        log_error(f"Failed to get stance for member {member_id} on {issue_tag}", error=e)
+        log_error(
+            f"Failed to get stance for member {member_id} on {issue_tag}",
+            error=e)
         return {
             "success": False,
             "error": str(e),
             "message": "政策スタンスの取得に失敗しました"
         }
+
 
 @app.post("/api/policy/compare")
 async def compare_members_on_issue(request: Request):
@@ -804,6 +855,7 @@ async def compare_members_on_issue(request: Request):
             "message": "議員比較の実行に失敗しました"
         }
 
+
 @app.get("/api/policy/member/{member_id}/similar")
 async def get_similar_members(member_id: str, issue_tags: str | None = None):
     """Get members with similar policy positions."""
@@ -826,6 +878,7 @@ async def get_similar_members(member_id: str, issue_tags: str | None = None):
             "message": "類似議員の取得に失敗しました"
         }
 
+
 @app.get("/api/policy/trends/{issue_tag}")
 async def get_policy_trends(issue_tag: str, days: int = 30):
     """Get policy trends for an issue."""
@@ -846,6 +899,8 @@ async def get_policy_trends(issue_tag: str, days: int = 30):
         }
 
 # Member profile endpoints
+
+
 @app.get("/api/members/{member_id}")
 async def get_member_profile(member_id: str):
     """Get member profile information."""
@@ -891,6 +946,7 @@ async def get_member_profile(member_id: str):
             }
         )
 
+
 @app.get("/api/members/{member_id}/voting-stats")
 async def get_member_voting_stats(member_id: str):
     """Get member's voting statistics."""
@@ -923,6 +979,7 @@ async def get_member_voting_stats(member_id: str):
             "message": "投票統計の取得に失敗しました"
         }
 
+
 @app.get("/api/members")
 async def get_members_list(
     page: int = 1,
@@ -943,13 +1000,18 @@ async def get_members_list(
                 "member_id": f"member_{i:03d}",
                 "name": f"議員{i}",
                 "name_kana": f"ぎいん{i}",
-                "house": "house_of_representatives" if i % 2 == 0 else "house_of_councillors",
-                "party": "自由民主党" if i % 3 == 0 else "立憲民主党" if i % 3 == 1 else "日本維新の会",
+                "house": "house_of_representatives" if i %
+                2 == 0 else "house_of_councillors",
+                "party": "自由民主党" if i %
+                3 == 0 else "立憲民主党" if i %
+                3 == 1 else "日本維新の会",
                 "constituency": f"東京都第{(i % 10) + 1}区",
-                "terms_served": (i % 5) + 1
-            }
-            for i in range(1, 51)
-        ]
+                "terms_served": (
+                    i %
+                    5) +
+                1} for i in range(
+                1,
+                51)]
 
         # Apply filters
         filtered_members = mock_members
@@ -958,7 +1020,8 @@ async def get_members_list(
         if party:
             filtered_members = [m for m in filtered_members if m["party"] == party]
         if search:
-            filtered_members = [m for m in filtered_members if search.lower() in m["name"].lower()]
+            filtered_members = [
+                m for m in filtered_members if search.lower() in m["name"].lower()]
 
         # Apply pagination
         total_count = len(filtered_members)
@@ -990,6 +1053,8 @@ async def get_members_list(
         }
 
 # Issue Category API endpoints (for EPIC 7)
+
+
 @app.get("/api/issues/categories")
 async def get_categories(max_records: int = 100):
     """Get all issue categories."""
@@ -1000,6 +1065,7 @@ async def get_categories(max_records: int = 100):
         log_error("Failed to get categories", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch categories")
 
+
 @app.get("/api/issues/categories/tree")
 async def get_category_tree():
     """Get category tree structure."""
@@ -1009,6 +1075,7 @@ async def get_category_tree():
     except Exception as e:
         log_error("Failed to get category tree", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch category tree")
+
 
 @app.get("/api/issues/categories/{category_id}")
 async def get_category_detail(category_id: str):
@@ -1024,6 +1091,7 @@ async def get_category_detail(category_id: str):
         log_error(f"Failed to get category {category_id}", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch category")
 
+
 @app.get("/api/issues/categories/{category_id}/children")
 async def get_category_children(category_id: str):
     """Get child categories."""
@@ -1034,6 +1102,7 @@ async def get_category_children(category_id: str):
         log_error(f"Failed to get children for category {category_id}", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch category children")
 
+
 @app.get("/api/issues/categories/search")
 async def search_categories(query: str, max_records: int = 50):
     """Search categories by title."""
@@ -1043,6 +1112,7 @@ async def search_categories(query: str, max_records: int = 50):
     except Exception as e:
         log_error(f"Failed to search categories with query: {query}", error=e)
         raise HTTPException(status_code=500, detail="Failed to search categories")
+
 
 @app.get("/api/bills")
 async def get_bills(max_records: int = 100, category: str | None = None):
@@ -1077,12 +1147,17 @@ async def get_bills(max_records: int = 100, category: str | None = None):
             }
             transformed_bills.append(transformed_bill)
 
-        log_api_request(None, 200, 0, f"Bills fetched: {len(transformed_bills)} records")
+        log_api_request(
+            None,
+            200,
+            0,
+            f"Bills fetched: {len(transformed_bills)} records")
         return transformed_bills
 
     except Exception as e:
         log_error("Failed to get bills from Airtable", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
+
 
 @app.get("/api/bills/{bill_id}")
 async def get_bill_detail(bill_id: str):
@@ -1127,6 +1202,8 @@ async def get_bill_detail(bill_id: str):
 # CORS preflight handled automatically by CORSMiddleware
 
 # Global exception handler
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler."""

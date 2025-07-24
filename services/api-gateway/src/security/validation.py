@@ -7,6 +7,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+
 class InputValidator:
     """Input validation and sanitization utilities."""
 
@@ -94,7 +95,8 @@ class InputValidator:
         return True, None
 
     @classmethod
-    def validate_pagination_params(cls, limit: int, offset: int) -> tuple[bool, str | None]:
+    def validate_pagination_params(
+            cls, limit: int, offset: int) -> tuple[bool, str | None]:
         """Validate pagination parameters."""
         if not isinstance(limit, int) or not isinstance(offset, int):
             return False, "Pagination parameters must be integers"
@@ -175,10 +177,12 @@ class InputValidator:
                 value_lower = value.lower()
                 for pattern in cls.XSS_PATTERNS + cls.SQL_INJECTION_PATTERNS:
                     if re.search(pattern, value_lower):
-                        logger.warning(f"Malicious content detected in field '{key}': {value[:50]}...")
+                        logger.warning(
+                            f"Malicious content detected in field '{key}': {value[:50]}...")
                         return False, f"Invalid content in field '{key}'"
 
         return True, None
+
 
 class SecurityValidator:
     """Security-focused validation utilities."""
@@ -256,6 +260,7 @@ class SecurityValidator:
                 return False, f"Suspicious {header} header"
 
         return True, None
+
 
 def validate_and_sanitize_request(
     body: dict[str, Any] | None = None,

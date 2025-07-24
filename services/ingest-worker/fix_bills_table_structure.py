@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def fix_bills_table_structure():
     """Add proper structured fields to Bills table"""
 
@@ -125,7 +126,8 @@ async def fix_bills_table_structure():
                                 success_count += 1
                             else:
                                 error_text = await add_response.text()
-                                print(f"  ❌ Failed to add {field['name']}: {add_response.status}")
+                                print(
+                                    f"  ❌ Failed to add {field['name']}: {add_response.status}")
                                 if "already exists" in error_text.lower():
                                     print("    (Field already exists, skipping)")
                                     success_count += 1
@@ -148,6 +150,7 @@ async def fix_bills_table_structure():
             else:
                 print(f"❌ Failed to get table info: {response.status}")
                 return False
+
 
 async def main():
     """Main function"""

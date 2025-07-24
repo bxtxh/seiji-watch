@@ -118,7 +118,8 @@ class DataQualityDashboard:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -164,8 +165,7 @@ class DataQualityDashboard:
                 description="Comprehensive monitoring of data quality, processing, and system health",
                 panels=panels,
                 created_at=datetime.now(),
-                updated_at=datetime.now()
-            )
+                updated_at=datetime.now())
 
             return dashboard
 
@@ -212,27 +212,27 @@ class DataQualityDashboard:
 
         # Accuracy rate
         accuracy = quality_metrics.get('accuracy_rate', 0)
-        metrics.append(DashboardMetric(
-            metric_type=DashboardMetricType.ACCURACY,
-            name="Data Accuracy",
-            value=accuracy,
-            unit="percentage",
-            severity=MetricSeverity.SUCCESS if accuracy > 0.9 else MetricSeverity.WARNING,
-            description="Percentage of bills with accurate data",
-            timestamp=datetime.now()
-        ))
+        metrics.append(
+            DashboardMetric(
+                metric_type=DashboardMetricType.ACCURACY,
+                name="Data Accuracy",
+                value=accuracy,
+                unit="percentage",
+                severity=MetricSeverity.SUCCESS if accuracy > 0.9 else MetricSeverity.WARNING,
+                description="Percentage of bills with accurate data",
+                timestamp=datetime.now()))
 
         # Consistency rate
         consistency = quality_metrics.get('consistency_rate', 0)
-        metrics.append(DashboardMetric(
-            metric_type=DashboardMetricType.CONSISTENCY,
-            name="Data Consistency",
-            value=consistency,
-            unit="percentage",
-            severity=MetricSeverity.SUCCESS if consistency > 0.85 else MetricSeverity.WARNING,
-            description="Percentage of bills with consistent data",
-            timestamp=datetime.now()
-        ))
+        metrics.append(
+            DashboardMetric(
+                metric_type=DashboardMetricType.CONSISTENCY,
+                name="Data Consistency",
+                value=consistency,
+                unit="percentage",
+                severity=MetricSeverity.SUCCESS if consistency > 0.85 else MetricSeverity.WARNING,
+                description="Percentage of bills with consistent data",
+                timestamp=datetime.now()))
 
         return DashboardPanel(
             panel_id="quality_overview",
@@ -494,7 +494,8 @@ class DataQualityDashboard:
 
                 # Calculate metrics
                 total_operations = len(history_records)
-                error_operations = len([r for r in history_records if r.confidence_score < 0.5])
+                error_operations = len(
+                    [r for r in history_records if r.confidence_score < 0.5])
 
                 error_rate = error_operations / total_operations if total_operations > 0 else 0
 
@@ -534,9 +535,11 @@ class DataQualityDashboard:
             metrics = {
                 'success_rate': stats.get('success_rate', 0),
                 'total_migrations': stats.get('total_migrations', 0),
-                'recent_migrations': stats.get('total_migrations', 0),  # Same as total for now
+                # Same as total for now
+                'recent_migrations': stats.get('total_migrations', 0),
                 'total_tasks_completed': stats.get('total_tasks_completed', 0),
-                'avg_processing_time': stats.get('average_processing_time_ms', 0) / 1000  # Convert to seconds
+                # Convert to seconds
+                'avg_processing_time': stats.get('average_processing_time_ms', 0) / 1000
             }
 
             self._cache_metrics(cache_key, metrics)
@@ -636,7 +639,8 @@ class DataQualityDashboard:
             self.logger.error(f"Database health check failed: {e}")
             return 0.0
 
-    def _determine_severity(self, value: float, metric_type: str, inverse: bool = False) -> MetricSeverity:
+    def _determine_severity(self, value: float, metric_type: str,
+                            inverse: bool = False) -> MetricSeverity:
         """Determine metric severity based on thresholds"""
         thresholds = self.config['alert_thresholds']
 
@@ -688,7 +692,8 @@ class DataQualityDashboard:
         self.metrics_cache[cache_key] = metrics
         self.cache_timestamps[cache_key] = datetime.now()
 
-    def get_dashboard_data(self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
+    def get_dashboard_data(
+            self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
         """Get complete dashboard data"""
         try:
             if dashboard_id == "main_quality_dashboard":
@@ -763,7 +768,8 @@ class DataQualityDashboard:
             self.logger.error(f"Error getting alerts: {e}")
             return []
 
-    def export_dashboard_config(self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
+    def export_dashboard_config(
+            self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
         """Export dashboard configuration"""
         try:
             dashboard = self.create_main_dashboard()
@@ -782,7 +788,8 @@ class DataQualityDashboard:
             self.logger.error(f"Error exporting dashboard config: {e}")
             raise
 
-    def get_historical_data(self, metric_type: str, hours: int = 24) -> list[dict[str, Any]]:
+    def get_historical_data(self, metric_type: str,
+                            hours: int = 24) -> list[dict[str, Any]]:
         """Get historical data for a specific metric"""
         try:
             # This would query historical metrics from a time-series database
@@ -826,8 +833,9 @@ class DataQualityDashboard:
         """Get dashboard service status"""
         return {
             'status': 'running',
-            'cache_size': len(self.metrics_cache),
-            'last_updated': max(self.cache_timestamps.values()).isoformat() if self.cache_timestamps else None,
+            'cache_size': len(
+                self.metrics_cache),
+            'last_updated': max(
+                self.cache_timestamps.values()).isoformat() if self.cache_timestamps else None,
             'alert_thresholds': self.config['alert_thresholds'],
-            'cache_ttl': self.config['metrics_cache_ttl']
-        }
+            'cache_ttl': self.config['metrics_cache_ttl']}

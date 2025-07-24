@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class ShugiinMemberData:
     """Shugiin member data structure"""
@@ -28,6 +29,7 @@ class ShugiinMemberData:
     member_id: str | None = None
     profile_url: str | None = None
     committee: str | None = None
+
 
 class ShugiinMemberCollector:
     """Collect all Shugiin members"""
@@ -51,10 +53,11 @@ class ShugiinMemberCollector:
 
         # Session for web scraping
         self.scraping_headers = {
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
-        }
+            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'}
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs):
+    async def _rate_limited_request(
+        self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
+    ):
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             now = asyncio.get_event_loop().time()
@@ -62,26 +65,34 @@ class ShugiinMemberCollector:
             if time_since_last < 0.3:
                 await asyncio.sleep(0.3 - time_since_last)
 
-            async with session.request(method, url, headers=self.headers, **kwargs) as response:
+            async with session.request(
+                method, url, headers=self.headers, **kwargs
+            ) as response:
                 self._last_request_time = asyncio.get_event_loop().time()
 
                 if response.status == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
                     await asyncio.sleep(retry_after)
-                    return await self._rate_limited_request(session, method, url, **kwargs)
+                    return await self._rate_limited_request(
+                        session, method, url, **kwargs
+                    )
 
                 response.raise_for_status()
                 return await response.json()
 
-    async def scrape_shugiin_member_list(self, session: aiohttp.ClientSession) -> list[ShugiinMemberData]:
+    async def scrape_shugiin_member_list(
+        self, session: aiohttp.ClientSession
+    ) -> list[ShugiinMemberData]:
         """Scrape Shugiin member list from official website"""
 
         print("  📋 衆議院公式サイトから議員リスト取得...")
 
         # 衆議院議員名簿ページ（会派別）
         shugiin_urls = [
-            "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/kaiha_m.htm",  # 会派別名簿
-            "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/senkyoku_m.htm"  # 選挙区別名簿
+            # 会派別名簿
+            "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/kaiha_m.htm",
+            # 選挙区別名簿
+            "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/senkyoku_m.htm"
         ]
 
         all_members = []
@@ -126,7 +137,9 @@ class ShugiinMemberCollector:
 
         return final_members
 
-    async def _parse_shugiin_page(self, soup: BeautifulSoup, url: str) -> list[ShugiinMemberData]:
+    async def _parse_shugiin_page(
+        self, soup: BeautifulSoup, url: str
+    ) -> list[ShugiinMemberData]:
         """Parse Shugiin member data from HTML"""
 
         members = []
@@ -154,7 +167,9 @@ class ShugiinMemberCollector:
                         continue
 
                 # Check if this row contains constituency header
-                if "区" in cells[0].get_text(strip=True) or "県" in cells[0].get_text(strip=True):
+                if "区" in cells[0].get_text(
+                        strip=True) or "県" in cells[0].get_text(
+                        strip=True):
                     current_constituency = cells[0].get_text(strip=True)
                     continue
 
@@ -175,8 +190,7 @@ class ShugiinMemberCollector:
                                 constituency=current_constituency,
                                 party_name=current_party,
                                 profile_url=profile_url if profile_url.startswith('http') else None,
-                                is_active=True
-                            )
+                                is_active=True)
                             members.append(member)
 
                 # Also check for names in plain text (no links)
@@ -186,7 +200,8 @@ class ShugiinMemberCollector:
 
                     if name_cell:
                         name = name_cell.get_text(strip=True)
-                        party = party_cell.get_text(strip=True) if party_cell else current_party
+                        party = party_cell.get_text(
+                            strip=True) if party_cell else current_party
 
                         name = re.sub(r'[（）()0-9\s]', '', name)
 
@@ -358,7 +373,8 @@ class ShugiinMemberCollector:
 
         return all_members
 
-    async def clear_existing_shugiin_members(self, session: aiohttp.ClientSession) -> int:
+    async def clear_existing_shugiin_members(
+            self, session: aiohttp.ClientSession) -> int:
         """Clear existing Shugiin members from database"""
 
         print("  🗑️  既存衆議院議員データクリア...")
@@ -406,7 +422,11 @@ class ShugiinMemberCollector:
 
         return party_id_map
 
-    async def insert_shugiin_members(self, session: aiohttp.ClientSession, members: list[ShugiinMemberData], party_id_map: dict[str, str]) -> int:
+    async def insert_shugiin_members(self,
+                                     session: aiohttp.ClientSession,
+                                     members: list[ShugiinMemberData],
+                                     party_id_map: dict[str,
+                                                        str]) -> int:
         """Insert Shugiin member data into Airtable"""
 
         print("  💾 衆議院議員データ投入...")
@@ -437,7 +457,8 @@ class ShugiinMemberCollector:
                         member_fields["Party"] = [party_id_map[member.party_name]]
 
                     # Remove None values
-                    member_fields = {k: v for k, v in member_fields.items() if v is not None}
+                    member_fields = {k: v for k,
+                                     v in member_fields.items() if v is not None}
 
                     data = {"fields": member_fields}
 
@@ -446,7 +467,8 @@ class ShugiinMemberCollector:
 
                     current_index = i + j
                     if current_index <= 20 or current_index % 50 == 0:
-                        print(f"    ✅ {current_index:03d}: {member.name} ({member.constituency}) - {member.party_name}")
+                        print(
+                            f"    ✅ {current_index:03d}: {member.name} ({member.constituency}) - {member.party_name}")
 
                 except Exception as e:
                     print(f"    ❌ 投入失敗: {member.name} - {e}")
@@ -545,6 +567,7 @@ class ShugiinMemberCollector:
 
             print(f"❌ 収集失敗: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

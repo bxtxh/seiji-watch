@@ -86,14 +86,21 @@ class DashboardDataProvider:
 
         overview = {
             'service_status': 'healthy' if health_score > 70 and active_alerts == 0 else 'degraded',
-            'uptime_hours': round(uptime_hours, 2),
+            'uptime_hours': round(
+                uptime_hours,
+                2),
             'total_operations_processed': total_processed,
-            'processing_rate_per_hour': round(processing_per_hour, 2),
-            'overall_success_rate': round(overall_success_rate * 100, 2),
-            'system_health_score': round(health_score, 1),
+            'processing_rate_per_hour': round(
+                processing_per_hour,
+                2),
+            'overall_success_rate': round(
+                overall_success_rate * 100,
+                2),
+            'system_health_score': round(
+                health_score,
+                1),
             'active_alerts': active_alerts,
-            'timestamp': now.isoformat()
-        }
+            'timestamp': now.isoformat()}
 
         self._cache_data(cache_key, overview)
         return overview
@@ -134,11 +141,16 @@ class DashboardDataProvider:
         if last_processed:
             if isinstance(last_processed, str):
                 try:
-                    last_processed = datetime.fromisoformat(last_processed.replace('Z', '+00:00'))
-                except:
+                    last_processed = datetime.fromisoformat(
+                        last_processed.replace('Z', '+00:00'))
+                except Exception:
                     last_processed = None
 
-            if last_processed and (datetime.utcnow() - last_processed.replace(tzinfo=None)) > timedelta(hours=2):
+            if last_processed and (
+                    datetime.utcnow() -
+                    last_processed.replace(
+                        tzinfo=None)) > timedelta(
+                    hours=2):
                 return 'idle'
 
         # Check success rate
@@ -303,7 +315,8 @@ class DashboardDataProvider:
                             'value': metric.value
                         })
                     elif metric_name.startswith('system_'):
-                        metric_type = metric_name.replace('system_', '').replace('_percent', '')
+                        metric_type = metric_name.replace(
+                            'system_', '').replace('_percent', '')
                         if metric_type in trends['system_metrics']:
                             trends['system_metrics'][metric_type].append({
                                 'timestamp': metric.timestamp.isoformat(),
@@ -318,7 +331,8 @@ class DashboardDataProvider:
                 trend_summary[f'{operation}_avg_time'] = statistics.mean(values)
                 trend_summary[f'{operation}_median_time'] = statistics.median(values)
                 if len(values) > 1:
-                    trend_summary[f'{operation}_time_trend'] = self._calculate_trend(values)
+                    trend_summary[f'{operation}_time_trend'] = self._calculate_trend(
+                        values)
 
         trends['summary'] = trend_summary
 
@@ -332,10 +346,11 @@ class DashboardDataProvider:
 
         # Simple linear trend
         n = len(values)
-        first_half = statistics.mean(values[:n//2])
-        second_half = statistics.mean(values[n//2:])
+        first_half = statistics.mean(values[:n // 2])
+        second_half = statistics.mean(values[n // 2:])
 
-        change_percent = ((second_half - first_half) / first_half * 100) if first_half > 0 else 0
+        change_percent = ((second_half - first_half) /
+                          first_half * 100) if first_half > 0 else 0
 
         if change_percent > 10:
             return 'increasing'

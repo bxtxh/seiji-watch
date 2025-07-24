@@ -28,7 +28,8 @@ class VersionChangeType(Enum):
 class IssueVersionHistory:
     """Version history entry for an issue."""
     version_id: str                    # UUID for this version
-    issue_id: str                      # Original issue UUID (stays same across versions)
+    # Original issue UUID (stays same across versions)
+    issue_id: str
     record_id: str                     # Airtable record ID
     version_number: int                # Sequential version number (1, 2, 3, ...)
     change_type: VersionChangeType     # What triggered this version
@@ -109,7 +110,7 @@ class IssueVersioningService:
         self.auto_cleanup_enabled = True
 
     async def create_initial_version(self, issue_record: AirtableIssueRecord,
-                                   created_by: str = "system") -> IssueVersionHistory:
+                                     created_by: str = "system") -> IssueVersionHistory:
         """Create the initial version entry for a new issue."""
 
         version_id = str(uuid.uuid4())
@@ -140,12 +141,17 @@ class IssueVersioningService:
 
         self.version_history[issue_record.issue_id].append(initial_version)
 
-        self.logger.info(f"Created initial version {version_id} for issue {issue_record.issue_id}")
+        self.logger.info(
+            f"Created initial version {version_id} for issue {issue_record.issue_id}")
         return initial_version
 
-    async def create_new_version(self, issue_id: str, updated_record: AirtableIssueRecord,
-                               change_type: VersionChangeType, change_description: str,
-                               created_by: str = "system") -> tuple[IssueVersionHistory, bool]:
+    async def create_new_version(self,
+                                 issue_id: str,
+                                 updated_record: AirtableIssueRecord,
+                                 change_type: VersionChangeType,
+                                 change_description: str,
+                                 created_by: str = "system") -> tuple[IssueVersionHistory,
+                                                                      bool]:
         """Create a new version of an existing issue."""
 
         # Get current version
@@ -192,7 +198,8 @@ class IssueVersioningService:
         if conflict_detected:
             await self._resolve_version_conflict(current_version, new_version, created_by)
 
-        self.logger.info(f"Created version {new_version_number} for issue {issue_id}: {change_description}")
+        self.logger.info(
+            f"Created version {new_version_number} for issue {issue_id}: {change_description}")
         return new_version, conflict_detected
 
     async def get_current_version(self, issue_id: str) -> IssueVersionHistory | None:
@@ -214,7 +221,10 @@ class IssueVersioningService:
 
         return current_versions[0]
 
-    async def get_version_history(self, issue_id: str, include_closed: bool = True) -> list[IssueVersionHistory]:
+    async def get_version_history(
+            self,
+            issue_id: str,
+            include_closed: bool = True) -> list[IssueVersionHistory]:
         """Get complete version history for an issue."""
 
         if issue_id not in self.version_history:
@@ -228,7 +238,10 @@ class IssueVersioningService:
         # Sort by version number
         return sorted(versions, key=lambda x: x.version_number)
 
-    async def get_version_at_date(self, issue_id: str, target_date: date) -> IssueVersionHistory | None:
+    async def get_version_at_date(
+            self,
+            issue_id: str,
+            target_date: date) -> IssueVersionHistory | None:
         """Get the version that was active on a specific date."""
 
         if issue_id not in self.version_history:
@@ -243,8 +256,12 @@ class IssueVersioningService:
 
         return None
 
-    async def rollback_to_version(self, issue_id: str, target_version_id: str,
-                                rollback_reason: str, created_by: str = "system") -> bool:
+    async def rollback_to_version(
+            self,
+            issue_id: str,
+            target_version_id: str,
+            rollback_reason: str,
+            created_by: str = "system") -> bool:
         """Rollback an issue to a previous version."""
 
         # Get target version
@@ -256,7 +273,8 @@ class IssueVersioningService:
                     break
 
         if not target_version:
-            self.logger.error(f"Target version {target_version_id} not found for issue {issue_id}")
+            self.logger.error(
+                f"Target version {target_version_id} not found for issue {issue_id}")
             return False
 
         if not target_version.rollback_available:
@@ -286,10 +304,14 @@ class IssueVersioningService:
             created_by=created_by
         )
 
-        self.logger.info(f"Rolled back issue {issue_id} to version {target_version.version_number}")
+        self.logger.info(
+            f"Rolled back issue {issue_id} to version {target_version.version_number}")
         return True
 
-    async def _detect_version_conflicts(self, issue_id: str, new_record: AirtableIssueRecord) -> bool:
+    async def _detect_version_conflicts(
+            self,
+            issue_id: str,
+            new_record: AirtableIssueRecord) -> bool:
         """Detect if there are concurrent modifications causing conflicts."""
 
         current_version = await self.get_current_version(issue_id)
@@ -300,13 +322,14 @@ class IssueVersioningService:
         time_threshold = datetime.now() - timedelta(minutes=5)
         if current_version.created_at > time_threshold:
             # Potential conflict if content differs significantly
-            content_diff_score = self._calculate_content_difference(current_version, new_record)
+            content_diff_score = self._calculate_content_difference(
+                current_version, new_record)
             return content_diff_score > 0.5  # Significant difference threshold
 
         return False
 
     def _calculate_content_difference(self, version: IssueVersionHistory,
-                                    record: AirtableIssueRecord) -> float:
+                                      record: AirtableIssueRecord) -> float:
         """Calculate content difference score between version and record."""
 
         differences = 0
@@ -328,8 +351,8 @@ class IssueVersioningService:
         return differences / total_fields
 
     async def _resolve_version_conflict(self, old_version: IssueVersionHistory,
-                                      new_version: IssueVersionHistory,
-                                      created_by: str) -> ConflictResolution:
+                                        new_version: IssueVersionHistory,
+                                        created_by: str) -> ConflictResolution:
         """Resolve version conflicts using predefined strategies."""
 
         # Simple strategy: newer version wins, log the conflict
@@ -343,12 +366,14 @@ class IssueVersioningService:
 
         self.conflict_log.append(resolution)
 
-        self.logger.warning(f"Version conflict resolved for issue {new_version.issue_id}: "
-                          f"version {new_version.version_number} overwrote concurrent changes")
+        self.logger.warning(
+            f"Version conflict resolved for issue {new_version.issue_id}: "
+            f"version {new_version.version_number} overwrote concurrent changes")
 
         return resolution
 
-    async def cleanup_old_versions(self, cutoff_date: date | None = None) -> dict[str, int]:
+    async def cleanup_old_versions(
+            self, cutoff_date: date | None = None) -> dict[str, int]:
         """Clean up old versions beyond retention period."""
 
         if not self.auto_cleanup_enabled:
@@ -366,7 +391,7 @@ class IssueVersioningService:
 
             for version in versions:
                 if (version.valid_to and version.valid_to < cutoff_date and
-                    version.version_id != current_version.version_id):
+                        version.version_id != current_version.version_id):
 
                     # Check if this version has rollback dependencies
                     if not self._has_rollback_dependencies(version):
@@ -377,7 +402,8 @@ class IssueVersioningService:
                 else:
                     retained_count += 1
 
-        self.logger.info(f"Version cleanup: {cleaned_count} versions cleaned, {retained_count} retained")
+        self.logger.info(
+            f"Version cleanup: {cleaned_count} versions cleaned, {retained_count} retained")
         return {"cleaned": cleaned_count, "retained": retained_count}
 
     def _has_rollback_dependencies(self, version: IssueVersionHistory) -> bool:
@@ -390,13 +416,13 @@ class IssueVersioningService:
         # Keep versions that are part of conflict resolution
         for conflict in self.conflict_log:
             if (conflict.winner_version_id == version.version_id or
-                conflict.loser_version_id == version.version_id):
+                    conflict.loser_version_id == version.version_id):
                 return True
 
         return False
 
     async def bulk_migrate_versions(self, migration_rules: dict[str, Any],
-                                  created_by: str = "system") -> dict[str, int]:
+                                    created_by: str = "system") -> dict[str, int]:
         """Perform bulk version migration with new rules."""
 
         migrated_count = 0
@@ -409,10 +435,12 @@ class IssueVersioningService:
                     continue
 
                 # Apply migration rules
-                needs_migration = self._check_migration_needed(current_version, migration_rules)
+                needs_migration = self._check_migration_needed(
+                    current_version, migration_rules)
 
                 if needs_migration:
-                    migrated_record = self._apply_migration_rules(current_version, migration_rules)
+                    migrated_record = self._apply_migration_rules(
+                        current_version, migration_rules)
 
                     await self.create_new_version(
                         issue_id=issue_id,
@@ -428,15 +456,17 @@ class IssueVersioningService:
                 self.logger.error(f"Failed to migrate issue {issue_id}: {e}")
                 failed_count += 1
 
-        self.logger.info(f"Bulk migration complete: {migrated_count} migrated, {failed_count} failed")
+        self.logger.info(
+            f"Bulk migration complete: {migrated_count} migrated, {failed_count} failed")
         return {"migrated": migrated_count, "failed": failed_count}
 
     def _check_migration_needed(self, version: IssueVersionHistory,
-                              migration_rules: dict[str, Any]) -> bool:
+                                migration_rules: dict[str, Any]) -> bool:
         """Check if a version needs migration based on rules."""
 
         # Example migration rules
-        if migration_rules.get("update_quality_scores") and version.quality_score == 0.0:
+        if migration_rules.get(
+                "update_quality_scores") and version.quality_score == 0.0:
             return True
 
         if migration_rules.get("normalize_confidence") and version.confidence > 1.0:
@@ -445,7 +475,7 @@ class IssueVersioningService:
         return False
 
     def _apply_migration_rules(self, version: IssueVersionHistory,
-                             migration_rules: dict[str, Any]) -> AirtableIssueRecord:
+                               migration_rules: dict[str, Any]) -> AirtableIssueRecord:
         """Apply migration rules to create updated record."""
 
         # Create updated record based on current version
@@ -462,10 +492,13 @@ class IssueVersioningService:
         )
 
         # Apply migration rules
-        if migration_rules.get("update_quality_scores") and updated_record.quality_score == 0.0:
-            updated_record.quality_score = migration_rules.get("default_quality_score", 0.5)
+        if migration_rules.get(
+                "update_quality_scores") and updated_record.quality_score == 0.0:
+            updated_record.quality_score = migration_rules.get(
+                "default_quality_score", 0.5)
 
-        if migration_rules.get("normalize_confidence") and updated_record.confidence > 1.0:
+        if migration_rules.get(
+                "normalize_confidence") and updated_record.confidence > 1.0:
             updated_record.confidence = min(updated_record.confidence, 1.0)
 
         return updated_record
@@ -474,7 +507,8 @@ class IssueVersioningService:
         """Get comprehensive version statistics."""
 
         total_issues = len(self.version_history)
-        total_versions = sum(len(versions) for versions in self.version_history.values())
+        total_versions = sum(len(versions)
+                             for versions in self.version_history.values())
 
         # Calculate average versions per issue
         avg_versions_per_issue = total_versions / total_issues if total_issues > 0 else 0
@@ -484,13 +518,15 @@ class IssueVersioningService:
         for versions in self.version_history.values():
             for version in versions:
                 change_type = version.change_type.value
-                change_type_counts[change_type] = change_type_counts.get(change_type, 0) + 1
+                change_type_counts[change_type] = change_type_counts.get(
+                    change_type, 0) + 1
 
         # Recent activity (last 7 days)
         recent_cutoff = datetime.now() - timedelta(days=7)
         recent_versions = 0
         for versions in self.version_history.values():
-            recent_versions += len([v for v in versions if v.created_at > recent_cutoff])
+            recent_versions += len([v for v in versions if v.created_at >
+                                   recent_cutoff])
 
         return {
             "total_issues": total_issues,

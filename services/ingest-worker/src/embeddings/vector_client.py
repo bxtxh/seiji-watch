@@ -33,6 +33,7 @@ class VectorClient:
         openai_api_key: str | None = None,
         weaviate_url: str | None = None,
         weaviate_api_key: str | None = None
+
     ):
         # OpenAI configuration
         self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
@@ -45,7 +46,8 @@ class VectorClient:
         }
 
         # Weaviate configuration
-        self.weaviate_url = weaviate_url or os.getenv("WEAVIATE_URL", "https://seiji-watch-cluster.weaviate.network")
+        self.weaviate_url = weaviate_url or os.getenv(
+            "WEAVIATE_URL", "https://seiji-watch-cluster.weaviate.network")
         self.weaviate_api_key = weaviate_api_key or os.getenv("WEAVIATE_API_KEY")
 
         # Initialize Weaviate client
@@ -69,7 +71,9 @@ class VectorClient:
             else:
                 # Local Weaviate instance
                 self.weaviate_client = weaviate.connect_to_local(
-                    host=self.weaviate_url.replace("http://", "").replace("https://", "")
+                    host=self.weaviate_url.replace(
+                        "http://", "").replace(
+                        "https://", "")
                 )
 
             logger.info("Weaviate client initialized successfully")
@@ -208,7 +212,10 @@ class VectorClient:
             logger.error(f"Embedding generation failed: {e}")
             raise
 
-    def store_bill_embedding(self, bill_data: dict, embedding: EmbeddingResult) -> str | None:
+    def store_bill_embedding(
+            self,
+            bill_data: dict,
+            embedding: EmbeddingResult) -> str | None:
         """
         Store bill data and embedding in Weaviate
 
@@ -243,14 +250,18 @@ class VectorClient:
                 vector=embedding.vector
             )
 
-            logger.info(f"Stored bill embedding: {bill_data.get('bill_number')} -> {result.uuid}")
+            logger.info(
+                f"Stored bill embedding: {bill_data.get('bill_number')} -> {result.uuid}")
             return str(result.uuid)
 
         except Exception as e:
             logger.error(f"Failed to store bill embedding: {e}")
             return None
 
-    def store_speech_embedding(self, speech_data: dict, embedding: EmbeddingResult) -> str | None:
+    def store_speech_embedding(
+            self,
+            speech_data: dict,
+            embedding: EmbeddingResult) -> str | None:
         """
         Store speech data and embedding in Weaviate
 
@@ -284,7 +295,8 @@ class VectorClient:
                 vector=embedding.vector
             )
 
-            logger.info(f"Stored speech embedding: {speech_data.get('meeting_id')} -> {result.uuid}")
+            logger.info(
+                f"Stored speech embedding: {speech_data.get('meeting_id')} -> {result.uuid}")
             return str(result.uuid)
 
         except Exception as e:
@@ -340,7 +352,8 @@ class VectorClient:
                 })
 
             # Filter by minimum certainty
-            filtered_results = [r for r in formatted_results if r["certainty"] >= min_certainty]
+            filtered_results = [
+                r for r in formatted_results if r["certainty"] >= min_certainty]
 
             logger.info(f"Vector search found {len(filtered_results)} similar bills")
             return filtered_results
@@ -355,13 +368,11 @@ class VectorClient:
             return {"bills": 0, "speeches": 0}
 
         try:
-            bills_count = self.weaviate_client.collections.get("Bills").aggregate.over_all(
-                total_count=True
-            ).total_count
+            bills_count = self.weaviate_client.collections.get(
+                "Bills").aggregate.over_all(total_count=True).total_count
 
-            speeches_count = self.weaviate_client.collections.get("Speeches").aggregate.over_all(
-                total_count=True
-            ).total_count
+            speeches_count = self.weaviate_client.collections.get(
+                "Speeches").aggregate.over_all(total_count=True).total_count
 
             return {
                 "bills": bills_count,

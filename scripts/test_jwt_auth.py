@@ -23,6 +23,7 @@ except ImportError:
     print("❌ PyJWT library not available. Install with: pip install PyJWT")
     sys.exit(1)
 
+
 def generate_test_token(secret_key: str, hours: int = 1) -> str:
     """Generate a test token with server-compatible format."""
     payload = {
@@ -37,7 +38,10 @@ def generate_test_token(secret_key: str, hours: int = 1) -> str:
     token = jwt.encode(payload, secret_key, algorithm="HS256")
     return token
 
-def test_api_endpoint(token: str, endpoint: str = "http://localhost:8000/api/issues/") -> dict:
+
+def test_api_endpoint(
+        token: str,
+        endpoint: str = "http://localhost:8000/api/issues/") -> dict:
     """Test an API endpoint with the generated token."""
     headers = {
         'Authorization': f'Bearer {token}',
@@ -47,12 +51,11 @@ def test_api_endpoint(token: str, endpoint: str = "http://localhost:8000/api/iss
     try:
         response = requests.get(endpoint, headers=headers, timeout=10)
 
-        return {
-            'status_code': response.status_code,
-            'success': response.status_code == 200,
-            'headers': dict(response.headers),
-            'response': response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text[:200]
-        }
+        return {'status_code': response.status_code,
+                'success': response.status_code == 200,
+                'headers': dict(response.headers),
+                'response': response.json() if response.headers.get('content-type',
+                                                                    '').startswith('application/json') else response.text[:200]}
 
     except requests.exceptions.ConnectionError:
         return {
@@ -75,6 +78,7 @@ def test_api_endpoint(token: str, endpoint: str = "http://localhost:8000/api/iss
             'error': str(e),
             'response': None
         }
+
 
 def main():
     print("🧪 JWT Authentication Test")
@@ -167,6 +171,7 @@ def main():
         print("      - type: 'access_token'")
 
     return all_tests_passed
+
 
 if __name__ == "__main__":
     success = main()

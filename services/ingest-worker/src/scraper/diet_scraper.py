@@ -147,14 +147,16 @@ class DietScraper:
             bills = []
 
             # Debug: Print page structure
-            self.logger.info(f"Page title: {soup.title.string if soup.title else 'No title'}")
+            self.logger.info(
+                f"Page title: {soup.title.string if soup.title else 'No title'}")
 
             # Look for various table structures
             bill_tables = soup.find_all('table')
             self.logger.info(f"Found {len(bill_tables)} tables on page")
 
             for i, table in enumerate(bill_tables):
-                self.logger.info(f"Table {i}: classes={table.get('class')}, rows={len(table.find_all('tr'))}")
+                self.logger.info(
+                    f"Table {i}: classes={table.get('class')}, rows={len(table.find_all('tr'))}")
 
                 rows = table.find_all('tr')
                 if len(rows) <= 1:  # Skip tables with no data rows
@@ -165,7 +167,14 @@ class DietScraper:
                     self.logger.debug(f"Debugging Table {i}:")
                     for j, row in enumerate(rows[:3]):
                         cells = row.find_all(['td', 'th'])
-                        cell_texts = [c.get_text(strip=True)[:20] + '...' if len(c.get_text(strip=True)) > 20 else c.get_text(strip=True) for c in cells]
+                        cell_texts = [
+                            c.get_text(
+                                strip=True)[
+                                :20] +
+                            '...' if len(
+                                c.get_text(
+                                    strip=True)) > 20 else c.get_text(
+                                strip=True) for c in cells]
                         self.logger.debug(f"  Row {j}: {cell_texts}")
 
                 # Skip header row if exists
@@ -327,7 +336,8 @@ class DietScraper:
 
     # Enhanced resilience and optimization methods
 
-    async def fetch_current_bills_async(self, force_refresh: bool = False) -> list[BillData]:
+    async def fetch_current_bills_async(
+            self, force_refresh: bool = False) -> list[BillData]:
         """
         Async version of fetch_current_bills with resilience features
 
@@ -339,7 +349,8 @@ class DietScraper:
         """
         if not self._resilient_scraper:
             # Fall back to synchronous method if resilient scraper not available
-            self.logger.warning("Resilient scraper not available, falling back to sync method")
+            self.logger.warning(
+                "Resilient scraper not available, falling back to sync method")
             return self.fetch_current_bills()
 
         try:
@@ -376,7 +387,8 @@ class DietScraper:
                             detail_urls.append(detail_url)
 
                     if detail_urls:
-                        self.logger.info(f"Fetching details for {len(detail_urls)} bills")
+                        self.logger.info(
+                            f"Fetching details for {len(detail_urls)} bills")
 
                         # Fetch details with progress tracking
                         def progress_callback(progress: float):
@@ -397,14 +409,18 @@ class DietScraper:
                                 if detail_content:
                                     # Parse and enhance bill with details
                                     try:
-                                        soup = BeautifulSoup(detail_content, 'html.parser')
+                                        soup = BeautifulSoup(
+                                            detail_content, 'html.parser')
                                         enhanced_summary = self._extract_summary(soup)
-                                        if enhanced_summary and len(enhanced_summary) > len(bill.summary or ""):
+                                        if enhanced_summary and len(
+                                                enhanced_summary) > len(bill.summary or ""):
                                             bill.summary = enhanced_summary
                                     except Exception as e:
-                                        self.logger.warning(f"Failed to parse details for {bill.bill_id}: {e}")
+                                        self.logger.warning(
+                                            f"Failed to parse details for {bill.bill_id}: {e}")
 
-                self.logger.info(f"Successfully fetched {len(bills)} bills with resilience features")
+                self.logger.info(
+                    f"Successfully fetched {len(bills)} bills with resilience features")
                 return bills
 
         except Exception as e:
@@ -442,7 +458,8 @@ class DietScraper:
 
         return bills
 
-    async def fetch_bill_details_async(self, bill_url: str, force_refresh: bool = False) -> dict[str, Any]:
+    async def fetch_bill_details_async(
+            self, bill_url: str, force_refresh: bool = False) -> dict[str, Any]:
         """
         Async version of fetch_bill_details with resilience features
 
@@ -481,7 +498,8 @@ class DietScraper:
                 return details
 
         except Exception as e:
-            self.logger.error(f"Failed to fetch bill details with resilient scraper: {e}")
+            self.logger.error(
+                f"Failed to fetch bill details with resilient scraper: {e}")
             return self.fetch_bill_details(bill_url)
 
     def get_scraper_statistics(self) -> dict[str, Any]:

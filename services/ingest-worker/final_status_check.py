@@ -23,6 +23,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_all_records(pat, base_id):
     """全レコード取得"""
     url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29"
@@ -46,6 +47,7 @@ def get_all_records(pat, base_id):
         params['offset'] = offset
 
     return all_records
+
 
 def main():
     print("📊 最終ステータス確認")
@@ -105,6 +107,7 @@ def main():
         print("\n⚠️ 統合継続が必要です")
 
     return 0
+
 
 if __name__ == "__main__":
     main()

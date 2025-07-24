@@ -62,7 +62,7 @@ class NDLRateLimiter:
 
             # Remove old requests outside the window
             self.requests = [req_time for req_time in self.requests
-                           if now - req_time < self.per_seconds]
+                             if now - req_time < self.per_seconds]
 
             # Wait if we've hit the limit
             if len(self.requests) >= self.max_requests:
@@ -109,7 +109,8 @@ class NDLAPIClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=60)
     )
-    async def _make_request(self, endpoint: str, params: dict[str, Any]) -> dict[str, Any]:
+    async def _make_request(self, endpoint: str,
+                            params: dict[str, Any]) -> dict[str, Any]:
         """Make rate-limited API request with retry logic"""
         await self.rate_limiter.acquire()
 
@@ -124,7 +125,8 @@ class NDLAPIClient:
             response.raise_for_status()
 
             data = response.json()
-            self.logger.debug(f"NDL API response: {data.get('numberOfRecords', 0)} records")
+            self.logger.debug(
+                f"NDL API response: {data.get('numberOfRecords', 0)} records")
             return data
 
         except httpx.HTTPStatusError as e:
@@ -230,7 +232,8 @@ class NDLAPIClient:
             speeches = []
 
             speech_records = data.get("speechRecord", [])
-            self.logger.info(f"Found {len(speech_records)} speeches for meeting {meeting_id}")
+            self.logger.info(
+                f"Found {len(speech_records)} speeches for meeting {meeting_id}")
 
             for record in speech_records:
                 speech = self._parse_speech_record(record)
@@ -275,7 +278,8 @@ class NDLAPIClient:
 
             start_record += batch_size
 
-        self.logger.info(f"Retrieved {len(all_speeches)} total speeches for meeting {meeting_id}")
+        self.logger.info(
+            f"Retrieved {len(all_speeches)} total speeches for meeting {meeting_id}")
         return all_speeches
 
     def _parse_meeting_record(self, record: dict[str, Any]) -> NDLMeeting | None:
@@ -321,7 +325,8 @@ class NDLAPIClient:
             speech_datetime = None
             if datetime_str:
                 try:
-                    speech_datetime = datetime.fromisoformat(datetime_str.replace('Z', '+00:00'))
+                    speech_datetime = datetime.fromisoformat(
+                        datetime_str.replace('Z', '+00:00'))
                 except ValueError:
                     self.logger.warning(f"Invalid datetime format: {datetime_str}")
 
@@ -380,7 +385,8 @@ async def main():
 
             # Show sample speeches
             for speech in speeches[:3]:
-                print(f"- {speech.speaker_name} ({speech.speaker_group}): {speech.speech_content[:100]}...")
+                print(
+                    f"- {speech.speaker_name} ({speech.speaker_group}): {speech.speech_content[:100]}...")
 
 
 if __name__ == "__main__":

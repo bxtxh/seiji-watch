@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def test_direct_airtable_access():
     """Test direct Airtable API access for all tables"""
 
@@ -76,7 +77,8 @@ async def test_direct_airtable_access():
                         if count > 0:
                             sample = records[0]
                             fields = list(sample['fields'].keys())
-                            print(f"  Fields: {fields[:3]}{'...' if len(fields) > 3 else ''}")
+                            print(
+                                f"  Fields: {fields[:3]}{'...' if len(fields) > 3 else ''}")
 
                     elif response.status == 403:
                         print("  ❌ PERMISSION DENIED (403)")
@@ -152,6 +154,7 @@ async def test_direct_airtable_access():
             print("\n❌ MAJOR ACCESS ISSUES")
             print("🔧 需要进一步检查Airtable权限设置")
             return False
+
 
 async def main():
     """Main function"""

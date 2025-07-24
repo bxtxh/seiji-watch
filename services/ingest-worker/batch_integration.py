@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def main():
     print("🚀 高速バッチ法案統合")
     print("=" * 40)
@@ -118,6 +119,7 @@ def main():
     except Exception as e:
         print(f"❌ エラー: {str(e)}")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

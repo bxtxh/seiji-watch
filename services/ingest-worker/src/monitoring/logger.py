@@ -145,7 +145,11 @@ class StructuredLogger:
         entry = self._create_entry(LogLevel.INFO, message, category, **kwargs)
         self.logger.info(entry.to_json())
 
-    def warning(self, message: str, category: LogCategory = LogCategory.SYSTEM, **kwargs):
+    def warning(
+            self,
+            message: str,
+            category: LogCategory = LogCategory.SYSTEM,
+            **kwargs):
         """Log warning message."""
         entry = self._create_entry(LogLevel.WARNING, message, category, **kwargs)
         self.logger.warning(entry.to_json())
@@ -155,7 +159,11 @@ class StructuredLogger:
         entry = self._create_entry(LogLevel.ERROR, message, category, **kwargs)
         self.logger.error(entry.to_json())
 
-    def critical(self, message: str, category: LogCategory = LogCategory.ERROR, **kwargs):
+    def critical(
+            self,
+            message: str,
+            category: LogCategory = LogCategory.ERROR,
+            **kwargs):
         """Log critical message."""
         entry = self._create_entry(LogLevel.CRITICAL, message, category, **kwargs)
         self.logger.critical(entry.to_json())
@@ -166,6 +174,7 @@ class StructuredLogger:
         message: str = None,
         category: LogCategory = LogCategory.ERROR,
         **kwargs
+
     ):
         """Log an exception with full context."""
         error_data = {
@@ -184,6 +193,7 @@ class StructuredLogger:
         duration: float,
         details: dict[str, Any] = None,
         success: bool = True
+
     ):
         """Log performance metrics."""
         performance_data = {
@@ -208,6 +218,7 @@ class StructuredLogger:
         action: str,
         resource: str,
         details: dict[str, Any] = None
+
     ):
         """Log audit event."""
         audit_data = {
@@ -230,6 +241,7 @@ class StructuredLogger:
         event_type: str,
         severity: str,
         details: dict[str, Any] = None
+
     ):
         """Log security event."""
         security_data = {
@@ -241,7 +253,8 @@ class StructuredLogger:
         if details:
             security_data.update(details)
 
-        log_level = LogLevel.WARNING if severity in ['medium', 'high'] else LogLevel.INFO
+        log_level = LogLevel.WARNING if severity in [
+            'medium', 'high'] else LogLevel.INFO
 
         entry = self._create_entry(
             log_level,
@@ -260,6 +273,7 @@ class StructuredLogger:
         success: bool = True,
         duration: float | None = None,
         quality_score: float | None = None
+
     ):
         """Log data processing operation."""
         processing_data = {
@@ -272,7 +286,8 @@ class StructuredLogger:
 
         if duration:
             processing_data['duration_seconds'] = duration
-            processing_data['throughput_per_second'] = input_count / duration if duration > 0 else 0
+            processing_data['throughput_per_second'] = input_count / \
+                duration if duration > 0 else 0
 
         if quality_score:
             processing_data['quality_score'] = quality_score
@@ -305,6 +320,7 @@ def logging_context(
     operation_id: str = None,
     trace_id: str = None,
     component: str = None
+
 ):
     """Context manager for setting logging context."""
     # Generate IDs if not provided
@@ -341,7 +357,10 @@ def timed_operation(logger: StructuredLogger, operation_name: str, **kwargs):
     operation_id = str(uuid.uuid4())
 
     with logging_context(operation_id=operation_id, component=operation_name):
-        logger.info(f"Starting operation: {operation_name}", LogCategory.PROCESSING, data=kwargs)
+        logger.info(
+            f"Starting operation: {operation_name}",
+            LogCategory.PROCESSING,
+            data=kwargs)
 
         success = True
         try:
@@ -380,7 +399,8 @@ def log_exception(exception: Exception, message: str = None, **kwargs):
 
 def log_processing(operation: str, input_count: int, output_count: int, **kwargs):
     """Log data processing operation."""
-    processing_logger.log_data_processing(operation, input_count, output_count, **kwargs)
+    processing_logger.log_data_processing(
+        operation, input_count, output_count, **kwargs)
 
 
 def log_security(event_type: str, severity: str, **kwargs):

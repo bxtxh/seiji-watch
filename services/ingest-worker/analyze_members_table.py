@@ -13,12 +13,14 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from shared.clients.airtable import AirtableClient
+
 # Add the shared directory to the path
 sys.path.append('/Users/shogen/seiji-watch/shared/src')
-from shared.clients.airtable import AirtableClient
 
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
+
 
 async def fetch_all_members(client: AirtableClient) -> list[dict[str, Any]]:
     """Fetch all records from the Members table."""
@@ -36,6 +38,7 @@ async def fetch_all_members(client: AirtableClient) -> list[dict[str, Any]]:
     except Exception as e:
         print(f"Error fetching members: {e}")
         return []
+
 
 def analyze_first_seven_records(records: list[dict[str, Any]]) -> None:
     """Analyze the first 7 records for reality check."""
@@ -62,6 +65,7 @@ def analyze_first_seven_records(records: list[dict[str, Any]]) -> None:
         print(f"  Status: {fields.get('Status', 'N/A')}")
         print()
 
+
 def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
     """Analyze Name_Kana field completeness."""
     print("=== NAME_KANA COMPLETENESS ANALYSIS ===")
@@ -85,8 +89,10 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
     present_count = len(present_kana)
 
     print(f"Total records: {total_records}")
-    print(f"Records with Name_Kana: {present_count} ({present_count/total_records*100:.1f}%)")
-    print(f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)")
+    print(
+        f"Records with Name_Kana: {present_count} ({present_count/total_records*100:.1f}%)")
+    print(
+        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)")
     print()
 
     if missing_kana:
@@ -103,6 +109,7 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
         for i, (name, kana) in enumerate(present_kana[:5], 1):  # Show first 5
             print(f"  {i}. {name} → {kana}")
         print()
+
 
 def analyze_data_patterns(records: list[dict[str, Any]]) -> None:
     """Analyze patterns that might indicate real vs synthetic data."""
@@ -155,6 +162,7 @@ def analyze_data_patterns(records: list[dict[str, Any]]) -> None:
         print(f"  {election_type}: {count}")
     print()
 
+
 def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
     """Suggest strategies for filling missing Name_Kana data."""
     print("=== SUGGESTED STRATEGIES FOR FILLING MISSING NAME_KANA ===")
@@ -180,7 +188,8 @@ def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
 
     print("4. **LLM-Assisted Generation**:")
     print("   - Use GPT-4 or Claude to generate kana readings")
-    print("   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'")
+    print(
+        "   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'")
     print("   - Verify against known databases")
     print()
 
@@ -190,6 +199,7 @@ def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
     print("   - Use web scraping for official verification")
     print("   - Implement quality checks and validation")
     print()
+
 
 async def main():
     """Main analysis function."""

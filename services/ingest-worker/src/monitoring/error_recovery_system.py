@@ -43,7 +43,8 @@ class RetryConfig:
 
     # Conditions for retry
     retry_on_exceptions: list[type] = field(default_factory=lambda: [Exception])
-    retry_on_status_codes: list[int] = field(default_factory=lambda: [429, 500, 502, 503, 504])
+    retry_on_status_codes: list[int] = field(
+        default_factory=lambda: [429, 500, 502, 503, 504])
 
     def calculate_delay(self, attempt: int) -> float:
         """Calculate delay for a given attempt."""
@@ -72,7 +73,8 @@ class CircuitBreakerConfig:
     timeout: float = 60.0  # Seconds to wait before trying half-open
 
     # Success/failure criteria
-    success_status_codes: list[int] = field(default_factory=lambda: [200, 201, 202, 204])
+    success_status_codes: list[int] = field(
+        default_factory=lambda: [200, 201, 202, 204])
     failure_exceptions: list[type] = field(default_factory=lambda: [Exception])
 
 
@@ -111,8 +113,7 @@ class DeadLetterMessage:
             'failed_at': self.failed_at.isoformat(),
             'retry_count': self.retry_count,
             'max_retries': self.max_retries,
-            'next_retry_at': self.next_retry_at.isoformat() if self.next_retry_at else None
-        }
+            'next_retry_at': self.next_retry_at.isoformat() if self.next_retry_at else None}
 
 
 class CircuitBreaker:
@@ -134,7 +135,8 @@ class CircuitBreaker:
         if self.state == CircuitBreakerState.CLOSED:
             return True
         elif self.state == CircuitBreakerState.OPEN:
-            if self.last_failure_time and (now - self.last_failure_time).total_seconds() >= self.config.timeout:
+            if self.last_failure_time and (
+                    now - self.last_failure_time).total_seconds() >= self.config.timeout:
                 self.state = CircuitBreakerState.HALF_OPEN
                 self.success_count = 0
                 logger.info(f"Circuit breaker {self.name} moved to HALF_OPEN")
@@ -164,7 +166,8 @@ class CircuitBreaker:
             if self.failure_count >= self.config.failure_threshold:
                 self.state = CircuitBreakerState.OPEN
                 self.last_state_change = datetime.now()
-                logger.warning(f"Circuit breaker {self.name} moved to OPEN after {self.failure_count} failures")
+                logger.warning(
+                    f"Circuit breaker {self.name} moved to OPEN after {self.failure_count} failures")
         elif self.state == CircuitBreakerState.HALF_OPEN:
             self.state = CircuitBreakerState.OPEN
             self.last_state_change = datetime.now()
@@ -179,8 +182,7 @@ class CircuitBreaker:
             'success_count': self.success_count,
             'last_failure_time': self.last_failure_time.isoformat() if self.last_failure_time else None,
             'last_state_change': self.last_state_change.isoformat(),
-            'can_execute': self.can_execute()
-        }
+            'can_execute': self.can_execute()}
 
 
 class DeadLetterQueue:
@@ -195,7 +197,9 @@ class DeadLetterQueue:
         """Add a failed message to the DLQ."""
         if len(self.messages) >= self.max_size:
             # Remove oldest message
-            oldest_id = min(self.messages.keys(), key=lambda k: self.messages[k].failed_at)
+            oldest_id = min(
+                self.messages.keys(),
+                key=lambda k: self.messages[k].failed_at)
             del self.messages[oldest_id]
             if oldest_id in self.retry_queue:
                 self.retry_queue.remove(oldest_id)
@@ -211,7 +215,7 @@ class DeadLetterQueue:
         for message_id, message in self.messages.items():
             if (message.retry_count < message.max_retries and
                 message.next_retry_at and
-                message.next_retry_at <= now):
+                    message.next_retry_at <= now):
                 ready_messages.append(message)
 
         return ready_messages
@@ -321,10 +325,10 @@ class ErrorRecoverySystem:
         logger.info(f"Registered recovery procedure for {operation_name}")
 
     async def execute_with_recovery(self,
-                                   operation: Callable,
-                                   operation_name: str,
-                                   *args,
-                                   **kwargs) -> OperationResult:
+                                    operation: Callable,
+                                    operation_name: str,
+                                    *args,
+                                    **kwargs) -> OperationResult:
         """Execute an operation with full error recovery."""
 
         start_time = time.time()
@@ -371,8 +375,9 @@ class ErrorRecoverySystem:
 
                 if should_retry and attempt < retry_config.max_attempts - 1:
                     delay = retry_config.calculate_delay(attempt)
-                    logger.warning(f"Operation {operation_name} failed (attempt {attempt + 1}), "
-                                 f"retrying in {delay:.2f}s: {e}")
+                    logger.warning(
+                        f"Operation {operation_name} failed (attempt {attempt + 1}), "
+                        f"retrying in {delay:.2f}s: {e}")
                     await asyncio.sleep(delay)
                 else:
                     # Final failure - try recovery procedures
@@ -380,9 +385,11 @@ class ErrorRecoverySystem:
                         try:
                             await self.recovery_procedures[operation_name](*args, **kwargs)
                             result.recovery_applied = True
-                            logger.info(f"Applied recovery procedure for {operation_name}")
+                            logger.info(
+                                f"Applied recovery procedure for {operation_name}")
                         except Exception as recovery_error:
-                            logger.error(f"Recovery procedure failed for {operation_name}: {recovery_error}")
+                            logger.error(
+                                f"Recovery procedure failed for {operation_name}: {recovery_error}")
 
                     # Send to dead letter queue if configured
                     if attempt == retry_config.max_attempts - 1:
@@ -394,11 +401,16 @@ class ErrorRecoverySystem:
         result.total_duration = time.time() - start_time
         return result
 
-    def _should_retry(self, error: Exception, attempt: int, config: RetryConfig) -> bool:
+    def _should_retry(
+            self,
+            error: Exception,
+            attempt: int,
+            config: RetryConfig) -> bool:
         """Determine if operation should be retried."""
 
         # Check if exception type is retryable
-        if not any(isinstance(error, exc_type) for exc_type in config.retry_on_exceptions):
+        if not any(isinstance(error, exc_type)
+                   for exc_type in config.retry_on_exceptions):
             return False
 
         # Check if status code is retryable (for HTTP errors)
@@ -407,7 +419,13 @@ class ErrorRecoverySystem:
 
         return True
 
-    async def _send_to_dlq(self, operation_name: str, args: tuple, kwargs: dict, error: Exception):
+    async def _send_to_dlq(
+        self,
+        operation_name: str,
+        args: tuple,
+        kwargs: dict,
+        error: Exception
+    ):
         """Send failed operation to dead letter queue."""
 
         import uuid
@@ -442,7 +460,8 @@ class ErrorRecoverySystem:
 
         for message in retry_messages:
             try:
-                logger.info(f"Retrying DLQ message {message.id}: {message.operation_name}")
+                logger.info(
+                    f"Retrying DLQ message {message.id}: {message.operation_name}")
 
                 # Attempt to rebuild and retry the operation
                 # This is a simplified approach - in production, you'd need more sophisticated
@@ -453,11 +472,13 @@ class ErrorRecoverySystem:
                 if message.retry_count >= message.max_retries:
                     # Give up and remove from DLQ
                     self.dead_letter_queue.remove_message(message.id)
-                    logger.error(f"Giving up on DLQ message {message.id} after {message.retry_count} retries")
+                    logger.error(
+                        f"Giving up on DLQ message {message.id} after {message.retry_count} retries")
                 else:
                     # Schedule next retry
                     message.next_retry_at = datetime.now() + timedelta(minutes=60 * message.retry_count)
-                    logger.info(f"Scheduled next retry for {message.id} at {message.next_retry_at}")
+                    logger.info(
+                        f"Scheduled next retry for {message.id} at {message.next_retry_at}")
 
             except Exception as e:
                 logger.error(f"Failed to process DLQ message {message.id}: {e}")

@@ -12,15 +12,15 @@ import sys
 from datetime import date
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # Add project root
-
 from src.pipeline.ingestion_router import (
     DataSource,
     HybridIngestionRouter,
     IngestionRequest,
 )
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))  # Add project root
 
 
 async def test_routing_decisions():
@@ -171,10 +171,12 @@ async def test_statistics_tracking():
         stats = router.get_routing_statistics()
 
         print("Routing Distribution:")
-        print(f"  NDL API: {stats['routing_distribution']['ndl_api_requests']} requests "
-              f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)")
-        print(f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
-              f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)")
+        print(
+            f"  NDL API: {stats['routing_distribution']['ndl_api_requests']} requests "
+            f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)")
+        print(
+            f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
+            f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)")
 
         print("\nReliability:")
         print(f"  Fallback Rate: {stats['reliability']['fallback_rate']:.1f}%")
@@ -183,7 +185,8 @@ async def test_statistics_tracking():
         print("\nThroughput:")
         print(f"  Total Meetings: {stats['throughput']['total_meetings_processed']}")
         print(f"  Total Speeches: {stats['throughput']['total_speeches_processed']}")
-        print(f"  Avg Meetings/Request: {stats['throughput']['meetings_per_request']:.1f}")
+        print(
+            f"  Avg Meetings/Request: {stats['throughput']['meetings_per_request']:.1f}")
 
         print("\nConfiguration:")
         print(f"  Cutoff Date: {stats['configuration']['cutoff_date']}")

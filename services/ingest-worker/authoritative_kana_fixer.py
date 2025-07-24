@@ -20,7 +20,7 @@ AUTHORITATIVE_POLITICIAN_READINGS = {
     # Critical cases identified by precision detector - must be 100% accurate
     "山田修": "やまだおさむ",      # Was: やまだ (surname-only)
     "山田太郎": "やまだたろう",    # Was: たろう (given-only)
-    "高野光二郎": "たかのこうじろう", # Was: たかの (surname-only)
+    "高野光二郎": "たかのこうじろう",  # Was: たかの (surname-only)
     "谷川弥一": "たにがわやいち",   # Was: たにいち (incomplete)
     "濱田通裕": "はまだみちひろ",   # Was: たゆたか (incorrect)
     "三木亨": "みきとおる",        # Was: やまだ (completely wrong)
@@ -28,7 +28,7 @@ AUTHORITATIVE_POLITICIAN_READINGS = {
 
     # High confidence cases - verified readings
     "吉良佳子": "きらよしこ",      # Confirmed correct
-    "佐々木さやか": "ささきさやか", # Confirmed correct
+    "佐々木さやか": "ささきさやか",  # Confirmed correct
     "嘉田由紀子": "かだゆきこ",    # Confirmed correct
     "志位和夫": "しいかずお",      # Confirmed correct
     "金子恵美": "かねこえみ",      # Confirmed correct
@@ -36,7 +36,7 @@ AUTHORITATIVE_POLITICIAN_READINGS = {
     "赤尾由美": "あかおゆみ",      # Confirmed correct
     "森和": "もりかず",           # Was: もりわ (incomplete)
     "こやり隆史": "こやりたかし",   # Confirmed correct
-    "海江田万里": "かいえだばんり", # Was: たなかたろう (placeholder)
+    "海江田万里": "かいえだばんり",  # Was: たなかたろう (placeholder)
 
     # Additional verified politicians from official sources
     "田中太郎": "たなかたろう",    # Generic but potentially real
@@ -155,6 +155,7 @@ ENHANCED_KANJI_TO_KANA = {
     '信夫': 'のぶお'
 }
 
+
 class AuthoritativeKanaFixer:
     """Authoritative source-based Name_Kana correction system"""
 
@@ -252,7 +253,11 @@ class AuthoritativeKanaFixer:
         remaining = name
 
         # Sort patterns by length (longest first for better matching)
-        sorted_patterns = sorted(ENHANCED_KANJI_TO_KANA.items(), key=lambda x: len(x[0]), reverse=True)
+        sorted_patterns = sorted(
+            ENHANCED_KANJI_TO_KANA.items(),
+            key=lambda x: len(
+                x[0]),
+            reverse=True)
 
         while remaining:
             matched = False
@@ -362,7 +367,8 @@ class AuthoritativeKanaFixer:
 
                     else:
                         self.fix_results['errors'] += 1
-                        print(f"   ❌ Error updating {record_info['name']}: {response.status}")
+                        print(
+                            f"   ❌ Error updating {record_info['name']}: {response.status}")
 
             except Exception as e:
                 self.fix_results['errors'] += 1
@@ -401,7 +407,8 @@ class AuthoritativeKanaFixer:
             # Prioritize records based on detection results
             if detection_results:
                 priority_list = self.prioritize_fixes(detection_results, all_records)
-                print(f"🎯 Prioritized {len(priority_list)} high-priority records for fixing")
+                print(
+                    f"🎯 Prioritized {len(priority_list)} high-priority records for fixing")
             else:
                 priority_list = []
 
@@ -419,9 +426,11 @@ class AuthoritativeKanaFixer:
                     if name:
                         self.fix_results['total_processed'] += 1
 
-                        new_kana, fix_type = self.determine_authoritative_reading(name, current_kana)
+                        new_kana, fix_type = self.determine_authoritative_reading(
+                            name, current_kana)
 
-                        if new_kana and fix_type not in ['already_correct', 'could_not_generate']:
+                        if new_kana and fix_type not in [
+                                'already_correct', 'could_not_generate']:
                             records_to_fix.append({
                                 'id': record['id'],
                                 'name': name,
@@ -449,9 +458,11 @@ class AuthoritativeKanaFixer:
                     if name:
                         self.fix_results['total_processed'] += 1
 
-                        new_kana, fix_type = self.determine_authoritative_reading(name, current_kana)
+                        new_kana, fix_type = self.determine_authoritative_reading(
+                            name, current_kana)
 
-                        if new_kana and fix_type not in ['already_correct', 'could_not_generate']:
+                        if new_kana and fix_type not in [
+                                'already_correct', 'could_not_generate']:
                             records_to_fix.append({
                                 'id': record['id'],
                                 'name': name,
@@ -468,7 +479,8 @@ class AuthoritativeKanaFixer:
                         else:
                             self.fix_results['could_not_fix'] += 1
 
-            print(f"🔍 Found {len(records_to_fix)} records requiring authoritative fixes")
+            print(
+                f"🔍 Found {len(records_to_fix)} records requiring authoritative fixes")
 
             if not records_to_fix:
                 print("🎉 All Name_Kana readings are already correct!")
@@ -489,7 +501,8 @@ class AuthoritativeKanaFixer:
             print(f"✅ Backup saved: {backup_filename}")
 
             # Show preview of critical fixes
-            critical_fixes = [f for f in records_to_fix if f.get('priority') == 'CRITICAL']
+            critical_fixes = [
+                f for f in records_to_fix if f.get('priority') == 'CRITICAL']
             high_fixes = [f for f in records_to_fix if f.get('priority') == 'HIGH']
 
             if critical_fixes:
@@ -539,11 +552,13 @@ class AuthoritativeKanaFixer:
         print(f"\n📈 TOTAL CORRECTIONS APPLIED: {total_fixes}")
 
         # Show key authoritative fixes
-        authoritative_fixes = [f for f in results['fixes_applied'] if f['fix_type'] == 'authoritative']
+        authoritative_fixes = [f for f in results['fixes_applied']
+                               if f['fix_type'] == 'authoritative']
         if authoritative_fixes:
             print("\n🏛️ KEY AUTHORITATIVE CORRECTIONS:")
             for fix in authoritative_fixes[:10]:
-                print(f"   ✅ {fix['name']}: '{fix['current_kana']}' → '{fix['new_kana']}'")
+                print(
+                    f"   ✅ {fix['name']}: '{fix['current_kana']}' → '{fix['new_kana']}'")
 
         # Calculate final quality estimate
         total_good = results['already_correct'] + total_fixes
@@ -559,6 +574,7 @@ class AuthoritativeKanaFixer:
                 print("👍 VERY GOOD! Good quality level")
             else:
                 print("⚠️ Further improvements needed")
+
 
 async def main():
     """Main authoritative fix entry point"""

@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class SpeechData:
     """発言データ構造"""
@@ -39,6 +40,7 @@ class SpeechData:
     ai_summary: str | None = None
     sentiment: str | None = None
     topics: list[str] | None = None
+
 
 class SpeechDataCollector:
     """発言データ収集・投入クラス"""
@@ -60,7 +62,12 @@ class SpeechDataCollector:
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs) -> dict[str, Any]:
+    async def _rate_limited_request(self,
+                                    session: aiohttp.ClientSession,
+                                    method: str,
+                                    url: str,
+                                    **kwargs) -> dict[str,
+                                                      Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -80,7 +87,8 @@ class SpeechDataCollector:
                 response.raise_for_status()
                 return await response.json()
 
-    async def get_member_party_mapping(self, session: aiohttp.ClientSession) -> dict[str, str]:
+    async def get_member_party_mapping(
+            self, session: aiohttp.ClientSession) -> dict[str, str]:
         """議員-政党マッピングを取得"""
         member_party_map = {}
 
@@ -105,7 +113,8 @@ class SpeechDataCollector:
 
         return member_party_map
 
-    async def generate_sample_speeches(self, member_party_map: dict[str, str]) -> list[SpeechData]:
+    async def generate_sample_speeches(
+            self, member_party_map: dict[str, str]) -> list[SpeechData]:
         """サンプル発言データ生成"""
 
         # 実際の実装では国会会議録検索システムやDiet TVからスクレイピング
@@ -148,14 +157,18 @@ class SpeechDataCollector:
         # 100件の発言データ生成
         for i in range(100):
             template = speech_templates[i % len(speech_templates)]
-            speaker = member_names[i % len(member_names)] if member_names else f"議員{i+1:02d}"
+            speaker = member_names[i %
+                                   len(member_names)] if member_names else f"議員{i+1:02d}"
             meeting = meeting_types[i % len(meeting_types)]
             house = houses[i % 2]
 
             # 日付生成（過去30日間）
             import random
             days_ago = random.randint(1, 30)
-            speech_date = (datetime.now() - timedelta(days=days_ago)).strftime('%Y-%m-%d')
+            speech_date = (
+                datetime.now() -
+                timedelta(
+                    days=days_ago)).strftime('%Y-%m-%d')
 
             speech = SpeechData(
                 speaker_name=speaker,
@@ -178,7 +191,11 @@ class SpeechDataCollector:
         print(f"✅ 発言データ生成完了: {len(speeches)}件")
         return speeches
 
-    async def create_speeches(self, session: aiohttp.ClientSession, speeches: list[SpeechData], member_party_map: dict[str, str]) -> int:
+    async def create_speeches(self,
+                              session: aiohttp.ClientSession,
+                              speeches: list[SpeechData],
+                              member_party_map: dict[str,
+                                                     str]) -> int:
         """発言データをAirtableに投入"""
 
         speeches_url = f"{self.base_url}/Speeches (発言)"
@@ -208,7 +225,8 @@ class SpeechDataCollector:
                 }
 
                 # None値を除去
-                speech_fields = {k: v for k, v in speech_fields.items() if v is not None}
+                speech_fields = {k: v for k,
+                                 v in speech_fields.items() if v is not None}
 
                 data = {"fields": speech_fields}
 
@@ -217,7 +235,8 @@ class SpeechDataCollector:
                 success_count += 1
 
                 if i <= 5 or i % 20 == 0:
-                    print(f"  ✅ 発言{i:03d}: {speech.speaker_name} - {speech.meeting_name} ({record_id})")
+                    print(
+                        f"  ✅ 発言{i:03d}: {speech.speaker_name} - {speech.meeting_name} ({record_id})")
 
             except Exception as e:
                 print(f"  ❌ 発言投入失敗: {speech.speaker_name} - {e}")
@@ -293,6 +312,7 @@ class SpeechDataCollector:
 
             print(f"❌ T109 実行失敗: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

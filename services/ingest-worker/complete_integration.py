@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_existing_records(pat, base_id):
     """既存レコード取得"""
     url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29"
@@ -48,6 +49,7 @@ def get_existing_records(pat, base_id):
 
     return all_records
 
+
 def update_record(pat, base_id, record_id, fields):
     """レコード更新"""
     url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29/{record_id}"
@@ -57,6 +59,7 @@ def update_record(pat, base_id, record_id, fields):
     response = requests.patch(url, headers=headers, json=data)
     return response.status_code == 200
 
+
 def create_record(pat, base_id, fields):
     """レコード作成"""
     url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29"
@@ -65,6 +68,7 @@ def create_record(pat, base_id, fields):
     data = {"fields": fields}
     response = requests.post(url, headers=headers, json=data)
     return response.status_code == 200
+
 
 def main():
     print("🔧 完全統合: Bill_ID埋め込み + 残り法案統合")
@@ -128,7 +132,8 @@ def main():
 
     # 未統合の法案を新規作成
     print("\n➕ 未統合法案の新規作成")
-    existing_names = {record.get('fields', {}).get('Name', '') for record in existing_records}
+    existing_names = {record.get('fields', {}).get('Name', '')
+                      for record in existing_records}
 
     new_bills = []
     for bill in bills:
@@ -151,7 +156,8 @@ def main():
 
             if create_record(pat, base_id, fields):
                 created_count += 1
-                print(f"  ✅ {i+1}/{len(new_bills)}: {bill.bill_id} - {bill.title[:40]}...")
+                print(
+                    f"  ✅ {i+1}/{len(new_bills)}: {bill.bill_id} - {bill.title[:40]}...")
             else:
                 print(f"  ❌ {i+1}/{len(new_bills)}: {bill.bill_id} - 作成失敗")
 
@@ -180,6 +186,7 @@ def main():
     else:
         print("\n⚠️ 統合結果を確認してください")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

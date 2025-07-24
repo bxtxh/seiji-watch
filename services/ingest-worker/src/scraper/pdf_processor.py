@@ -294,7 +294,8 @@ class PDFProcessor:
 
                 if text.strip():
                     extracted_text.append(text)
-                    logger.debug(f"Extracted {len(text)} characters from page {page_num + 1}")
+                    logger.debug(
+                        f"Extracted {len(text)} characters from page {page_num + 1}")
 
             pdf_document.close()
 
@@ -318,11 +319,14 @@ class PDFProcessor:
             pdf_document = fitz.open("pdf", pdf_content)
             extracted_text = []
 
-            for page_num in range(min(10, len(pdf_document))):  # Limit to first 10 pages
+            for page_num in range(
+                    min(10, len(pdf_document))):  # Limit to first 10 pages
                 page = pdf_document[page_num]
 
                 # Convert page to image
-                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x scale for better OCR
+                pix = page.get_pixmap(
+                    matrix=fitz.Matrix(
+                        2, 2))  # 2x scale for better OCR
                 img_data = pix.tobytes("png")
 
                 # Process with OCR
@@ -342,7 +346,8 @@ class PDFProcessor:
 
                     if text.strip():
                         extracted_text.append(text)
-                        logger.debug(f"OCR extracted {len(text)} characters from page {page_num + 1}")
+                        logger.debug(
+                            f"OCR extracted {len(text)} characters from page {page_num + 1}")
 
                 except Exception as ocr_e:
                     logger.warning(f"OCR failed for page {page_num + 1}: {ocr_e}")
@@ -389,7 +394,10 @@ class PDFProcessor:
             logger.warning(f"Image preprocessing failed: {e}")
             return image  # Return original if preprocessing fails
 
-    def _parse_voting_data(self, text_content: str, pdf_url: str) -> PDFVotingSession | None:
+    def _parse_voting_data(
+            self,
+            text_content: str,
+            pdf_url: str) -> PDFVotingSession | None:
         """Parse voting data from extracted text"""
         try:
             # Extract basic metadata
@@ -410,14 +418,16 @@ class PDFProcessor:
                 bill_number=bill_info['bill_number'],
                 bill_title=bill_info['bill_title'],
                 vote_date=bill_info['vote_date'],
-                vote_type=bill_info.get('vote_type', '本会議'),
+                vote_type=bill_info.get(
+                    'vote_type',
+                    '本会議'),
                 committee_name=bill_info.get('committee_name'),
                 pdf_url=pdf_url,
                 total_members=len(vote_records),
-                vote_records=vote_records
-            )
+                vote_records=vote_records)
 
-            logger.info(f"Parsed voting session: {session.bill_number} with {len(vote_records)} votes")
+            logger.info(
+                f"Parsed voting session: {session.bill_number} with {len(vote_records)} votes")
             return session
 
         except Exception as e:
@@ -479,9 +489,11 @@ class PDFProcessor:
                 match = re.search(pattern, text)
                 if match:
                     if pattern.startswith('令和'):
-                        year = int(match.group(1)) + 2018  # Convert Reiwa to Western year
+                        # Convert Reiwa to Western year
+                        year = int(match.group(1)) + 2018
                     elif pattern.startswith('平成'):
-                        year = int(match.group(1)) + 1988  # Convert Heisei to Western year
+                        # Convert Heisei to Western year
+                        year = int(match.group(1)) + 1988
                     else:
                         year = int(match.group(1))
 
@@ -550,7 +562,7 @@ class PDFProcessor:
 
                         # Validate extracted data
                         if (len(name) >= 2 and len(name) <= 15 and
-                            vote in ['賛成', '反対', '欠席', '棄権']):
+                                vote in ['賛成', '反対', '欠席', '棄権']):
 
                             record = PDFVoteRecord(
                                 member_name=name,
@@ -563,7 +575,8 @@ class PDFProcessor:
                             vote_records.append(record)
 
                     except Exception as record_e:
-                        logger.debug(f"Failed to parse vote record: {match} - {record_e}")
+                        logger.debug(
+                            f"Failed to parse vote record: {match} - {record_e}")
                         continue
 
                 # If we found records with this pattern, use them
@@ -605,7 +618,8 @@ class PDFProcessor:
                     # Update with better match
                     record.member_name = matched_name
                     record.confidence_score = confidence
-                    logger.debug(f"Improved name match: {record.member_name} (confidence: {confidence:.2f})")
+                    logger.debug(
+                        f"Improved name match: {record.member_name} (confidence: {confidence:.2f})")
 
                 improved_records.append(record)
 

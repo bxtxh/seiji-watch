@@ -51,6 +51,7 @@ def test_search_formula_syntax():
 
     return all_passed
 
+
 def test_airtable_api_compatibility():
     """Airtable API互換性テスト"""
 
@@ -85,6 +86,7 @@ def test_airtable_api_compatibility():
 
     return all_passed
 
+
 def test_field_mapping_accuracy():
     """フィールドマッピング精度テスト"""
 
@@ -99,7 +101,13 @@ def test_field_mapping_accuracy():
     ]
 
     # 構造化フィールドでの検索対象
-    searchable_fields = ["Name", "Bill_Status", "Category", "Submitter", "Stage", "Bill_Number"]
+    searchable_fields = [
+        "Name",
+        "Bill_Status",
+        "Category",
+        "Submitter",
+        "Stage",
+        "Bill_Number"]
 
     print(f"検索対象構造化フィールド: {', '.join(searchable_fields)}")
     print("\n旧Notes形式サンプル:")
@@ -126,6 +134,7 @@ def test_field_mapping_accuracy():
 
     return all_passed
 
+
 def test_search_performance_estimation():
     """検索パフォーマンス推定テスト"""
 
@@ -151,9 +160,12 @@ def test_search_performance_estimation():
 
     # パフォーマンス予測
     estimated_improvements = [
-        ("検索範囲の拡大", f"3倍増加（{search_fields_count}/{old_search_fields_count} = {search_fields_count/old_search_fields_count:.1f}倍）"),
-        ("検索精度の向上", "非構造化テキストから構造化フィールドへ"),
-        ("インデックス利用効率", "フィールド別インデックスによる高速化"),
+        ("検索範囲の拡大",
+         f"3倍増加（{search_fields_count}/{old_search_fields_count} = {search_fields_count/old_search_fields_count:.1f}倍）"),
+        ("検索精度の向上",
+         "非構造化テキストから構造化フィールドへ"),
+        ("インデックス利用効率",
+         "フィールド別インデックスによる高速化"),
     ]
 
     print("\n予想されるパフォーマンス改善:")
@@ -161,6 +173,7 @@ def test_search_performance_estimation():
         print(f"  📈 {improvement}: {description}")
 
     return True
+
 
 def main():
     """全テスト実行"""
@@ -199,6 +212,7 @@ def main():
     else:
         print("⚠️  一部のテストが失敗しました。")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

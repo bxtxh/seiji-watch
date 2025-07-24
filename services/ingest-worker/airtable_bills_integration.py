@@ -28,6 +28,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 class SimpleAirtableClient:
     """シンプルなAirtableクライアント"""
 
@@ -72,6 +73,7 @@ class SimpleAirtableClient:
         else:
             print(f"❌ Airtableエラー: {response.status_code} - {response.text}")
             return None
+
 
 def bill_to_airtable_fields(bill_data):
     """法案データをAirtableフィールド形式に変換"""
@@ -118,6 +120,7 @@ def bill_to_airtable_fields(bill_data):
 
     return fields
 
+
 async def integrate_bills_to_airtable():
     """法案データをAirtableに統合"""
     print("🔗 第217回国会法案データ → Airtable統合")
@@ -151,7 +154,8 @@ async def integrate_bills_to_airtable():
 
         # 2. Airtableクライアント初期化
         print("🔗 Step 2: Airtable接続初期化")
-        airtable = SimpleAirtableClient(api_key, base_id, "Bills%20%28%E6%B3%95%E6%A1%88%29")
+        airtable = SimpleAirtableClient(
+            api_key, base_id, "Bills%20%28%E6%B3%95%E6%A1%88%29")
 
         # 既存レコード確認
         existing_records = airtable.list_records(max_records=10)
@@ -180,8 +184,7 @@ async def integrate_bills_to_airtable():
                     'category': bill.category,
                     'url': bill.url,
                     'summary': bill.summary,
-                    'submission_date': bill.submission_date.isoformat() if bill.submission_date else None
-                }
+                    'submission_date': bill.submission_date.isoformat() if bill.submission_date else None}
 
                 # Airtableフィールド形式に変換
                 airtable_fields = bill_to_airtable_fields(bill_dict)
@@ -208,7 +211,8 @@ async def integrate_bills_to_airtable():
         print("📊 統合結果:")
         print(f"  ✅ 成功: {successful_integrations}件")
         print(f"  ❌ 失敗: {failed_integrations}件")
-        print(f"  📈 成功率: {successful_integrations/(successful_integrations+failed_integrations)*100:.1f}%")
+        print(
+            f"  📈 成功率: {successful_integrations/(successful_integrations+failed_integrations)*100:.1f}%")
         print()
 
         if successful_integrations > 0:
@@ -225,6 +229,7 @@ async def integrate_bills_to_airtable():
         import traceback
         traceback.print_exc()
         return False
+
 
 async def main():
     """メイン実行関数"""

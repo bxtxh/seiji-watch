@@ -11,10 +11,9 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+from main import app
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-from main import app
 
 
 class TestEnhancedIssuesAPI:
@@ -102,7 +101,10 @@ class TestEnhancedIssuesAPI:
 
     def test_get_issues_without_level_filter(self, client, mock_airtable_manager):
         """Test getting issues without level filtering."""
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             mock_airtable_manager.list_issues_by_status.return_value = [
                 {
                     "id": "rec_1",
@@ -126,7 +128,10 @@ class TestEnhancedIssuesAPI:
 
     def test_get_issues_with_level1_filter(self, client, mock_airtable_manager):
         """Test getting level 1 issues."""
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/?level=1")
 
             assert response.status_code == 200
@@ -138,7 +143,10 @@ class TestEnhancedIssuesAPI:
 
     def test_get_issues_with_level2_filter(self, client, mock_airtable_manager):
         """Test getting level 2 issues."""
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/?level=2")
 
             assert response.status_code == 200
@@ -156,7 +164,10 @@ class TestEnhancedIssuesAPI:
 
     def test_get_issue_tree(self, client, mock_airtable_manager):
         """Test getting hierarchical issue tree."""
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/tree")
 
             assert response.status_code == 200
@@ -178,7 +189,10 @@ class TestEnhancedIssuesAPI:
 
         mock_airtable_manager.get_issue_record.return_value = mock_issue_record
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/rec_123")
 
             assert response.status_code == 200
@@ -190,12 +204,17 @@ class TestEnhancedIssuesAPI:
         """Test getting a nonexistent issue."""
         mock_airtable_manager.get_issue_record.return_value = None
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/nonexistent")
 
             assert response.status_code == 404
 
-    def test_extract_dual_level_issues(self, client, mock_airtable_manager, mock_policy_extractor):
+    def test_extract_dual_level_issues(
+        self, client, mock_airtable_manager, mock_policy_extractor
+    ):
         """Test extracting dual-level issues from bill data."""
         request_data = {
             "bill_id": "bill_001",
@@ -209,10 +228,17 @@ class TestEnhancedIssuesAPI:
         }
 
         # Mock issue pair creation
-        mock_airtable_manager.create_issue_pair.return_value = ("rec_lv1_123", "rec_lv2_456")
+        mock_airtable_manager.create_issue_pair.return_value = (
+            "rec_lv1_123", "rec_lv2_456"
+        )
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager), \
-             patch('routes.enhanced_issues.get_policy_issue_extractor', return_value=mock_policy_extractor):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ), patch(
+            'routes.enhanced_issues.get_policy_issue_extractor',
+            return_value=mock_policy_extractor
+        ):
 
             response = client.post("/api/issues/extract", json=request_data)
 
@@ -233,7 +259,9 @@ class TestEnhancedIssuesAPI:
 
         assert response.status_code == 422  # Validation error
 
-    def test_batch_extract_issues(self, client, mock_airtable_manager, mock_policy_extractor):
+    def test_batch_extract_issues(
+        self, client, mock_airtable_manager, mock_policy_extractor
+    ):
         """Test batch extraction of issues."""
         request_data = [
             {
@@ -253,21 +281,30 @@ class TestEnhancedIssuesAPI:
             {
                 "bill_id": "bill_001",
                 "status": "success",
-                "issues": [{"label_lv1": "課題1", "label_lv2": "詳細課題1", "confidence": 0.8}],
+                "issues": [
+                    {"label_lv1": "課題1", "label_lv2": "詳細課題1", "confidence": 0.8}
+                ],
                 "metadata": {"individual_quality_scores": [0.8]}
             },
             {
                 "bill_id": "bill_002",
                 "status": "success",
-                "issues": [{"label_lv1": "課題2", "label_lv2": "詳細課題2", "confidence": 0.9}],
+                "issues": [
+                    {"label_lv1": "課題2", "label_lv2": "詳細課題2", "confidence": 0.9}
+                ],
                 "metadata": {"individual_quality_scores": [0.9]}
             }
         ]
 
         mock_airtable_manager.create_issue_pair.return_value = ("rec_lv1", "rec_lv2")
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager), \
-             patch('routes.enhanced_issues.get_policy_issue_extractor', return_value=mock_policy_extractor):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ), patch(
+            'routes.enhanced_issues.get_policy_issue_extractor',
+            return_value=mock_policy_extractor
+        ):
 
             response = client.post("/api/issues/extract/batch", json=request_data)
 
@@ -280,7 +317,11 @@ class TestEnhancedIssuesAPI:
         """Test batch extraction size limit."""
         # Create request with too many bills
         request_data = [
-            {"bill_id": f"bill_{i:03d}", "bill_title": f"法案{i}", "bill_outline": f"概要{i}"}
+            {
+                "bill_id": f"bill_{i:03d}",
+                "bill_title": f"法案{i}",
+                "bill_outline": f"概要{i}"
+            }
             for i in range(15)  # Exceed limit of 10
         ]
 
@@ -298,7 +339,10 @@ class TestEnhancedIssuesAPI:
 
         mock_airtable_manager.update_issue_status.return_value = True
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.patch("/api/issues/rec_123/status", json=request_data)
 
             assert response.status_code == 200
@@ -337,7 +381,10 @@ class TestEnhancedIssuesAPI:
             }
         ]
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.post("/api/issues/search", json=request_data)
 
             assert response.status_code == 200
@@ -359,7 +406,10 @@ class TestEnhancedIssuesAPI:
 
     def test_get_issue_statistics(self, client, mock_airtable_manager):
         """Test getting issue statistics."""
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/statistics")
 
             assert response.status_code == 200
@@ -372,7 +422,10 @@ class TestEnhancedIssuesAPI:
         """Test getting pending issues count."""
         mock_airtable_manager.count_pending_issues.return_value = 15
 
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ):
             response = client.get("/api/issues/pending/count")
 
             assert response.status_code == 200
@@ -382,8 +435,13 @@ class TestEnhancedIssuesAPI:
 
     def test_health_check(self, client, mock_airtable_manager, mock_policy_extractor):
         """Test health check endpoint."""
-        with patch('routes.enhanced_issues.get_airtable_issue_manager', return_value=mock_airtable_manager), \
-             patch('routes.enhanced_issues.get_policy_issue_extractor', return_value=mock_policy_extractor):
+        with patch(
+            'routes.enhanced_issues.get_airtable_issue_manager',
+            return_value=mock_airtable_manager
+        ), patch(
+            'routes.enhanced_issues.get_policy_issue_extractor',
+            return_value=mock_policy_extractor
+        ):
 
             response = client.get("/api/issues/health")
 
@@ -480,7 +538,7 @@ class TestInputValidation:
 
         # Should handle special characters gracefully
         with patch('routes.enhanced_issues.get_airtable_issue_manager'), \
-             patch('routes.enhanced_issues.get_policy_issue_extractor'):
+                patch('routes.enhanced_issues.get_policy_issue_extractor'):
             response = client.post("/api/issues/extract", json=special_chars_data)
             # Should not crash due to special characters
             assert response.status_code in [200, 422, 500]

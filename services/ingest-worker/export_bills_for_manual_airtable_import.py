@@ -22,6 +22,7 @@ def load_bills_data():
     print(f"✅ {len(bills)}件の法案データを収集")
     return bills
 
+
 def bill_to_airtable_row(bill):
     """法案データをAirtableインポート用行に変換"""
 
@@ -60,6 +61,7 @@ def bill_to_airtable_row(bill):
         "Updated_At": datetime.now().isoformat()
     }
 
+
 def export_bills_to_csv(bills, output_path):
     """法案データをCSVファイルにエクスポート"""
 
@@ -92,6 +94,7 @@ def export_bills_to_csv(bills, output_path):
 
     print(f"✅ CSVファイル作成完了: {output_path}")
 
+
 def export_bills_to_json(bills, output_path):
     """法案データをJSONファイルにエクスポート（バックアップ用）"""
 
@@ -107,8 +110,7 @@ def export_bills_to_json(bills, output_path):
             'url': bill.url,
             'summary': bill.summary,
             'submission_date': bill.submission_date.isoformat() if bill.submission_date else None,
-            'collected_at': datetime.now().isoformat()
-        }
+            'collected_at': datetime.now().isoformat()}
         bills_data.append(bill_dict)
 
     export_data = {
@@ -126,6 +128,7 @@ def export_bills_to_json(bills, output_path):
         json.dump(export_data, jsonfile, ensure_ascii=False, indent=2)
 
     print(f"✅ JSONファイル作成完了: {output_path}")
+
 
 def main():
     """メイン実行"""
@@ -172,6 +175,7 @@ def main():
         import traceback
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

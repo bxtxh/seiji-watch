@@ -27,7 +27,7 @@ def analyze_notes_usage():
     notes_patterns = [
         r'"Notes":\s*',           # "Notes": の直接代入
         r"'Notes':\s*",           # 'Notes': の直接代入
-        r'\.get\(["\']Notes["\']', # .get('Notes') のアクセス
+        r'\.get\(["\']Notes["\']',  # .get('Notes') のアクセス
         r'\["Notes"\]',           # ["Notes"] のアクセス
         r"\['Notes'\]",           # ['Notes'] のアクセス
         r'fields\.Notes',         # fields.Notes のアクセス
@@ -51,7 +51,7 @@ def analyze_notes_usage():
                 for match in matches:
                     # マッチした行番号を取得
                     line_num = content[:match.start()].count('\n') + 1
-                    line_content = content.split('\n')[line_num-1].strip()
+                    line_content = content.split('\n')[line_num - 1].strip()
 
                     notes_usage.append({
                         'pattern': pattern,
@@ -84,6 +84,7 @@ def analyze_notes_usage():
             print(f"⚠️ ファイル読み込みエラー {py_file.name}: {str(e)}")
 
     return analysis_results
+
 
 def generate_fix_priority(analysis_results):
     """修正優先度の提案"""
@@ -144,6 +145,7 @@ def generate_fix_priority(analysis_results):
 
     return priority_plan
 
+
 def suggest_replacement_strategy():
     """置換戦略の提案"""
 
@@ -193,13 +195,15 @@ def suggest_replacement_strategy():
     print("  - API レスポンスの最適化")
     print("  - 将来の機能拡張の容易性")
 
+
 def main():
     # Notes使用状況分析
     analysis_results = analyze_notes_usage()
 
     # 統計表示
     total_files = sum(len(files) for files in analysis_results.values())
-    total_usage = sum(len(file_info['usages']) for files in analysis_results.values() for file_info in files)
+    total_usage = sum(len(file_info['usages'])
+                      for files in analysis_results.values() for file_info in files)
 
     print("\n📊 使用状況サマリー")
     print(f"  対象ファイル数: {total_files}件")
@@ -216,6 +220,7 @@ def main():
     suggest_replacement_strategy()
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

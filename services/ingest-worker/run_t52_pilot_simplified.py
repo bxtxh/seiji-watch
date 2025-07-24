@@ -26,6 +26,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 async def collect_pilot_bills_data():
     """Collect pilot bill data for quality validation"""
     print("📄 Phase 1: Bill Data Collection")
@@ -62,8 +63,7 @@ async def collect_pilot_bills_data():
                 'url': bill.url,
                 'summary': bill.summary,
                 'submission_date': bill.submission_date.isoformat() if bill.submission_date else None,
-                'collected_at': datetime.now().isoformat()
-            }
+                'collected_at': datetime.now().isoformat()}
             structured_bills.append(bill_data)
 
         print("\n📋 Sample bills collected:")
@@ -78,6 +78,7 @@ async def collect_pilot_bills_data():
         import traceback
         traceback.print_exc()
         return False, []
+
 
 async def collect_pilot_voting_data():
     """Collect pilot voting data for quality validation"""
@@ -134,7 +135,8 @@ async def collect_pilot_voting_data():
         print("\n📋 Sample voting sessions:")
         for i, session in enumerate(structured_sessions[:2], 1):
             print(f"  {i}. {session['bill_number']}: {session['bill_title'][:50]}...")
-            print(f"     Date: {session['vote_date'][:10]}, Records: {len(session['vote_records'])}")
+            print(
+                f"     Date: {session['vote_date'][:10]}, Records: {len(session['vote_records'])}")
 
         return True, structured_sessions
 
@@ -143,6 +145,7 @@ async def collect_pilot_voting_data():
         import traceback
         traceback.print_exc()
         return False, []
+
 
 def analyze_data_quality(bills_data, voting_data):
     """Analyze data quality for validation report"""
@@ -174,7 +177,12 @@ def analyze_data_quality(bills_data, voting_data):
         title_lengths = []
         for bill in bills_data:
             # Check completeness
-            if all(bill.get(field) for field in ['bill_id', 'title', 'status', 'category']):
+            if all(
+                bill.get(field) for field in [
+                    'bill_id',
+                    'title',
+                    'status',
+                    'category']):
                 quality_metrics['bills_analysis']['complete_records'] += 1
 
             if not bill.get('summary'):
@@ -198,24 +206,31 @@ def analyze_data_quality(bills_data, voting_data):
                 title_lengths.append(len(bill['title']))
 
         if title_lengths:
-            quality_metrics['bills_analysis']['title_length_avg'] = sum(title_lengths) / len(title_lengths)
+            quality_metrics['bills_analysis']['title_length_avg'] = sum(
+                title_lengths) / len(title_lengths)
 
         # Calculate quality score
-        completeness_rate = quality_metrics['bills_analysis']['complete_records'] / len(bills_data)
-        summary_rate = 1 - (quality_metrics['bills_analysis']['missing_summaries'] / len(bills_data))
-        quality_metrics['bills_analysis']['quality_score'] = (completeness_rate + summary_rate) / 2
+        completeness_rate = quality_metrics['bills_analysis']['complete_records'] / len(
+            bills_data)
+        summary_rate = 1 - \
+            (quality_metrics['bills_analysis']['missing_summaries'] / len(bills_data))
+        quality_metrics['bills_analysis']['quality_score'] = (
+            completeness_rate + summary_rate) / 2
 
     # Analyze voting data
     if voting_data:
         for session in voting_data:
             # Count vote records
             vote_records = session.get('vote_records', [])
-            quality_metrics['voting_analysis']['total_vote_records'] += len(vote_records)
+            quality_metrics['voting_analysis']['total_vote_records'] += len(
+                vote_records)
 
             # Track unique members and parties
             for record in vote_records:
-                quality_metrics['voting_analysis']['unique_members'].add(record.get('member_name', ''))
-                quality_metrics['voting_analysis']['unique_parties'].add(record.get('party_name', ''))
+                quality_metrics['voting_analysis']['unique_members'].add(
+                    record.get('member_name', ''))
+                quality_metrics['voting_analysis']['unique_parties'].add(
+                    record.get('party_name', ''))
 
             # Vote type distribution
             vote_type = session.get('vote_type', 'Unknown')
@@ -223,21 +238,27 @@ def analyze_data_quality(bills_data, voting_data):
                 quality_metrics['voting_analysis']['vote_type_distribution'].get(vote_type, 0) + 1
 
         # Convert sets to counts
-        quality_metrics['voting_analysis']['unique_members'] = len(quality_metrics['voting_analysis']['unique_members'])
-        quality_metrics['voting_analysis']['unique_parties'] = len(quality_metrics['voting_analysis']['unique_parties'])
+        quality_metrics['voting_analysis']['unique_members'] = len(
+            quality_metrics['voting_analysis']['unique_members'])
+        quality_metrics['voting_analysis']['unique_parties'] = len(
+            quality_metrics['voting_analysis']['unique_parties'])
 
         # Calculate quality score
         if quality_metrics['voting_analysis']['total_sessions'] > 0:
-            avg_records_per_session = quality_metrics['voting_analysis']['total_vote_records'] / quality_metrics['voting_analysis']['total_sessions']
-            quality_metrics['voting_analysis']['quality_score'] = min(avg_records_per_session / 20, 1.0)  # Assume 20 is good
+            avg_records_per_session = quality_metrics['voting_analysis']['total_vote_records'] / \
+                quality_metrics['voting_analysis']['total_sessions']
+            quality_metrics['voting_analysis']['quality_score'] = min(
+                avg_records_per_session / 20, 1.0)  # Assume 20 is good
 
     # Display analysis
     print("📊 Bills Data Quality:")
     bills_metrics = quality_metrics['bills_analysis']
     print(f"  • Total bills: {bills_metrics['total_collected']}")
-    print(f"  • Complete records: {bills_metrics['complete_records']} ({bills_metrics['complete_records']/bills_metrics['total_collected']*100:.1f}%)")
+    print(
+        f"  • Complete records: {bills_metrics['complete_records']} ({bills_metrics['complete_records']/bills_metrics['total_collected']*100:.1f}%)")
     print(f"  • Missing summaries: {bills_metrics['missing_summaries']}")
-    print(f"  • Average title length: {bills_metrics['title_length_avg']:.1f} characters")
+    print(
+        f"  • Average title length: {bills_metrics['title_length_avg']:.1f} characters")
     print(f"  • Quality score: {bills_metrics['quality_score']:.2f}")
 
     print("\n📊 Voting Data Quality:")
@@ -249,6 +270,7 @@ def analyze_data_quality(bills_data, voting_data):
     print(f"  • Quality score: {voting_metrics['quality_score']:.2f}")
 
     return quality_metrics
+
 
 async def execute_t52_pilot_simplified():
     """Execute simplified T52 pilot generation"""
@@ -337,6 +359,7 @@ async def execute_t52_pilot_simplified():
         print("\n⚠️  Partial success - check individual phase results")
 
     return overall_success
+
 
 async def main():
     """Main execution function"""

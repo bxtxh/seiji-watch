@@ -25,6 +25,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_table_schema(pat, base_id):
     """テーブルスキーマ取得"""
     url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -38,6 +39,7 @@ def get_table_schema(pat, base_id):
             if table.get('name') == "Bills (法案)":
                 return table
     return None
+
 
 def get_all_records(pat, base_id):
     """全レコード取得"""
@@ -62,6 +64,7 @@ def get_all_records(pat, base_id):
         params['offset'] = offset
 
     return all_records
+
 
 def analyze_field_usage(records, fields_schema):
     """フィールド使用状況分析"""
@@ -89,9 +92,11 @@ def analyze_field_usage(records, fields_schema):
 
     return field_usage
 
+
 def check_web_frontend_usage():
     """Web frontend での使用状況確認"""
-    web_frontend_path = Path(__file__).parent.parent.parent / "services" / "web-frontend"
+    web_frontend_path = Path(__file__).parent.parent.parent / \
+        "services" / "web-frontend"
 
     # 使用されているフィールド名を検索
     used_fields = set()
@@ -124,6 +129,7 @@ def check_web_frontend_usage():
         print(f"⚠️ Web frontend検索エラー: {str(e)}")
 
     return used_fields
+
 
 def main():
     print("🔍 Billsテーブル未使用カラム調査")
@@ -177,7 +183,8 @@ def main():
         field_type = field_schema.get('type')
         usage = field_usage[field_name]
 
-        usage_rate = usage["populated"] / usage["total"] * 100 if usage["total"] > 0 else 0
+        usage_rate = usage["populated"] / usage["total"] * \
+            100 if usage["total"] > 0 else 0
         frontend_used = field_name in frontend_used_fields
 
         status = ""
@@ -185,7 +192,8 @@ def main():
             unused_fields.append((field_name, field_type, usage_rate, frontend_used))
             status = "🔴 未使用"
         elif usage_rate < 10:
-            barely_used_fields.append((field_name, field_type, usage_rate, frontend_used))
+            barely_used_fields.append(
+                (field_name, field_type, usage_rate, frontend_used))
             status = "🟡 ほぼ未使用"
         else:
             well_used_fields.append((field_name, field_type, usage_rate, frontend_used))
@@ -193,7 +201,8 @@ def main():
 
         frontend_status = "🌐" if frontend_used else "❌"
 
-        print(f"{status} {field_name:25} | {field_type:15} | {usage_rate:5.1f}% | {frontend_status}")
+        print(
+            f"{status} {field_name:25} | {field_type:15} | {usage_rate:5.1f}% | {frontend_status}")
 
     # 6. サマリー
     print("\n📋 サマリー")
@@ -222,6 +231,7 @@ def main():
     print("3. 🔧 プロダクト機能との整合性確認")
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

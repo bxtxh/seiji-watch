@@ -3,11 +3,12 @@
 
 import sys
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 # Add the project root to the Python path
 sys.path.insert(0, '/Users/shogen/seiji-watch')
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 
 # Create a simplified app for testing
 app = FastAPI()
@@ -23,6 +24,7 @@ except ImportError as e:
 
 # Test the router
 client = TestClient(app)
+
 
 def test_bills_endpoints():
     """Test basic Bills API endpoints."""
@@ -97,6 +99,7 @@ def test_bills_endpoints():
     print("\n✅ Route structure test complete!")
     print("   All endpoints are accessible and returning expected HTTP 500 errors")
     print("   (500 errors are expected since Airtable client is not configured)")
+
 
 if __name__ == "__main__":
     test_bills_endpoints()

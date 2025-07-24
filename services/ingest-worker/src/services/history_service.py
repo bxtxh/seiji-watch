@@ -63,7 +63,8 @@ class HistoryService:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -173,22 +174,29 @@ class HistoryService:
                     conditions.append(BillProcessHistory.bill_id.in_(query.bill_ids))
 
                 if query.event_types:
-                    conditions.append(BillProcessHistory.event_type.in_(query.event_types))
+                    conditions.append(
+                        BillProcessHistory.event_type.in_(
+                            query.event_types))
 
                 if query.change_types:
-                    conditions.append(BillProcessHistory.change_type.in_(query.change_types))
+                    conditions.append(
+                        BillProcessHistory.change_type.in_(
+                            query.change_types))
 
                 if query.start_date:
-                    conditions.append(BillProcessHistory.recorded_at >= query.start_date)
+                    conditions.append(
+                        BillProcessHistory.recorded_at >= query.start_date)
 
                 if query.end_date:
                     conditions.append(BillProcessHistory.recorded_at <= query.end_date)
 
                 if query.source_system:
-                    conditions.append(BillProcessHistory.source_system == query.source_system)
+                    conditions.append(
+                        BillProcessHistory.source_system == query.source_system)
 
                 if query.min_confidence is not None:
-                    conditions.append(BillProcessHistory.confidence_score >= query.min_confidence)
+                    conditions.append(
+                        BillProcessHistory.confidence_score >= query.min_confidence)
 
                 if conditions:
                     base_query = base_query.where(and_(*conditions))
@@ -327,10 +335,12 @@ class HistoryService:
                 change_type_dist = {}
                 for record in records:
                     change_type = record.change_type.value
-                    change_type_dist[change_type] = change_type_dist.get(change_type, 0) + 1
+                    change_type_dist[change_type] = change_type_dist.get(
+                        change_type, 0) + 1
 
                 # Confidence statistics
-                confidence_scores = [record.confidence_score for record in records if record.confidence_score is not None]
+                confidence_scores = [
+                    record.confidence_score for record in records if record.confidence_score is not None]
                 confidence_stats = {}
                 if confidence_scores:
                     confidence_stats = {
@@ -341,12 +351,14 @@ class HistoryService:
                     }
 
                 # Activity timeline (daily activity)
-                activity_timeline = self._calculate_activity_timeline(records, start_date, end_date)
+                activity_timeline = self._calculate_activity_timeline(
+                    records, start_date, end_date)
 
                 # Top active bills
                 bill_activity = {}
                 for record in records:
-                    bill_activity[record.bill_id] = bill_activity.get(record.bill_id, 0) + 1
+                    bill_activity[record.bill_id] = bill_activity.get(
+                        record.bill_id, 0) + 1
 
                 top_active_bills = [
                     {'bill_id': bill_id, 'activity_count': count}
@@ -528,7 +540,8 @@ class HistoryService:
         """Clean up old history data"""
         try:
             self.history_recorder.cleanup_old_snapshots(retention_days)
-            self.logger.info(f"Cleaned up history data older than {retention_days} days")
+            self.logger.info(
+                f"Cleaned up history data older than {retention_days} days")
 
         except Exception as e:
             self.logger.error(f"Error cleaning up old data: {e}")

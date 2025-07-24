@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def verify_kana_results():
     """Verify the results of Name_Kana fixes"""
 
@@ -98,7 +99,8 @@ async def verify_kana_results():
         # Calculate quality metrics
         total_good = analysis["good_kana"]
         analysis["empty"] + analysis["placeholder"]
-        completeness = (total_good / analysis["total_with_name"]) * 100 if analysis["total_with_name"] > 0 else 0
+        completeness = (
+            total_good / analysis["total_with_name"]) * 100 if analysis["total_with_name"] > 0 else 0
 
         print("\n📊 Final Analysis:")
         print(f"   ✅ Good Name_Kana: {analysis['good_kana']}")

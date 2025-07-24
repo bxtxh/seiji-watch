@@ -114,8 +114,7 @@ class Alert:
             'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
             'acknowledgment_required': self.acknowledgment_required,
             'acknowledged_at': self.acknowledged_at.isoformat() if self.acknowledged_at else None,
-            'acknowledged_by': self.acknowledged_by
-        }
+            'acknowledged_by': self.acknowledged_by}
 
 
 @dataclass
@@ -165,8 +164,7 @@ class MonitoringStats:
             'health_checks_passed': self.health_checks_passed,
             'health_checks_failed': self.health_checks_failed,
             'uptime_percentage': self.uptime_percentage,
-            'last_alert_time': self.last_alert_time.isoformat() if self.last_alert_time else None
-        }
+            'last_alert_time': self.last_alert_time.isoformat() if self.last_alert_time else None}
 
 
 class MonitoringService:
@@ -175,7 +173,8 @@ class MonitoringService:
     def __init__(self, database_url: str, config: dict[str, Any] | None = None):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -421,7 +420,8 @@ class MonitoringService:
 
             # Add health check results
             for check_id, result in self.health_check_results.items():
-                metrics[f"{check_id}_health"] = 1.0 if result.get('success', False) else 0.0
+                metrics[f"{check_id}_health"] = 1.0 if result.get(
+                    'success', False) else 0.0
 
             return metrics
 
@@ -433,7 +433,11 @@ class MonitoringService:
         """Evaluate alert condition"""
         try:
             # Replace metric names in condition with actual values
-            safe_metrics = {k: v for k, v in metrics.items() if isinstance(v, int | float)}
+            safe_metrics = {
+                k: v for k,
+                v in metrics.items() if isinstance(
+                    v,
+                    int | float)}
 
             # Create safe evaluation environment
             safe_dict = {
@@ -472,11 +476,11 @@ class MonitoringService:
                 details={
                     'metrics': metrics,
                     'condition': rule.condition,
-                    'threshold': rule.threshold
-                },
+                    'threshold': rule.threshold},
                 triggered_at=datetime.now(),
-                acknowledgment_required=rule.acknowledgment_required if hasattr(rule, 'acknowledgment_required') else False
-            )
+                acknowledgment_required=rule.acknowledgment_required if hasattr(
+                    rule,
+                    'acknowledgment_required') else False)
 
             # Store alert
             self.active_alerts[active_alert_key] = alert
@@ -486,7 +490,8 @@ class MonitoringService:
             self._send_notifications(alert, rule.notification_channels)
 
             # Set cooldown
-            cooldown_end = datetime.now() + timedelta(seconds=self.config['alert_cooldown'])
+            cooldown_end = datetime.now(
+            ) + timedelta(seconds=self.config['alert_cooldown'])
             self.alert_cooldowns[rule.rule_id] = cooldown_end
 
             self.logger.warning(f"Alert triggered: {alert.title} - {alert.message}")
@@ -508,7 +513,8 @@ class MonitoringService:
                     self._send_log_notification(alert)
 
             except Exception as e:
-                self.logger.error(f"Error sending notification via {channel.value}: {e}")
+                self.logger.error(
+                    f"Error sending notification via {channel.value}: {e}")
 
     def _send_email_notification(self, alert: Alert):
         """Send email notification"""
@@ -516,7 +522,8 @@ class MonitoringService:
             email_config = self.config['email_settings']
 
             if not email_config['to_emails'] or not email_config['smtp_server']:
-                self.logger.debug("Email configuration not complete, skipping email notification")
+                self.logger.debug(
+                    "Email configuration not complete, skipping email notification")
                 return
 
             # Create message
@@ -543,12 +550,17 @@ Dashboard: http://localhost:3000/dashboard/quality
             msg.attach(MIMEText(body, 'plain'))
 
             # Send email
-            server = smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port'])
+            server = smtplib.SMTP(
+                email_config['smtp_server'],
+                email_config['smtp_port'])
             if email_config['smtp_user'] and email_config['smtp_password']:
                 server.starttls()
                 server.login(email_config['smtp_user'], email_config['smtp_password'])
 
-            server.sendmail(email_config['from_email'], email_config['to_emails'], msg.as_string())
+            server.sendmail(
+                email_config['from_email'],
+                email_config['to_emails'],
+                msg.as_string())
             server.quit()
 
             self.logger.info(f"Email notification sent for alert {alert.alert_id}")
@@ -564,7 +576,8 @@ Dashboard: http://localhost:3000/dashboard/quality
             webhook_url = self.config['webhook_settings']['slack_webhook_url']
 
             if not webhook_url:
-                self.logger.debug("Slack webhook URL not configured, skipping Slack notification")
+                self.logger.debug(
+                    "Slack webhook URL not configured, skipping Slack notification")
                 return
 
             # Create Slack message
@@ -621,7 +634,8 @@ Dashboard: http://localhost:3000/dashboard/quality
             webhook_url = self.config['webhook_settings']['general_webhook_url']
 
             if not webhook_url:
-                self.logger.debug("Webhook URL not configured, skipping webhook notification")
+                self.logger.debug(
+                    "Webhook URL not configured, skipping webhook notification")
                 return
 
             payload = alert.to_dict()
@@ -644,7 +658,9 @@ Dashboard: http://localhost:3000/dashboard/quality
             AlertSeverity.INFO: logging.INFO
         }.get(alert.severity, logging.WARNING)
 
-        self.logger.log(log_level, f"ALERT: {alert.title} - {alert.message} [ID: {alert.alert_id}]")
+        self.logger.log(
+            log_level,
+            f"ALERT: {alert.title} - {alert.message} [ID: {alert.alert_id}]")
 
     def _run_health_checks(self):
         """Run all health checks"""
@@ -742,7 +758,8 @@ Dashboard: http://localhost:3000/dashboard/quality
             for alert_key, alert in list(self.active_alerts.items()):
                 rule = self.alert_rules.get(alert.rule_id)
 
-                if rule and not self._evaluate_condition(rule.condition, current_metrics):
+                if rule and not self._evaluate_condition(
+                        rule.condition, current_metrics):
                     # Alert condition is no longer met, resolve it
                     alert.resolved_at = datetime.now()
                     del self.active_alerts[alert_key]
@@ -779,7 +796,10 @@ Dashboard: http://localhost:3000/dashboard/quality
     def get_alert_history(self, limit: int = 100) -> list[dict[str, Any]]:
         """Get alert history"""
         # Sort by triggered time (newest first)
-        sorted_history = sorted(self.alert_history, key=lambda x: x.triggered_at, reverse=True)
+        sorted_history = sorted(
+            self.alert_history,
+            key=lambda x: x.triggered_at,
+            reverse=True)
         return [alert.to_dict() for alert in sorted_history[:limit]]
 
     def acknowledge_alert(self, alert_id: str, user: str = "system") -> bool:
@@ -846,8 +866,10 @@ Dashboard: http://localhost:3000/dashboard/quality
                 alerts_by_type[alert.alert_type.value] += 1
 
             # Health check statistics
-            health_checks_passed = len([r for r in self.health_check_results.values() if r.get('success', False)])
-            health_checks_failed = len([r for r in self.health_check_results.values() if not r.get('success', False)])
+            health_checks_passed = len(
+                [r for r in self.health_check_results.values() if r.get('success', False)])
+            health_checks_failed = len(
+                [r for r in self.health_check_results.values() if not r.get('success', False)])
 
             # Calculate uptime (mock for now)
             uptime_percentage = 99.5
@@ -855,7 +877,8 @@ Dashboard: http://localhost:3000/dashboard/quality
             # Last alert time
             last_alert_time = None
             if self.alert_history:
-                last_alert_time = max(alert.triggered_at for alert in self.alert_history)
+                last_alert_time = max(
+                    alert.triggered_at for alert in self.alert_history)
 
             return MonitoringStats(
                 total_alerts=total_alerts,

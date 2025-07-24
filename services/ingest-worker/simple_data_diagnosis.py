@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def diagnose_data_quality():
     """Diagnose data quality in all tables"""
 
@@ -72,12 +73,16 @@ async def diagnose_data_quality():
                             # Analyze first record structure
                             sample = records[0]
                             fields = list(sample['fields'].keys())
-                            print(f"  Fields: {len(fields)} ({', '.join(fields[:5])}{'...' if len(fields) > 5 else ''})")
+                            print(
+                                f"  Fields: {len(fields)} ({', '.join(fields[:5])}{'...' if len(fields) > 5 else ''})")
 
                             # Check for data completeness
-                            filled_fields = sum(1 for field in sample['fields'].values() if field)
-                            completeness = (filled_fields / len(fields)) * 100 if fields else 0
-                            print(f"  Completeness: {completeness:.1f}% (sample record)")
+                            filled_fields = sum(
+                                1 for field in sample['fields'].values() if field)
+                            completeness = (
+                                filled_fields / len(fields)) * 100 if fields else 0
+                            print(
+                                f"  Completeness: {completeness:.1f}% (sample record)")
 
                             # Check for common quality issues
                             issues = []
@@ -98,14 +103,17 @@ async def diagnose_data_quality():
 
                     elif response.status == 404:
                         print("  ⚠️ Table not found")
-                        table_stats[table_name] = {'count': 0, 'has_data': False, 'sample_fields': []}
+                        table_stats[table_name] = {
+                            'count': 0, 'has_data': False, 'sample_fields': []}
                     else:
                         print(f"  ❌ Error: {response.status}")
-                        table_stats[table_name] = {'count': 0, 'has_data': False, 'sample_fields': []}
+                        table_stats[table_name] = {
+                            'count': 0, 'has_data': False, 'sample_fields': []}
 
             except Exception as e:
                 print(f"  ❌ Exception: {e}")
-                table_stats[table_name] = {'count': 0, 'has_data': False, 'sample_fields': []}
+                table_stats[table_name] = {
+                    'count': 0, 'has_data': False, 'sample_fields': []}
 
         # Summary analysis
         print("\n" + "=" * 60)
@@ -115,7 +123,12 @@ async def diagnose_data_quality():
 
         # Core tables analysis
         core_tables = ["Bills (法案)", "Members", "Speeches", "Issues"]
-        core_data_ready = all(table_stats.get(table, {}).get('has_data', False) for table in core_tables)
+        core_data_ready = all(
+            table_stats.get(
+                table,
+                {}).get(
+                'has_data',
+                False) for table in core_tables)
 
         print("\n🎯 Core Tables Status:")
         for table in core_tables:
@@ -166,12 +179,15 @@ async def diagnose_data_quality():
             print(f"  • イシューデータの生成強化 (現在{issues_count}件)")
 
         # Table permission issues
-        permission_issues = [table for table, stats in table_stats.items()
-                           if not stats.get('has_data', True) and stats.get('count', -1) == 0]
+        permission_issues = [
+            table for table, stats in table_stats.items() if not stats.get(
+                'has_data', True) and stats.get(
+                'count', -1) == 0]
         if permission_issues:
             print(f"  • Airtableテーブル権限の確認が必要: {', '.join(permission_issues)}")
 
         return table_stats
+
 
 async def main():
     """Main function"""

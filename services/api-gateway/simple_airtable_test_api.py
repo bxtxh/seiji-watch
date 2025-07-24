@@ -23,11 +23,20 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"],
     allow_headers=["*"],
 )
+
 
 class SimpleAirtableClient:
     """Simple Airtable client for testing"""
@@ -41,7 +50,9 @@ class SimpleAirtableClient:
             "Content-Type": "application/json"
         }
 
-    async def list_bills(self, max_records: int = 100, filter_formula: str | None = None) -> list[dict[str, Any]]:
+    async def list_bills(
+        self, max_records: int = 100, filter_formula: str | None = None
+    ) -> list[dict[str, Any]]:
         """List bills from Airtable"""
         url = f"{self.base_url}/Bills (法案)"
         params = {"maxRecords": max_records}
@@ -49,14 +60,16 @@ class SimpleAirtableClient:
             params["filterByFormula"] = filter_formula
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=self.headers, params=params) as response:
+            async with session.get(
+                url, headers=self.headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     return data.get("records", [])
                 else:
                     raise Exception(f"Airtable error: {response.status}")
 
-    async def get_bill(self, record_id: str) -> Dict[str, Any]:
+    async def get_bill(self, record_id: str) -> dict[str, Any]:
         """Get a specific bill"""
         url = f"{self.base_url}/Bills (法案)/{record_id}"
 
@@ -73,15 +86,19 @@ class SimpleAirtableClient:
         params = {"maxRecords": max_records}
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=self.headers, params=params) as response:
+            async with session.get(
+                url, headers=self.headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     return data.get("records", [])
                 else:
                     raise Exception(f"Airtable error: {response.status}")
 
+
 # Initialize client
 airtable = SimpleAirtableClient()
+
 
 @app.get("/")
 async def root():
@@ -97,6 +114,7 @@ async def root():
             "stats": "/embeddings/stats"
         }
     }
+
 
 @app.get("/health")
 async def health_check():
@@ -118,8 +136,11 @@ async def health_check():
             "message": "Airtable connection failed"
         }
 
+
 @app.get("/api/bills")
-async def get_bills(max_records: int = Query(100, le=1000), category: Optional[str] = None):
+async def get_bills(
+    max_records: int = Query(100, le=1000), category: str | None = None
+):
     """Get bills from real Airtable data."""
     try:
         # Build filter for category if specified
@@ -145,7 +166,11 @@ async def get_bills(max_records: int = Query(100, le=1000), category: Optional[s
                     "Status": "実データ統合済み",
                     "Category": "実データ",
                     "Title": fields.get("Name", "")[:100],
-                    "Summary": fields.get("Notes", "")[:200] + "..." if len(fields.get("Notes", "")) > 200 else fields.get("Notes", ""),
+                    "Summary": (
+                        fields.get("Notes", "")[:200] + "..."
+                        if len(fields.get("Notes", "")) > 200
+                        else fields.get("Notes", "")
+                    ),
                 }
             }
             transformed_bills.append(transformed_bill)
@@ -160,6 +185,7 @@ async def get_bills(max_records: int = Query(100, le=1000), category: Optional[s
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch bills: {str(e)}")
+
 
 @app.get("/api/bills/{bill_id}")
 async def get_bill_detail(bill_id: str):
@@ -202,7 +228,10 @@ async def get_bill_detail(bill_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch bill detail: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch bill detail: {str(e)}"
+        )
+
 
 @app.get("/api/votes")
 async def get_votes(max_records: int = Query(100, le=1000)):
@@ -220,6 +249,7 @@ async def get_votes(max_records: int = Query(100, le=1000)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch votes: {str(e)}")
+
 
 @app.post("/search")
 async def search_bills(request: Request):
@@ -290,6 +320,7 @@ async def search_bills(request: Request):
             "total_found": 0
         }
 
+
 @app.get("/embeddings/stats")
 async def get_embedding_stats():
     """Get embedding statistics from real Airtable data."""
@@ -317,6 +348,7 @@ async def get_embedding_stats():
             "speeches": 0,
             "message": f"Failed to fetch real data: {str(e)}"
         }
+
 
 @app.get("/api/issues")
 async def get_active_issues(
@@ -381,7 +413,9 @@ async def get_active_issues(
 
         # Filter by status if specified
         if status == "in_view":
-            active_issues = [issue for issue in active_issues if issue["status"] in ["deliberating", "vote_pending"]]
+            active_issues = [
+                issue for issue in active_issues if issue["status"] in [
+                    "deliberating", "vote_pending"]]
 
         return {
             "success": True,

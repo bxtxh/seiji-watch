@@ -8,6 +8,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
+
 class AirtableQueryEscaper:
     """Secure query escaping for Airtable formulas."""
 
@@ -45,7 +46,8 @@ class AirtableQueryEscaper:
         # Check for dangerous patterns
         for pattern in cls.DANGEROUS_PATTERNS:
             if re.search(pattern, text, re.IGNORECASE):
-                logger.warning(f"Potentially dangerous query pattern detected: {pattern}")
+                logger.warning(
+                    f"Potentially dangerous query pattern detected: {pattern}")
                 # Replace with safe placeholder
                 text = re.sub(pattern, "[FILTERED]", text, flags=re.IGNORECASE)
 
@@ -97,6 +99,7 @@ class AirtableQueryEscaper:
 
         return "AND(" + ", ".join(safe_conditions) + ")"
 
+
 class AirtableInputValidator:
     """Validates inputs for Airtable operations."""
 
@@ -126,13 +129,15 @@ class AirtableInputValidator:
 
         # Remove or escape dangerous characters
         text = re.sub(r'[<>"\']', '', text)  # Remove HTML/quote chars
-        text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)  # Remove control chars
+        text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]',
+                      '', text)  # Remove control chars
 
         # Limit length
         if len(text) > max_length:
             text = text[:max_length]
 
         return text.strip()
+
 
 # Global instances
 query_escaper = AirtableQueryEscaper()

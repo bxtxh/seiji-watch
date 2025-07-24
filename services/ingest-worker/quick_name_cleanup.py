@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def quick_name_cleanup():
     """Quick cleanup of member names with trailing numbers"""
 
@@ -89,13 +90,14 @@ async def quick_name_cleanup():
                                     batch_cleaned += 1
                                 else:
                                     errors += 1
-                        except:
+                        except Exception:
                             errors += 1
 
                         await asyncio.sleep(0.05)  # Faster rate limiting
 
             if batch_cleaned > 0:
-                print(f"   ✅ Batch {batch_start//batch_size + 1}: Cleaned {batch_cleaned} names")
+                print(
+                    f"   ✅ Batch {batch_start//batch_size + 1}: Cleaned {batch_cleaned} names")
 
         # Quick verification
         print("\n🔍 Quick verification...")
@@ -116,7 +118,8 @@ async def quick_name_cleanup():
                     if re.search(r'\d+$', name):
                         remaining_issues += 1
 
-                print(f"📊 Sample check: {remaining_issues}/100 still have trailing numbers")
+                print(
+                    f"📊 Sample check: {remaining_issues}/100 still have trailing numbers")
 
     print(f"\n{'='*50}")
     print("🧹 QUICK CLEANUP SUMMARY")

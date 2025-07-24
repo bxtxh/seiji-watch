@@ -25,6 +25,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_table_schema(pat, base_id, table_name):
     """テーブルスキーマ取得"""
     url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -38,6 +39,7 @@ def get_table_schema(pat, base_id, table_name):
             if table.get('name') == table_name:
                 return table
     return None
+
 
 def get_all_records(pat, base_id, table_name):
     """全レコード取得"""
@@ -62,6 +64,7 @@ def get_all_records(pat, base_id, table_name):
         params['offset'] = offset
 
     return all_records
+
 
 def analyze_field_usage(records, fields_schema):
     """フィールド使用状況分析"""
@@ -89,9 +92,11 @@ def analyze_field_usage(records, fields_schema):
 
     return field_usage
 
+
 def check_web_frontend_usage():
     """Web frontend での使用状況確認"""
-    web_frontend_path = Path(__file__).parent.parent.parent / "services" / "web-frontend"
+    web_frontend_path = Path(__file__).parent.parent.parent / \
+        "services" / "web-frontend"
 
     used_fields = set()
 
@@ -125,9 +130,11 @@ def check_web_frontend_usage():
 
     return used_fields
 
+
 def check_database_model_usage():
     """データベースモデルでの定義確認"""
-    models_path = Path(__file__).parent.parent.parent / "shared" / "src" / "shared" / "models"
+    models_path = Path(__file__).parent.parent.parent / \
+        "shared" / "src" / "shared" / "models"
 
     defined_fields = set()
 
@@ -147,6 +154,7 @@ def check_database_model_usage():
         print(f"⚠️ データベースモデル検索エラー: {str(e)}")
 
     return defined_fields
+
 
 def main():
     print("🔍 議員テーブル使用フィールド調査")
@@ -207,19 +215,23 @@ def main():
         field_type = field_schema.get('type')
         usage = field_usage[field_name]
 
-        usage_rate = usage["populated"] / usage["total"] * 100 if usage["total"] > 0 else 0
+        usage_rate = usage["populated"] / usage["total"] * \
+            100 if usage["total"] > 0 else 0
         frontend_used = field_name in frontend_used_fields
         db_defined = field_name.lower() in {f.lower() for f in db_defined_fields}
 
         status = ""
         if usage_rate == 0:
-            unused_fields.append((field_name, field_type, usage_rate, frontend_used, db_defined))
+            unused_fields.append(
+                (field_name, field_type, usage_rate, frontend_used, db_defined))
             status = "🔴 未使用"
         elif usage_rate < 10:
-            barely_used_fields.append((field_name, field_type, usage_rate, frontend_used, db_defined))
+            barely_used_fields.append(
+                (field_name, field_type, usage_rate, frontend_used, db_defined))
             status = "🟡 ほぼ未使用"
         else:
-            well_used_fields.append((field_name, field_type, usage_rate, frontend_used, db_defined))
+            well_used_fields.append(
+                (field_name, field_type, usage_rate, frontend_used, db_defined))
             status = "🟢 使用中"
 
         frontend_status = "🌐" if frontend_used else "❌"
@@ -263,6 +275,7 @@ def main():
     print("4. 🌐 フロントエンド機能との連携強化")
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

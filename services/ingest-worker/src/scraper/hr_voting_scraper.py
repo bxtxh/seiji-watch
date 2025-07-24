@@ -124,7 +124,8 @@ class HouseOfRepresentativesVotingScraper:
                 # Fallback to sequential processing
                 voting_sessions = await self._process_pdfs_sequential(pdf_urls, member_names)
 
-            self.logger.info(f"Successfully processed {len(voting_sessions)} voting sessions")
+            self.logger.info(
+                f"Successfully processed {len(voting_sessions)} voting sessions")
             return voting_sessions
 
         except Exception as e:
@@ -166,9 +167,11 @@ class HouseOfRepresentativesVotingScraper:
                         content = response.text
 
                     if content:
-                        page_pdfs = self._extract_pdf_urls_from_page(content, search_url, days_back)
+                        page_pdfs = self._extract_pdf_urls_from_page(
+                            content, search_url, days_back)
                         pdf_urls.extend(page_pdfs)
-                        self.logger.debug(f"Found {len(page_pdfs)} PDFs from {search_url}")
+                        self.logger.debug(
+                            f"Found {len(page_pdfs)} PDFs from {search_url}")
 
                 except Exception as e:
                     self.logger.warning(f"Failed to search {search_url}: {e}")
@@ -214,7 +217,8 @@ class HouseOfRepresentativesVotingScraper:
                     href_lower = href.lower()
 
                     voting_keywords = ['採決', '表決', 'vote', '議決', '投票']
-                    if any(keyword in link_text or keyword in href_lower for keyword in voting_keywords):
+                    if any(
+                            keyword in link_text or keyword in href_lower for keyword in voting_keywords):
 
                         # Try to extract date from link text or URL
                         if self._is_recent_enough(link_text, href, cutoff_date):
@@ -231,7 +235,8 @@ class HouseOfRepresentativesVotingScraper:
             self.logger.error(f"Failed to extract PDF URLs from page: {e}")
             return []
 
-    def _is_recent_enough(self, link_text: str, href: str, cutoff_date: datetime) -> bool:
+    def _is_recent_enough(self, link_text: str, href: str,
+                          cutoff_date: datetime) -> bool:
         """Check if PDF is recent enough based on text/URL patterns"""
         try:
             # Look for date patterns in link text and URL
@@ -275,7 +280,7 @@ class HouseOfRepresentativesVotingScraper:
         try:
             # Check cache first
             if (self._member_names_cache and self._cache_expiry and
-                datetime.now() < self._cache_expiry):
+                    datetime.now() < self._cache_expiry):
                 return self._member_names_cache
 
             self.logger.info("Fetching current HR member list")
@@ -328,7 +333,8 @@ class HouseOfRepresentativesVotingScraper:
                     name_text = element.get_text(strip=True)
 
                     # Clean up the name
-                    name = re.sub(r'[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF]', '', name_text)
+                    name = re.sub(
+                        r'[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF]', '', name_text)
 
                     # Validate name (should be 2-4 Japanese characters typically)
                     if 2 <= len(name) <= 6 and name not in member_names:
@@ -338,7 +344,8 @@ class HouseOfRepresentativesVotingScraper:
             if not member_names:
                 # Look for patterns that look like Japanese names
                 all_text = soup.get_text()
-                potential_names = re.findall(r'[\u4E00-\u9FAF]{2,4}[\u3040-\u309F]*[\u4E00-\u9FAF]*', all_text)
+                potential_names = re.findall(
+                    r'[\u4E00-\u9FAF]{2,4}[\u3040-\u309F]*[\u4E00-\u9FAF]*', all_text)
 
                 for name in potential_names:
                     if 2 <= len(name) <= 6:
@@ -430,9 +437,9 @@ class HouseOfRepresentativesVotingScraper:
         """Get scraper statistics"""
         stats = {
             "pdf_processor": self.pdf_processor.get_processing_statistics(),
-            "member_names_cached": len(self._member_names_cache) if self._member_names_cache else 0,
-            "cache_expires": self._cache_expiry.isoformat() if self._cache_expiry else None
-        }
+            "member_names_cached": len(
+                self._member_names_cache) if self._member_names_cache else 0,
+            "cache_expires": self._cache_expiry.isoformat() if self._cache_expiry else None}
 
         if self._resilient_scraper:
             stats["resilient_scraper"] = self._resilient_scraper.get_statistics()

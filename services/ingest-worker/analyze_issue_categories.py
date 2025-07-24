@@ -12,6 +12,7 @@ import aiohttp
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 
+
 async def analyze_issue_categories():
     """Analyze the IssueCategories table for Bills category mapping."""
 
@@ -153,7 +154,8 @@ async def analyze_issue_categories():
                     "match_type": "exact",
                     "bills_count": count
                 }
-                print(f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}")
+                print(
+                    f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}")
 
             elif partial_matches:
                 print(f"   ⚠️  Partial matches found: {len(partial_matches)}")
@@ -173,7 +175,8 @@ async def analyze_issue_categories():
                     "match_type": "partial",
                     "bills_count": count
                 }
-                print(f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}")
+                print(
+                    f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}")
 
             else:
                 print("   ❌ No matches found")
@@ -194,16 +197,21 @@ async def analyze_issue_categories():
         print("\n📊 Step 5: Mapping summary:")
         print(f"   Bills categories to map: {len(bills_categories)}")
         print(f"   Successful mappings: {len(bills_to_issue_mapping)}")
-        print(f"   Failed mappings: {len(bills_categories) - len(bills_to_issue_mapping)}")
+        print(
+            f"   Failed mappings: {len(bills_categories) - len(bills_to_issue_mapping)}")
 
         # Save results
         results = {
             "bills_categories": bills_categories,
             "issue_categories_total": len(all_categories),
-            "issue_categories_by_layer": {layer: len(records) for layer, records in layers.items()},
+            "issue_categories_by_layer": {
+                layer: len(records) for layer,
+                records in layers.items()},
             "bills_to_issue_mapping": bills_to_issue_mapping,
-            "sample_issue_category": {k: str(v)[:100] for k, v in sample_record.items()} if sample_record else None
-        }
+            "sample_issue_category": {
+                k: str(v)[
+                    :100] for k,
+                v in sample_record.items()} if sample_record else None}
 
         output_file = "bills_to_issue_categories_mapping_t129.json"
         with open(output_file, 'w', encoding='utf-8') as f:
@@ -215,6 +223,7 @@ async def analyze_issue_categories():
         print("   1. Review the mapping results")
         print("   2. Create Bills-PolicyCategory relationship records")
         print("   3. Verify the migration worked correctly")
+
 
 async def create_fallback_mapping(bills_categories):
     """Create fallback mapping when IssueCategories table is not accessible."""
@@ -281,7 +290,8 @@ async def create_fallback_mapping(bills_categories):
             mapping = fallback_categories[bills_category].copy()
             mapping["bills_count"] = count
             bills_to_issue_mapping[bills_category] = mapping
-            print(f"   ✅ Mapped '{bills_category}' ({count} bills) to fallback category")
+            print(
+                f"   ✅ Mapped '{bills_category}' ({count} bills) to fallback category")
         else:
             # Use "その他" as fallback
             mapping = fallback_categories["その他"].copy()

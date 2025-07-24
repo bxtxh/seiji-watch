@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def debug_environment_variables():
     """環境変数の詳細確認"""
     print("🔍 Step 1: 環境変数の詳細確認")
@@ -38,7 +39,8 @@ def debug_environment_variables():
         print(f"  長さ: {len(api_key)}文字")
         print(f"  先頭10文字: '{api_key[:10]}...'")
         print(f"  末尾10文字: '...{api_key[-10:]}'")
-        print(f"  形式チェック: {'✅ pat...' if api_key.startswith('pat') else '❌ pat...ではない'}")
+        print(
+            f"  形式チェック: {'✅ pat...' if api_key.startswith('pat') else '❌ pat...ではない'}")
         print(f"  前後空白: '[{api_key}]'")
     else:
         print("  ❌ 環境変数が設定されていません")
@@ -47,11 +49,13 @@ def debug_environment_variables():
     if base_id:
         print("  存在: はい")
         print(f"  値: '{base_id}'")
-        print(f"  形式チェック: {'✅ app...' if base_id.startswith('app') else '❌ app...ではない'}")
+        print(
+            f"  形式チェック: {'✅ app...' if base_id.startswith('app') else '❌ app...ではない'}")
     else:
         print("  ❌ 環境変数が設定されていません")
 
     return api_key, base_id
+
 
 def test_curl_equivalent(api_key, base_id):
     """curl相当のテストをPythonで実行"""
@@ -111,6 +115,7 @@ def test_curl_equivalent(api_key, base_id):
 
     return False
 
+
 def test_simple_base_access(api_key, base_id):
     """ベースのメタデータ取得テスト"""
     print("📋 Step 3: ベースメタデータ取得テスト")
@@ -153,6 +158,7 @@ def test_simple_base_access(api_key, base_id):
         print(f"❌ リクエスト例外: {str(e)}")
 
     return False
+
 
 def main():
     """メイン診断プロセス"""
@@ -204,6 +210,7 @@ def main():
         print("2. ベースアクセス権の確認")
         print("3. PAT の再生成・再設定")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

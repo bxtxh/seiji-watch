@@ -278,6 +278,7 @@ CAP_CATEGORIES = [
     }
 ]
 
+
 async def populate_issue_categories():
     """Populate IssueCategories table with CAP-based categories."""
 
@@ -323,7 +324,7 @@ async def populate_issue_categories():
         print(f"\n🔄 Creating {len(CAP_CATEGORIES)} category records...")
 
         for i in range(0, len(CAP_CATEGORIES), 10):
-            batch = CAP_CATEGORIES[i:i+10]
+            batch = CAP_CATEGORIES[i:i + 10]
 
             # Prepare batch data
             records_data = []
@@ -353,7 +354,8 @@ async def populate_issue_categories():
                         response_data = await response.json()
                         batch_created = len(response_data.get("records", []))
                         created_count += batch_created
-                        print(f"✅ Batch {i//10 + 1}: Created {batch_created} categories")
+                        print(
+                            f"✅ Batch {i//10 + 1}: Created {batch_created} categories")
 
                         # Show created categories
                         for record in response_data.get("records", []):
@@ -381,6 +383,7 @@ async def populate_issue_categories():
         print(f"   Errors: {error_count}")
 
         return created_count > 0
+
 
 async def verify_population():
     """Verify the populated categories."""
@@ -435,6 +438,7 @@ async def verify_population():
         except Exception as e:
             print(f"❌ Verification error: {e}")
             return False
+
 
 async def main():
     """Main execution."""

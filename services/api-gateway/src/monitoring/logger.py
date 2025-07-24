@@ -14,6 +14,7 @@ from fastapi import Request
 request_id_context: ContextVar[str] = ContextVar('request_id', default='')
 user_id_context: ContextVar[str] = ContextVar('user_id', default='anonymous')
 
+
 class StructuredLogger:
     """Structured logging utility with Cloud Logging compatibility."""
 
@@ -153,12 +154,14 @@ class StructuredLogger:
         )
         self.logger.info(json.dumps(entry))
 
+
 class StructuredFormatter(logging.Formatter):
     """Custom formatter for structured logging."""
 
     def format(self, record):
         # Return the message as-is since it's already JSON formatted
         return record.getMessage()
+
 
 class RequestContextMiddleware:
     """Middleware to set request context for logging."""
@@ -189,37 +192,51 @@ class RequestContextMiddleware:
         else:
             await self.app(scope, receive, send)
 
+
 # Global logger instance
 structured_logger = StructuredLogger("api-gateway")
 
 # Convenience functions
+
+
 def log_info(message: str, **kwargs):
     """Log info message."""
     structured_logger.info(message, **kwargs)
+
 
 def log_warning(message: str, **kwargs):
     """Log warning message."""
     structured_logger.warning(message, **kwargs)
 
+
 def log_error(message: str, error: Exception | None = None, **kwargs):
     """Log error message."""
     structured_logger.error(message, error=error, **kwargs)
+
 
 def log_debug(message: str, **kwargs):
     """Log debug message."""
     structured_logger.debug(message, **kwargs)
 
-def log_api_request(request: Request, response_status: int, response_time_ms: float, **kwargs):
+
+def log_api_request(
+        request: Request,
+        response_status: int,
+        response_time_ms: float,
+        **kwargs):
     """Log API request."""
     structured_logger.api_request(request, response_status, response_time_ms, **kwargs)
+
 
 def log_security_event(event_type: str, severity: str, description: str, **kwargs):
     """Log security event."""
     structured_logger.security_event(event_type, severity, description, **kwargs)
 
+
 def log_performance_metric(metric_name: str, value: float, unit: str = 'ms', **kwargs):
     """Log performance metric."""
     structured_logger.performance_metric(metric_name, value, unit, **kwargs)
+
 
 def log_business_event(event_type: str, description: str, **kwargs):
     """Log business event."""

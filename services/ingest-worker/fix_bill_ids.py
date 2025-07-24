@@ -17,9 +17,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-
 from shared.src.shared.clients.airtable import AirtableClient
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 
 @dataclass
@@ -78,11 +78,14 @@ class BillIDGenerator:
 
                 # パターン分析
                 if re.match(r'^[HSB][CM][0-9]{3}$', bill.bill_id):
-                    patterns["id_patterns"]["standard"] = patterns["id_patterns"].get("standard", 0) + 1
+                    patterns["id_patterns"]["standard"] = patterns["id_patterns"].get(
+                        "standard", 0) + 1
                 elif re.match(r'^[0-9]+$', bill.bill_id):
-                    patterns["id_patterns"]["numeric"] = patterns["id_patterns"].get("numeric", 0) + 1
+                    patterns["id_patterns"]["numeric"] = patterns["id_patterns"].get(
+                        "numeric", 0) + 1
                 else:
-                    patterns["id_patterns"]["other"] = patterns["id_patterns"].get("other", 0) + 1
+                    patterns["id_patterns"]["other"] = patterns["id_patterns"].get(
+                        "other", 0) + 1
             else:
                 patterns["missing_bill_id"] += 1
 
@@ -146,7 +149,11 @@ class BillIDGenerator:
 
         return self.HOUSE_CODES.get(house, "B")
 
-    def _generate_sequence(self, house_code: str, category_code: str, session: str) -> int:
+    def _generate_sequence(
+            self,
+            house_code: str,
+            category_code: str,
+            session: str) -> int:
         """連番を生成"""
         # 既存IDから同じパターンの最大連番を取得
         pattern = f"{house_code}{category_code}"
@@ -208,7 +215,8 @@ class BillIDFixer:
             analysis = self.generator.analyze_existing_patterns(bills)
 
             # 詳細分析
-            missing_bills = [bill for bill in bills if not bill.bill_id or not bill.bill_id.strip()]
+            missing_bills = [
+                bill for bill in bills if not bill.bill_id or not bill.bill_id.strip()]
 
             analysis.update({
                 "missing_bills_details": [
@@ -232,7 +240,8 @@ class BillIDFixer:
             self.logger.error(f"Failed to analyze bills table: {e}")
             raise
 
-    async def fix_missing_bill_ids(self, bills_to_fix: list[BillRecord]) -> dict[str, Any]:
+    async def fix_missing_bill_ids(
+            self, bills_to_fix: list[BillRecord]) -> dict[str, Any]:
         """欠損Bill_IDを修正"""
         self.logger.info(f"Starting Bill ID fixing for {len(bills_to_fix)} bills...")
 
@@ -301,7 +310,8 @@ class BillIDFixer:
 
                     # 重複チェック
                     if bill_id in bill_ids:
-                        validation["duplicate_ids"][bill_id] = validation["duplicate_ids"].get(bill_id, 1) + 1
+                        validation["duplicate_ids"][bill_id] = validation["duplicate_ids"].get(
+                            bill_id, 1) + 1
                     else:
                         bill_ids[bill_id] = 1
 
@@ -316,7 +326,8 @@ class BillIDFixer:
                     validation["still_missing"] += 1
 
             # 成功率計算
-            validation["completion_rate"] = (validation["with_bill_id"] / validation["total_bills"]) * 100
+            validation["completion_rate"] = (
+                validation["with_bill_id"] / validation["total_bills"]) * 100
 
             return validation
 
@@ -346,7 +357,8 @@ async def main():
             print(f"  総法案数: {analysis['total_bills']}")
             print(f"  Bill_ID有り: {analysis['has_bill_id']}")
             print(f"  Bill_ID無し: {analysis['missing_bill_id']}")
-            print(f"  欠損率: {(analysis['missing_bill_id']/analysis['total_bills'])*100:.1f}%")
+            print(
+                f"  欠損率: {(analysis['missing_bill_id']/analysis['total_bills'])*100:.1f}%")
 
             if analysis['id_patterns']:
                 print("\n  既存IDパターン:")

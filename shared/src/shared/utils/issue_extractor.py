@@ -36,14 +36,19 @@ class IssueExtractor:
             "その他"
         ]
 
-    async def extract_issues_from_bill(self, bill_content: str, bill_title: str = "") -> list[dict[str, Any]]:
+    async def extract_issues_from_bill(
+        self, bill_content: str, bill_title: str = ""
+    ) -> list[dict[str, Any]]:
         """Extract policy issues from bill content using OpenAI GPT."""
 
         if not bill_content.strip():
             return []
 
         # Limit content length to avoid token limits
-        content_preview = bill_content[:2000] + "..." if len(bill_content) > 2000 else bill_content
+        content_preview = (
+            bill_content[:2000] + "..." if len(bill_content) > 2000
+            else bill_content
+        )
 
         prompt = f"""
 以下の法案内容から、政策上の重要なイシューを抽出してください。
@@ -81,7 +86,10 @@ class IssueExtractor:
                     "messages": [
                         {
                             "role": "system",
-                            "content": "あなたは日本の政策分析専門家です。法案から重要な政策イシューを客観的に抽出してください。"
+                            "content": (
+                                "あなたは日本の政策分析専門家です。"
+                                "法案から重要な政策イシューを客観的に抽出してください。"
+                            )
                         },
                         {
                             "role": "user",
@@ -99,7 +107,9 @@ class IssueExtractor:
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
-                        logger.error(f"OpenAI API error {response.status}: {error_text}")
+                        logger.error(
+                            f"OpenAI API error {response.status}: {error_text}"
+                        )
                         return []
 
                     result = await response.json()
@@ -159,7 +169,9 @@ class IssueExtractor:
 
         return True
 
-    async def suggest_issue_tags(self, issue_title: str, existing_tags: list[str]) -> list[str]:
+    async def suggest_issue_tags(
+        self, issue_title: str, existing_tags: list[str]
+    ) -> list[str]:
         """Suggest relevant tags for an issue based on existing tags."""
 
         if not existing_tags:
@@ -182,7 +194,9 @@ class IssueExtractor:
         """Generate default tag suggestions based on category."""
 
         category_tags = {
-            "環境・エネルギー": ["カーボンニュートラル", "再生可能エネルギー", "環境保護", "気候変動"],
+            "環境・エネルギー": [
+                "カーボンニュートラル", "再生可能エネルギー", "環境保護", "気候変動"
+            ],
             "経済・産業": ["経済成長", "産業政策", "中小企業支援", "デジタル化"],
             "社会保障・福祉": ["年金制度", "医療保険", "介護", "子育て支援"],
             "外交・安全保障": ["日米同盟", "防衛政策", "国際協力", "外交政策"],

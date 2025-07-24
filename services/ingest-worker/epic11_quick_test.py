@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class Epic11QuickTest:
     """Quick test with just a few records"""
 
@@ -85,7 +86,8 @@ class Epic11QuickTest:
                         else:
                             failed_count += 1
                             error = await response.text()
-                            print(f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
+                            print(
+                                f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
                             print(f"     Error: {error[:150]}")
 
                     # Rate limiting
@@ -95,7 +97,8 @@ class Epic11QuickTest:
                     failed_count += 1
                     print(f"  ❌ Exception: {bill['title'][:40]}... - {str(e)[:100]}")
 
-        print(f"\n📊 Quick test results: ✅ {success_count} success, ❌ {failed_count} failed")
+        print(
+            f"\n📊 Quick test results: ✅ {success_count} success, ❌ {failed_count} failed")
 
         if success_count >= 3:
             print("🎉 Quick test PASSED! Ready for full integration.")
@@ -103,6 +106,7 @@ class Epic11QuickTest:
         else:
             print("❌ Quick test FAILED. Need to debug issues.")
             return False
+
 
 async def main():
     """Execute quick test"""

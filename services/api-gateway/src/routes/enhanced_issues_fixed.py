@@ -36,16 +36,20 @@ class DualLevelIssueRequest(BaseModel):
     submitter: str | None = Field(None, max_length=100)
     category: str | None = Field(None, max_length=50)
 
+
 class IssueStatusUpdateRequest(BaseModel):
     """Request model for updating issue status."""
     status: str = Field(..., regex=r"^(pending|approved|rejected|failed_validation)$")
     reviewer_notes: str | None = Field(None, max_length=500)
 
+
 class SearchRequest(BaseModel):
     """Request model for searching issues."""
     query: str = Field(..., min_length=1, max_length=100)
     level: int | None = Field(None, ge=1, le=2)
-    status: str | None = Field("approved", regex=r"^(pending|approved|rejected|failed_validation)?$")
+    status: str | None = Field(
+        "approved",
+        regex=r"^(pending|approved|rejected|failed_validation)?$")
     max_records: int | None = Field(50, ge=1, le=200)
 
 
@@ -94,10 +98,11 @@ async def get_issues(
 @router.get("/tree")
 @rate_limit(max_requests=50, window_seconds=60)
 async def get_issue_tree(
-    status: str = Query("approved", regex=r"^(pending|approved|rejected|failed_validation|)$"),
+        status: str = Query(
+            "approved",
+            regex=r"^(pending|approved|rejected|failed_validation|)$"),
     current_user: dict = Depends(require_read_access),
-    airtable_client: AirtableServiceClient = Depends(get_airtable_service_client)
-):
+        airtable_client: AirtableServiceClient = Depends(get_airtable_service_client)):
     """Get hierarchical issue tree structure."""
     try:
         tree_data = await airtable_client.get_issue_tree(status=status)
@@ -105,7 +110,8 @@ async def get_issue_tree(
         # Process tree data for hierarchical display
         tree = tree_data.get('tree', {})
         total_parent_issues = len(tree)
-        total_child_issues = sum(len(node.get('children', [])) for node in tree.values())
+        total_child_issues = sum(len(node.get('children', []))
+                                 for node in tree.values())
 
         return {
             "tree": list(tree.values()),
@@ -134,10 +140,8 @@ async def get_issue(
         return {
             "issue": {
                 "record_id": record_id,
-                "message": "Issue details endpoint - implementation pending in service client"
-            },
-            "record_id": record_id
-        }
+                "message": "Issue details endpoint - implementation pending in service client"},
+            "record_id": record_id}
 
     except Exception as e:
         logger.error(f"Failed to fetch issue {record_id}: {e}")
@@ -146,7 +150,8 @@ async def get_issue(
 
 # FIXED: POST /api/issues/extract - with authentication and rate limiting
 @router.post("/extract")
-@rate_limit(max_requests=10, window_seconds=60)  # Strict rate limit for expensive LLM operations
+# Strict rate limit for expensive LLM operations
+@rate_limit(max_requests=10, window_seconds=60)
 async def extract_dual_level_issues(
     request: DualLevelIssueRequest,
     current_user: dict = Depends(require_write_access),
@@ -174,9 +179,12 @@ async def extract_dual_level_issues(
             "success": True,
             "message": f"Extracted and created {len(extraction_result.get('created_issues', []))} issue pairs",
             "bill_id": request.bill_id,
-            "created_issues": extraction_result.get('created_issues', []),
-            "extraction_metadata": extraction_result.get('extraction_metadata', {})
-        }
+            "created_issues": extraction_result.get(
+                'created_issues',
+                []),
+            "extraction_metadata": extraction_result.get(
+                'extraction_metadata',
+                {})}
 
     except Exception as e:
         logger.error(f"Failed to extract issues for bill {request.bill_id}: {e}")
@@ -185,7 +193,8 @@ async def extract_dual_level_issues(
 
 # FIXED: POST /api/issues/extract/batch - with authentication and strict rate limiting
 @router.post("/extract/batch")
-@rate_limit(max_requests=5, window_seconds=300)  # Very strict rate limit for batch operations
+# Very strict rate limit for batch operations
+@rate_limit(max_requests=5, window_seconds=300)
 async def batch_extract_issues(
     requests: list[DualLevelIssueRequest],
     current_user: dict = Depends(require_write_access),
@@ -219,9 +228,12 @@ async def batch_extract_issues(
 
         return {
             "message": f"Processed {len(requests)} bills, {batch_result.get('successful_count', 0)} successful",
-            "total_issues_created": batch_result.get('total_issues_created', 0),
-            "results": batch_result.get('results', [])
-        }
+            "total_issues_created": batch_result.get(
+                'total_issues_created',
+                0),
+            "results": batch_result.get(
+                'results',
+                [])}
 
     except Exception as e:
         logger.error(f"Batch extraction failed: {e}")

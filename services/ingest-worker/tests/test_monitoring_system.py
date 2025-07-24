@@ -317,7 +317,8 @@ class TestMonitoringService:
         assert not result
 
         # Test complex condition
-        result = monitoring_service._evaluate_condition("quality_score < 0.7 and error_rate > 0.02", metrics)
+        result = monitoring_service._evaluate_condition(
+            "quality_score < 0.7 and error_rate > 0.02", metrics)
         assert result
 
     def test_alert_triggering(self, monitoring_service):
@@ -519,7 +520,8 @@ class TestMonitoringManager:
             'panels': []
         }
 
-        monitoring_manager.dashboard.get_dashboard_data = Mock(return_value=mock_dashboard_data)
+        monitoring_manager.dashboard.get_dashboard_data = Mock(
+            return_value=mock_dashboard_data)
 
         result = monitoring_manager.get_dashboard_data()
 
@@ -558,9 +560,12 @@ class TestMonitoringManager:
             ]
         }
 
-        monitoring_manager.monitoring_service.get_health_check_status = Mock(return_value=mock_health_status)
-        monitoring_manager.monitoring_service.get_monitoring_statistics = Mock(return_value=mock_stats)
-        monitoring_manager.dashboard.get_dashboard_data = Mock(return_value=mock_dashboard_data)
+        monitoring_manager.monitoring_service.get_health_check_status = Mock(
+            return_value=mock_health_status)
+        monitoring_manager.monitoring_service.get_monitoring_statistics = Mock(
+            return_value=mock_stats)
+        monitoring_manager.dashboard.get_dashboard_data = Mock(
+            return_value=mock_dashboard_data)
 
         health = monitoring_manager.get_system_health()
 
@@ -591,7 +596,8 @@ class TestMonitoringManager:
             ]
         }
 
-        monitoring_manager.dashboard.get_dashboard_data = Mock(return_value=mock_dashboard_data)
+        monitoring_manager.dashboard.get_dashboard_data = Mock(
+            return_value=mock_dashboard_data)
         monitoring_manager.dashboard.clear_cache = Mock()
 
         result = monitoring_manager.run_quality_audit()
@@ -661,7 +667,8 @@ class TestMonitoringManager:
         monitoring_manager.cleanup_old_data(30)
 
         # Check that old data was cleaned up
-        monitoring_manager.migration_service.cleanup_old_reports.assert_called_once_with(30)
+        monitoring_manager.migration_service.cleanup_old_reports.assert_called_once_with(
+            30)
         monitoring_manager.dashboard.clear_cache.assert_called_once()
 
         # Check that only recent alert remains

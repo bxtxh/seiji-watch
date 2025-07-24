@@ -10,13 +10,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-
 from pipeline.limited_scraping import (
     LimitedScrapeCoordinator,
     run_limited_scraping_pipeline,
 )
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 
 def setup_logging():
@@ -48,7 +48,8 @@ async def test_pipeline_status():
 
     print("\nTarget Configuration:")
     target_config = status['target_configuration']
-    print(f"  📅 Date Range: {target_config['start_date']} to {target_config['end_date']}")
+    print(
+        f"  📅 Date Range: {target_config['start_date']} to {target_config['end_date']}")
     print(f"  📊 Max Bills: {target_config['max_bills']}")
     print(f"  🗳️  Max Voting Sessions: {target_config['max_voting_sessions']}")
     print(f"  🎤 Max Speeches: {target_config['max_speeches']}")
@@ -98,7 +99,8 @@ async def test_dry_run():
         print("\n📈 Performance Metrics:")
         metrics = result.performance_metrics
         print(f"  ⚡ Bills/second: {metrics.get('bills_per_second', 0):.2f}")
-        print(f"  ⚡ Voting sessions/second: {metrics.get('voting_sessions_per_second', 0):.2f}")
+        print(
+            f"  ⚡ Voting sessions/second: {metrics.get('voting_sessions_per_second', 0):.2f}")
         print(f"  ⚡ Embeddings/second: {metrics.get('embeddings_per_second', 0):.2f}")
         print(f"  📊 Error Rate: {metrics.get('error_rate', 0):.2%}")
 
@@ -208,9 +210,13 @@ async def test_service_availability():
     try:
         scraper_stats = coordinator.diet_scraper.get_scraper_statistics()
         print("  ✅ Diet Scraper: Available")
-        print(f"     Traditional scraper delay: {scraper_stats['traditional_scraper']['delay_seconds']}s")
-        print(f"     Robots.txt parser: {scraper_stats['traditional_scraper']['robots_parser_enabled']}")
-        resilient_status = scraper_stats.get('resilient_scraper', {}).get('status', 'unknown')
+        print(
+            f"     Traditional scraper delay: {scraper_stats['traditional_scraper']['delay_seconds']}s")
+        print(
+            f"     Robots.txt parser: {scraper_stats['traditional_scraper']['robots_parser_enabled']}")
+        resilient_status = scraper_stats.get(
+            'resilient_scraper', {}).get(
+            'status', 'unknown')
         print(f"     Resilient scraper: {resilient_status}")
     except Exception as e:
         print(f"  ❌ Diet Scraper: Error - {e}")
@@ -280,11 +286,13 @@ async def main():
         print(f"{'✅' if dry_result.success else '❌'} Dry Run: {'PASSED' if dry_result.success else 'FAILED'}")
 
         if real_result:
-            print(f"{'✅' if real_result.success else '❌'} Limited Real Run: {'PASSED' if real_result.success else 'FAILED'}")
+            print(
+                f"{'✅' if real_result.success else '❌'} Limited Real Run: {'PASSED' if real_result.success else 'FAILED'}")
         else:
             print("⏭️  Limited Real Run: SKIPPED")
 
-        print(f"\n📊 Overall T52 Pipeline Status: {'✅ READY' if dry_result.success else '❌ NEEDS ATTENTION'}")
+        print(
+            f"\n📊 Overall T52 Pipeline Status: {'✅ READY' if dry_result.success else '❌ NEEDS ATTENTION'}")
 
         if dry_result.success:
             print("\n🚀 T52 pipeline is ready for production execution!")

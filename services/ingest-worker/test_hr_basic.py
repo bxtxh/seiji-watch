@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def test_hr_scraper_import():
     """Test basic import of HR scraper components"""
     try:
@@ -28,6 +29,7 @@ async def test_hr_scraper_import():
     except Exception as e:
         logger.error(f"❌ Import failed: {e}")
         return False
+
 
 async def test_hr_processor_initialization():
     """Test basic HR processor initialization"""
@@ -44,6 +46,7 @@ async def test_hr_processor_initialization():
     except Exception as e:
         logger.error(f"❌ Processor initialization failed: {e}")
         return False
+
 
 async def test_hr_data_processing():
     """Test HR data processing functionality"""
@@ -76,7 +79,9 @@ async def test_hr_data_processing():
         logger.error(f"❌ HR data processing failed: {e}")
         # This is acceptable for this test as we may not have network access
         # The important thing is that the code structure is working
-        return "network" in str(e).lower() or "timeout" in str(e).lower() or "connection" in str(e).lower()
+        return "network" in str(e).lower() or "timeout" in str(
+            e).lower() or "connection" in str(e).lower()
+
 
 async def main():
     """Run all basic tests"""

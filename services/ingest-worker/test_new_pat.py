@@ -23,6 +23,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 async def test_new_pat_integration():
     """新PAT統合テスト"""
     print("🆕 新PAT統合テスト")
@@ -104,6 +105,7 @@ async def test_new_pat_integration():
         traceback.print_exc()
 
     return False
+
 
 async def main():
     """メイン実行"""

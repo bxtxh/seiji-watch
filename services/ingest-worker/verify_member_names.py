@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def verify_member_names():
     """Verify the current state of member names"""
 
@@ -78,7 +79,8 @@ async def verify_member_names():
         if names_with_numbers:
             print("\n📋 Names still with trailing numbers:")
             for i, item in enumerate(names_with_numbers[:20]):  # Show first 20
-                print(f"   {i+1:2d}. {item['name']} ({item['house']}, {item['constituency']})")
+                print(
+                    f"   {i+1:2d}. {item['name']} ({item['house']}, {item['constituency']})")
 
             if len(names_with_numbers) > 20:
                 print(f"   ... and {len(names_with_numbers) - 20} more")
@@ -96,7 +98,8 @@ async def verify_member_names():
         elif clean_percentage >= 95:
             print("👍 GOOD! Most names are clean.")
         else:
-            print(f"⚠️ Needs attention - {len(names_with_numbers)} names still need cleanup.")
+            print(
+                f"⚠️ Needs attention - {len(names_with_numbers)} names still need cleanup.")
 
         return {
             "total_records": len(all_records),

@@ -117,7 +117,8 @@ class JapaneseTextProcessor:
         if self.sudachi:
             try:
                 sudachi_tokens = self.sudachi.tokenize(text, self.sudachi_mode)
-                tokens.extend([t.surface() for t in sudachi_tokens if len(t.surface()) > 1])
+                tokens.extend([t.surface()
+                              for t in sudachi_tokens if len(t.surface()) > 1])
             except Exception as e:
                 self.logger.debug(f"SudachiPy tokenization failed: {e}")
 
@@ -189,7 +190,8 @@ class FullTextSearchEngine:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Initialize Japanese text processor
@@ -346,21 +348,28 @@ class FullTextSearchEngine:
         if query.mode == SearchMode.SIMPLE:
             # Simple full-text search
             search_vector = self._build_search_vector(query.fields)
-            search_conditions.append(f"{search_vector} @@ plainto_tsquery('japanese', :query)")
+            search_conditions.append(
+                f"{search_vector} @@ plainto_tsquery('japanese', :query)")
             params['query'] = normalized_query
 
         elif query.mode == SearchMode.ADVANCED:
             # Advanced search with operators
             search_vector = self._build_search_vector(query.fields)
             processed_query = self._process_advanced_query(normalized_query)
-            search_conditions.append(f"{search_vector} @@ to_tsquery('japanese', :query)")
+            search_conditions.append(
+                f"{search_vector} @@ to_tsquery('japanese', :query)")
             params['query'] = processed_query
 
         elif query.mode == SearchMode.EXACT:
             # Exact phrase search
             if SearchField.ALL in query.fields:
                 exact_conditions = []
-                for field in ['title', 'bill_outline', 'background_context', 'expected_effects', 'summary']:
+                for field in [
+                    'title',
+                    'bill_outline',
+                    'background_context',
+                    'expected_effects',
+                        'summary']:
                     exact_conditions.append(f"{field} ILIKE :exact_query")
                 search_conditions.append(f"({' OR '.join(exact_conditions)})")
             else:
@@ -464,17 +473,24 @@ class FullTextSearchEngine:
 
         if query.mode == SearchMode.SIMPLE:
             search_vector = self._build_search_vector(query.fields)
-            search_conditions.append(f"{search_vector} @@ plainto_tsquery('japanese', :query)")
+            search_conditions.append(
+                f"{search_vector} @@ plainto_tsquery('japanese', :query)")
             params['query'] = normalized_query
         elif query.mode == SearchMode.ADVANCED:
             search_vector = self._build_search_vector(query.fields)
             processed_query = self._process_advanced_query(normalized_query)
-            search_conditions.append(f"{search_vector} @@ to_tsquery('japanese', :query)")
+            search_conditions.append(
+                f"{search_vector} @@ to_tsquery('japanese', :query)")
             params['query'] = processed_query
         elif query.mode == SearchMode.EXACT:
             if SearchField.ALL in query.fields:
                 exact_conditions = []
-                for field in ['title', 'bill_outline', 'background_context', 'expected_effects', 'summary']:
+                for field in [
+                    'title',
+                    'bill_outline',
+                    'background_context',
+                    'expected_effects',
+                        'summary']:
                     exact_conditions.append(f"{field} ILIKE :exact_query")
                 search_conditions.append(f"({' OR '.join(exact_conditions)})")
             else:
@@ -542,7 +558,8 @@ class FullTextSearchEngine:
             for field in fields:
                 if field != SearchField.ALL:
                     weight = 'A' if field == SearchField.TITLE else 'B' if field == SearchField.OUTLINE else 'C'
-                    field_vectors.append(f"setweight(to_tsvector('japanese', COALESCE({field.value}, '')), '{weight}')")
+                    field_vectors.append(
+                        f"setweight(to_tsvector('japanese', COALESCE({field.value}, '')), '{weight}')")
 
             return f"({' || '.join(field_vectors)})" if field_vectors else "to_tsvector('japanese', '')"
 
@@ -570,7 +587,12 @@ class FullTextSearchEngine:
         matched_fields = []
         query_terms = self.text_processor.tokenize_japanese(query.query)
 
-        for field in ['title', 'bill_outline', 'background_context', 'expected_effects', 'summary']:
+        for field in [
+            'title',
+            'bill_outline',
+            'background_context',
+            'expected_effects',
+                'summary']:
             field_value = getattr(row, field, '')
             if field_value and any(term in field_value for term in query_terms):
                 matched_fields.append(field)
@@ -632,7 +654,10 @@ class FullTextSearchEngine:
 
         return highlights[:self.search_config['highlight_fragments']]
 
-    def _get_search_suggestions(self, query: SearchQuery, session: Session) -> list[str]:
+    def _get_search_suggestions(
+            self,
+            query: SearchQuery,
+            session: Session) -> list[str]:
         """Get search suggestions when no results found"""
         suggestions = []
 
@@ -654,7 +679,8 @@ class FullTextSearchEngine:
 
         return suggestions
 
-    def _get_search_facets(self, query: SearchQuery, session: Session) -> dict[str, dict[str, int]]:
+    def _get_search_facets(self, query: SearchQuery,
+                           session: Session) -> dict[str, dict[str, int]]:
         """Get search facets for filtering"""
         facets = {}
 
@@ -696,7 +722,8 @@ class FullTextSearchEngine:
             """)
 
             result = session.execute(submitter_query)
-            facets['submitter'] = {row.submitter: row.count for row in result.fetchall()}
+            facets['submitter'] = {
+                row.submitter: row.count for row in result.fetchall()}
 
         except Exception as e:
             self.logger.debug(f"Error getting facets: {e}")
@@ -732,7 +759,8 @@ class FullTextSearchEngine:
         try:
             with self.SessionLocal() as session:
                 # Get total bill count
-                total_bills = session.execute(text("SELECT COUNT(*) FROM bills")).fetchone()[0]
+                total_bills = session.execute(
+                    text("SELECT COUNT(*) FROM bills")).fetchone()[0]
 
                 # Get index sizes
                 index_sizes = session.execute(text("""

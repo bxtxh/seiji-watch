@@ -12,6 +12,7 @@ os.environ["AIRTABLE_BASE_ID"] = os.getenv("AIRTABLE_BASE_ID", "")
 
 API_BASE_URL = "http://localhost:8000"
 
+
 async def test_bills_endpoints():
     """Test all Bills API endpoints."""
 
@@ -30,7 +31,8 @@ async def test_bills_endpoints():
                     data = await response.json()
                     print(f"✅ Bills list: {len(data)} bills found")
                     if data:
-                        print(f"   Sample bill: {data[0].get('fields', {}).get('Name', 'Unknown')}")
+                        print(
+                            f"   Sample bill: {data[0].get('fields', {}).get('Name', 'Unknown')}")
                 else:
                     print(f"❌ Bills list failed: {response.status}")
         except Exception as e:
@@ -63,7 +65,8 @@ async def test_bills_endpoints():
                         async with session.get(f"{API_BASE_URL}/api/bills/{real_bill_id}") as bill_response:
                             if bill_response.status == 200:
                                 bill_data = await bill_response.json()
-                                print(f"✅ Bill details: {bill_data.get('fields', {}).get('Name', 'Unknown')}")
+                                print(
+                                    f"✅ Bill details: {bill_data.get('fields', {}).get('Name', 'Unknown')}")
                             else:
                                 print(f"❌ Bill details failed: {bill_response.status}")
                     else:
@@ -85,7 +88,8 @@ async def test_bills_endpoints():
                     data = await response.json()
                     print(f"✅ Bill search: {data.get('total_found', 0)} results found")
                     if data.get('results'):
-                        print(f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}")
+                        print(
+                            f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}")
                 else:
                     print(f"❌ Bill search failed: {response.status}")
                     print(f"   Response: {await response.text()}")
@@ -107,14 +111,17 @@ async def test_bills_endpoints():
                         async with session.get(f"{API_BASE_URL}/api/bills/{real_bill_id}/policy-categories") as rel_response:
                             if rel_response.status == 200:
                                 rel_data = await rel_response.json()
-                                print(f"✅ Bill policy categories: {rel_data.get('total_count', 0)} relationships found")
+                                print(
+                                    f"✅ Bill policy categories: {rel_data.get('total_count', 0)} relationships found")
                             else:
-                                print(f"❌ Bill policy categories failed: {rel_response.status}")
+                                print(
+                                    f"❌ Bill policy categories failed: {rel_response.status}")
                                 print(f"   Response: {await rel_response.text()}")
                     else:
                         print("⚠️  No bills found to test relationships with")
                 else:
-                    print(f"❌ Could not get bills for relationship testing: {bills_response.status}")
+                    print(
+                        f"❌ Could not get bills for relationship testing: {bills_response.status}")
         except Exception as e:
             print(f"❌ Bills-PolicyCategory relationship error: {e}")
 
@@ -124,9 +131,12 @@ async def test_bills_endpoints():
             async with session.get(f"{API_BASE_URL}/api/bills/statistics/policy-categories") as response:
                 if response.status == 200:
                     data = await response.json()
-                    print(f"✅ Statistics: {data.get('total_relationships', 0)} total relationships")
-                    print(f"   High confidence: {data.get('confidence_distribution', {}).get('high_confidence', 0)}")
-                    print(f"   Manual entries: {data.get('manual_vs_automatic', {}).get('manual', 0)}")
+                    print(
+                        f"✅ Statistics: {data.get('total_relationships', 0)} total relationships")
+                    print(
+                        f"   High confidence: {data.get('confidence_distribution', {}).get('high_confidence', 0)}")
+                    print(
+                        f"   Manual entries: {data.get('manual_vs_automatic', {}).get('manual', 0)}")
                 else:
                     print(f"❌ Statistics failed: {response.status}")
                     print(f"   Response: {await response.text()}")
@@ -141,11 +151,13 @@ async def test_bills_endpoints():
                     data = await response.json()
                     print(f"✅ Issue categories: {len(data)} categories found")
                     if data:
-                        print(f"   Sample category: {data[0].get('fields', {}).get('Title_JA', 'Unknown')}")
+                        print(
+                            f"   Sample category: {data[0].get('fields', {}).get('Title_JA', 'Unknown')}")
                 else:
                     print(f"❌ Issue categories failed: {response.status}")
         except Exception as e:
             print(f"❌ Issue categories error: {e}")
+
 
 async def test_server_connection():
     """Test if API server is running."""
@@ -165,6 +177,7 @@ async def test_server_connection():
     except Exception as e:
         print(f"❌ API server connection error: {e}")
         return False
+
 
 async def test_airtable_connection():
     """Test direct Airtable connection."""
@@ -190,7 +203,8 @@ async def test_airtable_connection():
             async with session.get(url, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()
-                    print(f"✅ Bills table: {len(data.get('records', []))} records accessible")
+                    print(
+                        f"✅ Bills table: {len(data.get('records', []))} records accessible")
                 else:
                     print(f"❌ Bills table failed: {response.status}")
                     return False
@@ -200,7 +214,8 @@ async def test_airtable_connection():
             async with session.get(url, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()
-                    print(f"✅ IssueCategories table: {len(data.get('records', []))} records accessible")
+                    print(
+                        f"✅ IssueCategories table: {len(data.get('records', []))} records accessible")
                 else:
                     print(f"❌ IssueCategories table failed: {response.status}")
                     return False
@@ -210,6 +225,7 @@ async def test_airtable_connection():
     except Exception as e:
         print(f"❌ Airtable connection error: {e}")
         return False
+
 
 async def main():
     """Main test execution."""

@@ -398,10 +398,8 @@ def custom_assertions():
 # Test skip conditions
 def skip_if_no_api_key():
     """Skip test if no API key is available."""
-    return pytest.mark.skipif(
-        not os.getenv('OPENAI_API_KEY') or os.getenv('OPENAI_API_KEY') == 'test_openai_key',
-        reason="No real OpenAI API key available"
-    )
+    return pytest.mark.skipif(not os.getenv('OPENAI_API_KEY') or os.getenv(
+        'OPENAI_API_KEY') == 'test_openai_key', reason="No real OpenAI API key available")
 
 
 def skip_if_no_network():

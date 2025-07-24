@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class ContinuousQualityMonitor:
     """Continuous data quality monitoring and degradation prevention system"""
 
@@ -70,7 +71,7 @@ class ContinuousQualityMonitor:
         }
 
     async def get_table_records(self, session: aiohttp.ClientSession, table_name: str,
-                               modified_since: str | None = None) -> list[dict]:
+                                modified_since: str | None = None) -> list[dict]:
         """Fetch records with optional modification date filter"""
         all_records = []
         offset = None
@@ -112,7 +113,8 @@ class ContinuousQualityMonitor:
 
         return all_records
 
-    def calculate_table_quality_metrics(self, table_name: str, records: list[dict]) -> dict:
+    def calculate_table_quality_metrics(
+            self, table_name: str, records: list[dict]) -> dict:
         """Calculate comprehensive quality metrics for a table"""
         if not records:
             return {"error": "No records found"}
@@ -153,7 +155,8 @@ class ContinuousQualityMonitor:
                 "empty_count": len(records) - filled_count
             }
 
-        avg_completeness = sum(completeness_scores) / len(completeness_scores) if completeness_scores else 0
+        avg_completeness = sum(completeness_scores) / \
+            len(completeness_scores) if completeness_scores else 0
         metrics["completeness"]["overall"] = round(avg_completeness, 3)
 
         # 2. Uniqueness Analysis (basic duplicate detection)
@@ -190,7 +193,8 @@ class ContinuousQualityMonitor:
                 if status not in valid_statuses:
                     invalid_count += 1
 
-        validity_rate = (len(records) - invalid_count) / len(records) if records else 1.0
+        validity_rate = (len(records) - invalid_count) / \
+            len(records) if records else 1.0
         metrics["validity"] = {
             "rate": round(validity_rate, 3),
             "invalid_count": invalid_count,
@@ -214,7 +218,8 @@ class ContinuousQualityMonitor:
                     # This could be valid, so don't count as inconsistent
                     pass
 
-        consistency_rate = (len(records) - inconsistent_count) / len(records) if records else 1.0
+        consistency_rate = (len(records) - inconsistent_count) / \
+            len(records) if records else 1.0
         metrics["consistency"] = {
             "rate": round(consistency_rate, 3),
             "inconsistent_count": inconsistent_count,
@@ -229,10 +234,11 @@ class ContinuousQualityMonitor:
             updated_at = record.get('fields', {}).get('Updated_At', '')
             if updated_at:
                 try:
-                    update_time = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+                    update_time = datetime.fromisoformat(
+                        updated_at.replace('Z', '+00:00'))
                     if update_time > recent_threshold:
                         recent_updates += 1
-                except:
+                except Exception:
                     pass
 
         timeliness_rate = recent_updates / len(records) if records else 0
@@ -297,7 +303,8 @@ class ContinuousQualityMonitor:
                 "message": f"Completeness below warning threshold ({avg_completeness:.1%} < {thresholds['warning_threshold']:.1%})"
             })
 
-        if metrics["uniqueness"]["duplicate_count"] > thresholds.get("max_duplicates", 5):
+        if metrics["uniqueness"]["duplicate_count"] > thresholds.get(
+                "max_duplicates", 5):
             metrics["alerts"].append({
                 "type": "WARNING",
                 "metric": "uniqueness",
@@ -323,19 +330,23 @@ class ContinuousQualityMonitor:
             return {"error": "Insufficient historical data for trend analysis"}
 
         # Sort by timestamp
-        sorted_reports = sorted(historical_reports, key=lambda x: x.get("timestamp", ""))
+        sorted_reports = sorted(
+            historical_reports,
+            key=lambda x: x.get(
+                "timestamp",
+                ""))
 
         trends = {
             "analysis_date": datetime.now().isoformat(),
             "period_analyzed": f"{sorted_reports[0]['timestamp']} to {sorted_reports[-1]['timestamp']}",
             "table_trends": {},
             "overall_trends": {},
-            "alerts": []
-        }
+            "alerts": []}
 
         # Analyze trends per table
         for table_name in self.quality_thresholds.keys():
-            table_reports = [r for r in sorted_reports if r.get("table_name") == table_name]
+            table_reports = [
+                r for r in sorted_reports if r.get("table_name") == table_name]
 
             if len(table_reports) < 2:
                 continue
@@ -355,12 +366,20 @@ class ContinuousQualityMonitor:
             )
 
             trends["table_trends"][table_name] = {
-                "completeness_change": round(completeness_delta, 3),
-                "quality_score_change": round(score_delta, 3),
-                "trend_direction": "improving" if score_delta > 0.01 else "declining" if score_delta < -0.01 else "stable",
-                "current_grade": last_report.get("quality_grade", "F"),
-                "previous_grade": first_report.get("quality_grade", "F")
-            }
+                "completeness_change": round(
+                    completeness_delta,
+                    3),
+                "quality_score_change": round(
+                    score_delta,
+                    3),
+                "trend_direction": "improving" if score_delta > 0.01 else "declining" if score_delta < -
+                0.01 else "stable",
+                "current_grade": last_report.get(
+                    "quality_grade",
+                    "F"),
+                "previous_grade": first_report.get(
+                    "quality_grade",
+                    "F")}
 
             # Generate trend alerts
             if completeness_delta < -0.05:  # 5% decline
@@ -381,7 +400,8 @@ class ContinuousQualityMonitor:
 
         return trends
 
-    def generate_monitoring_recommendations(self, current_metrics: dict, trends: dict) -> list[dict]:
+    def generate_monitoring_recommendations(
+            self, current_metrics: dict, trends: dict) -> list[dict]:
         """Generate actionable monitoring recommendations"""
         recommendations = []
 
@@ -465,17 +485,18 @@ class ContinuousQualityMonitor:
                         monitoring_results["system_alerts"].append(alert)
 
                     # Print summary
-                    print(f"   📈 Quality Score: {metrics['overall_score']:.1%} (Grade: {metrics['quality_grade']})")
+                    print(
+                        f"   📈 Quality Score: {metrics['overall_score']:.1%} (Grade: {metrics['quality_grade']})")
                     print(f"   📋 Records: {metrics['total_records']}")
-                    print(f"   🔍 Completeness: {metrics['completeness']['overall']:.1%}")
+                    print(
+                        f"   🔍 Completeness: {metrics['completeness']['overall']:.1%}")
                     print(f"   ⚠️ Alerts: {len(metrics['alerts'])}")
                 else:
                     print(f"   ❌ No records found for {table_name}")
 
         # Generate recommendations
         monitoring_results["recommendations"] = self.generate_monitoring_recommendations(
-            monitoring_results["table_metrics"], {}
-        )
+            monitoring_results["table_metrics"], {})
 
         # Save monitoring report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -488,7 +509,8 @@ class ContinuousQualityMonitor:
 
         # Print summary
         total_alerts = len(monitoring_results["system_alerts"])
-        critical_alerts = sum(1 for a in monitoring_results["system_alerts"] if a.get("type") == "CRITICAL")
+        critical_alerts = sum(
+            1 for a in monitoring_results["system_alerts"] if a.get("type") == "CRITICAL")
 
         print(f"\n{'='*80}")
         print("📋 DAILY QUALITY MONITORING SUMMARY")
@@ -502,7 +524,8 @@ class ContinuousQualityMonitor:
             print("\n🚨 CRITICAL ALERTS:")
             for alert in monitoring_results["system_alerts"]:
                 if alert.get("type") == "CRITICAL":
-                    print(f"   ❌ {alert.get('table', 'System')}: {alert.get('message', 'Unknown alert')}")
+                    print(
+                        f"   ❌ {alert.get('table', 'System')}: {alert.get('message', 'Unknown alert')}")
 
         # Show top recommendations
         if monitoring_results["recommendations"]:
@@ -545,6 +568,7 @@ class ContinuousQualityMonitor:
         print(f"💾 Monitoring schedule configuration saved: {filename}")
 
         return schedule_config
+
 
 async def main():
     """Main entry point"""

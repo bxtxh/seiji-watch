@@ -28,6 +28,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 class AirtableClient:
     """シンプルなAirtableクライアント - 実スキーマ対応"""
 
@@ -65,6 +66,7 @@ class AirtableClient:
         else:
             print(f"❌ Airtableエラー: {response.status_code} - {response.text}")
             return None
+
 
 def bill_to_airtable_fields_minimal(bill_data):
     """最小限フィールドで法案データ変換"""
@@ -109,6 +111,7 @@ def bill_to_airtable_fields_minimal(bill_data):
     fields["Updated_At"] = datetime.now().isoformat()
 
     return fields
+
 
 async def main():
     """メイン実行"""

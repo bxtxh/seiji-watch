@@ -43,7 +43,8 @@ def analyze_duplicates():
 
     for target_size in sorted(group_sizes.keys()):
         print(f"\nGROUPS WITH {target_size} VARIANTS:")
-        examples = [name for name, group in base_name_groups.items() if len(group) == target_size]
+        examples = [name for name, group in base_name_groups.items() if len(group)
+                    == target_size]
 
         for i, base_name in enumerate(examples[:5]):  # Show first 5 examples
             group = base_name_groups[base_name]
@@ -75,8 +76,14 @@ def analyze_duplicates():
         if len(group) > 1:
             # Check if they have identical or very similar other fields
             houses = set(record['fields'].get('House', '') for record in group)
-            constituencies = set(record['fields'].get('Constituency', '') for record in group)
-            first_elected = set(record['fields'].get('First_Elected', '') for record in group)
+            constituencies = set(
+                record['fields'].get(
+                    'Constituency',
+                    '') for record in group)
+            first_elected = set(
+                record['fields'].get(
+                    'First_Elected',
+                    '') for record in group)
 
             # If same house and constituency, likely duplicate
             if len(houses) == 1 and len(constituencies) == 1:
@@ -84,8 +91,10 @@ def analyze_duplicates():
             else:
                 likely_different_people.append((base_name, group))
 
-    print(f"SUSPICIOUS DUPLICATES (same house/constituency): {len(suspicious_duplicates)}")
-    print(f"LIKELY DIFFERENT PEOPLE (different house/constituency): {len(likely_different_people)}")
+    print(
+        f"SUSPICIOUS DUPLICATES (same house/constituency): {len(suspicious_duplicates)}")
+    print(
+        f"LIKELY DIFFERENT PEOPLE (different house/constituency): {len(likely_different_people)}")
     print()
 
     if suspicious_duplicates:
@@ -97,7 +106,8 @@ def analyze_duplicates():
                 house = fields.get('House', 'Unknown')
                 constituency = fields.get('Constituency', 'Unknown')
                 first_elected = fields.get('First_Elected', 'Unknown')
-                print(f"   '{record['full_name']}': {house}, {constituency}, elected {first_elected}")
+                print(
+                    f"   '{record['full_name']}': {house}, {constituency}, elected {first_elected}")
             print()
 
     if likely_different_people:
@@ -109,7 +119,8 @@ def analyze_duplicates():
                 house = fields.get('House', 'Unknown')
                 constituency = fields.get('Constituency', 'Unknown')
                 first_elected = fields.get('First_Elected', 'Unknown')
-                print(f"   '{record['full_name']}': {house}, {constituency}, elected {first_elected}")
+                print(
+                    f"   '{record['full_name']}': {house}, {constituency}, elected {first_elected}")
             print()
 
     # Check for patterns in the numbers
@@ -131,7 +142,8 @@ def analyze_duplicates():
     for base_name, group in base_name_groups.items():
         if len(group) > 1:
             numbers = sorted([int(record['trailing_number']) for record in group])
-            is_sequential = all(numbers[i] == numbers[i-1] + 1 for i in range(1, len(numbers)))
+            is_sequential = all(numbers[i] == numbers[i - 1] +
+                                1 for i in range(1, len(numbers)))
             starts_from_one = numbers[0] == 1
 
             if is_sequential and starts_from_one:

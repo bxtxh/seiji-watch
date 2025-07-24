@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def create_test_bill():
     """Create a test bill record to understand the table structure"""
 
@@ -82,7 +83,8 @@ async def create_test_bill():
                                 result = await retry_response.json()
                                 print("✅ Test bill created with basic fields!")
                                 print(f"Record ID: {result['id']}")
-                                print(f"Available fields: {list(result['fields'].keys())}")
+                                print(
+                                    f"Available fields: {list(result['fields'].keys())}")
                                 return result
                             else:
                                 retry_error = await retry_response.text()
@@ -93,6 +95,7 @@ async def create_test_bill():
             print(f"❌ Exception during test bill creation: {e}")
 
         return None
+
 
 async def create_test_vote():
     """Create a test vote record"""
@@ -113,7 +116,8 @@ async def create_test_vote():
     sample_voting_session = data['production_dataset']['voting_sessions'][0]
     sample_vote_record = sample_voting_session['vote_records'][0]
 
-    print(f"🗳️ Sample vote: {sample_vote_record['member_name']} - {sample_vote_record['vote_result']}")
+    print(
+        f"🗳️ Sample vote: {sample_vote_record['member_name']} - {sample_vote_record['vote_result']}")
 
     # Test vote record
     test_vote_data = {
@@ -127,9 +131,7 @@ async def create_test_vote():
             "Vote_Result": sample_vote_record['vote_result'],
             "Bill_Title": sample_voting_session['bill_title'],
             "Vote_Date": sample_voting_session['vote_date'],
-            "Status": sample_vote_record['vote_result']
-        }
-    }
+            "Status": sample_vote_record['vote_result']}}
 
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
@@ -153,6 +155,7 @@ async def create_test_vote():
 
         return None
 
+
 async def analyze_data_requirements():
     """Analyze our data vs Airtable requirements"""
 
@@ -170,7 +173,8 @@ async def analyze_data_requirements():
     print(f"🗳️ Voting sessions: {len(voting_sessions)}")
 
     # Calculate total vote records
-    total_vote_records = sum(len(session.get('vote_records', [])) for session in voting_sessions)
+    total_vote_records = sum(len(session.get('vote_records', []))
+                             for session in voting_sessions)
     print(f"🗳️ Individual vote records: {total_vote_records}")
 
     # Sample bill fields analysis
@@ -184,6 +188,7 @@ async def analyze_data_requirements():
     sample_vote = voting_sessions[0]['vote_records'][0]
     for key, value in sample_vote.items():
         print(f"  {key}: {type(value).__name__} - {str(value)[:50]}")
+
 
 async def main():
     """Execute EPIC 11 Pilot Test"""

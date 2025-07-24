@@ -6,15 +6,17 @@ import os
 import sys
 from pathlib import Path
 
+from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+from shared.clients.airtable import AirtableClient
+
 # Add shared module to path
 shared_path = Path(__file__).parent.parent.parent / "shared" / "src"
 sys.path.insert(0, str(shared_path))
 
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
 
 # Import our Airtable client
-from shared.clients.airtable import AirtableClient
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -26,14 +28,23 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"],
     allow_headers=["*"],
 )
 
 # Initialize Airtable client
 airtable_client = AirtableClient()
+
 
 @app.get("/")
 async def root():
@@ -49,6 +60,7 @@ async def root():
             "stats": "/embeddings/stats"
         }
     }
+
 
 @app.get("/health")
 async def health_check():
@@ -69,8 +81,13 @@ async def health_check():
             "message": "Airtable connection failed"
         }
 
+
 @app.get("/api/bills")
-async def get_bills(max_records: int = Query(100, le=1000), category: str | None = None):
+async def get_bills(
+        max_records: int = Query(
+            100,
+            le=1000),
+        category: str | None = None):
     """Get bills from real Airtable data."""
     try:
         # Build filter for category if specified
@@ -89,16 +106,17 @@ async def get_bills(max_records: int = Query(100, le=1000), category: str | None
         for bill in bills:
             fields = bill.get("fields", {})
             transformed_bill = {
-                "id": bill.get("id"),
-                "fields": {
-                    "Name": fields.get("Name", ""),
-                    "Notes": fields.get("Notes", ""),
-                    "Status": "実データ統合済み",
-                    "Category": "実データ",
-                    "Title": fields.get("Name", "")[:100],
-                    "Summary": fields.get("Notes", "")[:200] + "..." if len(fields.get("Notes", "")) > 200 else fields.get("Notes", ""),
-                }
-            }
+                "id": bill.get("id"), "fields": {
+                    "Name": fields.get(
+                        "Name", ""), "Notes": fields.get(
+                        "Notes", ""), "Status": "実データ統合済み", "Category": "実データ", "Title": fields.get(
+                        "Name", "")[
+                        :100], "Summary": fields.get(
+                            "Notes", "")[
+                                :200] + "..." if len(
+                                    fields.get(
+                                        "Notes", "")) > 200 else fields.get(
+                                            "Notes", ""), }}
             transformed_bills.append(transformed_bill)
 
         return {
@@ -110,6 +128,7 @@ async def get_bills(max_records: int = Query(100, le=1000), category: str | None
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch bills: {str(e)}")
+
 
 @app.get("/api/bills/{bill_id}")
 async def get_bill_detail(bill_id: str):
@@ -151,7 +170,9 @@ async def get_bill_detail(bill_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch bill detail: {str(e)}")
+        raise HTTPException(status_code=500,
+                            detail=f"Failed to fetch bill detail: {str(e)}")
+
 
 @app.get("/api/votes")
 async def get_votes(max_records: int = Query(100, le=1000)):
@@ -169,6 +190,7 @@ async def get_votes(max_records: int = Query(100, le=1000)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch votes: {str(e)}")
+
 
 @app.post("/search")
 async def search_bills(request: Request):
@@ -238,6 +260,7 @@ async def search_bills(request: Request):
             "results": [],
             "total_found": 0
         }
+
 
 @app.get("/embeddings/stats")
 async def get_embedding_stats():

@@ -10,10 +10,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from quality.data_validator import DataQualityValidator, QualityMetric, ValidationResult
+
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
-
-from quality.data_validator import DataQualityValidator, QualityMetric, ValidationResult
 
 
 def load_pilot_dataset() -> dict[str, Any]:
@@ -72,8 +72,13 @@ def analyze_llm_issue_extraction(pilot_data: dict[str, Any]) -> QualityMetric:
     categorization_rate = categorized_bills / len(bills)
 
     # Assess title complexity as indicator of issue extraction potential
-    complex_titles = sum(1 for bill in bills
-                        if len(bill.get('title', '')) > 20 and '法' in bill.get('title', ''))
+    complex_titles = sum(
+        1 for bill in bills if len(
+            bill.get(
+                'title',
+                '')) > 20 and '法' in bill.get(
+            'title',
+            ''))
     complexity_score = complex_titles / len(bills)
 
     # Combined score
@@ -89,13 +94,10 @@ def analyze_llm_issue_extraction(pilot_data: dict[str, Any]) -> QualityMetric:
             "Implement LLM-powered issue extraction from bill content",
             "Use structured prompts for consistent issue identification",
             "Validate extracted issues against manual annotations",
-            "Monitor relevance and accuracy of extracted issues"
-        ] if extraction_quality < 0.70 else [
+            "Monitor relevance and accuracy of extracted issues"] if extraction_quality < 0.70 else [
             "Good foundation for LLM issue extraction",
             "Implement production LLM pipeline",
-            "Add quality validation for extracted issues"
-        ]
-    )
+            "Add quality validation for extracted issues"])
 
 
 def analyze_semantic_search_quality(pilot_data: dict[str, Any]) -> QualityMetric:
@@ -140,7 +142,7 @@ def analyze_semantic_search_quality(pilot_data: dict[str, Any]) -> QualityMetric
 
     # Japanese content ratio
     japanese_content = sum(1 for bill in bills
-                          if any(ord(char) > 127 for char in bill.get('title', '')))
+                           if any(ord(char) > 127 for char in bill.get('title', '')))
     japanese_score = japanese_content / len(bills)
     quality_factors.append(japanese_score)
 
@@ -165,7 +167,8 @@ def analyze_semantic_search_quality(pilot_data: dict[str, Any]) -> QualityMetric
     )
 
 
-def generate_parameter_tuning_recommendations(validation_results: list[ValidationResult]) -> list[str]:
+def generate_parameter_tuning_recommendations(
+        validation_results: list[ValidationResult]) -> list[str]:
     """Generate parameter tuning recommendations based on validation results"""
     recommendations = []
 
@@ -182,7 +185,8 @@ def generate_parameter_tuning_recommendations(validation_results: list[Validatio
         ])
 
     # Bills-specific recommendations
-    bills_result = next((r for r in validation_results if r.component == "bills_data"), None)
+    bills_result = next(
+        (r for r in validation_results if r.component == "bills_data"), None)
     if bills_result and bills_result.overall_score < 0.85:
         recommendations.extend([
             "📄 Bills Data Tuning:",
@@ -192,7 +196,8 @@ def generate_parameter_tuning_recommendations(validation_results: list[Validatio
         ])
 
     # Voting-specific recommendations
-    voting_result = next((r for r in validation_results if r.component == "voting_data"), None)
+    voting_result = next(
+        (r for r in validation_results if r.component == "voting_data"), None)
     if voting_result and voting_result.overall_score < 0.85:
         recommendations.extend([
             "🗳️  Voting Data Tuning:",
@@ -202,9 +207,11 @@ def generate_parameter_tuning_recommendations(validation_results: list[Validatio
         ])
 
     # Performance recommendations
-    metadata_result = next((r for r in validation_results if r.component == "metadata"), None)
+    metadata_result = next(
+        (r for r in validation_results if r.component == "metadata"), None)
     if metadata_result:
-        duration_metric = next((m for m in metadata_result.metrics if m.name == "processing_performance"), None)
+        duration_metric = next(
+            (m for m in metadata_result.metrics if m.name == "processing_performance"), None)
         if duration_metric and duration_metric.value < 0.70:
             recommendations.extend([
                 "⚡ Performance Tuning:",
@@ -225,20 +232,25 @@ def generate_parameter_tuning_recommendations(validation_results: list[Validatio
     return recommendations
 
 
-def generate_quality_report(pilot_data: dict[str, Any], validation_results: list[ValidationResult],
-                          stt_metric: QualityMetric, llm_metric: QualityMetric,
-                          search_metric: QualityMetric) -> dict[str, Any]:
+def generate_quality_report(pilot_data: dict[str,
+                                             Any],
+                            validation_results: list[ValidationResult],
+                            stt_metric: QualityMetric,
+                            llm_metric: QualityMetric,
+                            search_metric: QualityMetric) -> dict[str,
+                                                                  Any]:
     """Generate comprehensive quality assessment report"""
 
     # Calculate overall scores
-    data_validation_score = sum(r.overall_score for r in validation_results) / len(validation_results)
+    data_validation_score = sum(
+        r.overall_score for r in validation_results) / len(validation_results)
     ai_readiness_score = (stt_metric.value + llm_metric.value + search_metric.value) / 3
     overall_quality_score = (data_validation_score + ai_readiness_score) / 2
 
     # Determine readiness status
     readiness_status = "PRODUCTION_READY" if overall_quality_score >= 0.80 else \
-                      "NEEDS_IMPROVEMENT" if overall_quality_score >= 0.60 else \
-                      "REQUIRES_MAJOR_WORK"
+        "NEEDS_IMPROVEMENT" if overall_quality_score >= 0.60 else \
+        "REQUIRES_MAJOR_WORK"
 
     report = {
         "report_info": {
@@ -372,7 +384,8 @@ async def run_t53_validation():
 
             for metric in result.metrics:
                 metric_icon = "✅" if metric.passed else "⚠️"
-                print(f"    {metric_icon} {metric.name}: {metric.value:.2f} (threshold: {metric.threshold:.2f})")
+                print(
+                    f"    {metric_icon} {metric.name}: {metric.value:.2f} (threshold: {metric.threshold:.2f})")
 
         print(f"\n{'='*60}")
         print("🤖 Running AI/ML Feature Analysis")
@@ -396,7 +409,7 @@ async def run_t53_validation():
 
         # Generate comprehensive report
         quality_report = generate_quality_report(pilot_data, validation_results,
-                                                stt_metric, llm_metric, search_metric)
+                                                 stt_metric, llm_metric, search_metric)
 
         # Save report
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -412,7 +425,8 @@ async def run_t53_validation():
         print("\n🏁 T53 Validation Summary")
         print(f"Overall Quality Score: {summary['overall_quality_score']:.1%}")
         print(f"Readiness Status: {summary['readiness_status']}")
-        print(f"Components Passed: {quality_report['data_validation_results']['components_passed']}/{quality_report['data_validation_results']['components_tested']}")
+        print(
+            f"Components Passed: {quality_report['data_validation_results']['components_passed']}/{quality_report['data_validation_results']['components_tested']}")
 
         if summary['critical_issues']:
             print("\n⚠️  Critical Issues:")

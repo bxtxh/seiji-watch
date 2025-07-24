@@ -144,7 +144,8 @@ class TestBillDataMerger:
         }
 
         # Test MOST_COMPLETE strategy
-        result = merger.merge_bills([bill1, bill2], strategy=MergeStrategy.MOST_COMPLETE)
+        result = merger.merge_bills(
+            [bill1, bill2], strategy=MergeStrategy.MOST_COMPLETE)
         merged = result.merged_bills[0]
         assert merged['title'] == 'Updated Title'
         assert merged['status'] == '審議中'
@@ -153,7 +154,8 @@ class TestBillDataMerger:
         bill1['source_house'] = '参議院'
         bill2['source_house'] = '衆議院'
 
-        result = merger.merge_bills([bill1, bill2], strategy=MergeStrategy.HOUSE_PRIORITY)
+        result = merger.merge_bills(
+            [bill1, bill2], strategy=MergeStrategy.HOUSE_PRIORITY)
         merged = result.merged_bills[0]
         # Should prefer参議院 data even with lower quality
         assert merged['source_house'] == '参議院'
@@ -234,7 +236,8 @@ class TestBillDataValidator:
 
         assert result.is_valid is True
         assert result.quality_score >= 0.8
-        assert len([issue for issue in result.issues if issue.severity == ValidationSeverity.ERROR]) == 0
+        assert len([issue for issue in result.issues if issue.severity ==
+                   ValidationSeverity.ERROR]) == 0
 
     def test_validate_incomplete_bill(self, validator):
         """Test validation of incomplete bill"""
@@ -252,7 +255,8 @@ class TestBillDataValidator:
         assert result.quality_score < 0.5
 
         # Should have errors for missing/invalid fields
-        errors = [issue for issue in result.issues if issue.severity == ValidationSeverity.ERROR]
+        errors = [issue for issue in result.issues if issue.severity ==
+                  ValidationSeverity.ERROR]
         assert len(errors) > 0
 
         # Check for specific validation issues
@@ -300,7 +304,8 @@ class TestBillDataValidator:
         assert validator._validate_enum_value('house_of_origin', '衆議院') is True
 
         # Invalid house values
-        assert validator._validate_enum_value('house_of_origin', 'invalid_house') is False
+        assert validator._validate_enum_value(
+            'house_of_origin', 'invalid_house') is False
 
     def test_calculate_quality_score(self, validator):
         """Test quality score calculation"""
@@ -320,7 +325,8 @@ class TestBillDataValidator:
         }
 
         validation_result = validator.validate_bill(high_quality_bill)
-        score = validator._calculate_quality_score(high_quality_bill, validation_result.issues)
+        score = validator._calculate_quality_score(
+            high_quality_bill, validation_result.issues)
 
         assert score >= 0.8
 
@@ -334,7 +340,8 @@ class TestBillDataValidator:
         }
 
         validation_result = validator.validate_bill(low_quality_bill)
-        score = validator._calculate_quality_score(low_quality_bill, validation_result.issues)
+        score = validator._calculate_quality_score(
+            low_quality_bill, validation_result.issues)
 
         assert score < 0.5
 
@@ -432,7 +439,8 @@ class TestBillProgressTracker:
         result = tracker.track_progress(bill_data)
 
         # Should detect stalled progress
-        alerts = [alert for alert in result.alerts if alert.type == AlertType.STALLED_PROGRESS]
+        alerts = [alert for alert in result.alerts if alert.type ==
+                  AlertType.STALLED_PROGRESS]
         assert len(alerts) > 0
 
     def test_detect_unusual_progression(self, tracker):
@@ -459,7 +467,8 @@ class TestBillProgressTracker:
         result = tracker.track_progress(bill_data, previous_data)
 
         # Should detect unusual backward progression
-        alerts = [alert for alert in result.alerts if alert.type == AlertType.UNUSUAL_PROGRESSION]
+        alerts = [alert for alert in result.alerts if alert.type ==
+                  AlertType.UNUSUAL_PROGRESSION]
         assert len(alerts) > 0
 
     def test_calculate_progress_confidence(self, tracker):
@@ -472,7 +481,8 @@ class TestBillProgressTracker:
             confidence=0.0  # Will be calculated
         )
 
-        confidence = tracker._calculate_progress_confidence(high_confidence_transition, {})
+        confidence = tracker._calculate_progress_confidence(
+            high_confidence_transition, {})
         assert confidence >= 0.8
 
         # Low confidence transition (unusual)
@@ -483,7 +493,8 @@ class TestBillProgressTracker:
             confidence=0.0
         )
 
-        confidence = tracker._calculate_progress_confidence(low_confidence_transition, {})
+        confidence = tracker._calculate_progress_confidence(
+            low_confidence_transition, {})
         assert confidence < 0.5
 
 
@@ -499,8 +510,8 @@ class TestDataIntegrationManager:
         """Test complete bill processing pipeline"""
         # Mock the components
         with patch.object(integration_manager, 'merger') as mock_merger, \
-             patch.object(integration_manager, 'validator') as mock_validator, \
-             patch.object(integration_manager, 'progress_tracker') as mock_tracker:
+                patch.object(integration_manager, 'validator') as mock_validator, \
+                patch.object(integration_manager, 'progress_tracker') as mock_tracker:
 
             # Mock merge result
             mock_merge_result = MergeResult(
@@ -656,8 +667,8 @@ class TestIntegrationScenarios:
         """Test complete integration pipeline"""
         # Mock all components
         with patch('services.ingest-worker.src.processor.data_integration_manager.BillDataMerger') as mock_merger_class, \
-             patch('services.ingest-worker.src.processor.data_integration_manager.BillDataValidator') as mock_validator_class, \
-             patch('services.ingest-worker.src.processor.data_integration_manager.BillProgressTracker') as mock_tracker_class:
+                patch('services.ingest-worker.src.processor.data_integration_manager.BillDataValidator') as mock_validator_class, \
+                patch('services.ingest-worker.src.processor.data_integration_manager.BillProgressTracker') as mock_tracker_class:
 
             # Setup mocks
             mock_merger = Mock()

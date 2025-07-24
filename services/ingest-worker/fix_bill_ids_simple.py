@@ -309,10 +309,12 @@ async def main():
             if updated > 0:
                 print("\n✅ Step 5: 最終確認")
                 final_data = await client.get_all_bills()
-                final_missing = len([b for b in final_data if not b.get("bill_id", "").strip()])
+                final_missing = len(
+                    [b for b in final_data if not b.get("bill_id", "").strip()])
 
                 print(f"  修正後の欠損数: {final_missing}")
-                print(f"  全体完了率: {((len(final_data)-final_missing)/len(final_data))*100:.1f}%")
+                print(
+                    f"  全体完了率: {((len(final_data)-final_missing)/len(final_data))*100:.1f}%")
 
                 if final_missing == 0:
                     print("🎉 全ての法案にBill_IDが設定されました！")

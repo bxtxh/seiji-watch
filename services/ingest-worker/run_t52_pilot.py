@@ -25,6 +25,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 async def execute_t52_pilot_generation():
     """Execute T52 pilot dataset generation"""
     print("🚀 T52 Pilot Dataset Generation")
@@ -129,7 +130,8 @@ async def execute_t52_pilot_generation():
             if result.performance_metrics:
                 metrics = result.performance_metrics
                 print("\n📈 Performance Metrics:")
-                print(f"  • Processing rate: {metrics.get('bills_per_second', 0):.2f} bills/sec")
+                print(
+                    f"  • Processing rate: {metrics.get('bills_per_second', 0):.2f} bills/sec")
                 print(f"  • Error rate: {metrics.get('error_rate', 0):.2%}")
                 print(f"  • Total processing time: {result.total_time:.2f}s")
         else:
@@ -146,6 +148,7 @@ async def execute_t52_pilot_generation():
         import traceback
         traceback.print_exc()
         return False
+
 
 async def main():
     """Main execution function"""

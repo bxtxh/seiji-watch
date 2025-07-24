@@ -6,10 +6,11 @@ import os
 import sys
 from pathlib import Path
 
+from batch.task_queue import TaskPriority, task_queue
+
 # Add the src directory to the path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from batch.task_queue import TaskPriority, task_queue
 
 # Configure logging
 logging.basicConfig(
@@ -17,6 +18,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
 
 def main():
     """Start RQ worker."""
@@ -44,7 +46,8 @@ def main():
             TaskPriority.LOW
         ]
 
-    logger.info(f"Worker {worker_name} will process queues: {[q.value for q in queue_priorities]}")
+    logger.info(
+        f"Worker {worker_name} will process queues: {[q.value for q in queue_priorities]}")
 
     # Start worker
     try:
@@ -61,6 +64,7 @@ def main():
     except Exception as e:
         logger.error(f"Worker failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -114,25 +114,25 @@ class BatchJobExecution:
                 'processed': self.processed_items,
                 'successful': self.successful_items,
                 'failed': self.failed_items,
-                'skipped': self.skipped_items
-            },
+                'skipped': self.skipped_items},
             'performance': {
                 'items_per_second': self.items_per_second,
-                'memory_usage_mb': self.memory_usage_mb
-            },
+                'memory_usage_mb': self.memory_usage_mb},
             'results': self.result_summary,
             'errors': self.error_messages,
-            'warnings': self.warnings
-        }
+            'warnings': self.warnings}
 
 
 class IssueRelationshipBatchProcessor:
     """Batch processor for issue relationship management."""
 
-    def __init__(self, airtable_client: AirtableClient | None = None,
-                 issue_manager: AirtableIssueManager | None = None,
-                 versioning_service: IssueVersioningService | None = None,
-                 discord_bot: DiscordNotificationBot | None = None):
+    def __init__(
+        self,
+        airtable_client: AirtableClient | None = None,
+        issue_manager: AirtableIssueManager | None = None,
+        versioning_service: IssueVersioningService | None = None,
+        discord_bot: DiscordNotificationBot | None = None
+    ):
 
         self.airtable_client = airtable_client or AirtableClient()
         self.issue_manager = issue_manager or AirtableIssueManager()
@@ -156,6 +156,7 @@ class IssueRelationshipBatchProcessor:
     def _initialize_default_jobs(self) -> list[BatchJobConfig]:
         """Initialize default batch job configurations."""
         return [
+
             BatchJobConfig(
                 job_id="nightly_relationship_update",
                 job_type=BatchJobType.RELATIONSHIP_UPDATE,
@@ -192,6 +193,7 @@ class IssueRelationshipBatchProcessor:
                 batch_size=1000,
                 max_concurrent_tasks=1
             )
+
         ]
 
     async def start_scheduler(self):
@@ -246,13 +248,14 @@ class IssueRelationshipBatchProcessor:
                 self.logger.error(f"Error in batch scheduler loop: {e}")
                 await asyncio.sleep(300)  # 5 minute delay on error
 
-    def _should_run_job(self, job_config: BatchJobConfig, current_time: datetime) -> bool:
+    def _should_run_job(self, job_config: BatchJobConfig,
+                        current_time: datetime) -> bool:
         """Check if a job should run based on schedule."""
 
         # Check if job is already running
         for execution in self.active_jobs.values():
             if (execution.job_config.job_id == job_config.job_id and
-                execution.status == BatchJobStatus.RUNNING):
+                    execution.status == BatchJobStatus.RUNNING):
                 return False
 
         # Check if it's the scheduled time (within 1 minute window)
@@ -272,7 +275,7 @@ class IssueRelationshipBatchProcessor:
                 if (execution.job_config.job_id == job_config.job_id and
                     execution.started_at and
                     execution.started_at.date() == today and
-                    execution.status == BatchJobStatus.COMPLETED):
+                        execution.status == BatchJobStatus.COMPLETED):
                     return False
 
             return True
@@ -292,7 +295,8 @@ class IssueRelationshipBatchProcessor:
         self.active_jobs[execution_id] = execution
 
         try:
-            self.logger.info(f"Starting batch job: {job_config.job_name} ({execution_id})")
+            self.logger.info(
+                f"Starting batch job: {job_config.job_name} ({execution_id})")
             execution.status = BatchJobStatus.RUNNING
 
             # Execute based on job type
@@ -309,11 +313,15 @@ class IssueRelationshipBatchProcessor:
 
             execution.status = BatchJobStatus.COMPLETED
             execution.completed_at = datetime.now()
-            execution.duration_seconds = (execution.completed_at - execution.started_at).total_seconds()
-            execution.items_per_second = execution.processed_items / execution.duration_seconds if execution.duration_seconds > 0 else 0
+            execution.duration_seconds = (
+                execution.completed_at -
+                execution.started_at).total_seconds()
+            execution.items_per_second = execution.processed_items / \
+                execution.duration_seconds if execution.duration_seconds > 0 else 0
 
-            self.logger.info(f"Batch job completed: {job_config.job_name} - "
-                           f"{execution.successful_items}/{execution.total_items} successful")
+            self.logger.info(
+                f"Batch job completed: {job_config.job_name} - "
+                f"{execution.successful_items}/{execution.total_items} successful")
 
             # Send success notification if configured
             if job_config.notification_on_success:
@@ -372,7 +380,8 @@ class IssueRelationshipBatchProcessor:
 
                 if isinstance(result, Exception):
                     execution.failed_items += 1
-                    execution.error_messages.append(f"Bill {batch_bills[j].get('id', 'unknown')}: {result}")
+                    execution.error_messages.append(
+                        f"Bill {batch_bills[j].get('id', 'unknown')}: {result}")
                 else:
                     execution.successful_items += 1
                     if result.get('relationships_updated', 0) > 0:
@@ -383,8 +392,8 @@ class IssueRelationshipBatchProcessor:
 
         execution.result_summary['total_bills_processed'] = execution.processed_items
 
-    async def _update_bill_issue_relationships(self, bill: dict[str, Any],
-                                             issues: list[dict[str, Any]]) -> dict[str, Any]:
+    async def _update_bill_issue_relationships(
+            self, bill: dict[str, Any], issues: list[dict[str, Any]]) -> dict[str, Any]:
         """Update relationships between a bill and related issues."""
 
         bill_id = bill.get('id')
@@ -405,7 +414,8 @@ class IssueRelationshipBatchProcessor:
 
             # Perform content similarity check
             issue_content = f"{issue_fields.get('Label_Lv1', '')} {issue_fields.get('Label_Lv2', '')}"
-            similarity_score = self._calculate_content_similarity(bill_content, issue_content)
+            similarity_score = self._calculate_content_similarity(
+                bill_content, issue_content)
 
             if similarity_score > 0.7:  # High similarity threshold
                 related_issues.append(issue)
@@ -431,7 +441,8 @@ class IssueRelationshipBatchProcessor:
                     relationships_updated += 1
 
                 except Exception as e:
-                    self.logger.error(f"Failed to update issue {issue['id']} relationship: {e}")
+                    self.logger.error(
+                        f"Failed to update issue {issue['id']} relationship: {e}")
 
         return {
             "bill_id": bill_id,
@@ -491,7 +502,8 @@ class IssueRelationshipBatchProcessor:
 
             except Exception as e:
                 execution.failed_items += 1
-                execution.error_messages.append(f"Issue {issue.get('id', 'unknown')}: {e}")
+                execution.error_messages.append(
+                    f"Issue {issue.get('id', 'unknown')}: {e}")
 
         execution.result_summary = {
             "total_issues_assessed": execution.processed_items,
@@ -560,7 +572,8 @@ class IssueRelationshipBatchProcessor:
         # Clean up old versions
         cleanup_result = await self.versioning_service.cleanup_old_versions()
 
-        execution.total_items = cleanup_result.get('cleaned', 0) + cleanup_result.get('retained', 0)
+        execution.total_items = cleanup_result.get(
+            'cleaned', 0) + cleanup_result.get('retained', 0)
         execution.successful_items = cleanup_result.get('cleaned', 0)
         execution.processed_items = execution.total_items
 
@@ -578,16 +591,18 @@ class IssueRelationshipBatchProcessor:
             if success:
                 title = f"✅ {execution.job_config.job_name} 完了"
                 color = 0x00ff00
-                message = (f"バッチジョブが正常に完了しました。\n\n"
-                          f"**処理時間:** {execution.duration_seconds:.1f}秒\n"
-                          f"**処理件数:** {execution.successful_items}/{execution.total_items}\n"
-                          f"**処理速度:** {execution.items_per_second:.1f} items/sec")
+                message = (
+                    f"バッチジョブが正常に完了しました。\n\n"
+                    f"**処理時間:** {execution.duration_seconds:.1f}秒\n"
+                    f"**処理件数:** {execution.successful_items}/{execution.total_items}\n"
+                    f"**処理速度:** {execution.items_per_second:.1f} items/sec")
             else:
                 title = f"❌ {execution.job_config.job_name} 失敗"
                 color = 0xff0000
-                message = (f"バッチジョブが失敗しました。\n\n"
-                          f"**エラー数:** {len(execution.error_messages)}\n"
-                          f"**処理済み:** {execution.processed_items}/{execution.total_items}")
+                message = (
+                    f"バッチジョブが失敗しました。\n\n"
+                    f"**エラー数:** {len(execution.error_messages)}\n"
+                    f"**処理済み:** {execution.processed_items}/{execution.total_items}")
 
                 if execution.error_messages:
                     message += f"\n**最新エラー:** {execution.error_messages[-1][:200]}"

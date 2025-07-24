@@ -175,7 +175,8 @@ class MockAirtableClient:
             "parent_id": category_id
         }
 
-    async def search_categories(self, query: str, max_records: int = 50) -> dict[str, Any]:
+    async def search_categories(
+            self, query: str, max_records: int = 50) -> dict[str, Any]:
         """Search categories by title."""
         matching_categories = []
 
@@ -184,7 +185,7 @@ class MockAirtableClient:
             title_en = cat["fields"].get("Title_EN", "").lower()
 
             if (query.lower() in title_ja or
-                query.lower() in title_en):
+                    query.lower() in title_en):
                 matching_categories.append(cat)
 
                 if len(matching_categories) >= max_records:
@@ -195,6 +196,7 @@ class MockAirtableClient:
             "query": query,
             "total_matches": len(matching_categories)
         }
+
 
 # Create FastAPI app
 app = FastAPI(
@@ -208,22 +210,35 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:8080"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8080"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization",
-        "content-language", "content-type", "x-requested-with",
-        "x-csrf-token", "x-request-id"
-    ],
+        "accept",
+        "accept-language",
+        "authorization",
+        "content-language",
+        "content-type",
+        "x-requested-with",
+        "x-csrf-token",
+        "x-request-id"],
     expose_headers=["X-Total-Count"],
-    max_age=600
-)
+    max_age=600)
 
 # Initialize mock client
 airtable_client = MockAirtableClient()
 
 # Health check
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -235,6 +250,8 @@ async def health_check():
     }
 
 # Root endpoint
+
+
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -246,6 +263,8 @@ async def root():
     }
 
 # Issue Category API endpoints
+
+
 @app.get("/api/issues/categories")
 async def get_categories(max_records: int = 100):
     """Get all issue categories."""
@@ -253,7 +272,9 @@ async def get_categories(max_records: int = 100):
         categories = await airtable_client.get_issue_categories(max_records=max_records)
         return categories
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch categories: {str(e)}")
+        raise HTTPException(status_code=500,
+                            detail=f"Failed to fetch categories: {str(e)}")
+
 
 @app.get("/api/issues/categories/tree")
 async def get_category_tree():
@@ -262,7 +283,10 @@ async def get_category_tree():
         tree = await airtable_client.get_category_tree()
         return tree
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch category tree: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch category tree: {str(e)}")
+
 
 @app.get("/api/issues/categories/{category_id}")
 async def get_category_detail(category_id: str):
@@ -275,7 +299,9 @@ async def get_category_detail(category_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch category: {str(e)}")
+        raise HTTPException(status_code=500,
+                            detail=f"Failed to fetch category: {str(e)}")
+
 
 @app.get("/api/issues/categories/{category_id}/children")
 async def get_category_children(category_id: str):
@@ -284,7 +310,10 @@ async def get_category_children(category_id: str):
         children = await airtable_client.get_category_children(category_id)
         return children
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch category children: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch category children: {str(e)}")
+
 
 @app.get("/api/issues/categories/search")
 async def search_categories(query: str, max_records: int = 50):
@@ -293,9 +322,12 @@ async def search_categories(query: str, max_records: int = 50):
         results = await airtable_client.search_categories(query, max_records=max_records)
         return results
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to search categories: {str(e)}")
+        raise HTTPException(status_code=500,
+                            detail=f"Failed to search categories: {str(e)}")
 
 # Mock bills endpoint for category testing
+
+
 @app.get("/api/bills")
 async def get_bills(max_records: int = 100, category: str | None = None):
     """Get bills, optionally filtered by category."""
@@ -338,7 +370,7 @@ async def get_bills(max_records: int = 100, category: str | None = None):
             mock_bills = [
                 bill for bill in mock_bills
                 if category in bill["fields"].get("Category", "") or
-                   category == bill["fields"].get("Category_ID", "")
+                category == bill["fields"].get("Category_ID", "")
             ]
 
         # Limit results
@@ -349,6 +381,8 @@ async def get_bills(max_records: int = 100, category: str | None = None):
         raise HTTPException(status_code=500, detail=f"Failed to fetch bills: {str(e)}")
 
 # Global exception handler
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler."""

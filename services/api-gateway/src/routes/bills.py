@@ -16,18 +16,25 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/bills", tags=["Bills"])
 
 # Dependency for Airtable client
+
+
 async def get_airtable_client() -> AirtableClient:
     """Get Airtable client instance."""
     return AirtableClient()
 
 # Request/Response models
+
+
 class PolicyCategoryRelationshipRequest(BaseModel):
     """Request model for creating/updating Bills-PolicyCategory relationship."""
     bill_id: str = Field(..., description="Bill identifier")
     policy_category_id: str = Field(..., description="PolicyCategory identifier")
-    confidence_score: float = Field(0.8, ge=0.0, le=1.0, description="Relationship confidence (0.0-1.0)")
-    is_manual: bool = Field(False, description="Whether manually created vs auto-generated")
-    notes: str | None = Field(None, description="Additional notes about the relationship")
+    confidence_score: float = Field(
+        0.8, ge=0.0, le=1.0, description="Relationship confidence (0.0-1.0)")
+    is_manual: bool = Field(
+        False, description="Whether manually created vs auto-generated")
+    notes: str | None = Field(
+        None, description="Additional notes about the relationship")
 
     @validator('bill_id')
     def validate_bill_id(self, v):
@@ -47,11 +54,14 @@ class PolicyCategoryRelationshipRequest(BaseModel):
             raise ValueError('Notes too long (max 1000 characters)')
         return InputValidator.sanitize_string(v, 1000) if v else v
 
+
 class BillSearchRequest(BaseModel):
     """Request model for searching bills with PolicyCategory filters."""
     query: str | None = Field(None, description="Search query")
-    policy_category_ids: list[str] | None = Field(None, description="Filter by PolicyCategory IDs")
-    policy_category_layer: str | None = Field(None, description="Filter by policy layer (L1/L2/L3)")
+    policy_category_ids: list[str] | None = Field(
+        None, description="Filter by PolicyCategory IDs")
+    policy_category_layer: str | None = Field(
+        None, description="Filter by policy layer (L1/L2/L3)")
     status: str | None = Field(None, description="Filter by bill status")
     stage: str | None = Field(None, description="Filter by bill stage")
     max_records: int = Field(100, le=1000, description="Maximum records to return")
@@ -63,6 +73,8 @@ class BillSearchRequest(BaseModel):
         return InputValidator.sanitize_string(v, 200) if v else v
 
 # Bills endpoints
+
+
 @router.get("/", response_model=list[dict])
 async def list_bills(
     status: str | None = Query(None, description="Filter by status"),
@@ -91,7 +103,8 @@ async def list_bills(
         if policy_category_id:
             # Get all Bills-PolicyCategory relationships for this category
             relationships = await airtable.get_bills_by_policy_category(policy_category_id)
-            bill_ids = [rel.get("fields", {}).get("Bill_ID", "") for rel in relationships]
+            bill_ids = [rel.get("fields", {}).get("Bill_ID", "")
+                        for rel in relationships]
 
             # Filter bills to only include those with relationships
             bills = [bill for bill in bills if bill.get("id") in bill_ids]
@@ -102,12 +115,14 @@ async def list_bills(
         logger.error(f"Failed to list bills: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
 
+
 @router.get("/{bill_id}")
 async def get_bill(
-    bill_id: str,
-    include_policy_categories: bool = Query(False, description="Include related PolicyCategories"),
-    airtable: AirtableClient = Depends(get_airtable_client)
-):
+        bill_id: str,
+        include_policy_categories: bool = Query(
+            False,
+            description="Include related PolicyCategories"),
+        airtable: AirtableClient = Depends(get_airtable_client)):
     """Get a specific bill by ID with optional PolicyCategory relationships."""
     try:
         bill = await airtable.get_bill(bill_id)
@@ -133,7 +148,8 @@ async def get_bill(
                             "relationship_id": rel.get("id")
                         })
                     except Exception as e:
-                        logger.warning(f"Failed to fetch PolicyCategory {category_id}: {e}")
+                        logger.warning(
+                            f"Failed to fetch PolicyCategory {category_id}: {e}")
 
             bill["policy_categories"] = policy_categories
 
@@ -142,6 +158,7 @@ async def get_bill(
     except Exception as e:
         logger.error(f"Failed to get bill {bill_id}: {e}")
         raise HTTPException(status_code=404, detail="Bill not found")
+
 
 @router.post("/search", response_model=dict[str, Any])
 async def search_bills(
@@ -206,12 +223,14 @@ async def search_bills(
                         if request.policy_category_layer:
                             try:
                                 category = await airtable.get_issue_category(category_id)
-                                category_layer = category.get("fields", {}).get("Layer", "")
+                                category_layer = category.get(
+                                    "fields", {}).get("Layer", "")
                                 if category_layer == request.policy_category_layer:
                                     matches_filter = True
                                     break
                             except Exception as e:
-                                logger.warning(f"Failed to check layer for category {category_id}: {e}")
+                                logger.warning(
+                                    f"Failed to check layer for category {category_id}: {e}")
 
                 if matches_filter:
                     filtered_bills.append(bill)
@@ -236,6 +255,8 @@ async def search_bills(
         raise HTTPException(status_code=500, detail="Failed to search bills")
 
 # Bills-PolicyCategory relationship endpoints
+
+
 @router.post("/{bill_id}/policy-categories")
 async def create_bill_policy_category_relationship(
     bill_id: str,
@@ -264,7 +285,9 @@ async def create_bill_policy_category_relationship(
         for rel in existing_relationships:
             rel_fields = rel.get("fields", {})
             if rel_fields.get("PolicyCategory_ID") == request.policy_category_id:
-                raise HTTPException(status_code=409, detail="Relationship already exists")
+                raise HTTPException(
+                    status_code=409,
+                    detail="Relationship already exists")
 
         # Create the relationship
         relationship_data = {
@@ -289,6 +312,7 @@ async def create_bill_policy_category_relationship(
     except Exception as e:
         logger.error(f"Failed to create Bills-PolicyCategory relationship: {e}")
         raise HTTPException(status_code=500, detail="Failed to create relationship")
+
 
 @router.get("/{bill_id}/policy-categories")
 async def get_bill_policy_categories(
@@ -338,6 +362,7 @@ async def get_bill_policy_categories(
         logger.error(f"Failed to get policy categories for bill {bill_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch policy categories")
 
+
 @router.put("/{bill_id}/policy-categories/{relationship_id}")
 async def update_bill_policy_category_relationship(
     bill_id: str,
@@ -373,6 +398,7 @@ async def update_bill_policy_category_relationship(
         logger.error(f"Failed to update Bills-PolicyCategory relationship: {e}")
         raise HTTPException(status_code=500, detail="Failed to update relationship")
 
+
 @router.delete("/{bill_id}/policy-categories/{relationship_id}")
 async def delete_bill_policy_category_relationship(
     bill_id: str,
@@ -394,6 +420,8 @@ async def delete_bill_policy_category_relationship(
         raise HTTPException(status_code=500, detail="Failed to delete relationship")
 
 # Bulk operations for data migration
+
+
 @router.post("/policy-categories/bulk-create")
 async def bulk_create_bill_policy_category_relationships(
     request: list[PolicyCategoryRelationshipRequest],
@@ -402,7 +430,8 @@ async def bulk_create_bill_policy_category_relationships(
     """Bulk create Bills-PolicyCategory relationships for data migration."""
     try:
         if len(request) > 100:
-            raise HTTPException(status_code=400, detail="Bulk operations limited to 100 items")
+            raise HTTPException(status_code=400,
+                                detail="Bulk operations limited to 100 items")
 
         created_relationships = []
         failed_relationships = []
@@ -432,7 +461,8 @@ async def bulk_create_bill_policy_category_relationships(
                     "policy_category_id": rel_request.policy_category_id,
                     "error": str(e)
                 })
-                logger.warning(f"Failed to create relationship for bill {rel_request.bill_id}: {e}")
+                logger.warning(
+                    f"Failed to create relationship for bill {rel_request.bill_id}: {e}")
 
         return {
             "success": True,
@@ -446,9 +476,12 @@ async def bulk_create_bill_policy_category_relationships(
         raise
     except Exception as e:
         logger.error(f"Failed to bulk create Bills-PolicyCategory relationships: {e}")
-        raise HTTPException(status_code=500, detail="Failed to bulk create relationships")
+        raise HTTPException(status_code=500,
+                            detail="Failed to bulk create relationships")
 
 # Statistics endpoints
+
+
 @router.get("/statistics/policy-categories")
 async def get_bills_policy_category_statistics(
     airtable: AirtableClient = Depends(get_airtable_client)
@@ -479,7 +512,11 @@ async def get_bills_policy_category_statistics(
                 category_counts[category_id] = category_counts.get(category_id, 0) + 1
 
         # Sort by count and get top 10
-        top_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        top_categories = sorted(
+            category_counts.items(),
+            key=lambda x: x[1],
+            reverse=True)[
+            :10]
 
         return {
             "total_relationships": len(relationships),

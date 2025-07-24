@@ -13,8 +13,6 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from services.policy_issue_extractor import (
     BillData,
     DualLevelIssue,
@@ -22,6 +20,8 @@ from services.policy_issue_extractor import (
     VerbEndingValidator,
     VocabularyLevelValidator,
 )
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 
 class TestDualLevelIssue:
@@ -116,7 +116,8 @@ class TestVerbEndingValidator:
         ]
 
         for text in valid_endings:
-            assert validator.is_valid_verb_ending(text), f"Should recognize '{text}' as valid verb ending"
+            assert validator.is_valid_verb_ending(
+                text), f"Should recognize '{text}' as valid verb ending"
 
     def test_invalid_verb_endings(self):
         """Test rejection of invalid verb endings."""
@@ -131,7 +132,8 @@ class TestVerbEndingValidator:
         ]
 
         for text in invalid_endings:
-            assert not validator.is_valid_verb_ending(text), f"Should reject '{text}' as invalid verb ending"
+            assert not validator.is_valid_verb_ending(
+                text), f"Should reject '{text}' as invalid verb ending"
 
     def test_compound_verb_handling(self):
         """Test handling of compound verbs."""
@@ -144,7 +146,8 @@ class TestVerbEndingValidator:
         ]
 
         for text in compound_verbs:
-            assert validator.is_valid_verb_ending(text), f"Should handle compound verb '{text}'"
+            assert validator.is_valid_verb_ending(
+                text), f"Should handle compound verb '{text}'"
 
 
 class TestVocabularyLevelValidator:
@@ -162,7 +165,8 @@ class TestVocabularyLevelValidator:
         ]
 
         for text in appropriate_texts:
-            assert validator.is_high_school_appropriate(text), f"Should accept '{text}' as high school appropriate"
+            assert validator.is_high_school_appropriate(
+                text), f"Should accept '{text}' as high school appropriate"
 
     def test_advanced_vocabulary_detection(self):
         """Test detection of advanced vocabulary."""
@@ -176,7 +180,8 @@ class TestVocabularyLevelValidator:
         ]
 
         for text in advanced_texts:
-            assert not validator.is_high_school_appropriate(text), f"Should reject '{text}' as too advanced"
+            assert not validator.is_high_school_appropriate(
+                text), f"Should reject '{text}' as too advanced"
 
 
 class TestBillData:
@@ -256,7 +261,11 @@ class TestPolicyIssueExtractor:
         assert "一般読者レベル" in prompt
 
     @patch('openai.AsyncOpenAI')
-    async def test_successful_extraction(self, mock_openai_client, extractor, sample_bill_data):
+    async def test_successful_extraction(
+            self,
+            mock_openai_client,
+            extractor,
+            sample_bill_data):
         """Test successful issue extraction."""
         # Mock OpenAI response
         mock_response = Mock()
@@ -281,7 +290,8 @@ class TestPolicyIssueExtractor:
         assert issues[0].confidence == 0.85
 
     @patch('openai.AsyncOpenAI')
-    async def test_malformed_response_handling(self, mock_openai_client, extractor, sample_bill_data):
+    async def test_malformed_response_handling(
+            self, mock_openai_client, extractor, sample_bill_data):
         """Test handling of malformed LLM responses."""
         # Mock malformed response
         mock_response = Mock()
@@ -300,10 +310,15 @@ class TestPolicyIssueExtractor:
         assert len(issues) == 0
 
     @patch('openai.AsyncOpenAI')
-    async def test_api_error_handling(self, mock_openai_client, extractor, sample_bill_data):
+    async def test_api_error_handling(
+            self,
+            mock_openai_client,
+            extractor,
+            sample_bill_data):
         """Test handling of API errors."""
         mock_client_instance = AsyncMock()
-        mock_client_instance.chat.completions.create.side_effect = Exception("API Error")
+        mock_client_instance.chat.completions.create.side_effect = Exception(
+            "API Error")
         mock_openai_client.return_value = mock_client_instance
 
         extractor.client = mock_client_instance
@@ -314,7 +329,8 @@ class TestPolicyIssueExtractor:
         assert len(issues) == 0
 
     @patch('openai.AsyncOpenAI')
-    async def test_extraction_with_metadata(self, mock_openai_client, extractor, sample_bill_data):
+    async def test_extraction_with_metadata(
+            self, mock_openai_client, extractor, sample_bill_data):
         """Test extraction with metadata collection."""
         # Mock successful response
         mock_response = Mock()
@@ -407,7 +423,8 @@ class TestIntegration:
 
     async def test_end_to_end_extraction_pipeline(self):
         """Test the complete extraction pipeline end-to-end."""
-        # This test would require actual API keys and should be run in integration environment
+        # This test would require actual API keys and should be run in integration
+        # environment
         pass
 
     async def test_validation_pipeline(self):

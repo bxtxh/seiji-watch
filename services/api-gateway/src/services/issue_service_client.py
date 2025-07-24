@@ -8,9 +8,11 @@ import os
 from typing import Any
 
 import aiohttp
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
 
 class BillData(BaseModel):
     """Bill data model for issue extraction."""
@@ -23,11 +25,13 @@ class BillData(BaseModel):
     submitter: str | None = None
     category: str | None = None
 
+
 class DualLevelIssue(BaseModel):
     """Dual-level issue model."""
     label_lv1: str
     label_lv2: str
     confidence: float
+
 
 class IssueServiceClient:
     """Client for communicating with the ingest-worker issue extraction service."""
@@ -117,6 +121,7 @@ class IssueServiceClient:
                 detail="Issue extraction service unavailable"
             )
 
+
 class AirtableServiceClient:
     """Client for communicating with Airtable issue management service."""
 
@@ -124,7 +129,11 @@ class AirtableServiceClient:
         self.base_url = os.getenv('INGEST_WORKER_URL', 'http://localhost:8001')
         self.timeout = aiohttp.ClientTimeout(total=30)
 
-    async def get_issues_by_level(self, level: int, status: str = "approved", max_records: int = 100) -> list[dict]:
+    async def get_issues_by_level(
+            self,
+            level: int,
+            status: str = "approved",
+            max_records: int = 100) -> list[dict]:
         """Get issues filtered by level."""
         try:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
@@ -181,8 +190,12 @@ class AirtableServiceClient:
                 detail="Airtable service unavailable"
             )
 
-    async def search_issues(self, query: str, level: int | None = None,
-                          status: str = "approved", max_records: int = 50) -> list[dict]:
+    async def search_issues(
+            self,
+            query: str,
+            level: int | None = None,
+            status: str = "approved",
+            max_records: int = 50) -> list[dict]:
         """Search issues with proper query escaping."""
         try:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
@@ -216,7 +229,11 @@ class AirtableServiceClient:
                 detail="Search service unavailable"
             )
 
-    async def update_issue_status(self, record_id: str, status: str, reviewer_notes: str | None = None) -> bool:
+    async def update_issue_status(
+            self,
+            record_id: str,
+            status: str,
+            reviewer_notes: str | None = None) -> bool:
         """Update issue status with security validation."""
         try:
             async with aiohttp.ClientSession(timeout=self.timeout) as session:
@@ -273,13 +290,16 @@ class AirtableServiceClient:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as session:
                 async with session.get(f"{self.base_url}/health") as response:
                     return response.status == 200
-        except:
+        except Exception:
             return False
 
 # Dependency injection
+
+
 async def get_issue_service_client() -> IssueServiceClient:
     """Get issue service client instance."""
     return IssueServiceClient()
+
 
 async def get_airtable_service_client() -> AirtableServiceClient:
     """Get Airtable service client instance."""

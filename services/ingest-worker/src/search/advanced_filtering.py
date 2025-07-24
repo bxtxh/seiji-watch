@@ -58,14 +58,22 @@ class FilterCondition:
 
     def __post_init__(self):
         # Validate operator-value compatibility
-        if self.operator in [FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL] and self.value is not None:
+        if self.operator in [FilterOperator.IS_NULL,
+                             FilterOperator.IS_NOT_NULL] and self.value is not None:
             raise ValueError(f"Operator {self.operator.value} should not have a value")
 
-        if self.operator == FilterOperator.BETWEEN and not isinstance(self.value, list | tuple) or len(self.value) != 2:
-            raise ValueError(f"Operator {self.operator.value} requires a list/tuple of two values")
+        if self.operator == FilterOperator.BETWEEN and not isinstance(
+                self.value, list | tuple) or len(self.value) != 2:
+            raise ValueError(
+                f"Operator {self.operator.value} requires a list/tuple of two values")
 
-        if self.operator in [FilterOperator.IN, FilterOperator.NOT_IN] and not isinstance(self.value, list | tuple):
-            raise ValueError(f"Operator {self.operator.value} requires a list/tuple of values")
+        if self.operator in [
+                FilterOperator.IN,
+                FilterOperator.NOT_IN] and not isinstance(
+                self.value,
+                list | tuple):
+            raise ValueError(
+                f"Operator {self.operator.value} requires a list/tuple of values")
 
 
 @dataclass
@@ -120,7 +128,8 @@ class AdvancedFilterEngine:
     def __init__(self, database_url: str):
         self.database_url = database_url
         self.engine = create_engine(database_url)
-        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        self.SessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=self.engine)
         self.logger = logging.getLogger(__name__)
 
         # Field mappings and types
@@ -172,24 +181,84 @@ class AdvancedFilterEngine:
         # Valid values for enum-like fields
         self.valid_values = {
             'category': [
-                'budget', 'taxation', 'social_security', 'foreign_affairs', 'economy',
-                'education', 'environment', 'infrastructure', 'defense', 'judiciary',
-                'administration', 'other', '予算・決算', '税制', '社会保障', '外交・国際',
-                '経済・産業', '教育・文化', '環境・エネルギー', 'インフラ・交通',
-                '防衛・安全保障', '司法・法務', '行政・公務員', 'その他'
-            ],
+                'budget',
+                'taxation',
+                'social_security',
+                'foreign_affairs',
+                'economy',
+                'education',
+                'environment',
+                'infrastructure',
+                'defense',
+                'judiciary',
+                'administration',
+                'other',
+                '予算・決算',
+                '税制',
+                '社会保障',
+                '外交・国際',
+                '経済・産業',
+                '教育・文化',
+                '環境・エネルギー',
+                'インフラ・交通',
+                '防衛・安全保障',
+                '司法・法務',
+                '行政・公務員',
+                'その他'],
             'status': [
-                '成立', '可決', '否決', '審議中', '委員会審議', '継続審議', '撤回', '廃案',
-                'backlog', 'under_review', 'pending_vote', 'passed', 'rejected', 'withdrawn', 'expired'
-            ],
+                '成立',
+                '可決',
+                '否決',
+                '審議中',
+                '委員会審議',
+                '継続審議',
+                '撤回',
+                '廃案',
+                'backlog',
+                'under_review',
+                'pending_vote',
+                'passed',
+                'rejected',
+                'withdrawn',
+                'expired'],
             'stage': [
-                'submitted', 'committee_review', 'plenary_debate', 'voting', 'passed', 'rejected', 'withdrawn',
-                '提出', '委員会審議', '本会議', '採決', '成立', '否決', '撤回', '廃案'
-            ],
-            'submitter': ['政府', '議員', 'government', 'member'],
-            'submitter_type': ['政府', '議員', 'government', 'member'],
-            'house_of_origin': ['参議院', '衆議院', 'upper', 'lower'],
-            'source_house': ['参議院', '衆議院', '両院', 'upper', 'lower', 'both'],
+                'submitted',
+                'committee_review',
+                'plenary_debate',
+                'voting',
+                'passed',
+                'rejected',
+                'withdrawn',
+                '提出',
+                '委員会審議',
+                '本会議',
+                '採決',
+                '成立',
+                '否決',
+                '撤回',
+                '廃案'],
+            'submitter': [
+                '政府',
+                '議員',
+                'government',
+                'member'],
+            'submitter_type': [
+                '政府',
+                '議員',
+                'government',
+                'member'],
+            'house_of_origin': [
+                '参議院',
+                '衆議院',
+                'upper',
+                'lower'],
+            'source_house': [
+                '参議院',
+                '衆議院',
+                '両院',
+                'upper',
+                'lower',
+                'both'],
         }
 
         # Searchable text fields
@@ -199,8 +268,10 @@ class AdvancedFilterEngine:
 
         # Date fields
         self.date_fields = [
-            'submitted_date', 'final_vote_date', 'implementation_date', 'promulgated_date'
-        ]
+            'submitted_date',
+            'final_vote_date',
+            'implementation_date',
+            'promulgated_date']
 
         # Numeric fields
         self.numeric_fields = [
@@ -218,7 +289,8 @@ class AdvancedFilterEngine:
 
                 # Apply filters
                 if query.filters:
-                    filtered_query = self._apply_filter_group(base_query, query.filters, session)
+                    filtered_query = self._apply_filter_group(
+                        base_query, query.filters, session)
                 else:
                     filtered_query = base_query
 
@@ -230,7 +302,8 @@ class AdvancedFilterEngine:
 
                 # Apply having clause
                 if query.having:
-                    having_query = self._apply_having(grouped_query, query.having, session)
+                    having_query = self._apply_having(
+                        grouped_query, query.having, session)
                 else:
                     having_query = grouped_query
 
@@ -273,8 +346,9 @@ class AdvancedFilterEngine:
                     total_count=total_count,
                     query_time_ms=query_time_ms,
                     sql_query=str(final_query),
-                    parameters=final_query.compile().params if hasattr(final_query, 'compile') else None
-                )
+                    parameters=final_query.compile().params if hasattr(
+                        final_query,
+                        'compile') else None)
 
         except Exception as e:
             self.logger.error(f"Filter error: {e}")
@@ -311,7 +385,11 @@ class AdvancedFilterEngine:
 
         return select(*select_columns).select_from(text("bills"))
 
-    def _apply_filter_group(self, query: Select, filter_group: FilterGroup, session: Session) -> Select:
+    def _apply_filter_group(
+            self,
+            query: Select,
+            filter_group: FilterGroup,
+            session: Session) -> Select:
         """Apply a filter group to the query"""
         conditions = []
 
@@ -323,7 +401,8 @@ class AdvancedFilterEngine:
             elif isinstance(condition, FilterGroup):
                 # Recursively handle nested filter groups
                 nested_query = select(text("*")).select_from(text("bills"))
-                nested_filtered = self._apply_filter_group(nested_query, condition, session)
+                nested_filtered = self._apply_filter_group(
+                    nested_query, condition, session)
                 # Extract the where clause from the nested query
                 if nested_filtered.whereclause is not None:
                     conditions.append(nested_filtered.whereclause)
@@ -388,11 +467,17 @@ class AdvancedFilterEngine:
                 return func.lower(column).endswith(func.lower(converted_value))
 
         elif condition.operator == FilterOperator.IN:
-            converted_values = [self._convert_value(condition.field, v) for v in converted_value]
+            converted_values = [
+                self._convert_value(
+                    condition.field,
+                    v) for v in converted_value]
             return column.in_(converted_values)
 
         elif condition.operator == FilterOperator.NOT_IN:
-            converted_values = [self._convert_value(condition.field, v) for v in converted_value]
+            converted_values = [
+                self._convert_value(
+                    condition.field,
+                    v) for v in converted_value]
             return column.notin_(converted_values)
 
         elif condition.operator == FilterOperator.GREATER_THAN:
@@ -481,7 +566,11 @@ class AdvancedFilterEngine:
 
         return query.group_by(*group_columns)
 
-    def _apply_having(self, query: Select, having: FilterGroup, session: Session) -> Select:
+    def _apply_having(
+            self,
+            query: Select,
+            having: FilterGroup,
+            session: Session) -> Select:
         """Apply HAVING clause"""
         # Build having conditions similar to WHERE conditions
         conditions = []
@@ -510,7 +599,10 @@ class AdvancedFilterEngine:
 
         return query.having(combined_condition)
 
-    def _apply_sorting(self, query: Select, sort_criteria: list[SortCriteria]) -> Select:
+    def _apply_sorting(
+            self,
+            query: Select,
+            sort_criteria: list[SortCriteria]) -> Select:
         """Apply ORDER BY clause"""
         order_columns = []
 
@@ -606,7 +698,8 @@ class AdvancedFilterEngine:
                 FilterOperator.BETWEEN, FilterOperator.IN, FilterOperator.NOT_IN,
                 FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL
             ]:
-                errors.append(f"Operator {condition.operator.value} not supported for date field {condition.field}")
+                errors.append(
+                    f"Operator {condition.operator.value} not supported for date field {condition.field}")
 
         elif field_type == float:
             if condition.operator not in [
@@ -616,10 +709,13 @@ class AdvancedFilterEngine:
                 FilterOperator.BETWEEN, FilterOperator.IN, FilterOperator.NOT_IN,
                 FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL
             ]:
-                errors.append(f"Operator {condition.operator.value} not supported for numeric field {condition.field}")
+                errors.append(
+                    f"Operator {condition.operator.value} not supported for numeric field {condition.field}")
 
         # Validate value format
-        if condition.operator not in [FilterOperator.IS_NULL, FilterOperator.IS_NOT_NULL]:
+        if condition.operator not in [
+                FilterOperator.IS_NULL,
+                FilterOperator.IS_NOT_NULL]:
             try:
                 self._convert_value(condition.field, condition.value)
             except Exception as e:
@@ -630,15 +726,21 @@ class AdvancedFilterEngine:
             valid_vals = self.valid_values[column_name]
             if condition.operator in [FilterOperator.EQUALS, FilterOperator.NOT_EQUALS]:
                 if condition.value not in valid_vals:
-                    errors.append(f"Invalid value '{condition.value}' for field {condition.field}. Valid values: {valid_vals}")
+                    errors.append(
+                        f"Invalid value '{condition.value}' for field {condition.field}. Valid values: {valid_vals}")
             elif condition.operator in [FilterOperator.IN, FilterOperator.NOT_IN]:
                 for val in condition.value:
                     if val not in valid_vals:
-                        errors.append(f"Invalid value '{val}' for field {condition.field}. Valid values: {valid_vals}")
+                        errors.append(
+                            f"Invalid value '{val}' for field {condition.field}. Valid values: {valid_vals}")
 
         return errors
 
-    def get_filter_suggestions(self, field: str, partial_value: str = "", limit: int = 10) -> list[str]:
+    def get_filter_suggestions(
+            self,
+            field: str,
+            partial_value: str = "",
+            limit: int = 10) -> list[str]:
         """Get filter value suggestions for a field"""
         suggestions = []
 
@@ -650,7 +752,8 @@ class AdvancedFilterEngine:
                     # For enum fields, filter from valid values
                     valid_vals = self.valid_values[column_name]
                     if partial_value:
-                        suggestions = [val for val in valid_vals if partial_value.lower() in val.lower()]
+                        suggestions = [
+                            val for val in valid_vals if partial_value.lower() in val.lower()]
                     else:
                         suggestions = valid_vals
                 else:
@@ -690,14 +793,16 @@ class AdvancedFilterEngine:
                 }
 
                 # Count total and non-null values
-                total_query = text(f"SELECT COUNT(*) as total, COUNT({column_name}) as non_null FROM bills")
+                total_query = text(
+                    f"SELECT COUNT(*) as total, COUNT({column_name}) as non_null FROM bills")
                 result = session.execute(total_query).fetchone()
                 stats['total_count'] = result.total
                 stats['non_null_count'] = result.non_null
                 stats['null_count'] = result.total - result.non_null
 
                 # Get distinct values count
-                distinct_query = text(f"SELECT COUNT(DISTINCT {column_name}) as distinct_count FROM bills WHERE {column_name} IS NOT NULL")
+                distinct_query = text(
+                    f"SELECT COUNT(DISTINCT {column_name}) as distinct_count FROM bills WHERE {column_name} IS NOT NULL")
                 result = session.execute(distinct_query).fetchone()
                 stats['distinct_count'] = result.distinct_count
 
@@ -712,8 +817,10 @@ class AdvancedFilterEngine:
                     """)
                     result = session.execute(date_stats_query).fetchone()
                     if result:
-                        stats['min_date'] = result.min_date.isoformat() if result.min_date else None
-                        stats['max_date'] = result.max_date.isoformat() if result.max_date else None
+                        stats['min_date'] = result.min_date.isoformat(
+                        ) if result.min_date else None
+                        stats['max_date'] = result.max_date.isoformat(
+                        ) if result.max_date else None
 
                 elif field_type == float:
                     numeric_stats_query = text(f"""
@@ -727,10 +834,14 @@ class AdvancedFilterEngine:
                     """)
                     result = session.execute(numeric_stats_query).fetchone()
                     if result:
-                        stats['min_value'] = float(result.min_val) if result.min_val is not None else None
-                        stats['max_value'] = float(result.max_val) if result.max_val is not None else None
-                        stats['avg_value'] = float(result.avg_val) if result.avg_val is not None else None
-                        stats['stddev_value'] = float(result.stddev_val) if result.stddev_val is not None else None
+                        stats['min_value'] = float(
+                            result.min_val) if result.min_val is not None else None
+                        stats['max_value'] = float(
+                            result.max_val) if result.max_val is not None else None
+                        stats['avg_value'] = float(
+                            result.avg_val) if result.avg_val is not None else None
+                        stats['stddev_value'] = float(
+                            result.stddev_val) if result.stddev_val is not None else None
 
                 elif field_type == str:
                     text_stats_query = text(f"""
@@ -745,7 +856,8 @@ class AdvancedFilterEngine:
                     if result:
                         stats['min_length'] = result.min_length
                         stats['max_length'] = result.max_length
-                        stats['avg_length'] = float(result.avg_length) if result.avg_length else None
+                        stats['avg_length'] = float(
+                            result.avg_length) if result.avg_length else None
 
                 # Get top values
                 top_values_query = text(f"""
@@ -757,7 +869,8 @@ class AdvancedFilterEngine:
                     LIMIT 10
                 """)
                 result = session.execute(top_values_query).fetchall()
-                stats['top_values'] = [{'value': row.value, 'count': row.count} for row in result]
+                stats['top_values'] = [
+                    {'value': row.value, 'count': row.count} for row in result]
 
                 return stats
 

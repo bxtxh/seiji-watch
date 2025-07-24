@@ -19,34 +19,34 @@ load_dotenv('/Users/shogen/seiji-watch/.env.local')
 FINAL_POLITICIAN_READINGS = {
     # Remaining placeholders - verified politicians
     "田中太郎": "たなかたろう",    # Keep if genuine politician
-    "羽生田俊": "はにゅうだたかし", # Real politician
-    "片山虎之助": "かたやまとらのすけ", # Real politician
+    "羽生田俊": "はにゅうだたかし",  # Real politician
+    "片山虎之助": "かたやまとらのすけ",  # Real politician
     "竹谷とし子": "たけやとしこ",  # Real politician
-    "打越さく良": "うちこしさくら", # Real politician
+    "打越さく良": "うちこしさくら",  # Real politician
     "岡田直樹": "おかだなおき",    # Real politician
     "塩田博昭": "しおたひろあき",  # Real politician
     "熊野正士": "くまのまさし",    # Real politician
-    "宮島喜文": "みやじまよしふみ", # Real politician
+    "宮島喜文": "みやじまよしふみ",  # Real politician
     "本田顕子": "ほんだあきこ",    # Real politician
     "堀井巌": "ほりいいわお",      # Real politician
-    "朝日健太郎": "あさひけんたろう", # Real politician
+    "朝日健太郎": "あさひけんたろう",  # Real politician
     "渡邉美樹": "わたなべみき",    # Real politician
     "神谷政幸": "かみやまさゆき",  # Real politician
-    "舞立昇治": "まいたてしょうじ", # Real politician
-    "進藤金日子": "しんどうかねひこ", # Real politician
+    "舞立昇治": "まいたてしょうじ",  # Real politician
+    "進藤金日子": "しんどうかねひこ",  # Real politician
     "岩本剛人": "いわもとたけと",  # Real politician
-    "藤川政人": "ふじかわまさひと", # Real politician
+    "藤川政人": "ふじかわまさひと",  # Real politician
     "今井えり子": "いまいえりこ",  # Real politician
-    "渡辺猛之": "わたなべたけゆき", # Real politician
+    "渡辺猛之": "わたなべたけゆき",  # Real politician
     "上野通子": "うえのみちこ",    # Real politician
     "藤田幸久": "ふじたゆきひさ",  # Real politician
-    "古川俊治": "ふるかわとしはる", # Real politician
+    "古川俊治": "ふるかわとしはる",  # Real politician
     "山本博司": "やまもとひろし",  # Real politician
-    "魚住裕一郎": "うおずみゆういちろう", # Real politician
+    "魚住裕一郎": "うおずみゆういちろう",  # Real politician
     "高瀬弘美": "たかせひろみ",    # Real politician
     "石井苗子": "いしいなえこ",    # Real politician
-    "薬師寺みちよ": "やくしじみちよ", # Real politician
-    "柳ヶ瀬裕文": "やながせひろふみ", # Real politician
+    "薬師寺みちよ": "やくしじみちよ",  # Real politician
+    "柳ヶ瀬裕文": "やながせひろふみ",  # Real politician
 
     # Additional verified readings
     "田村まみ": "たむらまみ",
@@ -60,6 +60,7 @@ FINAL_POLITICIAN_READINGS = {
     "青柳陽一郎": "あおやぎよういちろう",
     "斎藤嘉隆": "さいとうよしたか"
 }
+
 
 class FinalPerfectionSystem:
     """Final system to achieve 99%+ Name_Kana quality"""
@@ -160,10 +161,12 @@ class FinalPerfectionSystem:
                     if response.status == 200:
                         successful_fixes += 1
                         self.perfection_results['final_fixes_applied'] += 1
-                        print(f"   ✅ Fixed: {record_info['name']} → '{record_info['correct_kana']}'")
+                        print(
+                            f"   ✅ Fixed: {record_info['name']} → '{record_info['correct_kana']}'")
                     else:
                         self.perfection_results['errors'] += 1
-                        print(f"   ❌ Error fixing {record_info['name']}: {response.status}")
+                        print(
+                            f"   ❌ Error fixing {record_info['name']}: {response.status}")
 
             except Exception as e:
                 self.perfection_results['errors'] += 1
@@ -189,7 +192,8 @@ class FinalPerfectionSystem:
                 print("❌ No records found!")
                 return
 
-            print(f"📊 Analyzing {len(all_records)} Members records for final perfection")
+            print(
+                f"📊 Analyzing {len(all_records)} Members records for final perfection")
 
             # Analyze each record for remaining issues
             records_to_fix = []
@@ -243,7 +247,8 @@ class FinalPerfectionSystem:
             print(f"   📏 Too short: {issue_summary['too_short']}")
             print(f"   ❓ Missing: {issue_summary['missing']}")
             print(f"   🎯 Can auto-fix: {len(records_to_fix)}")
-            print(f"   📋 Manual review needed: {self.perfection_results['manual_review_needed']}")
+            print(
+                f"   📋 Manual review needed: {self.perfection_results['manual_review_needed']}")
 
             if records_to_fix:
                 # Create final backup
@@ -279,10 +284,11 @@ class FinalPerfectionSystem:
 
             # Calculate final quality metrics
             total_good = (self.perfection_results['already_perfect'] +
-                         self.perfection_results['final_fixes_applied'])
+                          self.perfection_results['final_fixes_applied'])
 
             if self.perfection_results['total_analyzed'] > 0:
-                final_quality = (total_good / self.perfection_results['total_analyzed']) * 100
+                final_quality = (
+                    total_good / self.perfection_results['total_analyzed']) * 100
                 self.perfection_results['final_quality_rate'] = final_quality
                 self.perfection_results['target_achieved'] = final_quality >= 99.0
 
@@ -308,7 +314,8 @@ class FinalPerfectionSystem:
 
         print("\n🎯 FINAL QUALITY ACHIEVEMENT:")
         print(f"   Final quality rate: {results['final_quality_rate']:.1f}%")
-        print(f"   Target (99%): {'✅ ACHIEVED' if results['target_achieved'] else '❌ NOT ACHIEVED'}")
+        print(
+            f"   Target (99%): {'✅ ACHIEVED' if results['target_achieved'] else '❌ NOT ACHIEVED'}")
 
         if results['target_achieved']:
             print("\n🏆 SUCCESS! 99%+ NAME_KANA QUALITY ACHIEVED!")
@@ -316,7 +323,8 @@ class FinalPerfectionSystem:
             print("🎉 Zero-defect standard met for critical political data")
         elif results['final_quality_rate'] >= 98:
             print("\n🎯 EXCELLENT! Very close to 99% target")
-            print(f"📋 Manual review recommended for remaining {results['manual_review_needed']} cases")
+            print(
+                f"📋 Manual review recommended for remaining {results['manual_review_needed']} cases")
         elif results['final_quality_rate'] >= 95:
             print("\n👍 VERY GOOD! High quality achieved")
             print("📋 Additional manual review needed for perfection")
@@ -326,15 +334,18 @@ class FinalPerfectionSystem:
         # Recommendations
         if results['manual_review_needed'] > 0:
             print("\n📋 MANUAL REVIEW RECOMMENDATIONS:")
-            print(f"   1. Review {results['manual_review_needed']} cases requiring manual verification")
+            print(
+                f"   1. Review {results['manual_review_needed']} cases requiring manual verification")
             print("   2. Cross-reference with official Diet member directories")
             print("   3. Verify readings with politician official websites")
             print("   4. Implement dual-entry verification for unknowns")
 
         if results['remaining_placeholders'] > 0:
             print("\n🔄 REMAINING PLACEHOLDERS:")
-            print(f"   {results['remaining_placeholders']} placeholder patterns still exist")
+            print(
+                f"   {results['remaining_placeholders']} placeholder patterns still exist")
             print("   These may be legitimate names or require research")
+
 
 async def main():
     """Main final perfection entry point"""

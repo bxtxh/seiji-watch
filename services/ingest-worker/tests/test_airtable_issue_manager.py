@@ -14,10 +14,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-
 from services.airtable_issue_manager import AirtableIssueManager, AirtableIssueRecord
 from services.policy_issue_extractor import DualLevelIssue
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 
 class TestAirtableIssueRecord:
@@ -89,13 +89,18 @@ class TestAirtableIssueManager:
         assert issue_manager.batch_size == 10
         assert issue_manager.batch_delay == 0.3
 
-    async def test_create_issue_pair_success(self, issue_manager, sample_dual_issue, mock_airtable_client):
+    async def test_create_issue_pair_success(
+            self,
+            issue_manager,
+            sample_dual_issue,
+            mock_airtable_client):
         """Test successful creation of issue pair."""
         # Mock Airtable responses
         lv1_response = {"id": "rec_lv1_123", "fields": {}}
         lv2_response = {"id": "rec_lv2_456", "fields": {}}
 
-        mock_airtable_client._rate_limited_request.side_effect = [lv1_response, lv2_response]
+        mock_airtable_client._rate_limited_request.side_effect = [
+            lv1_response, lv2_response]
 
         lv1_id, lv2_id = await issue_manager.create_issue_pair(
             sample_dual_issue, "bill_001", 0.8
@@ -122,19 +127,26 @@ class TestAirtableIssueManager:
         assert lv2_data["Label_Lv2"] == sample_dual_issue.label_lv2
         assert lv2_data["Parent_ID"] == "rec_lv1_123"
 
-    async def test_create_issue_pair_failure(self, issue_manager, sample_dual_issue, mock_airtable_client):
+    async def test_create_issue_pair_failure(
+            self,
+            issue_manager,
+            sample_dual_issue,
+            mock_airtable_client):
         """Test handling of issue pair creation failure."""
-        mock_airtable_client._rate_limited_request.side_effect = Exception("Airtable API Error")
+        mock_airtable_client._rate_limited_request.side_effect = Exception(
+            "Airtable API Error")
 
         with pytest.raises(Exception, match="Airtable API Error"):
             await issue_manager.create_issue_pair(sample_dual_issue, "bill_001", 0.8)
 
-    async def test_create_unclassified_issue_pair(self, issue_manager, mock_airtable_client):
+    async def test_create_unclassified_issue_pair(
+            self, issue_manager, mock_airtable_client):
         """Test creation of unclassified issue pair."""
         lv1_response = {"id": "rec_unclass_1", "fields": {}}
         lv2_response = {"id": "rec_unclass_2", "fields": {}}
 
-        mock_airtable_client._rate_limited_request.side_effect = [lv1_response, lv2_response]
+        mock_airtable_client._rate_limited_request.side_effect = [
+            lv1_response, lv2_response]
 
         lv1_id, lv2_id = await issue_manager.create_unclassified_issue_pair("bill_001")
 
@@ -172,15 +184,18 @@ class TestAirtableIssueManager:
         assert record.confidence == 0.8
         assert record.status == "approved"
 
-    async def test_get_issue_record_not_found(self, issue_manager, mock_airtable_client):
+    async def test_get_issue_record_not_found(
+            self, issue_manager, mock_airtable_client):
         """Test handling when issue record is not found."""
-        mock_airtable_client._rate_limited_request.side_effect = Exception("Record not found")
+        mock_airtable_client._rate_limited_request.side_effect = Exception(
+            "Record not found")
 
         record = await issue_manager.get_issue_record("nonexistent")
 
         assert record is None
 
-    async def test_update_issue_status_success(self, issue_manager, mock_airtable_client):
+    async def test_update_issue_status_success(
+            self, issue_manager, mock_airtable_client):
         """Test successful status update."""
         mock_airtable_client._rate_limited_request.return_value = {"id": "rec_123"}
 
@@ -197,9 +212,11 @@ class TestAirtableIssueManager:
         assert update_data["Reviewer_Notes"] == "Good quality issue"
         assert "Updated_At" in update_data
 
-    async def test_update_issue_status_failure(self, issue_manager, mock_airtable_client):
+    async def test_update_issue_status_failure(
+            self, issue_manager, mock_airtable_client):
         """Test handling of status update failure."""
-        mock_airtable_client._rate_limited_request.side_effect = Exception("Update failed")
+        mock_airtable_client._rate_limited_request.side_effect = Exception(
+            "Update failed")
 
         success = await issue_manager.update_issue_status("rec_123", "approved")
 
@@ -346,7 +363,11 @@ class TestAirtableIssueManager:
             assert "Valid_To" in update_data
             assert "structural_change" in update_data["Reviewer_Notes"]
 
-    async def test_batch_create_issue_pairs(self, issue_manager, mock_airtable_client, sample_dual_issue):
+    async def test_batch_create_issue_pairs(
+            self,
+            issue_manager,
+            mock_airtable_client,
+            sample_dual_issue):
         """Test batch creation of issue pairs."""
         # Mock responses for batch creation
         responses = [
@@ -445,7 +466,8 @@ class TestAirtableIssueManager:
 
     async def test_health_check_failure(self, issue_manager, mock_airtable_client):
         """Test health check failure."""
-        mock_airtable_client._rate_limited_request.side_effect = Exception("Connection failed")
+        mock_airtable_client._rate_limited_request.side_effect = Exception(
+            "Connection failed")
 
         is_healthy = await issue_manager.health_check()
 

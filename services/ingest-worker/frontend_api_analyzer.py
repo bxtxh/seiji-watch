@@ -12,7 +12,8 @@ from pathlib import Path
 def analyze_api_usage():
     """フロントエンドのAPI使用状況を分析"""
 
-    web_frontend_path = Path(__file__).parent.parent.parent / "services" / "web-frontend"
+    web_frontend_path = Path(__file__).parent.parent.parent / \
+        "services" / "web-frontend"
 
     results = {
         "api_endpoints": [],
@@ -81,13 +82,15 @@ def analyze_api_usage():
                                         break
 
                     # API関連ファイルの特定
-                    if any(keyword in content.lower() for keyword in ['api', 'fetch', 'axios', 'bills', 'issues']):
+                    if any(keyword in content.lower()
+                           for keyword in ['api', 'fetch', 'axios', 'bills', 'issues']):
                         results["api_files"].append(str(rel_path))
 
             except Exception:
                 continue
 
     return results
+
 
 def main():
     print("🔍 フロントエンドAPI使用状況分析")
@@ -121,7 +124,7 @@ def main():
     print("-" * 40)
 
     deletion_candidates = ["Assignee", "Attachments", "Submission_Date", "Full_Text",
-                          "Related_Documents", "AI_Analysis", "Keywords"]
+                           "Related_Documents", "AI_Analysis", "Keywords"]
 
     for field in deletion_candidates:
         usage = results["field_usage"][field]
@@ -161,7 +164,8 @@ def main():
     ]
 
     for file in key_files:
-        web_frontend_path = Path(__file__).parent.parent.parent / "services" / "web-frontend"
+        web_frontend_path = Path(__file__).parent.parent.parent / \
+            "services" / "web-frontend"
         full_path = web_frontend_path / file
         if full_path.exists():
             print(f"  ✅ {file} - 存在")
@@ -176,6 +180,7 @@ def main():
     print("4. 型定義ファイル(src/types/index.ts)でのフィールド定義確認")
 
     return 0
+
 
 if __name__ == "__main__":
     main()

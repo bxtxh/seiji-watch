@@ -32,7 +32,8 @@ class EnhancedBillData(BillData):
     sponsoring_ministry: str | None = None    # 主管省庁
 
     # Process tracking
-    committee_assignments: dict[str, Any] | None = field(default_factory=dict)  # 委員会付託情報
+    committee_assignments: dict[str, Any] | None = field(
+        default_factory=dict)  # 委員会付託情報
     voting_results: dict[str, Any] | None = field(default_factory=dict)         # 採決結果
     amendments: list[dict[str, Any]] | None = field(default_factory=list)       # 修正内容
     inter_house_status: str | None = None     # 両院間の状況
@@ -116,18 +117,23 @@ class EnhancedDietScraper(DietScraper):
             self._extract_inter_house_status(soup, enhanced_data)
 
             # Calculate data quality score
-            enhanced_data.data_quality_score = self._calculate_data_quality_score(enhanced_data)
+            enhanced_data.data_quality_score = self._calculate_data_quality_score(
+                enhanced_data)
 
             return enhanced_data
 
         except Exception as e:
-            self.logger.error(f"Error fetching enhanced bill details from {bill_url}: {e}")
+            self.logger.error(
+                f"Error fetching enhanced bill details from {bill_url}: {e}")
             return EnhancedBillData(
                 bill_id="", title="", submission_date=None, status="", stage="",
                 submitter="", category="", url=bill_url, source_url=bill_url
             )
 
-    def _extract_basic_info(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_basic_info(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract basic bill information"""
         # Extract title
         title_elem = soup.find('h1') or soup.find('h2') or soup.find('title')
@@ -148,7 +154,10 @@ class EnhancedDietScraper(DietScraper):
             bill_data.status = status_text
             bill_data.stage = self._determine_stage(status_text)
 
-    def _extract_bill_outline(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_bill_outline(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract 議案要旨 (bill outline) from detail page"""
         # Look for various outline section patterns
         outline_text = ""
@@ -188,7 +197,10 @@ class EnhancedDietScraper(DietScraper):
             if len(outline_text) > 50:  # Minimum length for quality
                 bill_data.bill_outline = outline_text
 
-    def _extract_background_context(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_background_context(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract background context and reasoning"""
         background_patterns = [
             r'提出の背景',
@@ -203,7 +215,10 @@ class EnhancedDietScraper(DietScraper):
         if background_text:
             bill_data.background_context = self._clean_text(background_text)
 
-    def _extract_expected_effects(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_expected_effects(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract expected effects and impact"""
         effects_patterns = [
             r'期待される効果',
@@ -217,7 +232,10 @@ class EnhancedDietScraper(DietScraper):
         if effects_text:
             bill_data.expected_effects = self._clean_text(effects_text)
 
-    def _extract_key_provisions(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_key_provisions(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract key provisions and main points"""
         provisions = []
 
@@ -240,7 +258,10 @@ class EnhancedDietScraper(DietScraper):
         if provisions:
             bill_data.key_provisions = provisions[:10]  # Limit to first 10
 
-    def _extract_related_laws(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_related_laws(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract related laws and regulations"""
         laws = []
 
@@ -261,7 +282,10 @@ class EnhancedDietScraper(DietScraper):
         unique_laws = list(set(laws))
         bill_data.related_laws = unique_laws[:20]  # Limit to first 20
 
-    def _extract_implementation_date(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_implementation_date(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract implementation/effective date"""
         impl_patterns = [
             r'施行日',
@@ -279,7 +303,10 @@ class EnhancedDietScraper(DietScraper):
                     bill_data.implementation_date = match.group(0)
                     break
 
-    def _extract_submitting_members(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_submitting_members(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract submitting members list"""
         members = []
 
@@ -300,7 +327,10 @@ class EnhancedDietScraper(DietScraper):
         if members:
             bill_data.submitting_members = members[:50]  # Limit to first 50
 
-    def _extract_submitting_party(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_submitting_party(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract submitting party information"""
         party_patterns = [
             r'自由民主党',
@@ -319,7 +349,10 @@ class EnhancedDietScraper(DietScraper):
                 bill_data.submitting_party = pattern
                 break
 
-    def _extract_sponsoring_ministry(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_sponsoring_ministry(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract sponsoring ministry"""
         ministry_patterns = [
             r'(\w+省)',
@@ -336,7 +369,10 @@ class EnhancedDietScraper(DietScraper):
                 bill_data.sponsoring_ministry = match.group(1)
                 break
 
-    def _extract_committee_assignments(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_committee_assignments(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract committee assignment information"""
         assignments = {}
 
@@ -355,7 +391,10 @@ class EnhancedDietScraper(DietScraper):
         if assignments:
             bill_data.committee_assignments = assignments
 
-    def _extract_voting_results(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_voting_results(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract voting results"""
         results = {}
 
@@ -374,7 +413,10 @@ class EnhancedDietScraper(DietScraper):
         if results:
             bill_data.voting_results = results
 
-    def _extract_amendments(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_amendments(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract amendment information"""
         amendments = []
 
@@ -396,7 +438,10 @@ class EnhancedDietScraper(DietScraper):
         if amendments:
             bill_data.amendments = amendments
 
-    def _extract_inter_house_status(self, soup: BeautifulSoup, bill_data: EnhancedBillData) -> None:
+    def _extract_inter_house_status(
+            self,
+            soup: BeautifulSoup,
+            bill_data: EnhancedBillData) -> None:
         """Extract inter-house status"""
         status_patterns = [
             r'衆議院',
@@ -409,7 +454,10 @@ class EnhancedDietScraper(DietScraper):
         if status_text:
             bill_data.inter_house_status = status_text
 
-    def _find_text_by_patterns(self, soup: BeautifulSoup, patterns: list[str]) -> str | None:
+    def _find_text_by_patterns(
+            self,
+            soup: BeautifulSoup,
+            patterns: list[str]) -> str | None:
         """Find text content by matching patterns"""
         for pattern in patterns:
             element = soup.find(text=re.compile(pattern))
@@ -472,7 +520,8 @@ class EnhancedDietScraper(DietScraper):
             return round(score / total_fields, 2)
         return 0.0
 
-    async def fetch_enhanced_bills_async(self, bill_urls: list[str]) -> list[EnhancedBillData]:
+    async def fetch_enhanced_bills_async(
+            self, bill_urls: list[str]) -> list[EnhancedBillData]:
         """Fetch enhanced bill data for multiple URLs asynchronously"""
         results = []
 

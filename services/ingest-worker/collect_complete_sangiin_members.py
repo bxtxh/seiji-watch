@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class SanguinMemberData:
     """Sanguin member data structure"""
@@ -36,6 +37,7 @@ class SanguinMemberData:
     education: str | None = None
     website_url: str | None = None
     twitter_handle: str | None = None
+
 
 class CompleteSanguinMemberCollector:
     """Complete Sanguin member data collector"""
@@ -136,7 +138,8 @@ class CompleteSanguinMemberCollector:
 
         return constituency_text, "選挙区"
 
-    async def scrape_sangiin_member_list(self, session: aiohttp.ClientSession) -> list[SanguinMemberData]:
+    async def scrape_sangiin_member_list(
+            self, session: aiohttp.ClientSession) -> list[SanguinMemberData]:
         """Scrape member list from Sangiin official site"""
         members = []
 
@@ -175,13 +178,16 @@ class CompleteSanguinMemberCollector:
 
                             # 政党情報を取得
                             party_cell = cells[1] if len(cells) > 1 else None
-                            party_name = party_cell.get_text(strip=True) if party_cell else None
+                            party_name = party_cell.get_text(
+                                strip=True) if party_cell else None
                             party_name = self.normalize_party_name(party_name)
 
                             # 選挙区情報を取得
                             constituency_cell = cells[2] if len(cells) > 2 else None
-                            constituency_text = constituency_cell.get_text(strip=True) if constituency_cell else None
-                            constituency, election_type = self.extract_constituency_info(constituency_text)
+                            constituency_text = constituency_cell.get_text(
+                                strip=True) if constituency_cell else None
+                            constituency, election_type = self.extract_constituency_info(
+                                constituency_text)
 
                             member_data = SanguinMemberData(
                                 name=name,
@@ -230,7 +236,8 @@ class CompleteSanguinMemberCollector:
             print(f"Error scraping Sangiin member list: {e}")
             return members
 
-    async def parse_additional_member_page(self, soup: BeautifulSoup) -> list[SanguinMemberData]:
+    async def parse_additional_member_page(
+            self, soup: BeautifulSoup) -> list[SanguinMemberData]:
         """Parse additional member pages"""
         members = []
 
@@ -246,7 +253,8 @@ class CompleteSanguinMemberCollector:
                         name_text = name_cell.get_text(strip=True)
 
                         # 議員名の妥当性チェック
-                        if len(name_text) > 1 and not any(word in name_text.lower() for word in ['氏名', '議員名', 'name', '政党']):
+                        if len(name_text) > 1 and not any(word in name_text.lower()
+                                                          for word in ['氏名', '議員名', 'name', '政党']):
                             member_data = SanguinMemberData(
                                 name=name_text,
                                 house="参議院",
@@ -258,7 +266,8 @@ class CompleteSanguinMemberCollector:
 
         return members
 
-    async def get_existing_parties(self, session: aiohttp.ClientSession) -> dict[str, str]:
+    async def get_existing_parties(
+            self, session: aiohttp.ClientSession) -> dict[str, str]:
         """Get existing parties from Airtable"""
         try:
             await self.rate_limit_delay()
@@ -268,7 +277,8 @@ class CompleteSanguinMemberCollector:
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    return {record['fields']['Name']: record['id'] for record in data.get('records', [])}
+                    return {record['fields']['Name']: record['id']
+                            for record in data.get('records', [])}
                 else:
                     print(f"Failed to fetch parties: {response.status}")
                     return {}
@@ -276,7 +286,11 @@ class CompleteSanguinMemberCollector:
             print(f"Error fetching parties: {e}")
             return {}
 
-    async def create_party_if_not_exists(self, session: aiohttp.ClientSession, party_name: str, existing_parties: dict[str, str]) -> str | None:
+    async def create_party_if_not_exists(self,
+                                         session: aiohttp.ClientSession,
+                                         party_name: str,
+                                         existing_parties: dict[str,
+                                                                str]) -> str | None:
         """Create party if it doesn't exist"""
         if party_name in existing_parties:
             return existing_parties[party_name]
@@ -311,7 +325,10 @@ class CompleteSanguinMemberCollector:
             print(f"Error creating party {party_name}: {e}")
             return None
 
-    async def insert_members_to_airtable(self, session: aiohttp.ClientSession, members: list[SanguinMemberData]) -> bool:
+    async def insert_members_to_airtable(
+            self,
+            session: aiohttp.ClientSession,
+            members: list[SanguinMemberData]) -> bool:
         """Insert members to Airtable"""
         if not members:
             print("No members to insert")
@@ -380,10 +397,12 @@ class CompleteSanguinMemberCollector:
                     if response.status == 200:
                         result = await response.json()
                         success_count += len(result.get('records', []))
-                        print(f"Successfully inserted batch {i//batch_size + 1}: {len(result.get('records', []))} members")
+                        print(
+                            f"Successfully inserted batch {i//batch_size + 1}: {len(result.get('records', []))} members")
                     else:
                         error_text = await response.text()
-                        print(f"Failed to insert batch {i//batch_size + 1}: {response.status} - {error_text}")
+                        print(
+                            f"Failed to insert batch {i//batch_size + 1}: {response.status} - {error_text}")
 
                 # バッチ間の待機
                 await asyncio.sleep(1)
@@ -395,7 +414,10 @@ class CompleteSanguinMemberCollector:
             print(f"Error inserting members: {e}")
             return False
 
-    async def save_results_to_file(self, members: list[SanguinMemberData], filename: str = None):
+    async def save_results_to_file(
+            self,
+            members: list[SanguinMemberData],
+            filename: str = None):
         """Save results to JSON file"""
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -443,6 +465,7 @@ class CompleteSanguinMemberCollector:
                 print("✅ Successfully completed Sanguin member data collection")
             else:
                 print("❌ Failed to complete Sanguin member data collection")
+
 
 async def main():
     """Main entry point"""

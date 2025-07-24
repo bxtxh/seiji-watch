@@ -46,33 +46,73 @@ class ValidationResult:
 
     def get_critical_issues(self) -> list[ValidationIssue]:
         """Get critical validation issues"""
-        return [issue for issue in self.issues if issue.severity == ValidationSeverity.CRITICAL]
+        return [
+
+            issue
+            for issue in self.issues
+
+            if issue.severity == ValidationSeverity.CRITICAL
+
+        ]
 
     def get_warning_issues(self) -> list[ValidationIssue]:
         """Get warning validation issues"""
-        return [issue for issue in self.issues if issue.severity == ValidationSeverity.WARNING]
+        return [
+            issue
+            for issue in self.issues
+            if issue.severity == ValidationSeverity.WARNING
+        ]
 
     def get_info_issues(self) -> list[ValidationIssue]:
         """Get info validation issues"""
-        return [issue for issue in self.issues if issue.severity == ValidationSeverity.INFO]
+        return [
+            issue
+            for issue in self.issues
+            if issue.severity == ValidationSeverity.INFO
+        ]
 
 
 class BillDataValidator:
     """Comprehensive bill data validator"""
 
-    def __init__(self,
-                 strict_mode: bool = False,
-                 require_japanese: bool = True):
+    def __init__(
+        self,
+        strict_mode: bool = False,
+        require_japanese: bool = True
+    ):
         self.strict_mode = strict_mode
         self.require_japanese = require_japanese
         self.logger = logging.getLogger(__name__)
 
         # Required fields for different validation levels
         self.required_fields = {
-            'basic': ['bill_id', 'title', 'status', 'stage', 'submitter', 'category'],
-            'standard': ['bill_id', 'title', 'status', 'stage', 'submitter', 'category', 'diet_session', 'house_of_origin'],
-            'comprehensive': ['bill_id', 'title', 'status', 'stage', 'submitter', 'category', 'diet_session', 'house_of_origin', 'bill_outline', 'source_house']
-        }
+            'basic': [
+                'bill_id',
+                'title',
+                'status',
+                'stage',
+                'submitter',
+                'category'],
+            'standard': [
+                'bill_id',
+                'title',
+                'status',
+                'stage',
+                'submitter',
+                'category',
+                'diet_session',
+                'house_of_origin'],
+            'comprehensive': [
+                'bill_id',
+                'title',
+                'status',
+                'stage',
+                'submitter',
+                'category',
+                'diet_session',
+                'house_of_origin',
+                'bill_outline',
+                'source_house']}
 
         # Field format patterns
         self.format_patterns = {
@@ -96,25 +136,71 @@ class BillDataValidator:
 
         # Status value mappings
         self.valid_statuses = {
-            '成立', '可決', '否決', '審議中', '委員会審議', '継続審議', '撤回', '廃案',
-            'backlog', 'under_review', 'pending_vote', 'passed', 'rejected', 'withdrawn', 'expired'
-        }
+            '成立',
+            '可決',
+            '否決',
+            '審議中',
+            '委員会審議',
+            '継続審議',
+            '撤回',
+            '廃案',
+            'backlog',
+            'under_review',
+            'pending_vote',
+            'passed',
+            'rejected',
+            'withdrawn',
+            'expired'}
 
         # Stage value mappings
         self.valid_stages = {
-            'submitted', 'committee_review', 'plenary_debate', 'voting', 'passed', 'rejected', 'withdrawn',
-            '提出', '委員会審議', '本会議', '採決', '成立', '否決', '撤回', '廃案'
-        }
+            'submitted',
+            'committee_review',
+            'plenary_debate',
+            'voting',
+            'passed',
+            'rejected',
+            'withdrawn',
+            '提出',
+            '委員会審議',
+            '本会議',
+            '採決',
+            '成立',
+            '否決',
+            '撤回',
+            '廃案'}
 
         # Category mappings
         self.valid_categories = {
-            'budget', 'taxation', 'social_security', 'foreign_affairs', 'economy', 'education',
-            'environment', 'infrastructure', 'defense', 'judiciary', 'administration', 'other',
-            '予算・決算', '税制', '社会保障', '外交・国際', '経済・産業', '教育・文化',
-            '環境・エネルギー', 'インフラ・交通', '防衛・安全保障', '司法・法務', '行政・公務員', 'その他'
-        }
+            'budget',
+            'taxation',
+            'social_security',
+            'foreign_affairs',
+            'economy',
+            'education',
+            'environment',
+            'infrastructure',
+            'defense',
+            'judiciary',
+            'administration',
+            'other',
+            '予算・決算',
+            '税制',
+            '社会保障',
+            '外交・国際',
+            '経済・産業',
+            '教育・文化',
+            '環境・エネルギー',
+            'インフラ・交通',
+            '防衛・安全保障',
+            '司法・法務',
+            '行政・公務員',
+            'その他'}
 
-    def validate_bill(self, bill_data: EnhancedBillData, validation_level: str = 'standard') -> ValidationResult:
+    def validate_bill(
+            self,
+            bill_data: EnhancedBillData,
+            validation_level: str = 'standard') -> ValidationResult:
         """Validate a single bill"""
 
         result = ValidationResult(
@@ -140,7 +226,8 @@ class BillDataValidator:
         self._validate_logical_relationships(bill_data, result)
 
         # Calculate scores
-        result.completeness_score = self._calculate_completeness_score(bill_data, validation_level)
+        result.completeness_score = self._calculate_completeness_score(
+            bill_data, validation_level)
         result.consistency_score = self._calculate_consistency_score(result)
         result.format_score = self._calculate_format_score(result)
 
@@ -152,7 +239,10 @@ class BillDataValidator:
 
         return result
 
-    def validate_bills(self, bills: list[EnhancedBillData], validation_level: str = 'standard') -> list[ValidationResult]:
+    def validate_bills(
+            self,
+            bills: list[EnhancedBillData],
+            validation_level: str = 'standard') -> list[ValidationResult]:
         """Validate multiple bills"""
         results = []
 
@@ -181,28 +271,39 @@ class BillDataValidator:
 
         return results
 
-    def validate_merge_results(self, merge_results: list[MergeResult], validation_level: str = 'standard') -> list[ValidationResult]:
+    def validate_merge_results(
+            self,
+            merge_results: list[MergeResult],
+            validation_level: str = 'standard') -> list[ValidationResult]:
         """Validate merge results"""
         results = []
 
         for merge_result in merge_results:
             try:
                 # Validate the merged bill
-                validation_result = self.validate_bill(merge_result.merged_bill, validation_level)
+                validation_result = self.validate_bill(
+                    merge_result.merged_bill, validation_level)
 
                 # Add merge-specific validations
                 self._validate_merge_quality(merge_result, validation_result)
 
                 results.append(validation_result)
             except Exception as e:
-                self.logger.error(f"Error validating merge result for {merge_result.merged_bill.bill_id}: {e}")
+                self.logger.error(
+                    f"Error validating merge result for {merge_result.merged_bill.bill_id}: {e}")
                 continue
 
         return results
 
-    def _validate_required_fields(self, bill_data: EnhancedBillData, result: ValidationResult, validation_level: str):
+    def _validate_required_fields(
+        self,
+        bill_data: EnhancedBillData,
+        result: ValidationResult,
+        validation_level: str
+    ):
         """Validate required fields"""
-        required_fields = self.required_fields.get(validation_level, self.required_fields['standard'])
+        required_fields = self.required_fields.get(
+            validation_level, self.required_fields['standard'])
 
         for field_name in required_fields:
             value = getattr(bill_data, field_name, None)
@@ -219,7 +320,11 @@ class BillDataValidator:
                     )
                 )
 
-    def _validate_field_formats(self, bill_data: EnhancedBillData, result: ValidationResult):
+    def _validate_field_formats(
+        self,
+        bill_data: EnhancedBillData,
+        result: ValidationResult
+    ):
         """Validate field formats"""
         for field_name, pattern in self.format_patterns.items():
             value = getattr(bill_data, field_name, None)
@@ -235,9 +340,7 @@ class BillDataValidator:
                                 message=f"Field '{field_name}' has invalid format",
                                 suggested_fix=f"Ensure '{field_name}' matches pattern: {pattern}",
                                 current_value=value,
-                                expected_format=pattern
-                            )
-                        )
+                                expected_format=pattern))
                 elif isinstance(value, int | float):
                     # Convert to string for pattern matching
                     str_value = str(value)
@@ -253,7 +356,11 @@ class BillDataValidator:
                             )
                         )
 
-    def _validate_data_consistency(self, bill_data: EnhancedBillData, result: ValidationResult):
+    def _validate_data_consistency(
+        self,
+        bill_data: EnhancedBillData,
+        result: ValidationResult
+    ):
         """Validate data consistency"""
 
         # Check status consistency
@@ -265,9 +372,7 @@ class BillDataValidator:
                     severity=ValidationSeverity.WARNING,
                     message=f"Status '{bill_data.status}' is not in valid status list",
                     suggested_fix=f"Use one of: {', '.join(list(self.valid_statuses)[:5])}...",
-                    current_value=bill_data.status
-                )
-            )
+                    current_value=bill_data.status))
 
         # Check stage consistency
         if bill_data.stage and bill_data.stage not in self.valid_stages:
@@ -278,9 +383,7 @@ class BillDataValidator:
                     severity=ValidationSeverity.WARNING,
                     message=f"Stage '{bill_data.stage}' is not in valid stage list",
                     suggested_fix=f"Use one of: {', '.join(list(self.valid_stages)[:5])}...",
-                    current_value=bill_data.stage
-                )
-            )
+                    current_value=bill_data.stage))
 
         # Check category consistency
         if bill_data.category and bill_data.category not in self.valid_categories:
@@ -291,9 +394,7 @@ class BillDataValidator:
                     severity=ValidationSeverity.WARNING,
                     message=f"Category '{bill_data.category}' is not in valid category list",
                     suggested_fix=f"Use one of: {', '.join(list(self.valid_categories)[:5])}...",
-                    current_value=bill_data.category
-                )
-            )
+                    current_value=bill_data.category))
 
         # Check data quality score range
         if bill_data.data_quality_score is not None:
@@ -305,13 +406,20 @@ class BillDataValidator:
                         severity=ValidationSeverity.WARNING,
                         message=f"Data quality score {bill_data.data_quality_score} is out of range [0.0, 1.0]",
                         suggested_fix="Ensure data quality score is between 0.0 and 1.0",
-                        current_value=bill_data.data_quality_score
-                    )
-                )
+                        current_value=bill_data.data_quality_score))
 
-    def _validate_japanese_content(self, bill_data: EnhancedBillData, result: ValidationResult):
+    def _validate_japanese_content(
+        self,
+        bill_data: EnhancedBillData,
+        result: ValidationResult
+    ):
         """Validate Japanese text content"""
-        text_fields = ['title', 'bill_outline', 'background_context', 'expected_effects', 'summary']
+        text_fields = [
+            'title',
+            'bill_outline',
+            'background_context',
+            'expected_effects',
+            'summary']
 
         for field_name in text_fields:
             value = getattr(bill_data, field_name, None)
@@ -339,11 +447,13 @@ class BillDataValidator:
                             severity=ValidationSeverity.INFO,
                             message=f"Field '{field_name}' has insufficient content (< 10 characters)",
                             suggested_fix="Ensure text fields contain meaningful content",
-                            current_value=value
-                        )
-                    )
+                            current_value=value))
 
-    def _validate_logical_relationships(self, bill_data: EnhancedBillData, result: ValidationResult):
+    def _validate_logical_relationships(
+        self,
+        bill_data: EnhancedBillData,
+        result: ValidationResult
+    ):
         """Validate logical relationships between fields"""
 
         # Check status-stage consistency
@@ -365,9 +475,7 @@ class BillDataValidator:
                             severity=ValidationSeverity.WARNING,
                             message=f"Stage '{bill_data.stage}' is inconsistent with status '{bill_data.status}'",
                             suggested_fix=f"Use stage that matches status: {', '.join(valid_stages)}",
-                            current_value=bill_data.stage
-                        )
-                    )
+                            current_value=bill_data.stage))
 
         # Check submitter-submitter_type consistency
         if bill_data.submitter and bill_data.submitter_type:
@@ -379,9 +487,7 @@ class BillDataValidator:
                         severity=ValidationSeverity.WARNING,
                         message=f"Submitter '{bill_data.submitter}' and submitter_type '{bill_data.submitter_type}' are inconsistent",
                         suggested_fix="Ensure submitter and submitter_type fields match",
-                        current_value=bill_data.submitter_type
-                    )
-                )
+                        current_value=bill_data.submitter_type))
 
         # Check date logical order
         dates = [
@@ -421,11 +527,14 @@ class BillDataValidator:
                         severity=ValidationSeverity.WARNING,
                         message=f"Date in '{next_field}' is earlier than '{current_field}'",
                         suggested_fix="Ensure dates are in chronological order",
-                        current_value=str(next_date.date())
-                    )
-                )
+                        current_value=str(
+                            next_date.date())))
 
-    def _validate_merge_quality(self, merge_result: MergeResult, validation_result: ValidationResult):
+    def _validate_merge_quality(
+        self,
+        merge_result: MergeResult,
+        validation_result: ValidationResult
+    ):
         """Validate merge quality"""
 
         # Check merge quality score
@@ -437,9 +546,7 @@ class BillDataValidator:
                     severity=ValidationSeverity.WARNING,
                     message=f"Merge quality score {merge_result.merge_quality_score:.2f} is below threshold (0.5)",
                     suggested_fix="Review merge conflicts and improve data quality",
-                    current_value=merge_result.merge_quality_score
-                )
-            )
+                    current_value=merge_result.merge_quality_score))
 
         # Check for high number of conflicts
         if len(merge_result.conflicts) > 5:
@@ -450,12 +557,12 @@ class BillDataValidator:
                     severity=ValidationSeverity.WARNING,
                     message=f"High number of merge conflicts: {len(merge_result.conflicts)}",
                     suggested_fix="Review data sources and improve data consistency",
-                    current_value=len(merge_result.conflicts)
-                )
-            )
+                    current_value=len(
+                        merge_result.conflicts)))
 
         # Check for low-confidence conflicts
-        low_confidence_conflicts = [c for c in merge_result.conflicts if c.confidence < 0.6]
+        low_confidence_conflicts = [
+            c for c in merge_result.conflicts if c.confidence < 0.6]
         if low_confidence_conflicts:
             validation_result.issues.append(
                 ValidationIssue(
@@ -464,13 +571,15 @@ class BillDataValidator:
                     severity=ValidationSeverity.INFO,
                     message=f"{len(low_confidence_conflicts)} conflicts resolved with low confidence",
                     suggested_fix="Review low-confidence merge resolutions manually",
-                    current_value=len(low_confidence_conflicts)
-                )
-            )
+                    current_value=len(low_confidence_conflicts)))
 
-    def _calculate_completeness_score(self, bill_data: EnhancedBillData, validation_level: str) -> float:
+    def _calculate_completeness_score(
+            self,
+            bill_data: EnhancedBillData,
+            validation_level: str) -> float:
         """Calculate completeness score"""
-        required_fields = self.required_fields.get(validation_level, self.required_fields['standard'])
+        required_fields = self.required_fields.get(
+            validation_level, self.required_fields['standard'])
 
         # Count non-empty required fields
         filled_required = 0
@@ -481,10 +590,18 @@ class BillDataValidator:
 
         # Count filled optional fields
         optional_fields = [
-            'bill_outline', 'background_context', 'expected_effects', 'key_provisions',
-            'related_laws', 'implementation_date', 'submitting_members', 'supporting_members',
-            'submitting_party', 'sponsoring_ministry', 'committee_assignments', 'voting_results'
-        ]
+            'bill_outline',
+            'background_context',
+            'expected_effects',
+            'key_provisions',
+            'related_laws',
+            'implementation_date',
+            'submitting_members',
+            'supporting_members',
+            'submitting_party',
+            'sponsoring_ministry',
+            'committee_assignments',
+            'voting_results']
 
         filled_optional = 0
         for field_name in optional_fields:
@@ -498,8 +615,10 @@ class BillDataValidator:
                     filled_optional += 1
 
         # Calculate weighted score
-        required_score = filled_required / len(required_fields) if required_fields else 0.0
-        optional_score = filled_optional / len(optional_fields) if optional_fields else 0.0
+        required_score = filled_required / \
+            len(required_fields) if required_fields else 0.0
+        optional_score = filled_optional / \
+            len(optional_fields) if optional_fields else 0.0
 
         # Weight required fields more heavily
         return (required_score * 0.8) + (optional_score * 0.2)
@@ -526,7 +645,9 @@ class BillDataValidator:
         score = 1.0
 
         # Deduct for format issues
-        format_issues = [issue for issue in result.issues if issue.issue_type in ['invalid_format', 'out_of_range']]
+        format_issues = [
+            issue for issue in result.issues if issue.issue_type in [
+                'invalid_format', 'out_of_range']]
         score -= len(format_issues) * 0.1
 
         return max(score, 0.0)
@@ -548,7 +669,8 @@ class BillDataValidator:
 
         return round(score, 2)
 
-    def get_validation_summary(self, validation_results: list[ValidationResult]) -> dict[str, Any]:
+    def get_validation_summary(
+            self, validation_results: list[ValidationResult]) -> dict[str, Any]:
         """Get summary statistics for validation results"""
 
         if not validation_results:
@@ -587,13 +709,25 @@ class BillDataValidator:
             'critical_issues': critical_issues,
             'warning_issues': warning_issues,
             'info_issues': info_issues,
-            'avg_quality_score': round(avg_quality, 2),
-            'avg_completeness_score': round(avg_completeness, 2),
-            'common_issues': dict(sorted(issue_types.items(), key=lambda x: x[1], reverse=True)[:10]),
+            'avg_quality_score': round(
+                avg_quality,
+                2),
+            'avg_completeness_score': round(
+                avg_completeness,
+                2),
+            'common_issues': dict(
+                sorted(
+                    issue_types.items(),
+                    key=lambda x: x[1],
+                    reverse=True)[
+                        :10]),
             'quality_distribution': {
-                'excellent': sum(1 for s in quality_scores if s >= 0.9),
-                'good': sum(1 for s in quality_scores if 0.7 <= s < 0.9),
-                'fair': sum(1 for s in quality_scores if 0.5 <= s < 0.7),
-                'poor': sum(1 for s in quality_scores if s < 0.5),
-            }
-        }
+                'excellent': sum(
+                    1 for s in quality_scores if s >= 0.9),
+                'good': sum(
+                    1 for s in quality_scores if 0.7 <= s < 0.9),
+                'fair': sum(
+                    1 for s in quality_scores if 0.5 <= s < 0.7),
+                'poor': sum(
+                    1 for s in quality_scores if s < 0.5),
+            }}

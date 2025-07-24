@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def cleanup_remaining_empty_bills():
     """Clean up all remaining empty Bills records"""
 
@@ -54,7 +55,8 @@ async def cleanup_remaining_empty_bills():
 
                 for record in records:
                     fields = record.get('fields', {})
-                    filled_essential = sum(1 for field in essential_fields if fields.get(field))
+                    filled_essential = sum(
+                        1 for field in essential_fields if fields.get(field))
 
                     if filled_essential == 0:
                         empty_records.append(record)
@@ -77,9 +79,11 @@ async def cleanup_remaining_empty_bills():
                             if delete_response.status == 200:
                                 deleted_count += 1
                                 if deleted_count % 10 == 0:
-                                    print(f"   🗑️ Deleted {deleted_count} empty records...")
+                                    print(
+                                        f"   🗑️ Deleted {deleted_count} empty records...")
                             else:
-                                print(f"   ❌ Failed to delete {record_id}: {delete_response.status}")
+                                print(
+                                    f"   ❌ Failed to delete {record_id}: {delete_response.status}")
                                 errors += 1
                     except Exception as e:
                         print(f"   ❌ Error deleting {record_id}: {e}")
@@ -105,7 +109,8 @@ async def cleanup_remaining_empty_bills():
                 empty_remaining = 0
                 for record in remaining_records:
                     fields = record.get('fields', {})
-                    filled_essential = sum(1 for field in essential_fields if fields.get(field))
+                    filled_essential = sum(
+                        1 for field in essential_fields if fields.get(field))
                     if filled_essential == 0:
                         empty_remaining += 1
 

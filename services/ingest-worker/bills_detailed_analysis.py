@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def analyze_bills_detailed():
     """Detailed analysis of Bills table to identify specific missing fields"""
 
@@ -85,9 +86,9 @@ async def analyze_bills_detailed():
             field_analysis[field] = {
                 "filled_count": filled_count,
                 "empty_count": empty_count,
-                "completeness_rate": filled_count / len(all_records) if all_records else 0,
-                "sample_values": sample_values
-            }
+                "completeness_rate": filled_count /
+                len(all_records) if all_records else 0,
+                "sample_values": sample_values}
 
         # Print detailed analysis
         print(f"\n{'='*80}")
@@ -100,19 +101,23 @@ async def analyze_bills_detailed():
             status = "✅" if rate >= 0.9 else "⚠️" if rate >= 0.5 else "❌"
 
             print(f"\n{status} {field}:")
-            print(f"   📈 Completeness: {rate:.1%} ({analysis['filled_count']}/{len(all_records)})")
+            print(
+                f"   📈 Completeness: {rate:.1%} ({analysis['filled_count']}/{len(all_records)})")
             print(f"   ❌ Missing: {analysis['empty_count']} records")
 
             if analysis['sample_values']:
                 print(f"   📝 Sample values: {', '.join(analysis['sample_values'][:3])}")
 
         # Calculate overall completeness for essential fields
-        total_completeness = sum(analysis["completeness_rate"] for analysis in field_analysis.values()) / len(field_analysis)
+        total_completeness = sum(analysis["completeness_rate"]
+                                 for analysis in field_analysis.values()) / len(field_analysis)
         print(f"\n📊 Overall Essential Field Completeness: {total_completeness:.1%}")
 
         # Identify top priority missing fields
-        missing_fields = [(field, analysis["empty_count"]) for field, analysis in field_analysis.items()
-                         if analysis["completeness_rate"] < 0.9]
+        missing_fields = [
+            (field,
+             analysis["empty_count"]) for field,
+            analysis in field_analysis.items() if analysis["completeness_rate"] < 0.9]
         missing_fields.sort(key=lambda x: x[1], reverse=True)
 
         print("\n🎯 TOP PRIORITY MISSING FIELDS:")

@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def create_airtable_tables():
     """Create missing Airtable tables"""
 
@@ -130,12 +131,15 @@ async def create_airtable_tables():
                         result = await response.json()
                         table_id = result.get("id")
                         print(f"  ✅ SUCCESS: Table created with ID {table_id}")
-                        print(f"  Fields: {len(table_schema['fields'])} fields configured")
+                        print(
+                            f"  Fields: {len(table_schema['fields'])} fields configured")
                         success_count += 1
 
                     elif response.status == 422:
                         error_data = await response.json()
-                        error_msg = error_data.get("error", {}).get("message", "Unknown error")
+                        error_msg = error_data.get(
+                            "error", {}).get(
+                            "message", "Unknown error")
                         if "already exists" in error_msg.lower():
                             print("  ⚠️  Table already exists, skipping...")
                             success_count += 1
@@ -176,7 +180,8 @@ async def create_airtable_tables():
                     "IssueCategories (課題カテゴリ)"
                 ]
 
-                missing_tables = [t for t in required_tables if t not in existing_tables]
+                missing_tables = [
+                    t for t in required_tables if t not in existing_tables]
 
                 print("\n🎯 Table Status Summary:")
                 print(f"  Total required: {len(required_tables)}")
@@ -193,6 +198,7 @@ async def create_airtable_tables():
             else:
                 print(f"❌ Could not verify tables: {response.status}")
                 return False
+
 
 async def main():
     """Main function"""

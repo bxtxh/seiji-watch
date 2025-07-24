@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def bills_improvement_batch2():
     """Second batch focusing on Priority, Stage, and Status improvements"""
 
@@ -73,7 +74,9 @@ async def bills_improvement_batch2():
                     category = fields.get('Category', '')
 
                     # High priority keywords
-                    if any(keyword in title for keyword in ['重要', '基本', '根本', '抜本', '緊急']):
+                    if any(
+                        keyword in title for keyword in [
+                            '重要', '基本', '根本', '抜本', '緊急']):
                         updates['Priority'] = 'high'
                     # Low priority keywords
                     elif any(keyword in title for keyword in ['一部改正', '整備', '技術的', '軽微']):
@@ -214,7 +217,7 @@ async def bills_improvement_batch2():
                                     improvements["statuses_standardized"] += 1
                         else:
                             improvements["errors"] += 1
-                except:
+                except Exception:
                     improvements["errors"] += 1
 
                 await asyncio.sleep(0.1)

@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class Epic11OptimizedIntegrator:
     """Optimized data integrator that works with Airtable field constraints"""
 
@@ -62,7 +63,10 @@ class Epic11OptimizedIntegrator:
             }
         }
 
-    def transform_vote_for_airtable(self, vote_record: dict, voting_session: dict) -> dict:
+    def transform_vote_for_airtable(
+            self,
+            vote_record: dict,
+            voting_session: dict) -> dict:
         """Transform vote record to work with structured fields"""
 
         return {
@@ -93,7 +97,8 @@ class Epic11OptimizedIntegrator:
         async with aiohttp.ClientSession() as session:
             for i in range(0, len(bills), batch_size):
                 batch = bills[i:i + batch_size]
-                print(f"📦 Processing batch {i//batch_size + 1}: bills {i+1}-{min(i+batch_size, len(bills))}")
+                print(
+                    f"📦 Processing batch {i//batch_size + 1}: bills {i+1}-{min(i+batch_size, len(bills))}")
 
                 for j, bill in enumerate(batch):
                     try:
@@ -112,7 +117,8 @@ class Epic11OptimizedIntegrator:
                             else:
                                 failed_count += 1
                                 error = await response.text()
-                                print(f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
+                                print(
+                                    f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
                                 print(f"     Error: {error[:100]}")
 
                         # Rate limiting: 5 requests per second
@@ -120,28 +126,33 @@ class Epic11OptimizedIntegrator:
 
                     except Exception as e:
                         failed_count += 1
-                        print(f"  ❌ Exception: {bill['title'][:40]}... - {str(e)[:100]}")
+                        print(
+                            f"  ❌ Exception: {bill['title'][:40]}... - {str(e)[:100]}")
 
                 # Longer pause between batches
                 if i + batch_size < len(bills):
                     print("⏳ Batch pause...")
                     await asyncio.sleep(2)
 
-        print(f"\n📊 Bills insertion completed: ✅ {success_count} success, ❌ {failed_count} failed")
+        print(
+            f"\n📊 Bills insertion completed: ✅ {success_count} success, ❌ {failed_count} failed")
         return success_count
 
     async def batch_insert_votes(self, voting_sessions: list, batch_size: int = 3):
         """Insert vote records from voting sessions"""
 
-        total_votes = sum(len(session.get('vote_records', [])) for session in voting_sessions)
-        print(f"🗳️ Starting insertion of {total_votes} vote records from {len(voting_sessions)} sessions...")
+        total_votes = sum(len(session.get('vote_records', []))
+                          for session in voting_sessions)
+        print(
+            f"🗳️ Starting insertion of {total_votes} vote records from {len(voting_sessions)} sessions...")
 
         success_count = 0
         failed_count = 0
 
         async with aiohttp.ClientSession() as session:
             for session_idx, voting_session in enumerate(voting_sessions):
-                print(f"📊 Processing voting session {session_idx + 1}: {voting_session['bill_title'][:40]}...")
+                print(
+                    f"📊 Processing voting session {session_idx + 1}: {voting_session['bill_title'][:40]}...")
 
                 vote_records = voting_session.get('vote_records', [])
 
@@ -150,7 +161,8 @@ class Epic11OptimizedIntegrator:
 
                     for vote_record in batch:
                         try:
-                            airtable_vote = self.transform_vote_for_airtable(vote_record, voting_session)
+                            airtable_vote = self.transform_vote_for_airtable(
+                                vote_record, voting_session)
 
                             async with session.post(
                                 f"{self.base_url}/Votes (投票)",
@@ -161,23 +173,27 @@ class Epic11OptimizedIntegrator:
                                 if response.status == 200:
                                     await response.json()
                                     success_count += 1
-                                    print(f"  ✅ {success_count}: {vote_record['member_name']} - {vote_record['vote_result']}")
+                                    print(
+                                        f"  ✅ {success_count}: {vote_record['member_name']} - {vote_record['vote_result']}")
                                 else:
                                     failed_count += 1
                                     await response.text()
-                                    print(f"  ❌ Failed: {vote_record['member_name']} - {response.status}")
+                                    print(
+                                        f"  ❌ Failed: {vote_record['member_name']} - {response.status}")
 
                             # Rate limiting
                             await asyncio.sleep(0.3)
 
                         except Exception as e:
                             failed_count += 1
-                            print(f"  ❌ Exception: {vote_record['member_name']} - {str(e)[:100]}")
+                            print(
+                                f"  ❌ Exception: {vote_record['member_name']} - {str(e)[:100]}")
 
                     # Pause between vote batches
                     await asyncio.sleep(1)
 
-        print(f"\n📊 Votes insertion completed: ✅ {success_count} success, ❌ {failed_count} failed")
+        print(
+            f"\n📊 Votes insertion completed: ✅ {success_count} success, ❌ {failed_count} failed")
         return success_count
 
     async def execute_full_integration(self):
@@ -200,7 +216,8 @@ class Epic11OptimizedIntegrator:
         print(f"📋 Bills to process: {len(bills)}")
         print(f"🗳️ Voting sessions to process: {len(voting_sessions)}")
 
-        total_votes = sum(len(session.get('vote_records', [])) for session in voting_sessions)
+        total_votes = sum(len(session.get('vote_records', []))
+                          for session in voting_sessions)
         print(f"🗳️ Individual votes to process: {total_votes}")
 
         start_time = time.time()
@@ -221,7 +238,8 @@ class Epic11OptimizedIntegrator:
         print("🎯 EPIC 11 T96 INTEGRATION RESULTS")
         print("=" * 60)
         print(f"⏱️  Total time: {duration:.1f} seconds")
-        print(f"📋 Bills: {bills_success}/{len(bills)} ({bills_success/len(bills)*100:.1f}%)")
+        print(
+            f"📋 Bills: {bills_success}/{len(bills)} ({bills_success/len(bills)*100:.1f}%)")
         votes_rate = f"{votes_success/total_votes*100:.1f}%" if total_votes > 0 else "N/A"
         print(f"🗳️ Votes: {votes_success}/{total_votes} ({votes_rate})")
 
@@ -235,7 +253,8 @@ class Epic11OptimizedIntegrator:
             return True
         else:
             print("⚠️ EPIC 11 T96 PARTIALLY COMPLETED")
-            print(f"💡 Proceed with available data ({bills_success} bills, {votes_success} votes)")
+            print(
+                f"💡 Proceed with available data ({bills_success} bills, {votes_success} votes)")
             return bills_success > 150  # At least 150 bills for MVP
 
     async def verify_integration(self):
@@ -269,12 +288,14 @@ class Epic11OptimizedIntegrator:
                     print("✅ Verification PASSED: Sufficient data for MVP")
                     return True
                 else:
-                    print(f"❌ Verification FAILED: Insufficient bills ({bills_count} < 150)")
+                    print(
+                        f"❌ Verification FAILED: Insufficient bills ({bills_count} < 150)")
                     return False
 
             except Exception as e:
                 print(f"❌ Verification error: {e}")
                 return False
+
 
 async def main():
     """Execute EPIC 11 T96: Optimized Data Integration"""

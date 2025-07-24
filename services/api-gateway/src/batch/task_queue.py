@@ -53,10 +53,10 @@ class TaskQueue:
         self.default_queue = self.queues[TaskPriority.NORMAL]
 
     def enqueue_task(self, func: Callable, args: tuple = (), kwargs: dict = None,
-                    priority: TaskPriority = TaskPriority.NORMAL,
-                    job_timeout: str = "10m",
-                    result_ttl: str = "24h",
-                    description: str | None = None) -> str:
+                     priority: TaskPriority = TaskPriority.NORMAL,
+                     job_timeout: str = "10m",
+                     result_ttl: str = "24h",
+                     description: str | None = None) -> str:
         """Enqueue a task with specified priority."""
         kwargs = kwargs or {}
 
@@ -150,11 +150,15 @@ class TaskQueue:
             return 0
 
     def start_worker(self, queues: list[TaskPriority] = None,
-                    worker_name: str | None = None) -> Worker:
+                     worker_name: str | None = None) -> Worker:
         """Start a worker process."""
         if queues is None:
             # Default priority order: urgent -> high -> normal -> low
-            queues = [TaskPriority.URGENT, TaskPriority.HIGH, TaskPriority.NORMAL, TaskPriority.LOW]
+            queues = [
+                TaskPriority.URGENT,
+                TaskPriority.HIGH,
+                TaskPriority.NORMAL,
+                TaskPriority.LOW]
 
         worker_queues = [self.queues[priority] for priority in queues]
 
@@ -184,7 +188,8 @@ class TaskQueue:
                         "meta": job.meta
                     })
             except Exception as e:
-                logger.error(f"Failed to get failed jobs for queue {priority.value}: {e}")
+                logger.error(
+                    f"Failed to get failed jobs for queue {priority.value}: {e}")
 
         return failed_jobs
 
@@ -212,7 +217,7 @@ class BatchProcessor:
         self.active_batches: dict[str, dict[str, Any]] = {}
 
     def submit_batch(self, batch_id: str, tasks: list[dict[str, Any]],
-                    priority: TaskPriority = TaskPriority.NORMAL) -> dict[str, Any]:
+                     priority: TaskPriority = TaskPriority.NORMAL) -> dict[str, Any]:
         """Submit a batch of related tasks."""
         job_ids = []
 

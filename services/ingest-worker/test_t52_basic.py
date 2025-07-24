@@ -11,12 +11,14 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+
 def setup_logging():
     """Setup logging for test"""
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
+
 
 async def test_diet_scraper_basic():
     """Test basic Diet scraper functionality"""
@@ -28,7 +30,8 @@ async def test_diet_scraper_basic():
         from scraper.diet_scraper import DietScraper
 
         # Initialize scraper
-        scraper = DietScraper(enable_resilience=False)  # Disable resilience to avoid dependencies
+        # Disable resilience to avoid dependencies
+        scraper = DietScraper(enable_resilience=False)
         print("✅ Diet scraper initialized successfully")
 
         # Test basic scraping
@@ -61,6 +64,7 @@ async def test_diet_scraper_basic():
         import traceback
         traceback.print_exc()
         return False, 0
+
 
 async def test_voting_scraper_basic():
     """Test basic voting scraper functionality"""
@@ -97,6 +101,7 @@ async def test_voting_scraper_basic():
         traceback.print_exc()
         return False, 0
 
+
 async def test_pipeline_configuration():
     """Test T52 pipeline configuration without external services"""
     print("\n" + "=" * 60)
@@ -122,7 +127,8 @@ async def test_pipeline_configuration():
         }
 
         print("📅 Target Configuration:")
-        print(f"  📅 Date Range: {config['start_date'].date()} to {config['end_date'].date()}")
+        print(
+            f"  📅 Date Range: {config['start_date'].date()} to {config['end_date'].date()}")
         print(f"  📊 Max Bills: {config['max_bills']}")
         print(f"  🗳️  Max Voting Sessions: {config['max_voting_sessions']}")
         print(f"  🎤 Max Speeches: {config['max_speeches']}")
@@ -145,6 +151,7 @@ async def test_pipeline_configuration():
     except Exception as e:
         print(f"❌ Pipeline configuration test failed: {e}")
         return False, None
+
 
 async def test_rate_limiting():
     """Test rate limiting and compliance"""
@@ -178,13 +185,15 @@ async def test_rate_limiting():
         print("\n📊 Rate Limiting Results:")
         print(f"  ⏱️  Total time: {total_time:.2f}s")
         print(f"  ⏱️  Average delay: {total_time / 3:.2f}s per request")
-        print(f"  ✅ Rate limiting: {'Working' if total_time >= 2.0 else 'May be too fast'}")
+        print(
+            f"  ✅ Rate limiting: {'Working' if total_time >= 2.0 else 'May be too fast'}")
 
         return True, total_time
 
     except Exception as e:
         print(f"❌ Rate limiting test failed: {e}")
         return False, 0
+
 
 async def simulate_t52_execution():
     """Simulate T52 execution flow"""
@@ -208,7 +217,8 @@ async def simulate_t52_execution():
         diet_success, bill_count = await test_diet_scraper_basic()
         if diet_success:
             results['bills_collected'] = min(bill_count, 30)  # Apply T52 limit
-            print(f"  ✅ Collected {results['bills_collected']} bills (limited from {bill_count})")
+            print(
+                f"  ✅ Collected {results['bills_collected']} bills (limited from {bill_count})")
         else:
             results['errors'].append("Bill collection failed")
             print("  ❌ Bill collection failed")
@@ -217,8 +227,10 @@ async def simulate_t52_execution():
         print("\n🗳️  Phase 2: Voting Data Collection")
         voting_success, session_count = await test_voting_scraper_basic()
         if voting_success:
-            results['voting_sessions_collected'] = min(session_count, 10)  # Apply T52 limit
-            print(f"  ✅ Collected {results['voting_sessions_collected']} sessions (limited from {session_count})")
+            results['voting_sessions_collected'] = min(
+                session_count, 10)  # Apply T52 limit
+            print(
+                f"  ✅ Collected {results['voting_sessions_collected']} sessions (limited from {session_count})")
         else:
             results['errors'].append("Voting data collection failed")
             print("  ❌ Voting data collection failed")
@@ -255,6 +267,7 @@ async def simulate_t52_execution():
 
     success = len(results['errors']) == 0
     return success, results
+
 
 async def main():
     """Run basic T52 tests"""

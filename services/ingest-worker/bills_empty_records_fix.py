@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def fix_bills_empty_records():
     """Fix empty records in Bills table - either fill with defaults or remove"""
 
@@ -86,7 +87,8 @@ async def fix_bills_empty_records():
         print("🔍 Analysis results:")
         print(f"   📋 Completely empty records: {len(empty_records)}")
         print(f"   ⚠️ Minimal content records: {len(minimal_records)}")
-        print(f"   ✅ Complete records: {len(all_records) - len(empty_records) - len(minimal_records)}")
+        print(
+            f"   ✅ Complete records: {len(all_records) - len(empty_records) - len(minimal_records)}")
 
         results["empty_records_found"] = len(empty_records) + len(minimal_records)
 
@@ -105,7 +107,8 @@ async def fix_bills_empty_records():
                         print(f"   ✅ Deleted empty record: {record_id}")
                         results["records_deleted"] += 1
                     else:
-                        print(f"   ❌ Failed to delete {record_id}: {delete_response.status}")
+                        print(
+                            f"   ❌ Failed to delete {record_id}: {delete_response.status}")
                         results["errors"] += 1
             except Exception as e:
                 print(f"   ❌ Error deleting {record_id}: {e}")
@@ -127,7 +130,8 @@ async def fix_bills_empty_records():
                 updates['Title'] = f"法案{i+1:03d}"  # 法案001, 法案002, etc.
 
             if not fields.get('Bill_Number'):
-                updates['Bill_Number'] = str(i + 100)  # Start from 100 to avoid conflicts
+                # Start from 100 to avoid conflicts
+                updates['Bill_Number'] = str(i + 100)
 
             if not fields.get('Diet_Session'):
                 updates['Diet_Session'] = "217"  # Current session
@@ -163,10 +167,12 @@ async def fix_bills_empty_records():
                         json=update_data
                     ) as update_response:
                         if update_response.status == 200:
-                            print(f"   ✅ Filled record {i+1}: {record_id} with {len(updates)} fields")
+                            print(
+                                f"   ✅ Filled record {i+1}: {record_id} with {len(updates)} fields")
                             results["records_filled"] += 1
                         else:
-                            print(f"   ❌ Failed to update {record_id}: {update_response.status}")
+                            print(
+                                f"   ❌ Failed to update {record_id}: {update_response.status}")
                             results["errors"] += 1
                 except Exception as e:
                     print(f"   ❌ Error updating {record_id}: {e}")
@@ -175,7 +181,8 @@ async def fix_bills_empty_records():
             await asyncio.sleep(0.1)
 
         # Strategy 3: If too many empty records remain, suggest deletion of the rest
-        remaining_empty = len(empty_records) + len(minimal_records) - results["records_deleted"] - results["records_filled"]
+        remaining_empty = len(empty_records) + len(minimal_records) - \
+            results["records_deleted"] - results["records_filled"]
 
         if remaining_empty > 0:
             print(f"\n⚠️ {remaining_empty} records still need attention")

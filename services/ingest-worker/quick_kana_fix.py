@@ -31,6 +31,7 @@ POLITICIAN_KANA_MAP = {
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 def simple_kana_conversion(name):
     """Simple kanji to kana conversion"""
     if name in POLITICIAN_KANA_MAP:
@@ -73,6 +74,7 @@ def simple_kana_conversion(name):
             return "さとうはなこ"
 
     return result
+
 
 async def quick_kana_fix():
     """Quick fix for Name_Kana field"""
@@ -186,13 +188,14 @@ async def quick_kana_fix():
                                 batch_fixed += 1
                             else:
                                 errors += 1
-                    except:
+                    except Exception:
                         errors += 1
 
                     await asyncio.sleep(0.03)  # Fast rate limiting
 
             if batch_fixed > 0:
-                print(f"   ✅ Batch {batch_start//batch_size + 1}: Fixed {batch_fixed} records")
+                print(
+                    f"   ✅ Batch {batch_start//batch_size + 1}: Fixed {batch_fixed} records")
 
         # Quick verification
         print("\n🔍 Quick verification...")

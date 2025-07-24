@@ -5,6 +5,7 @@ import asyncio
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import Any
 
 import uvicorn
 from batch_queue.batch_processor import (
@@ -427,9 +428,11 @@ async def generate_embedding(request: EmbeddingRequest) -> EmbeddingResponse:
         if request.store_in_weaviate and request.metadata:
             # Store in Weaviate if metadata provided
             if "bill_number" in request.metadata:
-                weaviate_uuid = vector_client.store_bill_embedding(request.metadata, embedding)
+                weaviate_uuid = vector_client.store_bill_embedding(
+                    request.metadata, embedding)
             elif "speaker" in request.metadata:
-                weaviate_uuid = vector_client.store_speech_embedding(request.metadata, embedding)
+                weaviate_uuid = vector_client.store_speech_embedding(
+                    request.metadata, embedding)
 
         return EmbeddingResponse(
             success=True,
@@ -466,7 +469,8 @@ async def search_similar_bills(request: SearchRequest) -> SearchResponse:
                 search_method = "vector"
 
             except Exception as e:
-                logger.warning(f"Vector search failed, falling back to keyword search: {e}")
+                logger.warning(
+                    f"Vector search failed, falling back to keyword search: {e}")
                 # Fallback to keyword search if vector search fails
                 results = await _keyword_search_bills(request.query, request.limit)
                 search_method = "keyword (fallback)"
@@ -594,16 +598,20 @@ async def _scrape_bills_task(force_refresh: bool = False) -> None:
                         embedding = vector_client.generate_embedding(embedding_text)
 
                         # Store in Weaviate
-                        weaviate_uuid = vector_client.store_bill_embedding(normalized_bill, embedding)
+                        weaviate_uuid = vector_client.store_bill_embedding(
+                            normalized_bill, embedding)
 
                         if weaviate_uuid:
-                            logger.info(f"Generated embedding for bill {normalized_bill['bill_number']}: {weaviate_uuid}")
+                            logger.info(
+                                f"Generated embedding for bill {normalized_bill['bill_number']}: {weaviate_uuid}")
 
                     except Exception as e:
-                        logger.warning(f"Failed to generate embedding for bill {bill_data.bill_id}: {e}")
+                        logger.warning(
+                            f"Failed to generate embedding for bill {bill_data.bill_id}: {e}")
 
                 # For now, just log the normalized data (TODO: Store in Airtable)
-                logger.debug(f"Normalized bill: {normalized_bill['bill_number']} - {normalized_bill['title'][:50]}...")
+                logger.debug(
+                    f"Normalized bill: {normalized_bill['bill_number']} - {normalized_bill['title'][:50]}...")
                 processed_count += 1
 
                 # Rate limiting - respect both Airtable and OpenAI limits
@@ -614,7 +622,8 @@ async def _scrape_bills_task(force_refresh: bool = False) -> None:
                 logger.warning(error_msg)
                 errors.append(error_msg)
 
-        logger.info(f"Bill processing completed: {processed_count} processed, {len(errors)} errors")
+        logger.info(
+            f"Bill processing completed: {processed_count} processed, {len(errors)} errors")
         if errors:
             logger.warning(f"First few errors: {errors[:3]}")
 
@@ -746,7 +755,9 @@ async def _transcribe_task(
         logger.error(f"Transcription task failed: {e}")
 
 
-async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool = False) -> None:
+async def _collect_voting_data_task(
+        vote_type: str = "all",
+        force_refresh: bool = False) -> None:
     """Background task to collect voting data and store in Airtable"""
     logger.info(f"Starting voting data collection task (type: {vote_type})...")
 
@@ -767,7 +778,8 @@ async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool 
             try:
                 # Process voting session
                 session_data = _normalize_voting_session(session)
-                logger.debug(f"Processing session: {session_data['bill_number']} - {session_data['bill_title'][:50]}...")
+                logger.debug(
+                    f"Processing session: {session_data['bill_number']} - {session_data['bill_title'][:50]}...")
 
                 # Process individual vote records
                 for vote_record in session.vote_records:
@@ -776,7 +788,10 @@ async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool 
                         _normalize_vote_record(vote_record, session)
 
                         # Track unique members and parties for later processing
-                        unique_members.add((vote_record.member_name, vote_record.party_name, vote_record.constituency))
+                        unique_members.add(
+                            (vote_record.member_name,
+                             vote_record.party_name,
+                             vote_record.constituency))
                         unique_parties.add(vote_record.party_name)
 
                         votes_processed += 1
@@ -801,7 +816,8 @@ async def _collect_voting_data_task(vote_type: str = "all", force_refresh: bool 
 
         # Process unique members and parties
         members_processed = len(unique_members)
-        logger.info(f"Found {len(unique_parties)} unique parties and {members_processed} unique members")
+        logger.info(
+            f"Found {len(unique_parties)} unique parties and {members_processed} unique members")
 
         # TODO: Store parties and members in Airtable if they don't exist
 
@@ -846,7 +862,8 @@ def _normalize_voting_session(session: VotingSession) -> dict[str, any]:
     }
 
 
-def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> dict[str, any]:
+def _normalize_vote_record(vote_record: VoteRecord,
+                           session: VotingSession) -> dict[str, any]:
     """
     Normalize individual vote record for Airtable storage
 
@@ -872,15 +889,16 @@ def _normalize_vote_record(vote_record: VoteRecord, session: VotingSession) -> d
         "party_name": vote_record.party_name,
         "constituency": vote_record.constituency,
         "house": vote_record.house,
-        "vote_result": vote_result_mapping.get(vote_record.vote_result, vote_record.vote_result),
+        "vote_result": vote_result_mapping.get(
+            vote_record.vote_result,
+            vote_record.vote_result),
         "vote_date": session.vote_date.strftime("%Y-%m-%d"),
         "vote_type": session.vote_type,
         "vote_stage": session.vote_stage,
         "committee_name": session.committee_name,
         "bill_number": session.bill_number,
         "bill_title": session.bill_title,
-        "is_final_vote": session.vote_stage == "最終" if session.vote_stage else False
-    }
+        "is_final_vote": session.vote_stage == "最終" if session.vote_stage else False}
 
 
 # Scheduler endpoints
@@ -973,8 +991,7 @@ async def execute_scheduled_task(
         success = await scheduler.handle_pubsub_message(task_data)
         return {
             "success": success,
-            "message": "Task execution completed" if success else "Task execution failed"
-        }
+            "message": "Task execution completed" if success else "Task execution failed"}
     except Exception as e:
         logger.error(f"Failed to execute scheduled task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1088,8 +1105,7 @@ async def scrape_diet_data_async(
         return ScrapeResponse(
             success=True,
             message=f"Successfully scraped {len(bills_data)} bills with resilience features",
-            bills_processed=len(bills_data)
-        )
+            bills_processed=len(bills_data))
 
     except Exception as e:
         logger.error(f"Async scraping failed: {e}")
@@ -1436,7 +1452,8 @@ async def process_hr_pdfs(
 ) -> HRProcessingResponse:
     """Process House of Representatives PDF voting data with enhanced extraction"""
 
-    logger.info(f"Starting HR PDF processing: days_back={request.days_back}, dry_run={request.dry_run}")
+    logger.info(
+        f"Starting HR PDF processing: days_back={request.days_back}, dry_run={request.dry_run}")
 
     try:
         # Run the complete HR integration pipeline
@@ -1462,8 +1479,9 @@ async def process_hr_pdfs(
                 votes_created=integration_result.votes_created,
                 vote_records_created=integration_result.vote_records_created,
                 conflicts_detected=integration_result.conflicts_detected,
-                errors=pipeline_result.get('errors', [])
-            )
+                errors=pipeline_result.get(
+                    'errors',
+                    []))
         else:
             return HRProcessingResponse(
                 success=False,
@@ -1477,8 +1495,9 @@ async def process_hr_pdfs(
                 votes_created=0,
                 vote_records_created=0,
                 conflicts_detected=0,
-                errors=pipeline_result.get('errors', ['No integration results generated'])
-            )
+                errors=pipeline_result.get(
+                    'errors',
+                    ['No integration results generated']))
 
     except Exception as e:
         logger.error(f"HR PDF processing failed: {e}")
@@ -1657,8 +1676,7 @@ async def execute_t52_limited_scraping(
             embeddings_generated=result.embeddings_generated,
             transcriptions_completed=result.transcriptions_completed,
             errors=result.errors,
-            performance_metrics=result.performance_metrics
-        )
+            performance_metrics=result.performance_metrics)
 
     except Exception as e:
         logger.error(f"T52 limited scraping failed: {e}")
@@ -1698,8 +1716,7 @@ async def get_t52_target() -> dict[str, Any]:
         "max_speeches": target.max_speeches,
         "enable_stt": target.enable_stt,
         "enable_embeddings": target.enable_embeddings,
-        "description": "Limited scraping for June 2025 first week (2025-06-02 to 2025-06-08)"
-    }
+        "description": "Limited scraping for June 2025 first week (2025-06-02 to 2025-06-08)"}
 
 
 if __name__ == "__main__":

@@ -83,7 +83,8 @@ class IngestWorkerMetrics:
 
         # Performance tracking
         self.active_operations = defaultdict(int)
-        self.processing_times: dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
+        self.processing_times: dict[str, deque] = defaultdict(
+            lambda: deque(maxlen=1000))
         self.error_counts = defaultdict(int)
         self.quality_scores: dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
 
@@ -105,6 +106,7 @@ class IngestWorkerMetrics:
         metric_type: MetricType = MetricType.COUNTER,
         tags: dict[str, str] = None,
         unit: str = 'count'
+
     ):
         """Record a metric point."""
         metric = MetricPoint(
@@ -128,6 +130,7 @@ class IngestWorkerMetrics:
         processing_time: float,
         quality_score: float | None = None,
         details: dict[str, Any] = None
+
     ):
         """Record processing operation metrics."""
         tags = {
@@ -139,8 +142,17 @@ class IngestWorkerMetrics:
             tags.update({k: str(v) for k, v in details.items()})
 
         # Record basic metrics
-        self.record_metric(f'{operation_type}_operations_total', 1, MetricType.COUNTER, tags)
-        self.record_metric(f'{operation_type}_duration_seconds', processing_time, MetricType.TIMER, tags, 'seconds')
+        self.record_metric(
+            f'{operation_type}_operations_total',
+            1,
+            MetricType.COUNTER,
+            tags)
+        self.record_metric(
+            f'{operation_type}_duration_seconds',
+            processing_time,
+            MetricType.TIMER,
+            tags,
+            'seconds')
 
         # Track processing times
         self.processing_times[operation_type].append(processing_time)
@@ -159,12 +171,17 @@ class IngestWorkerMetrics:
         # Update derived metrics
         stats.success_rate = stats.successful / stats.total_processed
         stats.error_rate = stats.failed / stats.total_processed
-        stats.avg_processing_time = sum(self.processing_times[operation_type]) / len(self.processing_times[operation_type])
+        stats.avg_processing_time = sum(
+            self.processing_times[operation_type]) / len(self.processing_times[operation_type])
 
         # Record quality score if provided
         if quality_score is not None:
             self.quality_scores[operation_type].append(quality_score)
-            self.record_metric(f'{operation_type}_quality_score', quality_score, MetricType.GAUGE, tags)
+            self.record_metric(
+                f'{operation_type}_quality_score',
+                quality_score,
+                MetricType.GAUGE,
+                tags)
 
     def record_pdf_processing(
         self,
@@ -175,6 +192,7 @@ class IngestWorkerMetrics:
         pages_processed: int = 0,
         text_length: int = 0,
         confidence_score: float | None = None
+
     ):
         """Record PDF processing metrics."""
         details = {
@@ -192,8 +210,17 @@ class IngestWorkerMetrics:
         )
 
         # PDF-specific metrics
-        self.record_metric('pdf_pages_processed_total', pages_processed, MetricType.COUNTER, details)
-        self.record_metric('pdf_text_length_chars', text_length, MetricType.GAUGE, details, 'characters')
+        self.record_metric(
+            'pdf_pages_processed_total',
+            pages_processed,
+            MetricType.COUNTER,
+            details)
+        self.record_metric(
+            'pdf_text_length_chars',
+            text_length,
+            MetricType.GAUGE,
+            details,
+            'characters')
 
         if confidence_score:
             self.data_quality['pdf_extraction_accuracy'].append(confidence_score)
@@ -206,6 +233,7 @@ class IngestWorkerMetrics:
         word_count: int = 0,
         confidence_score: float | None = None,
         language: str = 'ja'
+
     ):
         """Record STT processing metrics."""
         details = {
@@ -222,12 +250,26 @@ class IngestWorkerMetrics:
         )
 
         # STT-specific metrics
-        self.record_metric('stt_audio_duration_seconds', audio_duration, MetricType.GAUGE, details, 'seconds')
-        self.record_metric('stt_words_generated_total', word_count, MetricType.COUNTER, details)
+        self.record_metric(
+            'stt_audio_duration_seconds',
+            audio_duration,
+            MetricType.GAUGE,
+            details,
+            'seconds')
+        self.record_metric(
+            'stt_words_generated_total',
+            word_count,
+            MetricType.COUNTER,
+            details)
 
         if success and audio_duration > 0:
             wpm = word_count / (audio_duration / 60)  # Words per minute
-            self.record_metric('stt_words_per_minute', wpm, MetricType.GAUGE, details, 'wpm')
+            self.record_metric(
+                'stt_words_per_minute',
+                wpm,
+                MetricType.GAUGE,
+                details,
+                'wpm')
 
         if confidence_score:
             # Convert to Word Error Rate equivalent (inverse)
@@ -241,6 +283,7 @@ class IngestWorkerMetrics:
         processing_time: float,
         embedding_dimension: int = 0,
         similarity_score: float | None = None
+
     ):
         """Record vector embedding processing metrics."""
         details = {
@@ -257,8 +300,16 @@ class IngestWorkerMetrics:
         )
 
         # Vector-specific metrics
-        self.record_metric('vector_chunks_processed_total', text_chunks, MetricType.COUNTER, details)
-        self.record_metric('vector_embedding_dimension', embedding_dimension, MetricType.GAUGE, details)
+        self.record_metric(
+            'vector_chunks_processed_total',
+            text_chunks,
+            MetricType.COUNTER,
+            details)
+        self.record_metric(
+            'vector_embedding_dimension',
+            embedding_dimension,
+            MetricType.GAUGE,
+            details)
 
         if similarity_score:
             self.data_quality['vector_similarity_scores'].append(similarity_score)
@@ -270,6 +321,7 @@ class IngestWorkerMetrics:
         success: bool,
         processing_time: float,
         data_completeness: float | None = None
+
     ):
         """Record data pipeline operation metrics."""
         details = {
@@ -286,7 +338,11 @@ class IngestWorkerMetrics:
         )
 
         # Pipeline-specific metrics
-        self.record_metric('pipeline_records_processed_total', records_processed, MetricType.COUNTER, details)
+        self.record_metric(
+            'pipeline_records_processed_total',
+            records_processed,
+            MetricType.COUNTER,
+            details)
 
         if data_completeness:
             self.data_quality['data_completeness_ratio'].append(data_completeness)
@@ -324,9 +380,24 @@ class IngestWorkerMetrics:
 
             # Record as individual metrics
             tags = {'service': 'ingest_worker'}
-            self.record_metric('system_cpu_percent', cpu_percent, MetricType.GAUGE, tags, 'percent')
-            self.record_metric('system_memory_percent', memory.percent, MetricType.GAUGE, tags, 'percent')
-            self.record_metric('system_disk_percent', disk_percent, MetricType.GAUGE, tags, 'percent')
+            self.record_metric(
+                'system_cpu_percent',
+                cpu_percent,
+                MetricType.GAUGE,
+                tags,
+                'percent')
+            self.record_metric(
+                'system_memory_percent',
+                memory.percent,
+                MetricType.GAUGE,
+                tags,
+                'percent')
+            self.record_metric(
+                'system_disk_percent',
+                disk_percent,
+                MetricType.GAUGE,
+                tags,
+                'percent')
             self.record_metric('system_open_fds', open_fds, MetricType.GAUGE, tags)
 
         except Exception as e:
@@ -398,7 +469,8 @@ class IngestWorkerMetrics:
             else:
                 prom_type = 'gauge'
 
-            lines.append(f'# HELP {metric_name} {metric_name.replace("_", " ").title()}')
+            lines.append(
+                f'# HELP {metric_name} {metric_name.replace("_", " ").title()}')
             lines.append(f'# TYPE {metric_name} {prom_type}')
 
             # Group by tags and get latest value
@@ -510,19 +582,30 @@ def time_operation(operation_type: str, **kwargs):
     return OperationTimer(ingest_metrics, operation_type, **kwargs)
 
 
-def record_pdf_processing(pdf_url: str, success: bool, processing_time: float, **kwargs):
+def record_pdf_processing(pdf_url: str,
+                          success: bool,
+                          processing_time: float, **kwargs
+                          ):
     """Record PDF processing metrics."""
     ingest_metrics.record_pdf_processing(pdf_url, success, processing_time, **kwargs)
 
 
-def record_stt_processing(audio_duration: float, success: bool, processing_time: float, **kwargs):
+def record_stt_processing(audio_duration: float,
+                          success: bool,
+                          processing_time: float, **kwargs
+                          ):
     """Record STT processing metrics."""
-    ingest_metrics.record_stt_processing(audio_duration, success, processing_time, **kwargs)
+    ingest_metrics.record_stt_processing(
+        audio_duration, success, processing_time, **kwargs)
 
 
-def record_vector_processing(text_chunks: int, success: bool, processing_time: float, **kwargs):
+def record_vector_processing(text_chunks: int,
+                             success: bool,
+                             processing_time: float, **kwargs
+                             ):
     """Record vector processing metrics."""
-    ingest_metrics.record_vector_processing(text_chunks, success, processing_time, **kwargs)
+    ingest_metrics.record_vector_processing(
+        text_chunks, success, processing_time, **kwargs)
 
 
 def get_metrics_summary():

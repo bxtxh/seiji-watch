@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class IncompleteKanaAnalyzer:
     """Analyze incomplete kana readings (surname-only cases)"""
 
@@ -109,10 +110,14 @@ class IncompleteKanaAnalyzer:
 
         # Check for specific surname-only patterns
         surname_only_patterns = [
-            (lambda n, k: len(n) >= 3 and len(k) <= 4 and any(s in k for s in self.common_surnames),
-             "3+ char name with ≤4 kana"),
-            (lambda n, k: len(n) >= 4 and len(k) <= 5 and any(s in k for s in self.common_surnames),
-             "4+ char name with ≤5 kana"),
+            (lambda n,
+             k: len(n) >= 3 and len(k) <= 4 and any(
+                 s in k for s in self.common_surnames),
+                "3+ char name with ≤4 kana"),
+            (lambda n,
+             k: len(n) >= 4 and len(k) <= 5 and any(
+                 s in k for s in self.common_surnames),
+                "4+ char name with ≤5 kana"),
         ]
 
         for pattern_func, description in surname_only_patterns:
@@ -155,7 +160,8 @@ class IncompleteKanaAnalyzer:
                 if name:
                     self.analysis_results["total_analyzed"] += 1
 
-                    analysis_type, reason = self.analyze_kana_completeness(name, name_kana)
+                    analysis_type, reason = self.analyze_kana_completeness(
+                        name, name_kana)
 
                     record_info = {
                         'id': record['id'],
@@ -200,7 +206,8 @@ class IncompleteKanaAnalyzer:
         print(f"   🔤 Too short cases: {len(results['too_short_cases'])}")
         print(f"   ❓ Suspicious cases: {len(results['suspicious_cases'])}")
 
-        total_incomplete = len(results['surname_only_cases']) + len(results['too_short_cases']) + len(results['suspicious_cases'])
+        total_incomplete = len(results['surname_only_cases']) + \
+            len(results['too_short_cases']) + len(results['suspicious_cases'])
         print(f"   🎯 Total needing fixes: {total_incomplete}")
 
         # Show surname-only examples
@@ -227,7 +234,8 @@ class IncompleteKanaAnalyzer:
 
         # Calculate completeness rate
         if results['total_analyzed'] > 0:
-            completeness_rate = (len(results['good_cases']) / results['total_analyzed']) * 100
+            completeness_rate = (
+                len(results['good_cases']) / results['total_analyzed']) * 100
             print("\n📈 COMPLETENESS METRICS:")
             print(f"   Current completeness rate: {completeness_rate:.1f}%")
 
@@ -255,8 +263,8 @@ class IncompleteKanaAnalyzer:
                 "too_short_cases": len(self.analysis_results["too_short_cases"]),
                 "suspicious_cases": len(self.analysis_results["suspicious_cases"]),
                 "completeness_rate": (len(self.analysis_results["good_cases"]) /
-                                    self.analysis_results["total_analyzed"] * 100)
-                                    if self.analysis_results["total_analyzed"] > 0 else 0
+                                      self.analysis_results["total_analyzed"] * 100)
+                if self.analysis_results["total_analyzed"] > 0 else 0
             }
         }
 
@@ -264,6 +272,7 @@ class IncompleteKanaAnalyzer:
             json.dump(analysis_data, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Detailed incomplete analysis saved: {filename}")
+
 
 async def main():
     """Main incomplete analysis entry point"""
@@ -273,8 +282,8 @@ async def main():
     print("\n✅ Incomplete Name_Kana analysis completed!")
 
     total_incomplete = (len(results["surname_only_cases"]) +
-                       len(results["too_short_cases"]) +
-                       len(results["suspicious_cases"]))
+                        len(results["too_short_cases"]) +
+                        len(results["suspicious_cases"]))
 
     if total_incomplete > 0:
         print("\n📋 NEXT STEPS:")

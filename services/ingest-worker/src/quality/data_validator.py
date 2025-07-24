@@ -48,18 +48,21 @@ class DataQualityValidator:
             'validity': 0.90       # 90% of data should pass validation rules
         }
 
-    def validate_pilot_dataset(self, pilot_data: dict[str, Any]) -> list[ValidationResult]:
+    def validate_pilot_dataset(
+            self, pilot_data: dict[str, Any]) -> list[ValidationResult]:
         """Validate the complete pilot dataset"""
         results = []
 
         # Validate bills data
         if 'bills' in pilot_data.get('pilot_dataset', {}):
-            bills_result = self.validate_bills_data(pilot_data['pilot_dataset']['bills'])
+            bills_result = self.validate_bills_data(
+                pilot_data['pilot_dataset']['bills'])
             results.append(bills_result)
 
         # Validate voting data
         if 'voting_sessions' in pilot_data.get('pilot_dataset', {}):
-            voting_result = self.validate_voting_data(pilot_data['pilot_dataset']['voting_sessions'])
+            voting_result = self.validate_voting_data(
+                pilot_data['pilot_dataset']['voting_sessions'])
             results.append(voting_result)
 
         # Validate metadata
@@ -76,14 +79,14 @@ class DataQualityValidator:
         complete_records = sum(1 for bill in bills if self._is_bill_complete(bill))
         completeness_score = complete_records / len(bills) if bills else 0
 
-        metrics.append(QualityMetric(
-            name="completeness",
-            value=completeness_score,
-            threshold=self.thresholds['completeness'],
-            passed=completeness_score >= self.thresholds['completeness'],
-            description=f"{complete_records}/{len(bills)} bills have all required fields",
-            recommendations=self._get_completeness_recommendations(completeness_score)
-        ))
+        metrics.append(
+            QualityMetric(
+                name="completeness",
+                value=completeness_score,
+                threshold=self.thresholds['completeness'],
+                passed=completeness_score >= self.thresholds['completeness'],
+                description=f"{complete_records}/{len(bills)} bills have all required fields",
+                recommendations=self._get_completeness_recommendations(completeness_score)))
 
         # Uniqueness check
         unique_ids = set(bill.get('bill_id', '') for bill in bills)
@@ -144,37 +147,39 @@ class DataQualityValidator:
             metrics=metrics,
             overall_score=overall_score,
             passed=passed,
-            summary=f"Bills data quality: {overall_score:.2f} ({'PASS' if passed else 'FAIL'})"
-        )
+            summary=f"Bills data quality: {overall_score:.2f} ({'PASS' if passed else 'FAIL'})")
 
-    def validate_voting_data(self, voting_sessions: list[dict[str, Any]]) -> ValidationResult:
+    def validate_voting_data(
+            self, voting_sessions: list[dict[str, Any]]) -> ValidationResult:
         """Validate voting data quality"""
         metrics = []
 
         # Completeness check
-        complete_sessions = sum(1 for session in voting_sessions if self._is_voting_session_complete(session))
-        completeness_score = complete_sessions / len(voting_sessions) if voting_sessions else 0
+        complete_sessions = sum(
+            1 for session in voting_sessions if self._is_voting_session_complete(session))
+        completeness_score = complete_sessions / \
+            len(voting_sessions) if voting_sessions else 0
 
-        metrics.append(QualityMetric(
-            name="completeness",
-            value=completeness_score,
-            threshold=self.thresholds['completeness'],
-            passed=completeness_score >= self.thresholds['completeness'],
-            description=f"{complete_sessions}/{len(voting_sessions)} sessions have complete data",
-            recommendations=self._get_voting_completeness_recommendations(completeness_score)
-        ))
+        metrics.append(
+            QualityMetric(
+                name="completeness",
+                value=completeness_score,
+                threshold=self.thresholds['completeness'],
+                passed=completeness_score >= self.thresholds['completeness'],
+                description=f"{complete_sessions}/{len(voting_sessions)} sessions have complete data",
+                recommendations=self._get_voting_completeness_recommendations(completeness_score)))
 
         # Vote record consistency
         consistency_score = self._assess_vote_record_consistency(voting_sessions)
 
-        metrics.append(QualityMetric(
-            name="vote_consistency",
-            value=consistency_score,
-            threshold=0.90,
-            passed=consistency_score >= 0.90,
-            description=f"Vote record consistency: {consistency_score:.2f}",
-            recommendations=self._get_vote_consistency_recommendations(consistency_score)
-        ))
+        metrics.append(
+            QualityMetric(
+                name="vote_consistency",
+                value=consistency_score,
+                threshold=0.90,
+                passed=consistency_score >= 0.90,
+                description=f"Vote record consistency: {consistency_score:.2f}",
+                recommendations=self._get_vote_consistency_recommendations(consistency_score)))
 
         # Member data quality
         member_quality_score = self._assess_member_data_quality(voting_sessions)
@@ -191,14 +196,14 @@ class DataQualityValidator:
         # Party distribution
         party_diversity_score = self._assess_party_diversity(voting_sessions)
 
-        metrics.append(QualityMetric(
-            name="party_diversity",
-            value=party_diversity_score,
-            threshold=0.70,
-            passed=party_diversity_score >= 0.70,
-            description=f"Party diversity score: {party_diversity_score:.2f}",
-            recommendations=self._get_party_diversity_recommendations(party_diversity_score)
-        ))
+        metrics.append(
+            QualityMetric(
+                name="party_diversity",
+                value=party_diversity_score,
+                threshold=0.70,
+                passed=party_diversity_score >= 0.70,
+                description=f"Party diversity score: {party_diversity_score:.2f}",
+                recommendations=self._get_party_diversity_recommendations(party_diversity_score)))
 
         # Calculate overall score
         overall_score = sum(m.value for m in metrics) / len(metrics)
@@ -209,8 +214,7 @@ class DataQualityValidator:
             metrics=metrics,
             overall_score=overall_score,
             passed=passed,
-            summary=f"Voting data quality: {overall_score:.2f} ({'PASS' if passed else 'FAIL'})"
-        )
+            summary=f"Voting data quality: {overall_score:.2f} ({'PASS' if passed else 'FAIL'})")
 
     def validate_metadata(self, pilot_data: dict[str, Any]) -> ValidationResult:
         """Validate metadata and execution info"""
@@ -233,14 +237,16 @@ class DataQualityValidator:
         duration = exec_info.get('duration_seconds', 0)
         performance_score = 1.0 if duration > 0 and duration < 10 else 0.5
 
-        metrics.append(QualityMetric(
-            name="processing_performance",
-            value=performance_score,
-            threshold=0.70,
-            passed=performance_score >= 0.70,
-            description=f"Processing time: {duration:.2f}s",
-            recommendations=self._get_performance_recommendations(performance_score, duration)
-        ))
+        metrics.append(
+            QualityMetric(
+                name="processing_performance",
+                value=performance_score,
+                threshold=0.70,
+                passed=performance_score >= 0.70,
+                description=f"Processing time: {duration:.2f}s",
+                recommendations=self._get_performance_recommendations(
+                    performance_score,
+                    duration)))
 
         # Data freshness
         timestamp = exec_info.get('timestamp', '')
@@ -264,8 +270,7 @@ class DataQualityValidator:
             metrics=metrics,
             overall_score=overall_score,
             passed=passed,
-            summary=f"Metadata quality: {overall_score:.2f} ({'PASS' if passed else 'FAIL'})"
-        )
+            summary=f"Metadata quality: {overall_score:.2f} ({'PASS' if passed else 'FAIL'})")
 
     # Helper methods for validation logic
 
@@ -340,7 +345,8 @@ class DataQualityValidator:
         required_fields = ['bill_number', 'bill_title', 'vote_date', 'vote_records']
         return all(session.get(field) for field in required_fields)
 
-    def _assess_vote_record_consistency(self, voting_sessions: list[dict[str, Any]]) -> float:
+    def _assess_vote_record_consistency(
+            self, voting_sessions: list[dict[str, Any]]) -> float:
         """Assess consistency of vote records"""
         if not voting_sessions:
             return 0.0
@@ -354,15 +360,17 @@ class DataQualityValidator:
 
             # Check for consistent fields across records
             required_fields = ['member_name', 'party_name', 'vote_result']
-            complete_records = sum(1 for record in vote_records
-                                   if all(record.get(field) for field in required_fields))
+            complete_records = sum(
+                1 for record in vote_records if all(
+                    record.get(field) for field in required_fields))
 
             consistency_score = complete_records / len(vote_records)
             consistency_scores.append(consistency_score)
 
         return sum(consistency_scores) / len(consistency_scores)
 
-    def _assess_member_data_quality(self, voting_sessions: list[dict[str, Any]]) -> float:
+    def _assess_member_data_quality(
+            self, voting_sessions: list[dict[str, Any]]) -> float:
         """Assess quality of member data"""
         if not voting_sessions:
             return 0.0
@@ -442,7 +450,7 @@ class DataQualityValidator:
                 return 0.6
             else:
                 return 0.3
-        except:
+        except Exception:
             return 0.0
 
     # Recommendation methods
@@ -450,9 +458,13 @@ class DataQualityValidator:
     def _get_completeness_recommendations(self, score: float) -> list[str]:
         """Get recommendations for improving completeness"""
         if score >= 0.95:
-            return ["Excellent completeness - maintain current data collection standards"]
+            return [
+                "Excellent completeness - maintain current data collection standards"
+            ]
         elif score >= 0.80:
-            return ["Good completeness - verify required fields in data collection pipeline"]
+            return [
+                "Good completeness - verify required fields in data collection pipeline"
+            ]
         else:
             return [
                 "Low completeness - review data extraction logic",
@@ -466,9 +478,11 @@ class DataQualityValidator:
             return ["Excellent uniqueness - no duplicate detection issues"]
         else:
             return [
+
                 "Implement duplicate detection during data collection",
                 "Add unique constraints to data storage",
                 "Review bill ID generation logic"
+
             ]
 
     def _get_validity_recommendations(self, score: float) -> list[str]:
@@ -532,9 +546,11 @@ class DataQualityValidator:
             return ["Good member data quality"]
         else:
             return [
+
                 "Improve member name extraction accuracy",
                 "Add party affiliation validation",
                 "Standardize vote result values"
+
             ]
 
     def _get_party_diversity_recommendations(self, score: float) -> list[str]:
@@ -543,9 +559,11 @@ class DataQualityValidator:
             return ["Good party representation in voting data"]
         else:
             return [
+
                 "Verify all parties are being captured in vote records",
                 "Review party name standardization",
                 "Ensure comprehensive voting session coverage"
+
             ]
 
     def _get_metadata_recommendations(self, score: float) -> list[str]:
@@ -554,21 +572,26 @@ class DataQualityValidator:
             return ["Good metadata tracking"]
         else:
             return [
+
                 "Add missing execution metadata fields",
                 "Implement comprehensive logging",
                 "Track additional performance metrics"
+
             ]
 
-    def _get_performance_recommendations(self, score: float, duration: float) -> list[str]:
+    def _get_performance_recommendations(
+            self, score: float, duration: float) -> list[str]:
         """Get recommendations for processing performance"""
         if score >= 0.70:
             return ["Good processing performance"]
         else:
             recommendations = ["Optimize data processing pipeline"]
             if duration > 10:
-                recommendations.append("Consider parallel processing for large datasets")
+                recommendations.append(
+                    "Consider parallel processing for large datasets")
             if duration > 60:
-                recommendations.append("Implement batch processing with progress tracking")
+                recommendations.append(
+                    "Implement batch processing with progress tracking")
             return recommendations
 
     def _get_freshness_recommendations(self, score: float) -> list[str]:
@@ -577,7 +600,9 @@ class DataQualityValidator:
             return ["Data is sufficiently fresh"]
         else:
             return [
+
                 "Implement more frequent data collection",
                 "Add real-time data update mechanisms",
                 "Monitor data source update frequency"
+
             ]

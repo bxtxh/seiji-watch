@@ -12,6 +12,7 @@ API_BASE_URL = "http://localhost:8000"
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 
+
 class APITester:
     def __init__(self, base_url: str):
         self.base_url = base_url
@@ -25,7 +26,12 @@ class APITester:
         if self.session:
             await self.session.close()
 
-    async def test_endpoint(self, method: str, endpoint: str, data: dict = None, params: dict = None) -> dict:
+    async def test_endpoint(
+            self,
+            method: str,
+            endpoint: str,
+            data: dict = None,
+            params: dict = None) -> dict:
         """Test an API endpoint and return the response."""
         url = f"{self.base_url}{endpoint}"
         headers = {"Content-Type": "application/json"}
@@ -59,6 +65,7 @@ class APITester:
             print(f"❌ Request failed: {e}")
             return {"success": False, "error": str(e)}
 
+
 async def test_bills_api():
     """Test the Bills API endpoints."""
 
@@ -89,7 +96,8 @@ async def test_bills_api():
             result = await tester.test_endpoint("GET", f"/api/bills/{bill_id}")
             if result["success"]:
                 bill = result["data"]
-                print(f"   Retrieved bill: {bill.get('fields', {}).get('Name', 'Unknown')}")
+                print(
+                    f"   Retrieved bill: {bill.get('fields', {}).get('Name', 'Unknown')}")
             else:
                 print(f"   ❌ Failed to get bill {bill_id}")
 
@@ -100,9 +108,16 @@ async def test_bills_api():
             if result["success"]:
                 bill = result["data"]
                 policy_categories = bill.get("policy_categories", [])
-                print(f"   Bill has {len(policy_categories)} policy category relationships")
+                print(
+                    f"   Bill has {len(policy_categories)} policy category relationships")
                 for i, rel in enumerate(policy_categories[:3]):  # Show first 3
-                    category_name = rel.get("category", {}).get("fields", {}).get("Title_JA", "Unknown")
+                    category_name = rel.get(
+                        "category",
+                        {}).get(
+                        "fields",
+                        {}).get(
+                        "Title_JA",
+                        "Unknown")
                     confidence = rel.get("confidence_score", 0.0)
                     print(f"   {i+1}. {category_name} (confidence: {confidence})")
             else:
@@ -132,7 +147,9 @@ async def test_bills_api():
             if categories:
                 sample_category = categories[0]
                 category_id = sample_category.get("id", "")
-                category_name = sample_category.get("fields", {}).get("Title_JA", "Unknown")
+                category_name = sample_category.get(
+                    "fields", {}).get(
+                    "Title_JA", "Unknown")
                 print(f"   Sample category: {category_name} (ID: {category_id})")
 
                 # Test 6: Create Bills-PolicyCategory relationship
@@ -157,7 +174,8 @@ async def test_bills_api():
                         if result["success"]:
                             policy_data = result["data"]
                             policy_categories = policy_data.get("policy_categories", [])
-                            print(f"   Bill has {len(policy_categories)} policy category relationships")
+                            print(
+                                f"   Bill has {len(policy_categories)} policy category relationships")
 
                             # Test 8: Update relationship (if we have one)
                             if relationship_id:
@@ -200,12 +218,14 @@ async def test_bills_api():
         if result["success"]:
             stats = result["data"]
             print(f"   Total relationships: {stats.get('total_relationships', 0)}")
-            print(f"   Confidence distribution: {stats.get('confidence_distribution', {})}")
+            print(
+                f"   Confidence distribution: {stats.get('confidence_distribution', {})}")
             print(f"   Manual vs Automatic: {stats.get('manual_vs_automatic', {})}")
         else:
             print("   ❌ Failed to get statistics")
 
         print("\n✅ API Testing Complete!")
+
 
 async def main():
     """Main test execution."""

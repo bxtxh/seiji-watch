@@ -103,8 +103,7 @@ class BatchTask:
             "result": self.result,
             "error_message": self.error_message,
             "tags": self.tags,
-            "depends_on": self.depends_on
-        }
+            "depends_on": self.depends_on}
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'BatchTask':
@@ -194,9 +193,11 @@ class EmbeddingTaskProcessor(TaskProcessor):
                 if i < len(metadata_list) and metadata_list[i]:
                     metadata = metadata_list[i]
                     if "bill_number" in metadata:
-                        weaviate_uuid = self.vector_client.store_bill_embedding(metadata, embedding)
+                        weaviate_uuid = self.vector_client.store_bill_embedding(
+                            metadata, embedding)
                     elif "speaker" in metadata:
-                        weaviate_uuid = self.vector_client.store_speech_embedding(metadata, embedding)
+                        weaviate_uuid = self.vector_client.store_speech_embedding(
+                            metadata, embedding)
 
                 results.append({
                     "text_index": i,
@@ -272,7 +273,8 @@ class TranscriptionTaskProcessor(TaskProcessor):
         for i, video_url in enumerate(video_urls):
             try:
                 # Download and transcribe video
-                transcription_result, audio_file = self.whisper_client.download_and_transcribe_video(video_url)
+                transcription_result, audio_file = self.whisper_client.download_and_transcribe_video(
+                    video_url)
 
                 result = {
                     "url": video_url,
@@ -282,8 +284,8 @@ class TranscriptionTaskProcessor(TaskProcessor):
                     "text": transcription_result.text,
                     "duration": transcription_result.duration,
                     "language": transcription_result.language,
-                    "segments_count": len(transcription_result.segments) if transcription_result.segments else 0
-                }
+                    "segments_count": len(
+                        transcription_result.segments) if transcription_result.segments else 0}
                 results.append(result)
 
             except Exception as e:
@@ -414,7 +416,8 @@ class BatchProcessor:
         # Persist if enabled
         await self._persist_task(task)
 
-        logger.info(f"Added task to queue: {task_id} (type: {task_type}, priority: {priority})")
+        logger.info(
+            f"Added task to queue: {task_id} (type: {task_type}, priority: {priority})")
         return task_id
 
     async def _persist_task(self, task: BatchTask):
@@ -428,7 +431,8 @@ class BatchProcessor:
             if self.redis_client:
                 # Store in Redis
                 key = f"batch_task:{task.task_id}"
-                await self.redis_client.set(key, json.dumps(task_data), ex=86400)  # 24 hour expiry
+                # 24 hour expiry
+                await self.redis_client.set(key, json.dumps(task_data), ex=86400)
 
             elif self.config.persistence_backend == "file":
                 # Store in file
@@ -470,7 +474,8 @@ class BatchProcessor:
 
         # Wait for active tasks to complete (with timeout)
         if self.active_tasks:
-            logger.info(f"Waiting for {len(self.active_tasks)} active tasks to complete...")
+            logger.info(
+                f"Waiting for {len(self.active_tasks)} active tasks to complete...")
             await asyncio.sleep(5)  # Give tasks time to finish
 
     async def _process_batch(self):
@@ -479,7 +484,11 @@ class BatchProcessor:
         tasks_to_process = []
 
         # Process in priority order
-        for priority in [TaskPriority.URGENT, TaskPriority.HIGH, TaskPriority.NORMAL, TaskPriority.LOW]:
+        for priority in [
+                TaskPriority.URGENT,
+                TaskPriority.HIGH,
+                TaskPriority.NORMAL,
+                TaskPriority.LOW]:
             queue = self.task_queues[priority]
 
             while queue and len(tasks_to_process) < self.config.batch_size:
@@ -528,7 +537,8 @@ class BatchProcessor:
                 # Check if processor is available
                 processor = self.task_processors.get(task.task_type)
                 if not processor:
-                    raise ValueError(f"No processor registered for task type: {task.task_type}")
+                    raise ValueError(
+                        f"No processor registered for task type: {task.task_type}")
 
                 # Update task status
                 task.status = TaskStatus.PROCESSING
@@ -555,7 +565,8 @@ class BatchProcessor:
                     logger.info(f"Task completed: {task.task_id}")
 
                 except TimeoutError:
-                    raise Exception(f"Task timed out after {task.timeout_seconds} seconds")
+                    raise Exception(
+                        f"Task timed out after {task.timeout_seconds} seconds")
 
             except Exception as e:
                 # Task failed
@@ -570,7 +581,8 @@ class BatchProcessor:
                     await asyncio.sleep(self.config.retry_delay_seconds)
                     self.task_queues[task.priority].append(task)
 
-                    logger.warning(f"Task failed, retrying ({task.retry_count}/{task.max_retries}): {task.task_id}")
+                    logger.warning(
+                        f"Task failed, retrying ({task.retry_count}/{task.max_retries}): {task.task_id}")
                     self.stats["tasks_retried"] += 1
 
                 else:
@@ -652,7 +664,8 @@ class BatchProcessor:
         if task_id in self.active_tasks:
             task = self.active_tasks[task_id]
             task.status = TaskStatus.CANCELLED
-            # Note: The task will still complete processing, but will be marked as cancelled
+            # Note: The task will still complete processing, but will be marked as
+            # cancelled
             logger.info(f"Marked active task for cancellation: {task_id}")
             return True
 

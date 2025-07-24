@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_table_schema(pat, base_id):
     """テーブルスキーマ取得"""
     url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -37,6 +38,7 @@ def get_table_schema(pat, base_id):
             if table.get('name') == "Bills (法案)":
                 return table
     return None
+
 
 def get_all_records(pat, base_id):
     """全レコード取得"""
@@ -61,6 +63,7 @@ def get_all_records(pat, base_id):
         params['offset'] = offset
 
     return all_records
+
 
 def main():
     print("📋 手動フィールド削除ガイド")
@@ -111,7 +114,8 @@ def main():
             # 使用状況確認
             usage_count = 0
             for record in all_records:
-                if field_name in record.get('fields', {}) and record['fields'][field_name]:
+                if field_name in record.get(
+                        'fields', {}) and record['fields'][field_name]:
                     usage_count += 1
 
             print(f"📋 {field_name}")
@@ -156,6 +160,7 @@ def main():
     print("   schema.bases:write 権限の追加を検討してください")
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

@@ -15,6 +15,7 @@ def load_csv_data(file_path: Path) -> list[dict]:
         reader = csv.DictReader(f)
         return list(reader)
 
+
 def validate_l1_data(l1_data: list[dict]) -> list[str]:
     """Validate L1 data integrity."""
     errors = []
@@ -43,6 +44,7 @@ def validate_l1_data(l1_data: list[dict]) -> list[str]:
 
     return errors
 
+
 def validate_l2_data(l2_data: list[dict], l1_cap_codes: set[str]) -> list[str]:
     """Validate L2 data integrity and parent relationships."""
     errors = []
@@ -69,7 +71,8 @@ def validate_l2_data(l2_data: list[dict], l1_cap_codes: set[str]) -> list[str]:
 
         # Check parent relationship
         if parent_cap_code not in l1_cap_codes:
-            errors.append(f"Invalid parent_cap_code '{parent_cap_code}' for cap_code {cap_code}")
+            errors.append(
+                f"Invalid parent_cap_code '{parent_cap_code}' for cap_code {cap_code}")
 
         # Check for duplicates
         if cap_code in cap_codes:
@@ -77,6 +80,7 @@ def validate_l2_data(l2_data: list[dict], l1_cap_codes: set[str]) -> list[str]:
         cap_codes.add(cap_code)
 
     return errors
+
 
 def check_translation_quality(data: list[dict]) -> list[str]:
     """Check translation quality and consistency."""
@@ -91,14 +95,18 @@ def check_translation_quality(data: list[dict]) -> list[str]:
             continue
 
         # Check for inconsistent terminology
-        if 'Health' in row.get('title_en', '') and '保健' not in title_ja and '医療' not in title_ja:
-            warnings.append(f"Potential translation inconsistency for {cap_code}: {row['title_en']} -> {title_ja}")
+        if 'Health' in row.get('title_en',
+                               '') and '保健' not in title_ja and '医療' not in title_ja:
+            warnings.append(
+                f"Potential translation inconsistency for {cap_code}: {row['title_en']} -> {title_ja}")
 
         # Check for overly long translations
         if len(title_ja) > 20:
-            warnings.append(f"Long translation for {cap_code}: {title_ja} ({len(title_ja)} chars)")
+            warnings.append(
+                f"Long translation for {cap_code}: {title_ja} ({len(title_ja)} chars)")
 
     return warnings
+
 
 def main():
     """Main validation function."""
@@ -184,11 +192,13 @@ def main():
         parent = row['parent_cap_code']
         parent_coverage[parent] = parent_coverage.get(parent, 0) + 1
 
-    print(f"   L1 categories with L2 children: {len(parent_coverage)}/{len(l1_cap_codes)}")
+    print(
+        f"   L1 categories with L2 children: {len(parent_coverage)}/{len(l1_cap_codes)}")
 
     uncovered_l1 = l1_cap_codes - set(parent_coverage.keys())
     if uncovered_l1:
         print(f"   L1 categories without L2 children: {sorted(uncovered_l1)}")
+
 
 if __name__ == "__main__":
     main()

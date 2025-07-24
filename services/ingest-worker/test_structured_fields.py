@@ -34,6 +34,7 @@ def test_complete_integration_fields():
 
     return all(result for _, result in tests)
 
+
 def test_epic11_files_fields():
     """epic11_* ファイル群の構造化フィールド使用をテスト"""
 
@@ -80,6 +81,7 @@ def test_epic11_files_fields():
 
     return all_passed
 
+
 def test_api_gateway_fields():
     """API Gateway の構造化フィールド検索をテスト"""
 
@@ -110,7 +112,7 @@ def test_api_gateway_fields():
         tests = [
             ("Notesフィールド検索なし", "SEARCH('{query}', {Notes})" not in content),
             ("構造化フィールド検索確認", "SEARCH('{query}', {Bill_Status})" in content or
-                                  "SEARCH('{query}', {Category})" in content),
+             "SEARCH('{query}', {Category})" in content),
         ]
 
         file_passed = True
@@ -124,6 +126,7 @@ def test_api_gateway_fields():
             all_passed = False
 
     return all_passed
+
 
 def test_sample_data_generation():
     """サンプルデータ生成テスト"""
@@ -174,6 +177,7 @@ def test_sample_data_generation():
 
     return all_passed
 
+
 def main():
     """全テスト実行"""
 
@@ -208,6 +212,7 @@ def main():
     else:
         print("⚠️  一部のテストが失敗しました。修正が必要です。")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

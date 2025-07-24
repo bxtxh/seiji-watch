@@ -14,6 +14,10 @@ from fastapi.responses import JSONResponse
 
 # Import security and error handling
 from middleware.auth import get_current_user_optional
+from routes.airtable_webhooks import router as webhooks_router
+from routes.batch_management import router as batch_router
+from routes.enhanced_issues_fixed import router as enhanced_issues_router
+from routes.monitoring import router as monitoring_router
 from starlette.middleware.base import BaseHTTPMiddleware
 from utils.error_handling import ErrorCode, ServiceError, handle_service_error
 
@@ -96,6 +100,8 @@ app.add_middleware(
 )
 
 # Security headers middleware
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses."""
 
@@ -112,12 +118,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         return response
 
+
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Request context and logging middleware
 app.add_middleware(RequestContextMiddleware)
 
 # Request tracking middleware
+
+
 class RequestTrackingMiddleware(BaseHTTPMiddleware):
     """Track requests for monitoring and rate limiting."""
 
@@ -130,7 +139,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
             auth_header = request.headers.get("authorization")
             if auth_header:
                 user = await get_current_user_optional(auth_header)
-        except:
+        except Exception:
             pass
 
         # Log request
@@ -178,9 +187,12 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                     }
                 )
 
+
 app.add_middleware(RequestTrackingMiddleware)
 
 # Global exception handler
+
+
 @app.exception_handler(ServiceError)
 async def service_error_handler(request: Request, exc: ServiceError):
     """Handle ServiceError exceptions."""
@@ -192,6 +204,7 @@ async def service_error_handler(request: Request, exc: ServiceError):
             "details": exc.details
         }
     )
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -206,10 +219,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 # Import and register routes
-from routes.airtable_webhooks import router as webhooks_router
-from routes.batch_management import router as batch_router
-from routes.enhanced_issues_fixed import router as enhanced_issues_router
-from routes.monitoring import router as monitoring_router
 
 # Register all routers with security
 app.include_router(enhanced_issues_router, tags=["Enhanced Issues"])
@@ -218,6 +227,8 @@ app.include_router(batch_router, tags=["Batch Processing"])
 app.include_router(monitoring_router, tags=["Monitoring"])
 
 # Health check endpoint (no authentication required)
+
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Application health check."""
@@ -242,6 +253,8 @@ async def health_check():
         )
 
 # Startup event
+
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup."""
@@ -268,6 +281,8 @@ async def startup_event():
         raise
 
 # Shutdown event
+
+
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown."""
@@ -290,6 +305,8 @@ async def shutdown_event():
         logger.error(f"Shutdown error: {e}")
 
 # Root endpoint
+
+
 @app.get("/", tags=["Root"])
 async def root():
     """API Gateway root endpoint."""

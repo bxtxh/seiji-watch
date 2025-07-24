@@ -11,14 +11,21 @@ import sys
 from datetime import datetime, time, timedelta
 from typing import Any
 
+from batch.issue_relationship_batch import IssueRelationshipBatchProcessor
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, validator
 
 from ..security.validation import InputValidator
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'ingest-worker', 'src'))
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        '..',
+        '..',
+        'ingest-worker',
+        'src'))
 
-from batch.issue_relationship_batch import IssueRelationshipBatchProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +247,8 @@ async def cancel_batch_job(
                 "cancelled_at": datetime.now().isoformat()
             }
         else:
-            raise HTTPException(status_code=400, detail="Could not find active job execution")
+            raise HTTPException(status_code=400,
+                                detail="Could not find active job execution")
 
     except HTTPException:
         raise
@@ -359,7 +367,8 @@ async def update_job_configuration(
         raise
     except Exception as e:
         logger.error(f"Failed to update job configuration for {job_id}: {e}")
-        raise HTTPException(status_code=500, detail="Failed to update job configuration")
+        raise HTTPException(status_code=500,
+                            detail="Failed to update job configuration")
 
 
 # Scheduler Management
@@ -468,7 +477,8 @@ async def get_batch_statistics(
         # Calculate average duration
         completed_executions = [e for e in recent_executions if e.duration_seconds]
         if completed_executions:
-            statistics["average_duration_seconds"] = sum(e.duration_seconds for e in completed_executions) / len(completed_executions)
+            statistics["average_duration_seconds"] = sum(
+                e.duration_seconds for e in completed_executions) / len(completed_executions)
 
         # Group by job type and job ID
         for execution in recent_executions:
@@ -485,14 +495,20 @@ async def get_batch_statistics(
 
         # Calculate success rates
         for job_type_stats in statistics["by_job_type"].values():
-            job_type_executions = [e for e in recent_executions if e.job_config.job_type.value == job_type]
-            successful = len([e for e in job_type_executions if e.status.value == "completed"])
-            job_type_stats["success_rate"] = successful / len(job_type_executions) if job_type_executions else 0
+            job_type_executions = [
+                e for e in recent_executions if e.job_config.job_type.value == job_type]
+            successful = len(
+                [e for e in job_type_executions if e.status.value == "completed"])
+            job_type_stats["success_rate"] = successful / \
+                len(job_type_executions) if job_type_executions else 0
 
         for job_id_stats in statistics["by_job_id"].values():
-            job_executions = [e for e in recent_executions if e.job_config.job_id == job_id]
-            successful = len([e for e in job_executions if e.status.value == "completed"])
-            job_id_stats["success_rate"] = successful / len(job_executions) if job_executions else 0
+            job_executions = [
+                e for e in recent_executions if e.job_config.job_id == job_id]
+            successful = len(
+                [e for e in job_executions if e.status.value == "completed"])
+            job_id_stats["success_rate"] = successful / \
+                len(job_executions) if job_executions else 0
 
         return {
             "success": True,

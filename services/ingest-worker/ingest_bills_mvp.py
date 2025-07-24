@@ -16,6 +16,8 @@ current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir / "src"))
 
 # Environment setup
+
+
 def load_env_file(env_file_path):
     """Load environment variables from .env file"""
     if not os.path.exists(env_file_path):
@@ -29,6 +31,7 @@ def load_env_file(env_file_path):
                 value = value.strip('"\'')
                 os.environ[key] = value
     return True
+
 
 async def ingest_bills_to_airtable():
     """第217回国会の法案データをAirtableに統合"""
@@ -74,8 +77,7 @@ async def ingest_bills_to_airtable():
                 'url': bill.url,
                 'summary': bill.summary,
                 'submission_date': bill.submission_date.isoformat() if bill.submission_date else None,
-                'collected_at': datetime.now().isoformat()
-            }
+                'collected_at': datetime.now().isoformat()}
             bills_data.append(bill_dict)
 
         output_data = {
@@ -83,10 +85,8 @@ async def ingest_bills_to_airtable():
                 'timestamp': datetime.now().isoformat(),
                 'source': '参議院第217回国会議案情報',
                 'total_bills': len(bills_data),
-                'source_url': 'https://www.sangiin.go.jp/japanese/joho1/kousei/gian/217/gian.htm'
-            },
-            'bills': bills_data
-        }
+                'source_url': 'https://www.sangiin.go.jp/japanese/joho1/kousei/gian/217/gian.htm'},
+            'bills': bills_data}
 
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
@@ -104,7 +104,8 @@ async def ingest_bills_to_airtable():
             statuses[bill.status] = statuses.get(bill.status, 0) + 1
 
         print("  📋 カテゴリ別:")
-        for category, count in sorted(categories.items(), key=lambda x: x[1], reverse=True):
+        for category, count in sorted(
+                categories.items(), key=lambda x: x[1], reverse=True):
             print(f"    {category}: {count}件")
 
         print("  📊 ステータス別:")
@@ -122,6 +123,7 @@ async def ingest_bills_to_airtable():
         import traceback
         traceback.print_exc()
         return False
+
 
 async def main():
     """メイン実行関数"""

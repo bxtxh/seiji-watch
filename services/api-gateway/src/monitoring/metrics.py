@@ -18,6 +18,7 @@ class MetricPoint:
     tags: dict[str, str]
     unit: str = 'count'
 
+
 @dataclass
 class HealthCheckResult:
     """Health check result."""
@@ -26,6 +27,7 @@ class HealthCheckResult:
     response_time_ms: float
     timestamp: datetime
     details: dict[str, Any]
+
 
 class MetricsCollector:
     """Metrics collection and aggregation."""
@@ -49,7 +51,8 @@ class MetricsCollector:
         # Security tracking
         self.security_events = defaultdict(int)
 
-    def record_metric(self, name: str, value: float, tags: dict[str, str] = None, unit: str = 'count'):
+    def record_metric(self, name: str, value: float,
+                      tags: dict[str, str] = None, unit: str = 'count'):
         """Record a metric point."""
         metric = MetricPoint(
             name=name,
@@ -62,7 +65,12 @@ class MetricsCollector:
         self.metrics[name].append(metric)
         self._cleanup_old_metrics()
 
-    def record_request(self, method: str, path: str, status_code: int, response_time_ms: float):
+    def record_request(
+            self,
+            method: str,
+            path: str,
+            status_code: int,
+            response_time_ms: float):
         """Record API request metrics."""
         self.total_requests += 1
 
@@ -90,7 +98,8 @@ class MetricsCollector:
             'path': path
         }, unit='ms')
 
-    def record_error(self, error_type: str, endpoint: str = None, details: dict[str, Any] = None):
+    def record_error(self, error_type: str, endpoint: str = None,
+                     details: dict[str, Any] = None):
         """Record error metrics."""
         tags = {'error_type': error_type}
         if endpoint:
@@ -104,7 +113,11 @@ class MetricsCollector:
                 **{k: str(v) for k, v in details.items()}
             })
 
-    def record_security_event(self, event_type: str, severity: str, source_ip: str = None):
+    def record_security_event(
+            self,
+            event_type: str,
+            severity: str,
+            source_ip: str = None):
         """Record security event metrics."""
         tags = {
             'event_type': event_type,
@@ -133,9 +146,8 @@ class MetricsCollector:
             'status': result.status
         }, unit='ms')
 
-        self.record_metric('health_check_status', 1 if result.status == 'healthy' else 0, {
-            'service': result.service
-        })
+        self.record_metric('health_check_status', 1 if result.status ==
+                           'healthy' else 0, {'service': result.service})
 
     def get_summary_stats(self) -> dict[str, Any]:
         """Get summary statistics."""
@@ -170,7 +182,10 @@ class MetricsCollector:
             (now - metric.timestamp) < timedelta(hours=1)
         )
 
-        error_rate = (recent_errors / recent_requests * 100) if recent_requests > 0 else 0
+        error_rate = (
+            recent_errors /
+            recent_requests *
+            100) if recent_requests > 0 else 0
 
         return {
             'uptime_seconds': uptime_seconds,
@@ -180,15 +195,15 @@ class MetricsCollector:
             'response_time_percentiles': {
                 'p50_ms': p50,
                 'p95_ms': p95,
-                'p99_ms': p99
-            },
+                'p99_ms': p99},
             'error_rate_percent': error_rate,
             'recent_errors': recent_errors,
             'recent_requests': recent_requests,
-            'rate_limit_violations': dict(self.rate_limit_violations),
-            'security_events': dict(self.security_events),
-            'last_updated': now.isoformat()
-        }
+            'rate_limit_violations': dict(
+                self.rate_limit_violations),
+            'security_events': dict(
+                self.security_events),
+            'last_updated': now.isoformat()}
 
     def get_metrics_for_export(self, format: str = 'prometheus') -> str:
         """Export metrics in specified format."""
@@ -211,7 +226,8 @@ class MetricsCollector:
 
         for metric_name, metric_list in metric_groups.items():
             # Add help and type comments
-            lines.append(f"# HELP {metric_name} {metric_name.replace('_', ' ').title()}")
+            lines.append(
+                f"# HELP {metric_name} {metric_name.replace('_', ' ').title()}")
             lines.append(f"# TYPE {metric_name} counter")
 
             # Group by tags and sum values
@@ -250,6 +266,7 @@ class MetricsCollector:
             while metric_list and metric_list[0].timestamp < cutoff:
                 metric_list.popleft()
 
+
 class RequestTracker:
     """Context manager for tracking request lifecycle."""
 
@@ -269,6 +286,7 @@ class RequestTracker:
                 error_type=exc_type.__name__,
                 details={'error_message': str(exc_val)}
             )
+
 
 class HealthChecker:
     """Health check utilities."""
@@ -336,11 +354,14 @@ class HealthChecker:
         else:
             return 'degraded'
 
+
 # Global instances
 metrics_collector = MetricsCollector()
 health_checker = HealthChecker(metrics_collector)
 
 # Health check functions
+
+
 async def check_database_health():
     """Check database connectivity."""
     # This would check Airtable connectivity
@@ -351,6 +372,7 @@ async def check_database_health():
     except Exception as e:
         return 'unhealthy', {'error': str(e)}
 
+
 async def check_vector_store_health():
     """Check vector store connectivity."""
     # This would check Weaviate connectivity
@@ -360,6 +382,7 @@ async def check_vector_store_health():
         return 'healthy', {'connection': 'ok'}
     except Exception as e:
         return 'unhealthy', {'error': str(e)}
+
 
 def check_memory_usage():
     """Check memory usage."""
@@ -377,6 +400,7 @@ def check_memory_usage():
     except ImportError:
         return 'unknown', {'error': 'psutil not available'}
 
+
 def check_disk_usage():
     """Check disk usage."""
     try:
@@ -392,6 +416,7 @@ def check_disk_usage():
             return 'healthy', {'disk_usage_percent': usage_percent}
     except ImportError:
         return 'unknown', {'error': 'psutil not available'}
+
 
 # Register default health checks
 health_checker.register_check('database', check_database_health)

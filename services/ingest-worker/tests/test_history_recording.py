@@ -122,7 +122,8 @@ class TestBillHistoryRecorder:
         assert history_recorder._is_significant_change("status", "提出", "審議中")
 
         # Non-significant change
-        assert not history_recorder._is_significant_change("title", "Test Bill", "Test Bill")
+        assert not history_recorder._is_significant_change(
+            "title", "Test Bill", "Test Bill")
 
         # None to value
         assert history_recorder._is_significant_change("title", None, "Test Bill")
@@ -131,7 +132,8 @@ class TestBillHistoryRecorder:
         assert history_recorder._is_significant_change("title", "Test Bill", None)
 
         # Similar strings (should be non-significant)
-        assert not history_recorder._is_significant_change("title", "Test Bill", "Test Bill Updated")
+        assert not history_recorder._is_significant_change(
+            "title", "Test Bill", "Test Bill Updated")
 
     def test_determine_change_type(self, history_recorder):
         """Test change type determination"""
@@ -140,29 +142,35 @@ class TestBillHistoryRecorder:
         assert change_type == HistoryChangeType.STATUS_CHANGE
 
         # Stage change
-        change_type = history_recorder._determine_change_type("stage", "submitted", "committee_review")
+        change_type = history_recorder._determine_change_type(
+            "stage", "submitted", "committee_review")
         assert change_type == HistoryChangeType.STAGE_TRANSITION
 
         # Document update
-        change_type = history_recorder._determine_change_type("bill_outline", "Old outline", "New outline")
+        change_type = history_recorder._determine_change_type(
+            "bill_outline", "Old outline", "New outline")
         assert change_type == HistoryChangeType.DOCUMENT_UPDATE
 
         # Default change
-        change_type = history_recorder._determine_change_type("unknown_field", "old", "new")
+        change_type = history_recorder._determine_change_type(
+            "unknown_field", "old", "new")
         assert change_type == HistoryChangeType.DATA_CORRECTION
 
     def test_calculate_change_confidence(self, history_recorder):
         """Test confidence calculation"""
         # High confidence for critical field
-        confidence = history_recorder._calculate_change_confidence("status", "提出", "審議中")
+        confidence = history_recorder._calculate_change_confidence(
+            "status", "提出", "審議中")
         assert confidence > 0.9
 
         # Medium confidence for regular field
-        confidence = history_recorder._calculate_change_confidence("title", "Old Title", "New Title")
+        confidence = history_recorder._calculate_change_confidence(
+            "title", "Old Title", "New Title")
         assert 0.7 <= confidence <= 0.9
 
         # Lower confidence for similar strings
-        confidence = history_recorder._calculate_change_confidence("title", "Test Bill", "Test Bill v2")
+        confidence = history_recorder._calculate_change_confidence(
+            "title", "Test Bill", "Test Bill v2")
         assert confidence < 0.7
 
     def test_create_history_records(self, history_recorder):
@@ -198,7 +206,8 @@ class TestBillHistoryRecorder:
         assert record.new_values == {"status": "審議中"}
 
     @patch('sqlalchemy.orm.sessionmaker')
-    def test_detect_and_record_changes_success(self, mock_session_maker, history_recorder):
+    def test_detect_and_record_changes_success(
+            self, mock_session_maker, history_recorder):
         """Test successful change detection and recording"""
         # Mock session
         mock_session = Mock()
@@ -213,7 +222,8 @@ class TestBillHistoryRecorder:
         mock_bill.updated_at = datetime.now(UTC)
 
         # Mock database query
-        mock_session.execute.return_value.scalars.return_value.all.return_value = [mock_bill]
+        mock_session.execute.return_value.scalars.return_value.all.return_value = [
+            mock_bill]
 
         # Mock get_last_snapshot to return a different snapshot
         with patch.object(history_recorder, '_get_last_snapshot') as mock_get_last:
@@ -403,7 +413,8 @@ class TestHistoryService:
         mock_record.new_values = {"status": "審議中"}
         mock_record.metadata = {"test": "value"}
 
-        mock_session.execute.return_value.scalars.return_value.all.return_value = [mock_record]
+        mock_session.execute.return_value.scalars.return_value.all.return_value = [
+            mock_record]
 
         history = history_service.get_bill_history("test-bill-1")
 
@@ -510,7 +521,7 @@ class TestIntegrationScenarios:
 
             # Mock the workflow
             with patch.object(recorder, '_get_bills_to_check') as mock_get_bills, \
-                 patch.object(recorder, '_process_bill_batch') as mock_process:
+                    patch.object(recorder, '_process_bill_batch') as mock_process:
 
                 # Mock bills
                 mock_bills = [Mock(), Mock()]

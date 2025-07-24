@@ -63,6 +63,7 @@ KANJI_KANA_PATTERNS = {
     '島': 'しま', '橋': 'はし', '本': 'もと', '元': 'もと', '末': 'すえ'
 }
 
+
 class ComprehensiveKanaFixer:
     """Comprehensive Name_Kana fixing system"""
 
@@ -145,7 +146,11 @@ class ComprehensiveKanaFixer:
         matched_parts = []
 
         # Sort patterns by length (longest first) to match longer patterns first
-        sorted_patterns = sorted(KANJI_KANA_PATTERNS.items(), key=lambda x: len(x[0]), reverse=True)
+        sorted_patterns = sorted(
+            KANJI_KANA_PATTERNS.items(),
+            key=lambda x: len(
+                x[0]),
+            reverse=True)
 
         # Try to match patterns
         while remaining:
@@ -159,11 +164,13 @@ class ComprehensiveKanaFixer:
                     break
 
             if not matched:
-                # If we can't match the remaining character, try some common single character readings
+                # If we can't match the remaining character, try some common single
+                # character readings
                 single_char = remaining[0]
                 if single_char in KANJI_KANA_PATTERNS:
                     result += KANJI_KANA_PATTERNS[single_char]
-                    matched_parts.append(f"{single_char}→{KANJI_KANA_PATTERNS[single_char]}")
+                    matched_parts.append(
+                        f"{single_char}→{KANJI_KANA_PATTERNS[single_char]}")
                     remaining = remaining[1:]
                 else:
                     # Skip unknown characters or use a placeholder
@@ -208,7 +215,8 @@ class ComprehensiveKanaFixer:
 
                     else:
                         self.fix_results['errors'] += 1
-                        print(f"   ❌ Error updating {record_info['name']}: {response.status}")
+                        print(
+                            f"   ❌ Error updating {record_info['name']}: {response.status}")
 
             except Exception as e:
                 self.fix_results['errors'] += 1
@@ -248,7 +256,8 @@ class ComprehensiveKanaFixer:
                 if name:
                     self.fix_results['total_processed'] += 1
 
-                    needs_fix, fix_type = self.needs_kana_improvement(name, current_kana)
+                    needs_fix, fix_type = self.needs_kana_improvement(
+                        name, current_kana)
 
                     if needs_fix:
                         new_kana = self.generate_kana_from_patterns(name)
@@ -328,6 +337,7 @@ class ComprehensiveKanaFixer:
                 print("👍 GOOD! Significant improvement made")
             else:
                 print("⚠️ Further improvements still needed")
+
 
 async def main():
     """Main comprehensive fix entry point"""

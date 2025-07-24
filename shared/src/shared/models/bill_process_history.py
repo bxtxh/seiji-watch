@@ -79,7 +79,7 @@ class BillProcessStage:
 
     # 両院間移動
     INTER_HOUSE_SENT = "inter_house_sent"         # 他院送付
-    INTER_HOUSE_RECEIVED = "inter_house_received" # 他院受理
+    INTER_HOUSE_RECEIVED = "inter_house_received"  # 他院受理
 
     # 最終段階
     ENACTED = "enacted"               # 成立

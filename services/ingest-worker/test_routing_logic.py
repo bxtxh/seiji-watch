@@ -138,7 +138,7 @@ class SimpleHybridRouter:
     def get_statistics(self) -> dict[str, Any]:
         """Get routing statistics"""
         total = (self.routing_stats["ndl_api_requests"] +
-                self.routing_stats["whisper_stt_requests"])
+                 self.routing_stats["whisper_stt_requests"])
 
         return {
             "total_requests": total,
@@ -185,7 +185,8 @@ def test_routing_decisions():
             passed += 1
 
         print(f"{status} {test_date}: {description}")
-        print(f"   Expected: {expected_source.value}, Got: {decision.data_source.value}")
+        print(
+            f"   Expected: {expected_source.value}, Got: {decision.data_source.value}")
         print(f"   Rationale: {decision.rationale}")
         print(f"   Confidence: {decision.confidence:.2f}")
         print()
@@ -288,7 +289,13 @@ def test_statistics_tracking():
         IngestionRequest(meeting_date=date(2025, 7, 15)),  # Whisper STT
         IngestionRequest(meeting_date=date(2025, 6, 21)),  # NDL API
         IngestionRequest(meeting_date=date(2025, 7, 1)),   # Whisper STT
-        IngestionRequest(meeting_date=date(2025, 5, 1), force_source=DataSource.WHISPER_STT),  # Override
+        IngestionRequest(
+            meeting_date=date(
+                2025,
+                5,
+                1),
+            force_source=DataSource.WHISPER_STT),
+        # Override
     ]
 
     for request in test_requests:
@@ -298,7 +305,8 @@ def test_statistics_tracking():
 
     print(f"Total Requests: {stats['total_requests']}")
     print(f"NDL API: {stats['ndl_api_requests']} ({stats['ndl_api_percentage']:.1f}%)")
-    print(f"Whisper STT: {stats['whisper_stt_requests']} ({stats['whisper_stt_percentage']:.1f}%)")
+    print(
+        f"Whisper STT: {stats['whisper_stt_requests']} ({stats['whisper_stt_percentage']:.1f}%)")
     print(f"Manual Overrides: {stats['manual_overrides']}")
 
     # Verify counts

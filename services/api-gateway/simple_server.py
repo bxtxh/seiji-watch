@@ -25,14 +25,24 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:8080"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:8080"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"],
     allow_headers=["*"],
 )
 
 # Load production data
 production_data = {}
+
 
 def load_production_data():
     """Load production data from scraping results"""
@@ -53,11 +63,15 @@ def load_production_data():
     with open(latest_file, encoding='utf-8') as f:
         production_data = json.load(f)
 
-    logger.info(f"Loaded {len(production_data.get('production_dataset', {}).get('bills', []))} bills")
-    logger.info(f"Loaded {len(production_data.get('production_dataset', {}).get('voting_sessions', []))} voting sessions")
+    logger.info(
+        f"Loaded {len(production_data.get('production_dataset', {}).get('bills', []))} bills")
+    logger.info(
+        f"Loaded {len(production_data.get('production_dataset', {}).get('voting_sessions', []))} voting sessions")
+
 
 # Load data on startup
 load_production_data()
+
 
 @app.get("/")
 async def root():
@@ -66,9 +80,19 @@ async def root():
         "message": "Diet Issue Tracker API",
         "version": "1.0.0",
         "data_status": "loaded" if production_data else "empty",
-        "bills_count": len(production_data.get('production_dataset', {}).get('bills', [])),
-        "voting_sessions_count": len(production_data.get('production_dataset', {}).get('voting_sessions', []))
-    }
+        "bills_count": len(
+            production_data.get(
+                'production_dataset',
+                {}).get(
+                'bills',
+                [])),
+        "voting_sessions_count": len(
+            production_data.get(
+                'production_dataset',
+                {}).get(
+                'voting_sessions',
+                []))}
+
 
 @app.get("/health")
 async def health_check():
@@ -80,6 +104,7 @@ async def health_check():
         "data_loaded": bool(production_data)
     }
 
+
 @app.get("/api/health")
 async def api_health_check():
     """API Health check endpoint for frontend"""
@@ -89,6 +114,7 @@ async def api_health_check():
         "version": "1.0.0",
         "data_loaded": bool(production_data)
     }
+
 
 @app.get("/bills")
 async def get_bills(
@@ -112,8 +138,8 @@ async def get_bills(
     if search:
         search_lower = search.lower()
         bills = [bill for bill in bills
-                if search_lower in bill.get('title', '').lower() or
-                   search_lower in bill.get('bill_id', '').lower()]
+                 if search_lower in bill.get('title', '').lower() or
+                 search_lower in bill.get('bill_id', '').lower()]
 
     # Apply pagination
     total = len(bills)
@@ -126,6 +152,7 @@ async def get_bills(
         "offset": offset,
         "has_more": offset + limit < total
     }
+
 
 @app.get("/bills/{bill_id}")
 async def get_bill(bill_id: str):
@@ -141,6 +168,7 @@ async def get_bill(bill_id: str):
             return bill
 
     raise HTTPException(status_code=404, detail=f"Bill {bill_id} not found")
+
 
 @app.get("/voting-sessions")
 async def get_voting_sessions(
@@ -166,6 +194,7 @@ async def get_voting_sessions(
         "has_more": offset + limit < total
     }
 
+
 @app.get("/voting-sessions/{bill_number}")
 async def get_voting_session(bill_number: str):
     """Get voting session by bill number"""
@@ -179,7 +208,10 @@ async def get_voting_session(bill_number: str):
         if session.get('bill_number') == bill_number:
             return session
 
-    raise HTTPException(status_code=404, detail=f"Voting session for bill {bill_number} not found")
+    raise HTTPException(
+        status_code=404,
+        detail=f"Voting session for bill {bill_number} not found")
+
 
 @app.get("/search")
 async def search_content(
@@ -200,7 +232,7 @@ async def search_content(
     for bill in bills:
         if (query_lower in bill.get('title', '').lower() or
             query_lower in bill.get('bill_id', '').lower() or
-            query_lower in bill.get('category', '').lower()):
+                query_lower in bill.get('category', '').lower()):
             results.append({
                 "type": "bill",
                 "id": bill.get('bill_id'),
@@ -214,7 +246,7 @@ async def search_content(
     sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
     for session in sessions:
         if (query_lower in session.get('bill_title', '').lower() or
-            query_lower in session.get('bill_number', '').lower()):
+                query_lower in session.get('bill_number', '').lower()):
             results.append({
                 "type": "voting_session",
                 "id": session.get('bill_number'),
@@ -240,6 +272,7 @@ async def search_content(
         "has_more": offset + limit < total
     }
 
+
 @app.get("/categories")
 async def get_categories():
     """Get available bill categories"""
@@ -261,6 +294,7 @@ async def get_categories():
         ]
     }
 
+
 @app.get("/stats")
 async def get_stats():
     """Get overall statistics"""
@@ -272,7 +306,8 @@ async def get_stats():
     sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
 
     # Calculate vote records
-    total_vote_records = sum(len(session.get('vote_records', [])) for session in sessions)
+    total_vote_records = sum(len(session.get('vote_records', []))
+                             for session in sessions)
 
     # Calculate categories
     categories = {}
@@ -297,6 +332,8 @@ async def get_stats():
     }
 
 # Member endpoints for MVP
+
+
 @app.get("/api/members")
 async def get_members_list(
     page: int = Query(1, ge=1),
@@ -308,7 +345,16 @@ async def get_members_list(
     """Get paginated list of members with optional filters"""
 
     # Mock data for MVP - realistic Japanese names
-    parties = ['自由民主党', '立憲民主党', '日本維新の会', '公明党', '日本共産党', '国民民主党', 'れいわ新選組', '社会民主党', '無所属']
+    parties = [
+        '自由民主党',
+        '立憲民主党',
+        '日本維新の会',
+        '公明党',
+        '日本共産党',
+        '国民民主党',
+        'れいわ新選組',
+        '社会民主党',
+        '無所属']
     prefectures = [
         '北海道', '青森', '岩手', '宮城', '秋田', '山形', '福島',
         '茨城', '栃木', '群馬', '埼玉', '千葉', '東京', '神奈川',
@@ -368,7 +414,8 @@ async def get_members_list(
         filtered_members = [m for m in filtered_members if m["party"] == party]
     if search:
         search_lower = search.lower()
-        filtered_members = [m for m in filtered_members if search_lower in m["name"].lower()]
+        filtered_members = [
+            m for m in filtered_members if search_lower in m["name"].lower()]
 
     # Apply pagination
     offset = (page - 1) * limit
@@ -391,6 +438,7 @@ async def get_members_list(
             "search": search
         }
     }
+
 
 @app.get("/api/members/{member_id}")
 async def get_member_profile(member_id: str):
@@ -419,6 +467,7 @@ async def get_member_profile(member_id: str):
         **mock_member
     }
 
+
 @app.get("/api/members/{member_id}/voting-stats")
 async def get_member_voting_stats(member_id: str):
     """Get member's voting statistics"""
@@ -441,6 +490,7 @@ async def get_member_voting_stats(member_id: str):
         "member_id": member_id,
         "stats": mock_stats
     }
+
 
 @app.get("/api/policy/member/{member_id}/analysis")
 async def get_member_policy_analysis(member_id: str):
@@ -495,6 +545,8 @@ async def get_member_policy_analysis(member_id: str):
     }
 
 # Kanban API endpoint for TOP page (must be defined before dynamic routes)
+
+
 @app.get("/api/issues/kanban")
 async def get_issues_kanban(
     range: str = Query("30d", description="Date range: 7d, 30d, or 90d"),
@@ -510,7 +562,9 @@ async def get_issues_kanban(
     cutoff_date = datetime.now() - timedelta(days=range_days)
 
     bills = production_data.get('production_dataset', {}).get('bills', [])
-    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    voting_sessions = production_data.get(
+        'production_dataset', {}).get(
+        'voting_sessions', [])
 
     # Create a mapping of bills to voting sessions
     bill_vote_map = {}
@@ -610,6 +664,8 @@ async def get_issues_kanban(
     return response
 
 # Issue API endpoints
+
+
 @app.get("/api/issues")
 async def get_issues(
     limit: int = Query(50, ge=1, le=200),
@@ -624,7 +680,9 @@ async def get_issues(
         raise HTTPException(status_code=503, detail="Production data not loaded")
 
     bills = production_data.get('production_dataset', {}).get('bills', [])
-    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    voting_sessions = production_data.get(
+        'production_dataset', {}).get(
+        'voting_sessions', [])
 
     # Create a mapping of bills to voting sessions
     bill_vote_map = {}
@@ -692,7 +750,7 @@ async def get_issues(
     # Apply filters
     if category:
         issues = [issue for issue in issues
-                 if issue.get('policy_category', {}).get('title_ja') == category]
+                  if issue.get('policy_category', {}).get('title_ja') == category]
 
     if status:
         issues = [issue for issue in issues if issue.get('status') == status]
@@ -714,6 +772,8 @@ async def get_issues(
     }
 
 # Issue tags endpoint (must be before individual issue endpoint)
+
+
 @app.get("/api/issues/tags")
 async def get_issue_tags():
     """Get all available issue tags"""
@@ -775,6 +835,8 @@ async def get_issue_tags():
     }
 
 # Individual Issue API endpoints (defined after specific routes)
+
+
 @app.get("/api/issues/{issue_id}")
 async def get_issue_detail(issue_id: str):
     """Get individual issue details by ID"""
@@ -783,7 +845,9 @@ async def get_issue_detail(issue_id: str):
         raise HTTPException(status_code=503, detail="Production data not loaded")
 
     bills = production_data.get('production_dataset', {}).get('bills', [])
-    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    voting_sessions = production_data.get(
+        'production_dataset', {}).get(
+        'voting_sessions', [])
 
     # Create a mapping of bills to voting sessions
     bill_vote_map = {}
@@ -896,6 +960,7 @@ async def get_issue_detail(issue_id: str):
 
     return issue_detail
 
+
 @app.get("/api/issues/{issue_id}/bills")
 async def get_issue_related_bills(issue_id: str):
     """Get related bills for a specific issue"""
@@ -904,7 +969,9 @@ async def get_issue_related_bills(issue_id: str):
         raise HTTPException(status_code=503, detail="Production data not loaded")
 
     bills = production_data.get('production_dataset', {}).get('bills', [])
-    voting_sessions = production_data.get('production_dataset', {}).get('voting_sessions', [])
+    voting_sessions = production_data.get(
+        'production_dataset', {}).get(
+        'voting_sessions', [])
 
     # Create a mapping of bills to voting sessions
     bill_vote_map = {}

@@ -137,7 +137,8 @@ class DuplicateDetector:
                     cache_data = json.load(f)
                     self.content_hashes = cache_data.get("content_hashes", {})
                     self.url_hashes = cache_data.get("url_hashes", {})
-                logger.info(f"Loaded {len(self.content_hashes)} content hashes from cache")
+                logger.info(
+                    f"Loaded {len(self.content_hashes)} content hashes from cache")
             except Exception as e:
                 logger.warning(f"Failed to load cache: {e}")
 
@@ -165,7 +166,8 @@ class DuplicateDetector:
         elif self.config.hash_algorithm == "md5":
             return hashlib.md5(content.encode('utf-8')).hexdigest()
         else:
-            raise ValueError(f"Unsupported hash algorithm: {self.config.hash_algorithm}")
+            raise ValueError(
+                f"Unsupported hash algorithm: {self.config.hash_algorithm}")
 
     def is_duplicate_content(self, content: str, identifier: str = None) -> bool:
         """Check if content is duplicate"""
@@ -176,7 +178,8 @@ class DuplicateDetector:
 
         # Check if we've seen this exact content before
         if content_hash in self.content_hashes.values():
-            logger.debug(f"Duplicate content detected: {identifier or content_hash[:16]}")
+            logger.debug(
+                f"Duplicate content detected: {identifier or content_hash[:16]}")
             return True
 
         # Store the hash for future reference
@@ -198,7 +201,8 @@ class DuplicateDetector:
             try:
                 timestamp = datetime.fromisoformat(timestamp_str)
                 if datetime.now() - timestamp < timedelta(hours=self.config.max_age_hours):
-                    logger.debug(f"Duplicate URL detected (within {self.config.max_age_hours}h): {url}")
+                    logger.debug(
+                        f"Duplicate URL detected (within {self.config.max_age_hours}h): {url}")
                     return True
                 else:
                     # Remove expired entry
@@ -248,7 +252,9 @@ class RateLimiter:
         self.last_request_time = 0.0
         self.cooldown_until = 0.0
 
-    async def wait_if_needed(self, response_headers: dict[str, str] | None = None) -> None:
+    async def wait_if_needed(self,
+                             response_headers: dict[str,
+                                                    str] | None = None) -> None:
         """Wait if rate limiting is needed"""
         current_time = time.time()
 
@@ -265,7 +271,8 @@ class RateLimiter:
             if retry_after:
                 try:
                     wait_time = float(retry_after)
-                    logger.info(f"Respecting Retry-After header: waiting {wait_time} seconds")
+                    logger.info(
+                        f"Respecting Retry-After header: waiting {wait_time} seconds")
                     await asyncio.sleep(wait_time)
                     return
                 except ValueError:
@@ -301,7 +308,8 @@ class RateLimiter:
     def trigger_cooldown(self) -> None:
         """Trigger cooldown period (called when rate limit exceeded)"""
         self.cooldown_until = time.time() + self.config.cooldown_seconds
-        logger.warning(f"Rate limit exceeded, cooldown for {self.config.cooldown_seconds} seconds")
+        logger.warning(
+            f"Rate limit exceeded, cooldown for {self.config.cooldown_seconds} seconds")
 
 
 class ResilientScraper:
@@ -313,6 +321,7 @@ class ResilientScraper:
         cache_config: CacheConfig | None = None,
         max_concurrent_requests: int = 5,
         request_timeout: int = 30
+
     ):
         self.rate_limiter = RateLimiter(rate_limit_config or RateLimitConfig())
         self.duplicate_detector = DuplicateDetector(cache_config or CacheConfig())
@@ -428,12 +437,14 @@ class ResilientScraper:
                         content = await response.text()
 
                     # Check for duplicate content
-                    if skip_duplicates and self.duplicate_detector.is_duplicate_content(content, url):
+                    if skip_duplicates and self.duplicate_detector.is_duplicate_content(
+                            content, url):
                         self.stats["cache_hits"] += 1
                         if job:
                             job.status = JobStatus.COMPLETED
                             job.progress = 1.0
-                            job.result_data = {"skipped": True, "reason": "duplicate_content"}
+                            job.result_data = {
+                                "skipped": True, "reason": "duplicate_content"}
                         return None
 
                     self.stats["successful_requests"] += 1
@@ -452,7 +463,8 @@ class ResilientScraper:
                 if attempt < max_retries:
                     # Exponential backoff
                     wait_time = 2 ** attempt
-                    logger.warning(f"Attempt {attempt + 1} failed for {url}, retrying in {wait_time}s: {e}")
+                    logger.warning(
+                        f"Attempt {attempt + 1} failed for {url}, retrying in {wait_time}s: {e}")
                     await asyncio.sleep(wait_time)
                     continue
                 else:
@@ -464,7 +476,8 @@ class ResilientScraper:
                         job.end_time = datetime.now()
                         job.error_message = str(e)
 
-                    logger.error(f"Failed to fetch {url} after {max_retries} retries: {e}")
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} retries: {e}")
                     raise
 
     async def fetch_multiple_urls(
@@ -499,7 +512,8 @@ class ResilientScraper:
                     return url, None
                 finally:
                     # Update progress
-                    job.progress = (job.processed_items + job.failed_items) / job.total_items
+                    job.progress = (
+                        job.processed_items + job.failed_items) / job.total_items
                     if progress_callback:
                         progress_callback(job.progress)
 
@@ -545,10 +559,13 @@ class ResilientScraper:
     def get_all_jobs(self) -> dict[str, Any]:
         """Get status of all jobs"""
         return {
-            "active_jobs": {job_id: job.to_dict() for job_id, job in self.active_jobs.items()},
-            "completed_jobs": {job_id: job.to_dict() for job_id, job in self.completed_jobs.items()},
-            "statistics": self.stats
-        }
+            "active_jobs": {
+                job_id: job.to_dict() for job_id,
+                job in self.active_jobs.items()},
+            "completed_jobs": {
+                job_id: job.to_dict() for job_id,
+                job in self.completed_jobs.items()},
+            "statistics": self.stats}
 
     def cleanup_completed_jobs(self, max_age_hours: int = 24) -> int:
         """Clean up old completed jobs"""
@@ -565,7 +582,8 @@ class ResilientScraper:
         # Also cleanup cache
         cache_cleanup_count = self.duplicate_detector.cleanup_cache()
 
-        logger.info(f"Cleaned up {len(expired_jobs)} old jobs and {cache_cleanup_count} cache entries")
+        logger.info(
+            f"Cleaned up {len(expired_jobs)} old jobs and {cache_cleanup_count} cache entries")
         return len(expired_jobs)
 
     def get_statistics(self) -> dict[str, Any]:

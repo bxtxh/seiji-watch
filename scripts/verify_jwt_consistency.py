@@ -22,6 +22,7 @@ except ImportError:
     print("❌ PyJWT library not available. Install with: pip install PyJWT")
     sys.exit(1)
 
+
 def test_jwt_consistency():
     """Test JWT consistency between different components."""
     print("🔍 JWT Consistency Verification")
@@ -31,8 +32,9 @@ def test_jwt_consistency():
     test_configs = {
         "Production": "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w",
         "Test/CI-CD": "test-jwt-secret-unified-for-ci-cd",
-        "Environment": os.getenv('JWT_SECRET_KEY', 'NOT_SET')
-    }
+        "Environment": os.getenv(
+            'JWT_SECRET_KEY',
+            'NOT_SET')}
 
     print("\n📋 JWT_SECRET_KEY Configurations:")
     for name, secret in test_configs.items():
@@ -141,7 +143,8 @@ def test_jwt_consistency():
         elif env_jwt_secret == test_configs["Production"]:
             print("✅ Environment JWT_SECRET_KEY matches Production configuration")
         else:
-            print(f"⚠️  Environment JWT_SECRET_KEY is different: {env_jwt_secret[:20]}...")
+            print(
+                f"⚠️  Environment JWT_SECRET_KEY is different: {env_jwt_secret[:20]}...")
     else:
         print("❌ JWT_SECRET_KEY not set in environment")
 
@@ -161,6 +164,7 @@ def test_jwt_consistency():
 
     return passed == total
 
+
 def test_with_auth_middleware():
     """Test integration with the actual auth middleware."""
     print("\n🔗 Auth Middleware Integration Test:")
@@ -171,10 +175,12 @@ def test_with_auth_middleware():
         from middleware.auth import JWT_SECRET_KEY, create_access_token, verify_token
 
         print("✅ Auth middleware imported successfully")
-        print(f"   Middleware JWT_SECRET_KEY: {JWT_SECRET_KEY[:20] if len(JWT_SECRET_KEY) > 20 else JWT_SECRET_KEY}...")
+        print(
+            f"   Middleware JWT_SECRET_KEY: {JWT_SECRET_KEY[:20] if len(JWT_SECRET_KEY) > 20 else JWT_SECRET_KEY}...")
 
         # Test token creation and verification
-        test_token = create_access_token("test-user", "test@example.com", ["read", "write"])
+        test_token = create_access_token(
+            "test-user", "test@example.com", ["read", "write"])
         print(f"✅ Token created: {test_token[:30]}...")
 
         # Verify the token
@@ -192,6 +198,7 @@ def test_with_auth_middleware():
     except Exception as e:
         print(f"❌ Auth middleware test failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     print("🚀 Starting JWT Consistency Verification")

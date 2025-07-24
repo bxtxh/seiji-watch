@@ -4,6 +4,7 @@ Members Table Field Deletion Guide
 Based on frontend usage analysis and database schema review
 """
 
+
 def print_members_field_deletion_guide():
     """Print comprehensive guide for Members table field deletion"""
 
@@ -22,11 +23,16 @@ def print_members_field_deletion_guide():
     print("🔍 FRONTEND USAGE ANALYSIS:")
     print("Fields referenced in frontend code:")
     print("• member_id (/pages/api/members/[id].ts, /pages/members/[id].tsx)")
-    print("• name (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
-    print("• name_kana (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
-    print("• house (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
-    print("• party (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
-    print("• constituency (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+    print(
+        "• name (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+    print(
+        "• name_kana (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+    print(
+        "• house (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+    print(
+        "• party (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+    print(
+        "• constituency (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
     print()
 
     print("🗑️ SAFE TO DELETE (14 fields - 0% usage):")
@@ -135,6 +141,7 @@ def print_members_field_deletion_guide():
     print("3. Verify API responses still work")
     print("4. Check member search functionality")
     print()
+
 
 if __name__ == "__main__":
     print_members_field_deletion_guide()

@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class MemberData:
     """議員データ構造"""
@@ -42,6 +43,7 @@ class MemberData:
     is_active: bool = True
     status: str = "active"
 
+
 @dataclass
 class PartyData:
     """政党データ構造"""
@@ -52,6 +54,7 @@ class PartyData:
     website_url: str | None = None
     color_code: str | None = None
     is_active: bool = True
+
 
 class MemberDataCollector:
     """議員データ収集・投入クラス"""
@@ -73,7 +76,12 @@ class MemberDataCollector:
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self, session: aiohttp.ClientSession, method: str, url: str, **kwargs) -> dict[str, Any]:
+    async def _rate_limited_request(self,
+                                    session: aiohttp.ClientSession,
+                                    method: str,
+                                    url: str,
+                                    **kwargs) -> dict[str,
+                                                      Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -153,8 +161,26 @@ class MemberDataCollector:
 
         # 50件に拡張（パターン生成）
         extended_members = []
-        prefectures = ["東京都", "神奈川県", "大阪府", "愛知県", "福岡県", "北海道", "宮城県", "広島県", "兵庫県", "千葉県"]
-        parties = ["自由民主党", "立憲民主党", "日本維新の会", "公明党", "国民民主党", "日本共産党", "れいわ新選組", "社会民主党"]
+        prefectures = [
+            "東京都",
+            "神奈川県",
+            "大阪府",
+            "愛知県",
+            "福岡県",
+            "北海道",
+            "宮城県",
+            "広島県",
+            "兵庫県",
+            "千葉県"]
+        parties = [
+            "自由民主党",
+            "立憲民主党",
+            "日本維新の会",
+            "公明党",
+            "国民民主党",
+            "日本共産党",
+            "れいわ新選組",
+            "社会民主党"]
         houses = ["参議院", "衆議院"]
 
         # 基本データ拡張
@@ -177,7 +203,8 @@ class MemberDataCollector:
         print(f"✅ 議員データ生成完了: {len(extended_members)}件")
         return extended_members
 
-    async def create_parties(self, session: aiohttp.ClientSession, members: list[MemberData]) -> dict[str, str]:
+    async def create_parties(self, session: aiohttp.ClientSession,
+                             members: list[MemberData]) -> dict[str, str]:
         """政党データを作成・取得"""
 
         # 既存政党取得
@@ -223,7 +250,11 @@ class MemberDataCollector:
 
         return party_id_map
 
-    async def create_members(self, session: aiohttp.ClientSession, members: list[MemberData], party_id_map: dict[str, str]) -> int:
+    async def create_members(self,
+                             session: aiohttp.ClientSession,
+                             members: list[MemberData],
+                             party_id_map: dict[str,
+                                                str]) -> int:
         """議員データをAirtableに投入"""
 
         members_url = f"{self.base_url}/Members (議員)"
@@ -255,7 +286,8 @@ class MemberDataCollector:
                     member_fields["Party"] = [party_id_map[member.party_name]]
 
                 # None値を除去
-                member_fields = {k: v for k, v in member_fields.items() if v is not None}
+                member_fields = {k: v for k,
+                                 v in member_fields.items() if v is not None}
 
                 data = {"fields": member_fields}
 
@@ -342,6 +374,7 @@ class MemberDataCollector:
 
             print(f"❌ T108 実行失敗: {e}")
             return result
+
 
 async def main():
     """Main execution function"""

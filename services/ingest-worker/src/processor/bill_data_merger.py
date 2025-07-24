@@ -45,9 +45,10 @@ class MergeResult:
 class BillDataMerger:
     """Bill data merger with intelligent conflict resolution"""
 
-    def __init__(self,
-                 conflict_strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.MOST_COMPLETE,
-                 similarity_threshold: float = 0.8):
+    def __init__(
+            self,
+            conflict_strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.MOST_COMPLETE,
+            similarity_threshold: float = 0.8):
         self.conflict_strategy = conflict_strategy
         self.similarity_threshold = similarity_threshold
         self.logger = logging.getLogger(__name__)
@@ -69,11 +70,12 @@ class BillDataMerger:
         }
 
     def merge_bills(self,
-                   sangiin_bills: list[EnhancedBillData],
-                   shugiin_bills: list[ShugiinBillData]) -> list[MergeResult]:
+                    sangiin_bills: list[EnhancedBillData],
+                    shugiin_bills: list[ShugiinBillData]) -> list[MergeResult]:
         """Merge bills from both houses with conflict resolution"""
 
-        self.logger.info(f"Merging {len(sangiin_bills)} Sangiin bills with {len(shugiin_bills)} Shugiin bills")
+        self.logger.info(
+            f"Merging {len(sangiin_bills)} Sangiin bills with {len(shugiin_bills)} Shugiin bills")
 
         # Step 1: Find matching bills between houses
         bill_matches = self._find_matching_bills(sangiin_bills, shugiin_bills)
@@ -113,12 +115,14 @@ class BillDataMerger:
                 )
                 merged_results.append(merge_result)
 
-        self.logger.info(f"Merged {len(merged_results)} bills with {sum(len(r.conflicts) for r in merged_results)} conflicts")
+        self.logger.info(
+            f"Merged {len(merged_results)} bills with {sum(len(r.conflicts) for r in merged_results)} conflicts")
         return merged_results
 
     def _find_matching_bills(self,
-                           sangiin_bills: list[EnhancedBillData],
-                           shugiin_bills: list[ShugiinBillData]) -> dict[str, ShugiinBillData]:
+                             sangiin_bills: list[EnhancedBillData],
+                             shugiin_bills: list[ShugiinBillData]) -> dict[str,
+                                                                           ShugiinBillData]:
         """Find matching bills between houses using multiple criteria"""
 
         matches = {}
@@ -137,20 +141,22 @@ class BillDataMerger:
 
             if best_match:
                 matches[sangiin_bill.bill_id] = best_match
-                self.logger.debug(f"Matched {sangiin_bill.bill_id} with {best_match.bill_id} (score: {best_score:.2f})")
+                self.logger.debug(
+                    f"Matched {sangiin_bill.bill_id} with {best_match.bill_id} (score: {best_score:.2f})")
 
         return matches
 
     def _calculate_similarity_score(self,
-                                  sangiin_bill: EnhancedBillData,
-                                  shugiin_bill: ShugiinBillData) -> float:
+                                    sangiin_bill: EnhancedBillData,
+                                    shugiin_bill: ShugiinBillData) -> float:
         """Calculate similarity score between two bills"""
 
         scores = []
 
         # Title similarity (high weight)
         if sangiin_bill.title and shugiin_bill.title:
-            title_sim = SequenceMatcher(None, sangiin_bill.title, shugiin_bill.title).ratio()
+            title_sim = SequenceMatcher(
+                None, sangiin_bill.title, shugiin_bill.title).ratio()
             scores.append(('title', title_sim, 0.4))
 
         # Diet session similarity (medium weight)
@@ -182,8 +188,8 @@ class BillDataMerger:
         return 0.0
 
     def _merge_bill_pair(self,
-                        sangiin_bill: EnhancedBillData,
-                        shugiin_bill: ShugiinBillData) -> MergeResult:
+                         sangiin_bill: EnhancedBillData,
+                         shugiin_bill: ShugiinBillData) -> MergeResult:
         """Merge a pair of matching bills"""
 
         # Convert Shugiin bill to EnhancedBillData for consistency
@@ -242,6 +248,7 @@ class BillDataMerger:
     def _get_mergeable_fields(self) -> list[str]:
         """Get list of fields that can be merged"""
         return [
+
             'bill_outline', 'background_context', 'expected_effects',
             'key_provisions', 'related_laws', 'implementation_date',
             'submitting_members', 'supporting_members', 'submitting_party',
@@ -250,12 +257,13 @@ class BillDataMerger:
             'purpose', 'submitted_date', 'first_reading_date',
             'committee_referral_date', 'committee_report_date',
             'final_vote_date', 'promulgated_date',
+
         ]
 
     def _resolve_field_conflict(self,
-                              field_name: str,
-                              sangiin_value: Any,
-                              shugiin_value: Any) -> tuple[Any, MergeConflict | None]:
+                                field_name: str,
+                                sangiin_value: Any,
+                                shugiin_value: Any) -> tuple[Any, MergeConflict | None]:
         """Resolve conflict between field values"""
 
         # If one value is None, use the other
@@ -289,11 +297,13 @@ class BillDataMerger:
             if sangiin_score > shugiin_score:
                 merged_value = sangiin_value
                 resolution = "sangiin_more_complete"
-                confidence = sangiin_score / (sangiin_score + shugiin_score) if (sangiin_score + shugiin_score) > 0 else 0.5
+                confidence = sangiin_score / \
+                    (sangiin_score + shugiin_score) if (sangiin_score + shugiin_score) > 0 else 0.5
             else:
                 merged_value = shugiin_value
                 resolution = "shugiin_more_complete"
-                confidence = shugiin_score / (sangiin_score + shugiin_score) if (sangiin_score + shugiin_score) > 0 else 0.5
+                confidence = shugiin_score / \
+                    (sangiin_score + shugiin_score) if (sangiin_score + shugiin_score) > 0 else 0.5
 
         elif self.conflict_strategy == ConflictResolutionStrategy.MERGE_FIELDS:
             # Try to merge fields intelligently
@@ -333,13 +343,17 @@ class BillDataMerger:
             return 1.0
 
     def _intelligent_field_merge(self,
-                               field_name: str,
-                               sangiin_value: Any,
-                               shugiin_value: Any) -> tuple[Any, str, float]:
+                                 field_name: str,
+                                 sangiin_value: Any,
+                                 shugiin_value: Any) -> tuple[Any, str, float]:
         """Intelligently merge field values"""
 
         # List fields: merge unique items
-        if field_name in ['key_provisions', 'related_laws', 'submitting_members', 'supporting_members']:
+        if field_name in [
+            'key_provisions',
+            'related_laws',
+            'submitting_members',
+                'supporting_members']:
             if isinstance(sangiin_value, list) and isinstance(shugiin_value, list):
                 merged_list = list(set(sangiin_value + shugiin_value))
                 return merged_list, "merged_lists", 0.9
@@ -361,7 +375,8 @@ class BillDataMerger:
         # Default to Sangiin value
         return sangiin_value, "default_sangiin", 0.5
 
-    def _convert_to_enhanced_bill_data(self, shugiin_bill: ShugiinBillData) -> EnhancedBillData:
+    def _convert_to_enhanced_bill_data(
+            self, shugiin_bill: ShugiinBillData) -> EnhancedBillData:
         """Convert ShugiinBillData to EnhancedBillData"""
 
         # Create enhanced bill data with Shugiin data
@@ -410,8 +425,8 @@ class BillDataMerger:
         return enhanced_bill
 
     def _calculate_merge_quality_score(self,
-                                     merged_bill: EnhancedBillData,
-                                     conflicts: list[MergeConflict]) -> float:
+                                       merged_bill: EnhancedBillData,
+                                       conflicts: list[MergeConflict]) -> float:
         """Calculate quality score for merged bill"""
 
         # Start with base quality score
@@ -441,12 +456,19 @@ class BillDataMerger:
         total_conflicts = sum(len(r.conflicts) for r in merge_results)
 
         source_distribution = {
-            'sangiin_only': sum(1 for r in merge_results if r.source_info.get('primary_source') == 'sangiin' and len(r.source_info.get('sources', [])) == 1),
-            'shugiin_only': sum(1 for r in merge_results if r.source_info.get('primary_source') == 'shugiin' and len(r.source_info.get('sources', [])) == 1),
-            'both_houses': sum(1 for r in merge_results if len(r.source_info.get('sources', [])) == 2),
-        }
+            'sangiin_only': sum(
+                1 for r in merge_results if r.source_info.get('primary_source') == 'sangiin' and len(
+                    r.source_info.get(
+                        'sources', [])) == 1), 'shugiin_only': sum(
+                1 for r in merge_results if r.source_info.get('primary_source') == 'shugiin' and len(
+                    r.source_info.get(
+                        'sources', [])) == 1), 'both_houses': sum(
+                1 for r in merge_results if len(
+                    r.source_info.get(
+                        'sources', [])) == 2), }
 
-        avg_quality_score = sum(r.merge_quality_score for r in merge_results) / total_bills if total_bills > 0 else 0.0
+        avg_quality_score = sum(
+            r.merge_quality_score for r in merge_results) / total_bills if total_bills > 0 else 0.0
 
         return {
             'total_bills': total_bills,

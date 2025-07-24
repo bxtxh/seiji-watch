@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class BillsDataEmergencyFixV2:
     """Bills table emergency repair with computed field handling"""
 
@@ -119,7 +120,7 @@ class BillsDataEmergencyFixV2:
 
         # Keep only groups with duplicates
         duplicates = {bill_id: group for bill_id, group in bill_id_groups.items()
-                     if len(group) > 1}
+                      if len(group) > 1}
 
         print(f"🔍 Found {len(duplicates)} Bill_IDs with duplicates")
 
@@ -128,7 +129,8 @@ class BillsDataEmergencyFixV2:
 
         return duplicates
 
-    def select_records_to_keep_and_remove(self, duplicate_groups: dict[str, list[dict]]) -> tuple[list[dict], list[str]]:
+    def select_records_to_keep_and_remove(
+            self, duplicate_groups: dict[str, list[dict]]) -> tuple[list[dict], list[str]]:
         """Select which records to keep and which to remove"""
         records_to_keep = []
         records_to_remove = []
@@ -153,7 +155,7 @@ class BillsDataEmergencyFixV2:
         return records_to_keep, records_to_remove
 
     async def safe_update_record(self, session: aiohttp.ClientSession,
-                                record_id: str, updated_fields: dict) -> bool:
+                                 record_id: str, updated_fields: dict) -> bool:
         """Safely update a record with only writable fields"""
         try:
             # Filter to only writable fields
@@ -174,14 +176,18 @@ class BillsDataEmergencyFixV2:
                     return True
                 else:
                     error_text = await response.text()
-                    print(f"❌ Update failed for {record_id}: {response.status} - {error_text}")
+                    print(
+                        f"❌ Update failed for {record_id}: {response.status} - {error_text}")
                     return False
 
         except Exception as e:
             print(f"❌ Exception updating {record_id}: {e}")
             return False
 
-    async def safe_delete_record(self, session: aiohttp.ClientSession, record_id: str) -> bool:
+    async def safe_delete_record(
+            self,
+            session: aiohttp.ClientSession,
+            record_id: str) -> bool:
         """Safely delete a record"""
         try:
             async with session.delete(
@@ -192,7 +198,8 @@ class BillsDataEmergencyFixV2:
                     return True
                 else:
                     error_text = await response.text()
-                    print(f"❌ Delete failed for {record_id}: {response.status} - {error_text}")
+                    print(
+                        f"❌ Delete failed for {record_id}: {response.status} - {error_text}")
                     return False
 
         except Exception as e:
@@ -216,7 +223,8 @@ class BillsDataEmergencyFixV2:
             return
 
         # Step 3: Select records to keep and remove
-        records_to_keep, record_ids_to_remove = self.select_records_to_keep_and_remove(duplicate_groups)
+        records_to_keep, record_ids_to_remove = self.select_records_to_keep_and_remove(
+            duplicate_groups)
 
         print("\n📋 DUPLICATE REMOVAL PLAN:")
         print(f"   📌 Records to keep: {len(records_to_keep)}")
@@ -240,7 +248,8 @@ class BillsDataEmergencyFixV2:
 
             await asyncio.sleep(0.1)  # Rate limiting
 
-        print(f"✅ Successfully updated {update_success_count}/{len(records_to_keep)} kept records")
+        print(
+            f"✅ Successfully updated {update_success_count}/{len(records_to_keep)} kept records")
 
         # Step 5: Remove duplicate records
         print("\n🗑️ Removing duplicate records...")
@@ -253,7 +262,8 @@ class BillsDataEmergencyFixV2:
 
             await asyncio.sleep(0.1)  # Rate limiting
 
-        print(f"✅ Successfully removed {delete_success_count}/{len(record_ids_to_remove)} duplicate records")
+        print(
+            f"✅ Successfully removed {delete_success_count}/{len(record_ids_to_remove)} duplicate records")
 
         # Step 6: Final report
         print("\n🎯 BILLS TABLE REPAIR COMPLETED:")
@@ -268,11 +278,14 @@ class BillsDataEmergencyFixV2:
             "duplicate_groups_found": len(duplicate_groups),
             "records_kept": len(records_to_keep),
             "records_removed": delete_success_count,
-            "update_success_rate": update_success_count / len(records_to_keep) if records_to_keep else 0,
-            "delete_success_rate": delete_success_count / len(record_ids_to_remove) if record_ids_to_remove else 0,
-            "writable_fields_used": list(self.essential_fields),
-            "computed_fields_excluded": list(self.computed_fields)
-        }
+            "update_success_rate": update_success_count /
+            len(records_to_keep) if records_to_keep else 0,
+            "delete_success_rate": delete_success_count /
+            len(record_ids_to_remove) if record_ids_to_remove else 0,
+            "writable_fields_used": list(
+                self.essential_fields),
+            "computed_fields_excluded": list(
+                self.computed_fields)}
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_filename = f"bills_repair_report_v2_{timestamp}.json"
@@ -291,6 +304,7 @@ class BillsDataEmergencyFixV2:
             await self.process_duplicate_removal(session)
 
         print("\n✅ Emergency repair completed!")
+
 
 async def main():
     """Main entry point"""

@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class MembersDuplicateReviewer:
     """Members table duplicate detection and manual review system"""
 
@@ -44,7 +45,8 @@ class MembersDuplicateReviewer:
             "Terms_Served": 0.10
         }
 
-    async def get_all_members_records(self, session: aiohttp.ClientSession) -> list[dict]:
+    async def get_all_members_records(
+            self, session: aiohttp.ClientSession) -> list[dict]:
         """Fetch all Members records"""
         all_records = []
         offset = None
@@ -113,7 +115,7 @@ class MembersDuplicateReviewer:
 
         # Keep only groups with multiple records
         exact_duplicates = {name: group for name, group in name_groups.items()
-                           if len(group) > 1}
+                            if len(group) > 1}
 
         return exact_duplicates
 
@@ -156,7 +158,7 @@ class MembersDuplicateReviewer:
 
         # Keep only groups with multiple records
         potential_duplicates = {key: group for key, group in potential_groups.items()
-                               if len(group) > 1}
+                                if len(group) > 1}
 
         return potential_duplicates
 
@@ -219,7 +221,8 @@ class MembersDuplicateReviewer:
 
         return analysis
 
-    def print_duplicate_analysis(self, duplicate_type: str, groups: dict[str, list[dict]]):
+    def print_duplicate_analysis(self, duplicate_type: str,
+                                 groups: dict[str, list[dict]]):
         """Print detailed duplicate analysis"""
         print(f"\n{'='*80}")
         print(f"🔍 {duplicate_type.upper()} ANALYSIS")
@@ -246,7 +249,8 @@ class MembersDuplicateReviewer:
             # Show each record in group
             for j, record_info in enumerate(analysis["records"]):
                 marker = "🟢 KEEP" if record_info["id"] == analysis["suggested_keep"] else "🔴 REMOVE"
-                print(f"   {marker} Record {j+1} (Q:{record_info['quality_score']}): {record_info['id']}")
+                print(
+                    f"   {marker} Record {j+1} (Q:{record_info['quality_score']}): {record_info['id']}")
 
                 fields = record_info["fields"]
                 print(f"      Name: {fields.get('Name', 'N/A')}")
@@ -260,7 +264,8 @@ class MembersDuplicateReviewer:
                 for conflict in analysis["merge_conflicts"]:
                     print(f"      {conflict['field']}: {', '.join(conflict['values'])}")
 
-    async def save_duplicate_analysis_report(self, exact_groups: dict, potential_groups: dict):
+    async def save_duplicate_analysis_report(
+            self, exact_groups: dict, potential_groups: dict):
         """Save comprehensive duplicate analysis report"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -344,16 +349,22 @@ class MembersDuplicateReviewer:
             print(f"📊 Total Members: {len(all_records)}")
             print(f"🔍 Exact Duplicate Groups: {len(exact_duplicates)}")
             print(f"🔍 Potential Duplicate Groups: {len(potential_duplicates)}")
-            print(f"🗑️ Total Records to Review: {report['summary']['total_exact_duplicates'] + report['summary']['total_potential_duplicates']}")
+            print(
+                f"🗑️ Total Records to Review: {report['summary']['total_exact_duplicates'] + report['summary']['total_potential_duplicates']}")
 
             print("\n🎯 RECOMMENDED ACTIONS:")
             exact_summary = report["exact_duplicates"]["action_summary"]
             potential_summary = report["potential_duplicates"]["action_summary"]
 
-            print(f"   ✅ Auto-merge ready: {exact_summary['auto_merge']} exact + {potential_summary['auto_merge']} potential")
-            print(f"   🔧 Simple merge needed: {exact_summary['simple_merge']} exact + {potential_summary['simple_merge']} potential")
-            print(f"   🧠 Complex review needed: {exact_summary['complex_merge']} exact + {potential_summary['complex_merge']} potential")
-            print(f"   👥 Manual review: {exact_summary['manual_review']} exact + {potential_summary['manual_review']} potential")
+            print(
+                f"   ✅ Auto-merge ready: {exact_summary['auto_merge']} exact + {potential_summary['auto_merge']} potential")
+            print(
+                f"   🔧 Simple merge needed: {exact_summary['simple_merge']} exact + {potential_summary['simple_merge']} potential")
+            print(
+                f"   🧠 Complex review needed: {exact_summary['complex_merge']} exact + {potential_summary['complex_merge']} potential")
+            print(
+                f"   👥 Manual review: {exact_summary['manual_review']} exact + {potential_summary['manual_review']} potential")
+
 
 async def main():
     """Main entry point"""

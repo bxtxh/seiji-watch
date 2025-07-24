@@ -12,6 +12,7 @@ import aiohttp
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 
+
 async def analyze_bills_categories():
     """Analyze the Bills table category distribution."""
 
@@ -94,7 +95,8 @@ async def analyze_bills_categories():
         print(f"   Total unique categories: {len(categories)}")
         print("   Category breakdown:")
 
-        for category, count in sorted(categories.items(), key=lambda x: x[1], reverse=True):
+        for category, count in sorted(
+                categories.items(), key=lambda x: x[1], reverse=True):
             percentage = (count / len(all_bills)) * 100
             print(f"   {category}: {count} bills ({percentage:.1f}%)")
 
@@ -155,8 +157,10 @@ async def analyze_bills_categories():
             "category_distribution": dict(categories),
             "suggested_mappings": suggested_mappings,
             "mapping_candidates": mapping_candidates,
-            "sample_record": {k: str(v)[:100] for k, v in sample_record.items()} if sample_record else None
-        }
+            "sample_record": {
+                k: str(v)[
+                    :100] for k,
+                v in sample_record.items()} if sample_record else None}
 
         output_file = "bills_category_analysis_t129.json"
         with open(output_file, 'w', encoding='utf-8') as f:

@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def test_improvements():
     """Test basic improvements on a few records"""
     pat = os.getenv("AIRTABLE_PAT")
@@ -59,7 +60,8 @@ async def test_improvements():
                                 print("✅ Update successful!")
                             else:
                                 error_text = await update_response.text()
-                                print(f"❌ Update failed: {update_response.status} - {error_text}")
+                                print(
+                                    f"❌ Update failed: {update_response.status} - {error_text}")
                     else:
                         print("⚠️ No updates needed")
 

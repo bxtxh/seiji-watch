@@ -120,7 +120,8 @@ class VotingScraper:
         try:
             mock_sessions = self._generate_mock_voting_sessions()
             voting_sessions.extend(mock_sessions)
-            self.logger.info(f"Generated {len(mock_sessions)} mock voting sessions for development")
+            self.logger.info(
+                f"Generated {len(mock_sessions)} mock voting sessions for development")
         except Exception as e:
             self.logger.error(f"Failed to generate mock voting sessions: {e}")
 
@@ -259,15 +260,18 @@ class VotingScraper:
             committee_links = soup.find_all('a', href=re.compile(r'iinkai.*\.htm'))
             self.logger.info(f"Found {len(committee_links)} committee links")
 
-            for link in committee_links[:5]:  # Limit to first 5 committees for initial implementation
+            # Limit to first 5 committees for initial implementation
+            for link in committee_links[:5]:
                 committee_url = urljoin(self.BASE_URL, link.get('href'))
                 committee_name = link.get_text(strip=True)
 
                 try:
-                    committee_sessions = self._fetch_committee_voting_data(committee_url, committee_name)
+                    committee_sessions = self._fetch_committee_voting_data(
+                        committee_url, committee_name)
                     sessions.extend(committee_sessions)
                 except Exception as e:
-                    self.logger.warning(f"Failed to fetch committee voting data for {committee_name}: {e}")
+                    self.logger.warning(
+                        f"Failed to fetch committee voting data for {committee_name}: {e}")
 
             return sessions
 
@@ -275,7 +279,10 @@ class VotingScraper:
             self.logger.error(f"Error fetching committee voting data: {e}")
             return []
 
-    def _fetch_committee_voting_data(self, committee_url: str, committee_name: str) -> list[VotingSession]:
+    def _fetch_committee_voting_data(
+            self,
+            committee_url: str,
+            committee_name: str) -> list[VotingSession]:
         """Fetch voting data from specific committee"""
         try:
             response = self._make_request(committee_url, timeout=30)
@@ -291,12 +298,14 @@ class VotingScraper:
                         if session:
                             sessions.append(session)
                     except Exception as e:
-                        self.logger.warning(f"Failed to parse committee voting table: {e}")
+                        self.logger.warning(
+                            f"Failed to parse committee voting table: {e}")
 
             return sessions
 
         except requests.RequestException as e:
-            self.logger.error(f"Error fetching committee voting data from {committee_url}: {e}")
+            self.logger.error(
+                f"Error fetching committee voting data from {committee_url}: {e}")
             return []
 
     def _is_voting_table(self, table) -> bool:
@@ -308,7 +317,11 @@ class VotingScraper:
         voting_keywords = ['議員名', '会派', '投票', '賛成', '反対', '欠席', '棄権']
         return any(keyword in header_text for keyword in voting_keywords)
 
-    def _parse_voting_table(self, table, vote_type: str, committee_name: str | None = None) -> VotingSession | None:
+    def _parse_voting_table(
+            self,
+            table,
+            vote_type: str,
+            committee_name: str | None = None) -> VotingSession | None:
         """Parse individual voting table"""
         try:
             rows = table.find_all('tr')
@@ -480,7 +493,8 @@ class VotingScraper:
                 vote_cell_idx = 2
 
             # Extract vote result
-            vote_result = cells[vote_cell_idx].get_text(strip=True) if len(cells) > vote_cell_idx else ""
+            vote_result = cells[vote_cell_idx].get_text(
+                strip=True) if len(cells) > vote_cell_idx else ""
 
             # Normalize vote result
             vote_result = self._normalize_vote_result(vote_result)
@@ -550,7 +564,9 @@ if __name__ == "__main__":
         print(f"Bill: {session.bill_number} - {session.bill_title}")
         print(f"Date: {session.vote_date.strftime('%Y-%m-%d')}")
         print(f"Type: {session.vote_type}")
-        print(f"Results: Yes={session.yes_votes}, No={session.no_votes}, Abstain={session.abstain_votes}, Absent={session.absent_votes}")
+        print(
+            f"Results: Yes={session.yes_votes}, No={session.no_votes}, Abstain={session.abstain_votes}, Absent={session.absent_votes}")
         print(f"Total Members: {session.total_votes}")
-        print(f"Sample votes: {[f'{v.member_name}({v.party_name})={v.vote_result}' for v in session.vote_records[:3]]}")
+        print(
+            f"Sample votes: {[f'{v.member_name}({v.party_name})={v.vote_result}' for v in session.vote_records[:3]]}")
         print()

@@ -26,6 +26,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def main():
     """セキュアメイン実行"""
     print("🔒 セキュア全法案データ統合")
@@ -97,7 +98,8 @@ def main():
                     print(f"  {i+1:3d}/{len(bills)}: ✅ {bill.bill_id}")
                 else:
                     failed_count += 1
-                    print(f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (エラー {response.status_code})")
+                    print(
+                        f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (エラー {response.status_code})")
 
                 # レート制限対応 (5 req/sec)
                 time.sleep(0.2)
@@ -107,7 +109,8 @@ def main():
                     elapsed = time.time() - start_time
                     remaining = len(bills) - (i + 1)
                     est_time = (elapsed / (i + 1)) * remaining
-                    print(f"    📊 進捗: {i+1}/{len(bills)} ({success_count}成功, {failed_count}失敗) - 残り約{est_time:.0f}秒")
+                    print(
+                        f"    📊 進捗: {i+1}/{len(bills)} ({success_count}成功, {failed_count}失敗) - 残り約{est_time:.0f}秒")
 
             except Exception as e:
                 failed_count += 1
@@ -133,6 +136,7 @@ def main():
     except Exception as e:
         print(f"❌ 実行エラー: {str(e)}")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

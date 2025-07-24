@@ -8,6 +8,7 @@ import sys
 
 sys.path.append('src')
 
+
 async def test_scheduler_api():
     """Test scheduler API functionality"""
     print("Testing Scheduler API...")
@@ -32,6 +33,7 @@ async def test_scheduler_api():
     except Exception as e:
         print(f"✗ Scheduler API test failed: {e}")
         return False
+
 
 async def test_batch_processor_api():
     """Test batch processor API functionality"""
@@ -63,12 +65,14 @@ async def test_batch_processor_api():
 
         # Test queue status
         queue_status = processor.get_queue_status()
-        print(f"✓ Queue status: {queue_status['total_queued']} queued, {queue_status['active_tasks']} active")
+        print(
+            f"✓ Queue status: {queue_status['total_queued']} queued, {queue_status['active_tasks']} active")
 
         return True
     except Exception as e:
         print(f"✗ Batch processor API test failed: {e}")
         return False
+
 
 async def test_resilient_scraper_api():
     """Test resilient scraper functionality"""
@@ -93,12 +97,14 @@ async def test_resilient_scraper_api():
 
         # Test getting statistics
         stats = scraper.get_statistics()
-        print(f"✓ Statistics: {stats['total_requests']} requests, {stats['success_rate_percent']}% success")
+        print(
+            f"✓ Statistics: {stats['total_requests']} requests, {stats['success_rate_percent']}% success")
 
         return True
     except Exception as e:
         print(f"✗ Resilient scraper API test failed: {e}")
         return False
+
 
 async def test_pdf_processor_basic():
     """Test PDF processor basic functionality"""
@@ -129,6 +135,7 @@ async def test_pdf_processor_basic():
     except Exception as e:
         print(f"✗ PDF processor test failed: {e}")
         return False
+
 
 async def main():
     """Run all API tests"""

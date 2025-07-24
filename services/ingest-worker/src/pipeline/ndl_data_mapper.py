@@ -115,7 +115,8 @@ class SpeakerNormalizer:
         return normalized
 
     @classmethod
-    def extract_speaker_info(cls, speaker_name: str, speaker_group: str | None) -> dict[str, str | None]:
+    def extract_speaker_info(cls, speaker_name: str,
+                             speaker_group: str | None) -> dict[str, str | None]:
         """発言者情報を抽出・正規化"""
         return {
             "normalized_name": cls.normalize_speaker_name(speaker_name),
@@ -184,13 +185,17 @@ class NDLDataMapper:
             )
 
         except Exception as e:
-            self.logger.error(f"Failed to map NDL meeting {ndl_meeting.meeting_id}: {e}")
+            self.logger.error(
+                f"Failed to map NDL meeting {ndl_meeting.meeting_id}: {e}")
             return MappingResult(
                 success=False,
                 errors=[f"Mapping failed: {str(e)}"]
             )
 
-    def map_ndl_speech_to_airtable(self, ndl_speech: NDLSpeech, meeting_id: str) -> MappingResult:
+    def map_ndl_speech_to_airtable(
+            self,
+            ndl_speech: NDLSpeech,
+            meeting_id: str) -> MappingResult:
         """
         Map NDL Speech to Airtable Speech schema
 
@@ -215,13 +220,16 @@ class NDLDataMapper:
                 "speaker_name": speaker_info["normalized_name"],
                 "speaker_type": self._determine_speaker_type(speaker_info),
                 "original_text": ndl_speech.speech_content,
-                "cleaned_text": self._clean_speech_text(ndl_speech.speech_content),
-                "speech_type": self.SPEECH_TYPE_MAPPING.get(ndl_speech.speech_type, "発言"),
+                "cleaned_text": self._clean_speech_text(
+                    ndl_speech.speech_content),
+                "speech_type": self.SPEECH_TYPE_MAPPING.get(
+                    ndl_speech.speech_type,
+                    "発言"),
                 "start_time": ndl_speech.speech_datetime.isoformat() if ndl_speech.speech_datetime else None,
-                "word_count": len(ndl_speech.speech_content.split()) if ndl_speech.speech_content else 0,
+                "word_count": len(
+                    ndl_speech.speech_content.split()) if ndl_speech.speech_content else 0,
                 "is_processed": False,
-                "needs_review": False
-            }
+                "needs_review": False}
 
             # Create Speech object for validation
             speech = Speech(**speech_data)
@@ -245,7 +253,8 @@ class NDLDataMapper:
                 errors=[f"Mapping failed: {str(e)}"]
             )
 
-    def extract_members_from_speeches(self, speeches: list[NDLSpeech]) -> list[dict[str, Any]]:
+    def extract_members_from_speeches(
+            self, speeches: list[NDLSpeech]) -> list[dict[str, Any]]:
         """
         Extract unique member information from speech data
 
@@ -280,7 +289,8 @@ class NDLDataMapper:
 
         return list(members_dict.values())
 
-    def extract_parties_from_speeches(self, speeches: list[NDLSpeech]) -> list[dict[str, Any]]:
+    def extract_parties_from_speeches(
+            self, speeches: list[NDLSpeech]) -> list[dict[str, Any]]:
         """
         Extract unique party information from speech data
 
@@ -359,7 +369,8 @@ class NDLDataMapper:
 
         return cleaned
 
-    def batch_map_speeches(self, speeches: list[NDLSpeech], meeting_id: str) -> dict[str, Any]:
+    def batch_map_speeches(
+            self, speeches: list[NDLSpeech], meeting_id: str) -> dict[str, Any]:
         """
         Map multiple speeches in batch with statistics
 
@@ -438,9 +449,12 @@ async def main():
             speeches = await client.get_speeches(meeting.meeting_id, max_records=10)
             if speeches:
                 batch_result = mapper.batch_map_speeches(speeches, "MEETING_ID_123")
-                print(f"✅ Mapped {batch_result['statistics']['mapped_speeches']} speeches")
-                print(f"Found {batch_result['statistics']['unique_members']} unique members")
-                print(f"Found {batch_result['statistics']['unique_parties']} unique parties")
+                print(
+                    f"✅ Mapped {batch_result['statistics']['mapped_speeches']} speeches")
+                print(
+                    f"Found {batch_result['statistics']['unique_members']} unique members")
+                print(
+                    f"Found {batch_result['statistics']['unique_parties']} unique parties")
 
                 if batch_result['warnings']:
                     print(f"⚠️  Warnings: {len(batch_result['warnings'])}")

@@ -7,15 +7,16 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add shared module to path
-shared_path = Path(__file__).parent.parent.parent.parent.parent / "shared" / "src"
-sys.path.insert(0, str(shared_path))
-
 from scraper.diet_scraper import BillData
 from stt.whisper_client import TranscriptionResult
 
 from shared.clients.airtable import AirtableClient
 from shared.models.bill import Bill, BillCategory, BillStatus
+
+# Add shared module to path
+shared_path = Path(__file__).parent.parent.parent.parent.parent / "shared" / "src"
+sys.path.insert(0, str(shared_path))
+
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +139,8 @@ class DataProcessor:
 
             except Exception as e:
                 failed += 1
-                logger.error(f"Batch processing error for bill {bill_data.bill_id}: {e}")
+                logger.error(
+                    f"Batch processing error for bill {bill_data.bill_id}: {e}")
 
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
@@ -187,7 +189,8 @@ class DataProcessor:
             status=status_mapping.get(bill_data.stage, BillStatus.BACKLOG),
             category=category_mapping.get(bill_data.category, BillCategory.OTHER),
             diet_url=bill_data.url,
-            submitted_date=bill_data.submission_date.strftime("%Y-%m-%d") if bill_data.submission_date else None,
+            submitted_date=bill_data.submission_date.strftime(
+                "%Y-%m-%d") if bill_data.submission_date else None,
             submitter_type=bill_data.submitter,
             diet_session=diet_session,
             house_of_origin="参議院"  # Since we're scraping from Senate website
@@ -217,7 +220,8 @@ class DataProcessor:
         result = await self.airtable_client.update_bill(record_id, airtable_fields)
         return result["id"]
 
-    def _validate_transcription_quality(self, transcription: TranscriptionResult) -> bool:
+    def _validate_transcription_quality(
+            self, transcription: TranscriptionResult) -> bool:
         """Validate transcription meets quality standards"""
         # Basic quality checks
         if not transcription.text or len(transcription.text.strip()) < 10:

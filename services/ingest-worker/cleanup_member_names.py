@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 async def cleanup_member_names():
     """Remove trailing numbers from Member names"""
 
@@ -118,7 +119,8 @@ async def cleanup_member_names():
         print(f"   💾 Backup saved: {backup_filename}")
         print(f"   ⏱️ Estimated time: {len(records_to_clean) * 0.1:.1f} seconds")
 
-        # For automated execution, we'll proceed (in production, you'd want user confirmation)
+        # For automated execution, we'll proceed (in production, you'd want user
+        # confirmation)
         proceed = True
 
         if not proceed:
@@ -150,7 +152,8 @@ async def cleanup_member_names():
                         cleanup_results["records_updated"] += 1
 
                         if (i + 1) % 25 == 0:
-                            print(f"   ✅ Cleaned {i + 1}/{len(records_to_clean)} names...")
+                            print(
+                                f"   ✅ Cleaned {i + 1}/{len(records_to_clean)} names...")
                     else:
                         cleanup_results["errors"] += 1
                         print(f"   ❌ Error updating {record['id']}: {response.status}")
@@ -207,7 +210,10 @@ async def cleanup_member_names():
     print(f"💾 Backup created: {'✅' if cleanup_results['backup_created'] else '❌'}")
     print(f"🔍 Remaining issues: {remaining_issues}")
 
-    success_rate = (cleanup_results['names_cleaned'] / len(records_to_clean) * 100) if records_to_clean else 0
+    success_rate = (
+        cleanup_results['names_cleaned'] /
+        len(records_to_clean) *
+        100) if records_to_clean else 0
     print(f"\n📈 Success Rate: {success_rate:.1f}%")
 
     if remaining_issues == 0:

@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class Epic11BatchIntegrator:
     """Batch integrator to avoid timeouts"""
 
@@ -69,7 +70,8 @@ class Epic11BatchIntegrator:
                         else:
                             failed_count += 1
                             error = await response.text()
-                            print(f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
+                            print(
+                                f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
                             if failed_count <= 2:  # Show first few errors
                                 print(f"     Error: {error[:100]}")
 
@@ -80,7 +82,8 @@ class Epic11BatchIntegrator:
                     failed_count += 1
                     print(f"  ❌ Exception: {bill['title'][:40]}... - {str(e)[:100]}")
 
-        print(f"📊 Batch {batch_num} results: ✅ {success_count} success, ❌ {failed_count} failed")
+        print(
+            f"📊 Batch {batch_num} results: ✅ {success_count} success, ❌ {failed_count} failed")
         return success_count, failed_count
 
     async def run_full_integration(self, batch_size: int = 20):
@@ -137,7 +140,8 @@ class Epic11BatchIntegrator:
         print("🎯 EPIC 11 T96 BATCH INTEGRATION RESULTS")
         print("=" * 60)
         print(f"⏱️  Total time: {duration:.1f} seconds")
-        print(f"📋 Bills: {total_success}/{len(bills)} ({total_success/len(bills)*100:.1f}%)")
+        print(
+            f"📋 Bills: {total_success}/{len(bills)} ({total_success/len(bills)*100:.1f}%)")
         print(f"✅ Success: {total_success}")
         print(f"❌ Failed: {total_failed}")
 
@@ -155,6 +159,7 @@ class Epic11BatchIntegrator:
             print("❌ EPIC 11 T96 INSUFFICIENT DATA")
             print("Need at least 150 bills for MVP")
             return False
+
 
 async def main():
     """Execute batch integration"""

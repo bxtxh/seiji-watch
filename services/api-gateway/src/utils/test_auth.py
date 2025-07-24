@@ -35,6 +35,7 @@ def generate_test_token(
     token = jwt.encode(payload, secret_key, algorithm='HS256')
     return token
 
+
 def get_auth_headers(token: str = None) -> dict:
     """Get authorization headers for API requests."""
     if token is None:
@@ -45,6 +46,7 @@ def get_auth_headers(token: str = None) -> dict:
         'Content-Type': 'application/json'
     }
 
+
 def get_api_bearer_token() -> str:
     """Get API bearer token from environment or generate test token."""
     # First try to get from environment (for CI/CD)
@@ -54,6 +56,7 @@ def get_api_bearer_token() -> str:
 
     # Fallback to JWT generation for testing
     return generate_test_token()
+
 
 def make_authenticated_request(url: str, method: str = 'GET', **kwargs) -> dict:
     """Make an authenticated API request with proper error handling."""
@@ -79,6 +82,7 @@ def make_authenticated_request(url: str, method: str = 'GET', **kwargs) -> dict:
     except requests.exceptions.RequestException as e:
         raise RuntimeError(f"API request failed: {e}")
 
+
 if __name__ == "__main__":
     # Generate a test token and print it
     token = generate_test_token()
@@ -87,4 +91,5 @@ if __name__ == "__main__":
 
     # Test API bearer token
     api_token = get_api_bearer_token()
-    print(f"API Bearer Token: {api_token[:20]}..." if len(api_token) > 20 else api_token)
+    print(f"API Bearer Token: {api_token[:20]}..." if len(
+        api_token) > 20 else api_token)

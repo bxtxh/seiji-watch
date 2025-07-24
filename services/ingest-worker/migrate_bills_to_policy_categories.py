@@ -12,6 +12,7 @@ import aiohttp
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 
+
 class BillsPolicyCategoryMigrator:
     def __init__(self):
         self.base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
@@ -146,7 +147,8 @@ class BillsPolicyCategoryMigrator:
         print("   🔍 Sample relationships:")
         for i, rel in enumerate(relationships_to_create[:3]):
             fields = rel["fields"]
-            print(f"     {i+1}. Bill: {fields['Bill_ID']} → PolicyCategory: {fields['PolicyCategory_ID']}")
+            print(
+                f"     {i+1}. Bill: {fields['Bill_ID']} → PolicyCategory: {fields['PolicyCategory_ID']}")
             print(f"        Notes: {fields['Notes']}")
 
         if dry_run:
@@ -160,7 +162,7 @@ class BillsPolicyCategoryMigrator:
 
         # Process in batches of 10 (Airtable limit)
         for i in range(0, len(relationships_to_create), 10):
-            batch = relationships_to_create[i:i+10]
+            batch = relationships_to_create[i:i + 10]
 
             batch_data = {"records": batch}
 
@@ -171,7 +173,8 @@ class BillsPolicyCategoryMigrator:
                         response_data = await response.json()
                         created_records = response_data.get("records", [])
                         created_count += len(created_records)
-                        print(f"   ✅ Batch {i//10 + 1}: Created {len(created_records)} relationships")
+                        print(
+                            f"   ✅ Batch {i//10 + 1}: Created {len(created_records)} relationships")
                     else:
                         error_data = await response.json()
                         print(f"   ❌ Batch {i//10 + 1} failed: {response.status}")
@@ -188,7 +191,8 @@ class BillsPolicyCategoryMigrator:
         print("\n📊 Migration results:")
         print(f"   Created: {created_count} relationships")
         print(f"   Failed: {failed_count} relationships")
-        print(f"   Success rate: {(created_count / (created_count + failed_count)) * 100:.1f}%")
+        print(
+            f"   Success rate: {(created_count / (created_count + failed_count)) * 100:.1f}%")
 
         return created_count > 0
 
@@ -249,12 +253,14 @@ class BillsPolicyCategoryMigrator:
 
         # Check if T129 migration was successful
         t129_count = source_counts.get("T129_migration", 0)
-        expected_count = len([b for b in self.bills_data if b.get("fields", {}).get("Category")])
+        expected_count = len(
+            [b for b in self.bills_data if b.get("fields", {}).get("Category")])
 
         print("\n🎯 T129 Migration verification:")
         print(f"   Expected relationships: {expected_count}")
         print(f"   T129 relationships created: {t129_count}")
-        print(f"   Success rate: {(t129_count / expected_count) * 100:.1f}%" if expected_count > 0 else "N/A")
+        print(
+            f"   Success rate: {(t129_count / expected_count) * 100:.1f}%" if expected_count > 0 else "N/A")
 
         return t129_count > 0
 
@@ -284,13 +290,15 @@ class BillsPolicyCategoryMigrator:
             if not await self.verify_migration():
                 return False
 
-        print(f"\n✅ T129.3 Migration {'simulation' if dry_run else 'execution'} completed successfully!")
+        print(
+            f"\n✅ T129.3 Migration {'simulation' if dry_run else 'execution'} completed successfully!")
 
         if dry_run:
             print("\n🎯 To run actual migration:")
             print("   python3 migrate_bills_to_policy_categories.py --execute")
 
         return True
+
 
 async def main():
     """Main migration execution."""

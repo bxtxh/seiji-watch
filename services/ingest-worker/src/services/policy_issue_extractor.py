@@ -88,7 +88,17 @@ class DualLevelIssue(BaseModel):
         except Exception as e:
             logger.warning(f"POS tagging failed for '{text}': {e}")
             # Fallback to simple pattern matching
-            verb_endings = ['する', 'される', 'できる', 'なる', 'れる', 'せる', 'ける', 'げる', 'める', 'える']
+            verb_endings = [
+                'する',
+                'される',
+                'できる',
+                'なる',
+                'れる',
+                'せる',
+                'ける',
+                'げる',
+                'める',
+                'える']
             return any(text.endswith(ending) for ending in verb_endings)
 
     @classmethod
@@ -165,7 +175,9 @@ class IssueValidator:
             score += 0.1
 
         # Clarity and specificity bonus
-        if self._is_clear_and_specific(issue.label_lv1) and self._is_clear_and_specific(issue.label_lv2):
+        if self._is_clear_and_specific(
+                issue.label_lv1) and self._is_clear_and_specific(
+                issue.label_lv2):
             score += 0.1
 
         return min(1.0, score)
@@ -216,7 +228,8 @@ class PolicyIssueExtractor:
         self.max_retries = 3
         self.retry_delay = 2.0
 
-    async def extract_dual_level_issues(self, bill_data: BillData) -> list[DualLevelIssue]:
+    async def extract_dual_level_issues(
+            self, bill_data: BillData) -> list[DualLevelIssue]:
         """Extract issues at both high school and general reader levels."""
 
         prompt = self._build_dual_level_prompt(bill_data)
@@ -264,7 +277,8 @@ class PolicyIssueExtractor:
             bill_info += f"\n期待される効果: {bill_data.expected_effects}"
 
         if bill_data.key_provisions:
-            provisions_text = "、".join(bill_data.key_provisions[:3])  # Limit to 3 for brevity
+            # Limit to 3 for brevity
+            provisions_text = "、".join(bill_data.key_provisions[:3])
             bill_info += f"\n主要条項: {provisions_text}"
 
         return f"""
@@ -348,9 +362,11 @@ NGパターン:
 
                 if validation_result.is_valid:
                     validated_issues.append(validation_result.validated_data)
-                    self.logger.info(f"Issue validated with quality score: {validation_result.quality_score:.2f}")
+                    self.logger.info(
+                        f"Issue validated with quality score: {validation_result.quality_score:.2f}")
                 else:
-                    self.logger.warning(f"Issue validation failed: {validation_result.errors}")
+                    self.logger.warning(
+                        f"Issue validation failed: {validation_result.errors}")
                     # Store for manual review or retry
                     continue
 
@@ -384,7 +400,8 @@ NGパターン:
                 validation_result = self.validator.validate_issue(issue.dict())
                 quality_scores.append(validation_result.quality_score)
 
-            avg_quality = sum(quality_scores) / len(quality_scores) if quality_scores else 0.0
+            avg_quality = sum(quality_scores) / \
+                len(quality_scores) if quality_scores else 0.0
 
             return {
                 "bill_id": bill_data.id,
@@ -418,9 +435,11 @@ NGパターン:
                 "status": "failed"
             }
 
-    async def batch_extract_issues(self, bills: list[BillData],
-                                 batch_size: int = 5,
-                                 delay_between_batches: float = 2.0) -> list[dict[str, Any]]:
+    async def batch_extract_issues(self,
+                                   bills: list[BillData],
+                                   batch_size: int = 5,
+                                   delay_between_batches: float = 2.0) -> list[dict[str,
+                                                                                    Any]]:
         """Extract issues from multiple bills in batches."""
 
         self.logger.info(f"Starting batch extraction for {len(bills)} bills")
@@ -430,7 +449,8 @@ NGパターン:
         for i in range(0, len(bills), batch_size):
             batch = bills[i:i + batch_size]
 
-            self.logger.info(f"Processing batch {i // batch_size + 1}: {len(batch)} bills")
+            self.logger.info(
+                f"Processing batch {i // batch_size + 1}: {len(batch)} bills")
 
             # Process batch concurrently
             tasks = [self.extract_issues_with_metadata(bill) for bill in batch]
@@ -439,7 +459,8 @@ NGパターン:
             # Handle results and exceptions
             for j, result in enumerate(batch_results):
                 if isinstance(result, Exception):
-                    self.logger.error(f"Batch processing failed for bill {batch[j].id}: {result}")
+                    self.logger.error(
+                        f"Batch processing failed for bill {batch[j].id}: {result}")
                     error_result = {
                         "bill_id": batch[j].id,
                         "issues": [],

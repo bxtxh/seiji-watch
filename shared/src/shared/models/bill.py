@@ -13,8 +13,8 @@ class BillStatus(enum.Enum):
     """Status of a bill in the legislative process."""
 
     BACKLOG = "backlog"           # 待機中
-    UNDER_REVIEW = "under_review" # 審議中
-    PENDING_VOTE = "pending_vote" # 採決待ち
+    UNDER_REVIEW = "under_review"  # 審議中
+    PENDING_VOTE = "pending_vote"  # 採決待ち
     PASSED = "passed"             # 成立
     REJECTED = "rejected"         # 否決
     WITHDRAWN = "withdrawn"       # 撤回

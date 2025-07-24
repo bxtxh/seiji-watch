@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def check_api_keys():
     """Check if all required API keys are set"""
     required_keys = {
@@ -50,6 +51,7 @@ def check_api_keys():
             print(f"✅ {key}: Set ({masked_value})")
 
     return all_set
+
 
 async def test_external_services():
     """Test external service connectivity"""
@@ -79,6 +81,7 @@ async def test_external_services():
         print("✅ Weaviate: Configuration present")
     else:
         print("❌ Weaviate: Missing configuration")
+
 
 async def run_t52_limited_test():
     """Run T52 limited test with real APIs"""
@@ -121,6 +124,7 @@ async def run_t52_limited_test():
         import traceback
         traceback.print_exc()
         return False, 0
+
 
 async def main():
     """Main test function"""

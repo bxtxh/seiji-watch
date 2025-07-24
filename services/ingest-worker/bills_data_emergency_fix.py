@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 @dataclass
 class BillRepairResult:
     """Bill repair operation result"""
@@ -24,6 +25,7 @@ class BillRepairResult:
     repairs_applied: list[str]
     confidence_level: str  # HIGH, MEDIUM, LOW
     needs_manual_review: bool
+
 
 class BillsDataEmergencyRepair:
     """Emergency repair system for Bills table data quality issues"""
@@ -56,7 +58,7 @@ class BillsDataEmergencyRepair:
             r"^第\d+号$",           # 第123号
             r"^\d+号$",             # 123号
             r"^[HRS]\d+$",          # H123, R123, S123 (年号略記)
-            r"^令和\d+年.*第\d+号$", # 令和6年...第123号
+            r"^令和\d+年.*第\d+号$",  # 令和6年...第123号
         ]
 
         # Common title corrections
@@ -157,7 +159,8 @@ class BillsDataEmergencyRepair:
             was_repaired = True
 
         # Ensure it ends appropriately
-        if not any(repaired_title.endswith(suffix) for suffix in ["法案", "法", "案", "について"]):
+        if not any(repaired_title.endswith(suffix)
+                   for suffix in ["法案", "法", "案", "について"]):
             if "法" in repaired_title:
                 repaired_title += "法案"
             else:
@@ -166,7 +169,8 @@ class BillsDataEmergencyRepair:
 
         return repaired_title, was_repaired
 
-    def repair_bill_number(self, bill_number: str, record_index: int) -> tuple[str, bool]:
+    def repair_bill_number(self, bill_number: str,
+                           record_index: int) -> tuple[str, bool]:
         """Repair bill number"""
         if not bill_number or not isinstance(bill_number, str):
             # Generate a placeholder bill number
@@ -177,7 +181,8 @@ class BillsDataEmergencyRepair:
         was_repaired = False
 
         # Check if it matches any valid pattern
-        is_valid = any(re.match(pattern, original_number) for pattern in self.bill_number_patterns)
+        is_valid = any(re.match(pattern, original_number)
+                       for pattern in self.bill_number_patterns)
 
         if not is_valid:
             # Try to extract numbers
@@ -234,7 +239,8 @@ class BillsDataEmergencyRepair:
             r"令和\d+年.*会期",
         ]
 
-        is_valid = any(re.match(pattern, original_session) for pattern in session_patterns)
+        is_valid = any(re.match(pattern, original_session)
+                       for pattern in session_patterns)
 
         if is_valid:
             return original_session, False
@@ -267,10 +273,12 @@ class BillsDataEmergencyRepair:
 
         # Repair Bill_Number
         bill_number = fields.get('Bill_Number', '')
-        repaired_bill_number, number_repaired = self.repair_bill_number(bill_number, index)
+        repaired_bill_number, number_repaired = self.repair_bill_number(
+            bill_number, index)
         if number_repaired:
             repaired_fields['Bill_Number'] = repaired_bill_number
-            repairs_applied.append(f"Bill_Number: '{bill_number}' → '{repaired_bill_number}'")
+            repairs_applied.append(
+                f"Bill_Number: '{bill_number}' → '{repaired_bill_number}'")
             self.repair_stats["bill_number_repairs"] += 1
 
         # Repair Status
@@ -338,7 +346,7 @@ class BillsDataEmergencyRepair:
 
             duplicate_group = [bill1['id']]
 
-            for j, bill2 in enumerate(bills[i+1:], i+1):
+            for j, bill2 in enumerate(bills[i + 1:], i + 1):
                 if bill2['id'] in processed_ids:
                     continue
 
@@ -370,7 +378,10 @@ class BillsDataEmergencyRepair:
 
         return duplicates
 
-    async def update_bill_record(self, session: aiohttp.ClientSession, repair_result: BillRepairResult) -> bool:
+    async def update_bill_record(
+            self,
+            session: aiohttp.ClientSession,
+            repair_result: BillRepairResult) -> bool:
         """Update a bill record in Airtable"""
         try:
             await self.rate_limit_delay()
@@ -388,14 +399,18 @@ class BillsDataEmergencyRepair:
                     return True
                 else:
                     error_text = await response.text()
-                    print(f"❌ Failed to update bill {repair_result.repaired_record['id']}: {response.status} - {error_text}")
+                    print(
+                        f"❌ Failed to update bill {repair_result.repaired_record['id']}: {response.status} - {error_text}")
                     return False
 
         except Exception as e:
             print(f"❌ Error updating bill {repair_result.repaired_record['id']}: {e}")
             return False
 
-    async def delete_duplicate_bill(self, session: aiohttp.ClientSession, bill_id: str) -> bool:
+    async def delete_duplicate_bill(
+            self,
+            session: aiohttp.ClientSession,
+            bill_id: str) -> bool:
         """Delete a duplicate bill record"""
         try:
             await self.rate_limit_delay()
@@ -408,7 +423,8 @@ class BillsDataEmergencyRepair:
                     return True
                 else:
                     error_text = await response.text()
-                    print(f"❌ Failed to delete duplicate bill {bill_id}: {response.status} - {error_text}")
+                    print(
+                        f"❌ Failed to delete duplicate bill {bill_id}: {response.status} - {error_text}")
                     return False
 
         except Exception as e:
@@ -459,9 +475,9 @@ class BillsDataEmergencyRepair:
 
     def print_repair_summary(self):
         """Print repair operation summary"""
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("🔧 BILLS TABLE EMERGENCY REPAIR SUMMARY")
-        print("="*70)
+        print("=" * 70)
         print(f"📊 Total Records Processed: {self.repair_stats['total_records']:,}")
         print(f"🔧 Records Repaired: {self.repair_stats['records_repaired']:,}")
         print(f"📝 Title Repairs: {self.repair_stats['title_repairs']:,}")
@@ -469,12 +485,16 @@ class BillsDataEmergencyRepair:
         print(f"📋 Status Repairs: {self.repair_stats['status_repairs']:,}")
         print(f"🏛️ Session Repairs: {self.repair_stats['session_repairs']:,}")
         print(f"🗑️ Duplicate Removals: {self.repair_stats['duplicate_removals']:,}")
-        print(f"✅ High Confidence Repairs: {self.repair_stats['high_confidence_repairs']:,}")
+        print(
+            f"✅ High Confidence Repairs: {self.repair_stats['high_confidence_repairs']:,}")
         print(f"⚠️ Manual Review Needed: {self.repair_stats['manual_review_needed']:,}")
 
-        success_rate = (self.repair_stats['records_repaired'] / self.repair_stats['total_records'] * 100) if self.repair_stats['total_records'] > 0 else 0
+        success_rate = (
+            self.repair_stats['records_repaired'] /
+            self.repair_stats['total_records'] *
+            100) if self.repair_stats['total_records'] > 0 else 0
         print(f"🎯 Repair Success Rate: {success_rate:.1f}%")
-        print("="*70)
+        print("=" * 70)
 
     async def run_emergency_repair(self) -> bool:
         """Run emergency repair on Bills table"""
@@ -521,10 +541,12 @@ class BillsDataEmergencyRepair:
                     success = await self.update_bill_record(session, repair_result)
                     if success:
                         self.repair_stats["records_repaired"] += 1
-                        print(f"✅ Repaired bill {bill['id']}: {len(repair_result.repairs_applied)} fixes")
+                        print(
+                            f"✅ Repaired bill {bill['id']}: {len(repair_result.repairs_applied)} fixes")
 
                         if repair_result.needs_manual_review:
-                            print(f"   ⚠️ Manual review recommended for: {repair_result.repairs_applied}")
+                            print(
+                                f"   ⚠️ Manual review recommended for: {repair_result.repairs_applied}")
                     else:
                         print(f"❌ Failed to repair bill {bill['id']}")
 
@@ -538,6 +560,7 @@ class BillsDataEmergencyRepair:
             self.print_repair_summary()
 
             return self.repair_stats["records_repaired"] > 0
+
 
 async def main():
     """Main entry point"""

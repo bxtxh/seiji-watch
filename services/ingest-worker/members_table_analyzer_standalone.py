@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv('/Users/shogen/seiji-watch/.env.local')
 
+
 class SimpleAirtableClient:
     """Simple Airtable client for Members table analysis."""
 
@@ -66,6 +67,7 @@ class SimpleAirtableClient:
 
         return all_records
 
+
 def analyze_first_seven_records(records: list[dict[str, Any]]) -> None:
     """Analyze the first 7 records for reality check."""
     print("=== REALITY CHECK: First 7 Records Analysis ===")
@@ -93,6 +95,7 @@ def analyze_first_seven_records(records: list[dict[str, Any]]) -> None:
         print(f"  Birth_Date: {fields.get('Birth_Date', 'N/A')}")
         print(f"  First_Elected: {fields.get('First_Elected', 'N/A')}")
         print()
+
 
 def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
     """Analyze Name_Kana field completeness."""
@@ -124,16 +127,21 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
     total_present = len(present_kana)
 
     print(f"Total records: {total_records}")
-    print(f"Records with ANY Name_Kana: {total_present} ({total_present/total_records*100:.1f}%)")
-    print(f"Records with VALID Name_Kana: {valid_count} ({valid_count/total_records*100:.1f}%)")
-    print(f"Records with PLACEHOLDER kana (たなかたろう): {placeholder_count} ({placeholder_count/total_records*100:.1f}%)")
-    print(f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)")
+    print(
+        f"Records with ANY Name_Kana: {total_present} ({total_present/total_records*100:.1f}%)")
+    print(
+        f"Records with VALID Name_Kana: {valid_count} ({valid_count/total_records*100:.1f}%)")
+    print(
+        f"Records with PLACEHOLDER kana (たなかたろう): {placeholder_count} ({placeholder_count/total_records*100:.1f}%)")
+    print(
+        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)")
     print()
 
     # Critical finding
     print("🚨 CRITICAL FINDING:")
     total_needing_kana = missing_count + placeholder_count
-    print(f"Records needing proper kana: {total_needing_kana}/{total_records} ({total_needing_kana/total_records*100:.1f}%)")
+    print(
+        f"Records needing proper kana: {total_needing_kana}/{total_records} ({total_needing_kana/total_records*100:.1f}%)")
     print()
 
     if placeholder_kana:
@@ -158,6 +166,7 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
         for i, (name, kana) in enumerate(valid_kana[:5], 1):  # Show first 5
             print(f"  {i}. {name} → {kana}")
         print()
+
 
 def analyze_data_patterns(records: list[dict[str, Any]]) -> None:
     """Analyze patterns that might indicate real vs synthetic data."""
@@ -214,6 +223,7 @@ def analyze_data_patterns(records: list[dict[str, Any]]) -> None:
         print(f"  {election_type}: {count}")
     print()
 
+
 def analyze_reality_indicators(records: list[dict[str, Any]]) -> None:
     """Analyze specific indicators of real vs synthetic data."""
     print("=== REALITY INDICATORS ANALYSIS ===")
@@ -267,11 +277,14 @@ def analyze_reality_indicators(records: list[dict[str, Any]]) -> None:
             katakana_names += 1
 
     total_analyzed = kanji_names + hiragana_names + katakana_names + mixed_names
-    print(f"  Kanji only: {kanji_names}/{total_analyzed} ({kanji_names/total_analyzed*100:.1f}%)")
-    print(f"  Mixed (kanji + kana): {mixed_names}/{total_analyzed} ({mixed_names/total_analyzed*100:.1f}%)")
+    print(
+        f"  Kanji only: {kanji_names}/{total_analyzed} ({kanji_names/total_analyzed*100:.1f}%)")
+    print(
+        f"  Mixed (kanji + kana): {mixed_names}/{total_analyzed} ({mixed_names/total_analyzed*100:.1f}%)")
     print(f"  Hiragana only: {hiragana_names}/{total_analyzed}")
     print(f"  Katakana only: {katakana_names}/{total_analyzed}")
     print()
+
 
 def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
     """Suggest strategies for filling missing Name_Kana data."""
@@ -298,7 +311,8 @@ def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
 
     print("4. **LLM-Assisted Generation**:")
     print("   - Use GPT-4 or Claude to generate kana readings")
-    print("   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'")
+    print(
+        "   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'")
     print("   - Verify against known databases")
     print()
 
@@ -308,6 +322,7 @@ def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
     print("   - Use web scraping for official verification")
     print("   - Implement quality checks and validation")
     print()
+
 
 async def main():
     """Main analysis function."""

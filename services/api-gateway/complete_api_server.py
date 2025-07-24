@@ -47,6 +47,8 @@ app.add_middleware(
 )
 
 # Root endpoint
+
+
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -58,6 +60,7 @@ async def root():
         "ui_demo": "/demo",
         "ui_ready": True
     }
+
 
 @app.get("/demo", response_class=HTMLResponse)
 async def demo_page():
@@ -229,6 +232,8 @@ async def demo_page():
     """
 
 # Health check endpoint
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -243,6 +248,7 @@ async def health_check():
 
 # === EPIC 7: Issue Category API Endpoints ===
 
+
 @app.get("/api/issues/categories")
 async def get_categories(max_records: int = 100):
     """Get all issue categories with CAP classification."""
@@ -256,7 +262,10 @@ async def get_categories(max_records: int = 100):
                     "Layer": "L1",
                     "Title_JA": "マクロ経済学",
                     "Title_EN": "Macroeconomics",
-                    "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
+                    "Summary_150JA": (
+                        "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。"
+                        "GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。"
+                    ),
                     "Is_Seed": True
                 }
             },
@@ -267,7 +276,10 @@ async def get_categories(max_records: int = 100):
                     "Layer": "L1",
                     "Title_JA": "市民権・自由・少数者問題",
                     "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
-                    "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
+                    "Summary_150JA": (
+                        "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。"
+                        "憲法的権利の保障と社会的平等の促進を含みます。"
+                    ),
                     "Is_Seed": True
                 }
             },
@@ -278,7 +290,10 @@ async def get_categories(max_records: int = 100):
                     "Layer": "L1",
                     "Title_JA": "健康",
                     "Title_EN": "Health",
-                    "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
+                    "Summary_150JA": (
+                        "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。"
+                        "国民の健康増進と医療アクセスの確保を目的とします。"
+                    ),
                     "Is_Seed": True
                 }
             },
@@ -289,7 +304,10 @@ async def get_categories(max_records: int = 100):
                     "Layer": "L1",
                     "Title_JA": "農業",
                     "Title_EN": "Agriculture",
-                    "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
+                    "Summary_150JA": (
+                        "農業政策、食料安全保障、農村開発に関する政策分野。"
+                        "農業生産性の向上と農村地域の活性化を目指します。"
+                    ),
                     "Is_Seed": True
                 }
             },
@@ -300,7 +318,10 @@ async def get_categories(max_records: int = 100):
                     "Layer": "L1",
                     "Title_JA": "労働・雇用",
                     "Title_EN": "Labour and Employment",
-                    "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野。働き方改革と雇用の安定化を促進します。",
+                    "Summary_150JA": (
+                        "労働政策、雇用創出、労働者の権利保護に関する政策分野。"
+                        "働き方改革と雇用の安定化を促進します。"
+                    ),
                     "Is_Seed": True
                 }
             },
@@ -311,7 +332,10 @@ async def get_categories(max_records: int = 100):
                     "Layer": "L1",
                     "Title_JA": "教育",
                     "Title_EN": "Education",
-                    "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野。生涯学習社会の実現と教育機会の平等を目指します。",
+                    "Summary_150JA": (
+                        "教育制度、学校政策、教育の質向上に関する政策分野。"
+                        "生涯学習社会の実現と教育機会の平等を目指します。"
+                    ),
                     "Is_Seed": True
                 }
             }
@@ -320,6 +344,7 @@ async def get_categories(max_records: int = 100):
     except Exception as e:
         logger.error(f"Failed to get categories: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch categories")
+
 
 @app.get("/api/issues/categories/tree")
 async def get_category_tree():
@@ -334,7 +359,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "マクロ経済学",
                         "Title_EN": "Macroeconomics",
-                        "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野",
+                        "Summary_150JA": (
+                            "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野"
+                        ),
                         "Is_Seed": True
                     }
                 },
@@ -345,7 +372,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "市民権・自由・少数者問題",
                         "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
-                        "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野",
+                        "Summary_150JA": (
+                            "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野"
+                        ),
                         "Is_Seed": True
                     }
                 },
@@ -356,7 +385,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "健康",
                         "Title_EN": "Health",
-                        "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野",
+                        "Summary_150JA": (
+                            "医療制度、公衆衛生、健康保険、医療研究に関する政策分野"
+                        ),
                         "Is_Seed": True
                     }
                 },
@@ -367,7 +398,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "農業",
                         "Title_EN": "Agriculture",
-                        "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野",
+                        "Summary_150JA": (
+                            "農業政策、食料安全保障、農村開発に関する政策分野"
+                        ),
                         "Is_Seed": True
                     }
                 },
@@ -378,7 +411,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "労働・雇用",
                         "Title_EN": "Labour and Employment",
-                        "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野",
+                        "Summary_150JA": (
+                            "労働政策、雇用創出、労働者の権利保護に関する政策分野"
+                        ),
                         "Is_Seed": True
                     }
                 },
@@ -389,7 +424,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "教育",
                         "Title_EN": "Education",
-                        "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野",
+                        "Summary_150JA": (
+                            "教育制度、学校政策、教育の質向上に関する政策分野"
+                        ),
                         "Is_Seed": True
                     }
                 }
@@ -457,6 +494,7 @@ async def get_category_tree():
         logger.error(f"Failed to get category tree: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category tree")
 
+
 @app.get("/api/issues/categories/{category_id}")
 async def get_category_detail(category_id: str):
     """Get specific category details."""
@@ -470,8 +508,16 @@ async def get_category_detail(category_id: str):
                     "Layer": "L1",
                     "Title_JA": "マクロ経済学",
                     "Title_EN": "Macroeconomics",
-                    "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野です。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含み、国家レベルでの経済戦略を策定します。",
-                    "Description": "マクロ経済学分野では、政府の財政政策や中央銀行の金融政策を通じて、経済の安定と成長を図ります。景気循環の管理、失業率の改善、物価安定などが主要な政策目標となります。",
+                    "Summary_150JA": (
+                        "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野です。"
+                        "GDP、インフレ、雇用率などの主要経済指標と関連する政策を含み、"
+                        "国家レベルでの経済戦略を策定します。"
+                    ),
+                    "Description": (
+                        "マクロ経済学分野では、政府の財政政策や中央銀行の金融政策を通じて、"
+                        "経済の安定と成長を図ります。景気循環の管理、失業率の改善、"
+                        "物価安定などが主要な政策目標となります。"
+                    ),
                     "Is_Seed": True,
                     "Related_Bills_Count": 15,
                     "Child_Categories_Count": 8
@@ -484,8 +530,15 @@ async def get_category_detail(category_id: str):
                     "Layer": "L1",
                     "Title_JA": "市民権・自由・少数者問題",
                     "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
-                    "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野です。憲法的権利の保障と社会的平等の促進を目的とした法制度の整備を行います。",
-                    "Description": "市民権・自由分野では、すべての市民が平等に権利を享受できる社会の実現を目指します。性別、人種、宗教、性的指向などによる差別の撤廃と、表現の自由、集会の自由などの基本的人権の保護が重要です。",
+                    "Summary_150JA": (
+                        "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野です。"
+                        "憲法的権利の保障と社会的平等の促進を目的とした法制度の整備を行います。"
+                    ),
+                    "Description": (
+                        "市民権・自由分野では、すべての市民が平等に権利を享受できる社会の実現を目指します。"
+                        "性別、人種、宗教、性的指向などによる差別の撤廃と、"
+                        "表現の自由、集会の自由などの基本的人権の保護が重要です。"
+                    ),
                     "Is_Seed": True,
                     "Related_Bills_Count": 22,
                     "Child_Categories_Count": 12
@@ -514,6 +567,7 @@ async def get_category_detail(category_id: str):
     except Exception as e:
         logger.error(f"Failed to get category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category")
+
 
 @app.get("/api/issues/categories/{category_id}/children")
 async def get_category_children(category_id: str):
@@ -587,6 +641,7 @@ async def get_category_children(category_id: str):
         logger.error(f"Failed to get children for category {category_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch category children")
 
+
 @app.get("/api/issues/categories/search")
 async def search_categories(query: str, max_records: int = 50):
     """Search categories by title."""
@@ -618,6 +673,7 @@ async def search_categories(query: str, max_records: int = 50):
     except Exception:
         logger.error(f"Failed to search categories with query: {query}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to search categories")
+
 
 @app.get("/api/bills")
 async def get_bills(max_records: int = 100, category: str | None = None):
@@ -673,6 +729,7 @@ async def get_bills(max_records: int = 100, category: str | None = None):
 
 # === Additional API Endpoints ===
 
+
 @app.get("/api/members")
 async def get_members(limit: int = 50):
     """Get member list (mock data)."""
@@ -695,6 +752,8 @@ async def get_members(limit: int = 50):
         raise HTTPException(status_code=500, detail="Failed to fetch members")
 
 # Global exception handler
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""

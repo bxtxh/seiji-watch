@@ -12,6 +12,7 @@ import aiohttp
 AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 
+
 async def test_pat_scopes():
     """Test PAT scopes and metadata access."""
 
@@ -52,6 +53,7 @@ async def test_pat_scopes():
             print(f"❌ Metadata API error: {e}")
             return []
 
+
 async def test_individual_table_access(tables):
     """Test access to each table individually using table IDs from metadata."""
 
@@ -82,7 +84,8 @@ async def test_individual_table_access(tables):
                         print(f"✅ {table_name}: Access granted ({record_count} records)")
                         accessible_tables.append(table_name)
                     elif response.status == 403:
-                        print(f"❌ {table_name}: 403 Forbidden (table-level permission issue)")
+                        print(
+                            f"❌ {table_name}: 403 Forbidden (table-level permission issue)")
                         forbidden_tables.append(table_name)
                     else:
                         print(f"❓ {table_name}: {response.status} {response.reason}")
@@ -91,6 +94,7 @@ async def test_individual_table_access(tables):
                 print(f"❌ {table_name}: Error - {e}")
 
     return accessible_tables, forbidden_tables
+
 
 async def test_write_permissions(accessible_tables):
     """Test write permissions on accessible tables."""
@@ -116,9 +120,7 @@ async def test_write_permissions(accessible_tables):
             test_data = {
                 "fields": {
                     "Name": "TEST_RECORD_EPIC16_DEBUG",
-                    "Notes": "This is a test record for debugging EPIC 16 permissions. Safe to delete."
-                }
-            }
+                    "Notes": "This is a test record for debugging EPIC 16 permissions. Safe to delete."}}
 
             try:
                 url = f"{base_url}/{test_table}"
@@ -139,10 +141,12 @@ async def test_write_permissions(accessible_tables):
                     else:
                         print(f"❌ Write test failed: {response.status}")
                         if response.status == 403:
-                            print("   → PAT lacks data.records:write scope or table write permissions")
+                            print(
+                                "   → PAT lacks data.records:write scope or table write permissions")
 
             except Exception as e:
                 print(f"❌ Write test error: {e}")
+
 
 async def generate_diagnosis_report(accessible_tables, forbidden_tables):
     """Generate a diagnosis report with actionable recommendations."""
@@ -181,6 +185,7 @@ async def generate_diagnosis_report(accessible_tables, forbidden_tables):
 
     else:
         print("✅ All tables accessible - can proceed with EPIC 16 implementation")
+
 
 async def main():
     """Main debugging execution."""

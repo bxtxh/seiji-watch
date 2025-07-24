@@ -5,7 +5,10 @@ Implements JWT-based authentication as specified in CLAUDE.md
 
 import logging
 import os
+import time
+from collections import defaultdict
 from datetime import datetime, timedelta
+from functools import wraps
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -19,15 +22,18 @@ JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '24'))
 
 # Production security check
-if os.getenv('ENVIRONMENT') == 'production' and JWT_SECRET_KEY == 'your-secret-key-change-in-production':
+if os.getenv(
+        'ENVIRONMENT') == 'production' and JWT_SECRET_KEY == 'your-secret-key-change-in-production':
     raise RuntimeError("JWT_SECRET_KEY must be set in production environment")
 
 # Security scheme
 security = HTTPBearer()
 
+
 class AuthenticationError(Exception):
     """Custom authentication error."""
     pass
+
 
 def create_access_token(user_id: str, email: str, scopes: list = None) -> str:
     """Create a JWT access token."""
@@ -45,6 +51,7 @@ def create_access_token(user_id: str, email: str, scopes: list = None) -> str:
 
     token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     return token
+
 
 def verify_token(token: str) -> dict:
     """Verify and decode JWT token."""
@@ -67,7 +74,9 @@ def verify_token(token: str) -> dict:
     except jwt.JWTError as e:
         raise AuthenticationError(f"Invalid token: {str(e)}")
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+
+async def get_current_user(
+        credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     """Get current authenticated user from JWT token."""
     try:
         payload = verify_token(credentials.credentials)
@@ -83,7 +92,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-async def get_current_user_optional(credentials: HTTPAuthorizationCredentials | None = Depends(HTTPBearer(auto_error=False))) -> dict | None:
+
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(
+        HTTPBearer(
+            auto_error=False))) -> dict | None:
     """Get current user if token is provided, otherwise return None."""
     if not credentials:
         # In testing environment, allow API_BEARER_TOKEN as fallback
@@ -107,6 +120,7 @@ async def get_current_user_optional(credentials: HTTPAuthorizationCredentials | 
     except HTTPException:
         return None
 
+
 def require_scopes(*required_scopes: str):
     """Decorator to require specific scopes."""
     def decorator(user: dict = Depends(get_current_user)):
@@ -123,6 +137,8 @@ def require_scopes(*required_scopes: str):
     return decorator
 
 # Common scope requirements
+
+
 async def require_read_access(user: dict = Depends(get_current_user)) -> dict:
     """Require read access."""
     user_scopes = user.get('scopes', [])
@@ -133,6 +149,7 @@ async def require_read_access(user: dict = Depends(get_current_user)) -> dict:
         )
     return user
 
+
 async def require_write_access(user: dict = Depends(get_current_user)) -> dict:
     """Require write access."""
     user_scopes = user.get('scopes', [])
@@ -142,6 +159,7 @@ async def require_write_access(user: dict = Depends(get_current_user)) -> dict:
             detail="Write access required"
         )
     return user
+
 
 async def require_admin_access(user: dict = Depends(get_current_user)) -> dict:
     """Require admin access."""
@@ -159,6 +177,7 @@ API_KEYS = {
     os.getenv('WEBHOOK_API_KEY', 'webhook-service-key'): 'webhook_service'
 }
 
+
 async def verify_api_key(api_key: str = Depends(HTTPBearer())) -> str:
     """Verify API key for internal service communication."""
     key = api_key.credentials if hasattr(api_key, 'credentials') else api_key
@@ -173,12 +192,10 @@ async def verify_api_key(api_key: str = Depends(HTTPBearer())) -> str:
     return API_KEYS[key]
 
 # Rate limiting decorator
-import time
-from collections import defaultdict
-from functools import wraps
 
 # Simple in-memory rate limiter (use Redis in production)
 request_counts = defaultdict(list)
+
 
 def rate_limit(max_requests: int, window_seconds: int):
     """Rate limiting decorator."""

@@ -117,7 +117,11 @@ class RedisCache:
 
         try:
             ttl = ttl or self.default_ttl
-            serialized_mapping = {k: json.dumps(v, default=str) for k, v in mapping.items()}
+            serialized_mapping = {
+                k: json.dumps(
+                    v,
+                    default=str) for k,
+                v in mapping.items()}
 
             # Use pipeline for atomic operations
             pipe = self.redis.pipeline()
@@ -185,17 +189,26 @@ class MemberCache:
         key = f"{self.prefix}{member_id}"
         return await self.redis.get(key)
 
-    async def set_member(self, member_id: str, member_data: dict[str, Any], ttl: int | None = None) -> bool:
+    async def set_member(self,
+                         member_id: str,
+                         member_data: dict[str,
+                                           Any],
+                         ttl: int | None = None) -> bool:
         """Set member data in cache."""
         key = f"{self.prefix}{member_id}"
         return await self.redis.set(key, member_data, ttl)
 
-    async def get_members_list(self, filter_key: str = "all") -> list[dict[str, Any]] | None:
+    async def get_members_list(
+            self, filter_key: str = "all") -> list[dict[str, Any]] | None:
         """Get cached member list."""
         key = f"{self.list_prefix}{filter_key}"
         return await self.redis.get(key)
 
-    async def set_members_list(self, filter_key: str, members_list: list[dict[str, Any]], ttl: int | None = None) -> bool:
+    async def set_members_list(self,
+                               filter_key: str,
+                               members_list: list[dict[str,
+                                                       Any]],
+                               ttl: int | None = None) -> bool:
         """Set cached member list."""
         key = f"{self.list_prefix}{filter_key}"
         return await self.redis.set(key, members_list, ttl)
@@ -205,18 +218,25 @@ class MemberCache:
         key = f"{self.stats_prefix}{member_id}"
         return await self.redis.get(key)
 
-    async def set_member_stats(self, member_id: str, stats: dict[str, Any], ttl: int | None = None) -> bool:
+    async def set_member_stats(self, member_id: str,
+                               stats: dict[str, Any], ttl: int | None = None) -> bool:
         """Set member statistics in cache."""
         key = f"{self.stats_prefix}{member_id}"
         return await self.redis.set(key, stats, ttl)
 
-    async def get_member_voting_history(self, member_id: str, offset: int = 0, limit: int = 20) -> list[dict[str, Any]] | None:
+    async def get_member_voting_history(
+            self, member_id: str, offset: int = 0, limit: int = 20) -> list[dict[str, Any]] | None:
         """Get member voting history from cache."""
         key = f"{self.prefix}{member_id}:votes:{offset}:{limit}"
         return await self.redis.get(key)
 
-    async def set_member_voting_history(self, member_id: str, offset: int, limit: int,
-                                       voting_history: list[dict[str, Any]], ttl: int | None = None) -> bool:
+    async def set_member_voting_history(self,
+                                        member_id: str,
+                                        offset: int,
+                                        limit: int,
+                                        voting_history: list[dict[str,
+                                                                  Any]],
+                                        ttl: int | None = None) -> bool:
         """Set member voting history in cache."""
         key = f"{self.prefix}{member_id}:votes:{offset}:{limit}"
         return await self.redis.set(key, voting_history, ttl)
@@ -272,7 +292,8 @@ class MemberCache:
         try:
             # Count cached members
             member_keys = await self.redis.redis.keys(f"{self.prefix}*")
-            member_count = len([k for k in member_keys if ":" not in k.split(self.prefix)[1]])
+            member_count = len(
+                [k for k in member_keys if ":" not in k.split(self.prefix)[1]])
 
             # Count cached lists
             list_keys = await self.redis.redis.keys(f"{self.list_prefix}*")

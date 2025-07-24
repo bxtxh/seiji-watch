@@ -24,6 +24,7 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_table_schema(pat, base_id):
     """テーブルスキーマ取得"""
     url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -38,6 +39,7 @@ def get_table_schema(pat, base_id):
                 return table
     return None
 
+
 def delete_field(pat, base_id, table_id, field_id):
     """フィールド削除"""
     url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables/{table_id}/fields/{field_id}"
@@ -45,6 +47,7 @@ def delete_field(pat, base_id, table_id, field_id):
 
     response = requests.delete(url, headers=headers)
     return response.status_code == 200
+
 
 def main():
     print("🗑️ 未使用フィールド削除")
@@ -154,6 +157,7 @@ def main():
             print(f"  - {field_name}: 限定的使用のため、要検討")
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

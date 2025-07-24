@@ -7,8 +7,11 @@ replacing the vulnerable string matching approach with a proper relational syste
 """
 
 import asyncio
+import logging
 import sys
 from pathlib import Path
+
+from airtable import AirtableClient
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -16,9 +19,7 @@ sys.path.insert(0, str(project_root / "shared" / "src"))
 
 # Direct import to avoid SQLAlchemy dependencies
 sys.path.append(str(project_root / "shared" / "src" / "shared" / "clients"))
-import logging
 
-from airtable import AirtableClient
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -65,7 +66,8 @@ async def create_bills_policy_categories_table():
         except Exception as e:
             if "NOT_FOUND" in str(e) or "Table not found" in str(e):
                 logger.warning("⚠️  Bills_PolicyCategories table does not exist")
-                logger.info("📋 Please create the table manually in Airtable with the following structure:")
+                logger.info(
+                    "📋 Please create the table manually in Airtable with the following structure:")
                 print_table_schema()
                 return False
             else:
@@ -149,7 +151,8 @@ async def verify_related_tables():
 
         # Check IssueCategories table
         categories = await client.list_issue_categories(max_records=1)
-        logger.info(f"✅ IssueCategories table found with {len(categories)} records (showing first 1)")
+        logger.info(
+            f"✅ IssueCategories table found with {len(categories)} records (showing first 1)")
 
         return True
 

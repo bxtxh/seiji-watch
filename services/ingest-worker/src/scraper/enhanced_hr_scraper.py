@@ -55,11 +55,11 @@ class EnhancedVotingSession:
             'pdf_url': self.base_session.pdf_url,
             'total_members': self.base_session.total_members,
             'vote_summary': self.base_session.vote_summary,
-            'vote_records': [asdict(record) for record in self.base_session.vote_records],
+            'vote_records': [
+                asdict(record) for record in self.base_session.vote_records],
             'pdf_metadata': self.pdf_metadata,
             'processing_metadata': self.processing_metadata,
-            'quality_metrics': self.quality_metrics
-        }
+            'quality_metrics': self.quality_metrics}
 
 
 @dataclass
@@ -163,7 +163,8 @@ class EnhancedHRProcessor:
             # Phase 5: Update statistics
             self._update_processing_statistics(enhanced_sessions)
 
-            logger.info(f"Enhanced HR processing completed: {len(validated_sessions)} valid sessions")
+            logger.info(
+                f"Enhanced HR processing completed: {len(validated_sessions)} valid sessions")
             return validated_sessions
 
         except Exception as e:
@@ -300,7 +301,8 @@ class EnhancedHRProcessor:
 
         return priority
 
-    def _prioritize_pdfs(self, pdf_metadata: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _prioritize_pdfs(
+            self, pdf_metadata: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Sort PDFs by priority for processing"""
         return sorted(pdf_metadata, key=lambda x: x['priority'], reverse=True)
 
@@ -537,7 +539,8 @@ class EnhancedHRProcessor:
     def _calculate_completeness_score(self, session: PDFVotingSession) -> float:
         """Calculate data completeness score (0.0 - 1.0)"""
         try:
-            total_fields = len(session.vote_records) * 4  # name, party, constituency, vote
+            # name, party, constituency, vote
+            total_fields = len(session.vote_records) * 4
             complete_fields = 0
 
             for record in session.vote_records:
@@ -547,7 +550,8 @@ class EnhancedHRProcessor:
                     complete_fields += 1
                 if record.constituency and len(record.constituency.strip()) > 0:
                     complete_fields += 1
-                if record.vote_result and record.vote_result in ['賛成', '反対', '欠席', '棄権']:
+                if record.vote_result and record.vote_result in [
+                        '賛成', '反対', '欠席', '棄権']:
                     complete_fields += 1
 
             return complete_fields / total_fields if total_fields > 0 else 0.0
@@ -561,7 +565,8 @@ class EnhancedHRProcessor:
             if not session.vote_records:
                 return 0.0
 
-            total_confidence = sum(record.confidence_score for record in session.vote_records)
+            total_confidence = sum(
+                record.confidence_score for record in session.vote_records)
             return total_confidence / len(session.vote_records)
 
         except Exception:
@@ -580,11 +585,14 @@ class EnhancedHRProcessor:
             uniqueness_ratio = len(unique_members) / len(member_names)
 
             # Check for reasonable party distribution
-            parties = [record.party_name for record in session.vote_records if record.party_name]
+            parties = [
+                record.party_name for record in session.vote_records if record.party_name]
             unique_parties = set(parties)
 
             # Expect at least 2 parties in a normal vote
-            party_diversity = min(len(unique_parties) / 5, 1.0)  # Normalize to max 5 parties
+            party_diversity = min(
+                len(unique_parties) / 5,
+                1.0)  # Normalize to max 5 parties
 
             return (uniqueness_ratio + party_diversity) / 2
 
@@ -608,7 +616,7 @@ class EnhancedHRProcessor:
 
             if (session.quality_metrics['completeness_score'] >= 0.7 and
                 session.quality_metrics['confidence_score'] >= 0.5 and
-                session.quality_metrics['consistency_score'] >= 0.5):
+                    session.quality_metrics['consistency_score'] >= 0.5):
 
                 valid_sessions.append(session)
                 logger.info(f"Validated session: {session.session_id}")
@@ -647,18 +655,22 @@ class EnhancedHRProcessor:
         stats = dict(self.stats)
 
         if self.stats['processing_times']:
-            stats['avg_processing_time'] = sum(self.stats['processing_times']) / len(self.stats['processing_times'])
+            stats['avg_processing_time'] = sum(
+                self.stats['processing_times']) / len(self.stats['processing_times'])
             stats['max_processing_time'] = max(self.stats['processing_times'])
             stats['min_processing_time'] = min(self.stats['processing_times'])
 
         if self.stats['quality_scores']:
-            stats['avg_quality_score'] = sum(self.stats['quality_scores']) / len(self.stats['quality_scores'])
+            stats['avg_quality_score'] = sum(
+                self.stats['quality_scores']) / len(self.stats['quality_scores'])
             stats['max_quality_score'] = max(self.stats['quality_scores'])
             stats['min_quality_score'] = min(self.stats['quality_scores'])
 
         if self.stats['total_pdfs_processed'] > 0:
-            stats['success_rate'] = self.stats['successful_extractions'] / self.stats['total_pdfs_processed']
-            stats['ocr_fallback_rate'] = self.stats['ocr_fallbacks'] / self.stats['total_pdfs_processed']
+            stats['success_rate'] = self.stats['successful_extractions'] / \
+                self.stats['total_pdfs_processed']
+            stats['ocr_fallback_rate'] = self.stats['ocr_fallbacks'] / \
+                self.stats['total_pdfs_processed']
 
         return stats
 

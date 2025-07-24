@@ -25,13 +25,21 @@ def load_env_file(env_file_path):
                 os.environ[key] = value
     return True
 
+
 def get_all_bills_with_notes(pat, base_id):
     """Notesフィールドを含む全ての法案データを取得"""
     url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29"
     headers = {"Authorization": f"Bearer {pat}"}
 
     all_records = []
-    params = {"maxRecords": 100, "fields": ["Name", "Notes", "Bill_ID", "Data_Source", "Collection_Date"]}
+    params = {
+        "maxRecords": 100,
+        "fields": [
+            "Name",
+            "Notes",
+            "Bill_ID",
+            "Data_Source",
+            "Collection_Date"]}
 
     while True:
         response = requests.get(url, headers=headers, params=params)
@@ -49,6 +57,7 @@ def get_all_bills_with_notes(pat, base_id):
         params['offset'] = offset
 
     return all_records
+
 
 def analyze_notes_patterns(records):
     """Notesフィールドのパターンを分析"""
@@ -116,6 +125,7 @@ def analyze_notes_patterns(records):
 
     return pattern_types
 
+
 def analyze_extractable_data(notes_data):
     """Notesから抽出可能な構造化データを分析"""
     print("\n🔧 構造化データ抽出可能性分析")
@@ -164,6 +174,7 @@ def analyze_extractable_data(notes_data):
 
     return extractable_fields
 
+
 def suggest_migration_strategy(pattern_types, extractable_fields):
     """マイグレーション戦略を提案"""
     print("\n🎯 マイグレーション戦略提案")
@@ -200,6 +211,7 @@ def suggest_migration_strategy(pattern_types, extractable_fields):
     print("  ✅ パターン別の専用パーサーを作成")
     print("  ✅ 移行後は新しいデータ生成パイプラインで構造化フィールドに直接書き込み")
     print("  ⚠️  移行完了後にNotes フィールド削除")
+
 
 def main():
     print("🔍 Notes フィールド内容詳細分析")
@@ -238,6 +250,7 @@ def main():
     suggest_migration_strategy(pattern_types, extractable_fields)
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

@@ -11,6 +11,7 @@ from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
+
 class ErrorCode(Enum):
     """Specific error codes for better error handling."""
 
@@ -37,6 +38,7 @@ class ErrorCode(Enum):
     CONFIGURATION_ERROR = "CONFIGURATION_ERROR"
     UNEXPECTED_ERROR = "UNEXPECTED_ERROR"
 
+
 class ServiceError(Exception):
     """Base exception for service-specific errors."""
 
@@ -53,6 +55,7 @@ class ServiceError(Exception):
         self.status_code = status_code
         super().__init__(message)
 
+
 class ValidationError(ServiceError):
     """Validation-specific error."""
 
@@ -64,6 +67,7 @@ class ValidationError(ServiceError):
             status_code=422
         )
 
+
 class AuthenticationError(ServiceError):
     """Authentication-specific error."""
 
@@ -73,6 +77,7 @@ class AuthenticationError(ServiceError):
             error_code=error_code,
             status_code=401
         )
+
 
 class AuthorizationError(ServiceError):
     """Authorization-specific error."""
@@ -85,16 +90,23 @@ class AuthorizationError(ServiceError):
             status_code=403
         )
 
+
 class ExternalServiceError(ServiceError):
     """External service communication error."""
 
-    def __init__(self, service_name: str, message: str, error_code: ErrorCode, response_code: int = None):
+    def __init__(
+            self,
+            service_name: str,
+            message: str,
+            error_code: ErrorCode,
+            response_code: int = None):
         super().__init__(
             message=f"{service_name}: {message}",
             error_code=error_code,
             details={"service": service_name, "response_code": response_code},
             status_code=503
         )
+
 
 class RateLimitError(ServiceError):
     """Rate limiting error."""
@@ -106,6 +118,7 @@ class RateLimitError(ServiceError):
             details={"retry_after": retry_after},
             status_code=429
         )
+
 
 def handle_service_error(error: ServiceError) -> HTTPException:
     """Convert ServiceError to HTTPException with proper logging."""
@@ -129,6 +142,7 @@ def handle_service_error(error: ServiceError) -> HTTPException:
             "details": error.details
         }
     )
+
 
 def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
     """Handle unexpected errors with proper logging."""
@@ -155,6 +169,8 @@ def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
     )
 
 # Context managers for error handling
+
+
 class ErrorContext:
     """Context manager for handling errors in a specific operation."""
 
@@ -176,6 +192,8 @@ class ErrorContext:
         raise handle_unexpected_error(exc_val, self.operation)
 
 # Decorator for error handling
+
+
 def handle_errors(operation: str):
     """Decorator to handle errors in API endpoints."""
     def decorator(func):
@@ -190,6 +208,8 @@ def handle_errors(operation: str):
     return decorator
 
 # Validation helpers
+
+
 def validate_record_id(record_id: str, field_name: str = "record_id") -> str:
     """Validate Airtable record ID format."""
     import re
@@ -202,7 +222,11 @@ def validate_record_id(record_id: str, field_name: str = "record_id") -> str:
 
     return record_id
 
-def validate_pagination(offset: int = 0, limit: int = 50, max_limit: int = 1000) -> tuple:
+
+def validate_pagination(
+        offset: int = 0,
+        limit: int = 50,
+        max_limit: int = 1000) -> tuple:
     """Validate pagination parameters."""
     if offset < 0:
         raise ValidationError("Offset must be non-negative", "offset")
@@ -214,6 +238,7 @@ def validate_pagination(offset: int = 0, limit: int = 50, max_limit: int = 1000)
         raise ValidationError(f"Limit cannot exceed {max_limit}", "limit")
 
     return offset, limit
+
 
 def validate_enum_value(value: str, enum_class: Enum, field_name: str) -> str:
     """Validate that value is in enum."""

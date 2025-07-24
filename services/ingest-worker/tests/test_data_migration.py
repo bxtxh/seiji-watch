@@ -193,7 +193,8 @@ class TestDataQualityAuditor:
             expected_effects=None
         )
 
-        quality_auditor._is_field_value_valid = Mock(side_effect=lambda field, value: value is not None)
+        quality_auditor._is_field_value_valid = Mock(
+            side_effect=lambda field, value: value is not None)
 
         score = quality_auditor._calculate_bill_quality_score(low_quality_bill)
         assert score < 0.5
@@ -225,7 +226,8 @@ class TestDataQualityAuditor:
         })
 
         quality_auditor._detect_quality_issues = Mock(return_value=[])
-        quality_auditor._generate_recommendations = Mock(return_value=["Test recommendation"])
+        quality_auditor._generate_recommendations = Mock(
+            return_value=["Test recommendation"])
         quality_auditor._determine_improvement_priorities = Mock(return_value=[])
 
         report = quality_auditor.conduct_full_audit()
@@ -364,7 +366,8 @@ class TestDataCompletionProcessor:
         # Mock quality score calculation
         completion_processor._calculate_quality_score = Mock(return_value=0.85)
 
-        result = completion_processor._scrape_missing_data(mock_bill, ['bill_outline', 'background_context'])
+        result = completion_processor._scrape_missing_data(
+            mock_bill, ['bill_outline', 'background_context'])
 
         assert result['success']
         assert len(result['completed_fields']) == 2
@@ -417,16 +420,16 @@ class TestDataCompletionProcessor:
             "test-bill-2": [quality_issues[1]]
         })
 
-        completion_processor._create_completion_tasks = Mock(side_effect=lambda bill_id, issues: [
-            CompletionTask(
-                bill_id=bill_id,
-                strategy=CompletionStrategy.SCRAPE_MISSING,
-                priority=CompletionPriority.HIGH,
-                target_fields=["test_field"],
-                description="Test task",
-                estimated_effort=10
-            )
-        ])
+        completion_processor._create_completion_tasks = Mock(
+            side_effect=lambda bill_id,
+            issues: [
+                CompletionTask(
+                    bill_id=bill_id,
+                    strategy=CompletionStrategy.SCRAPE_MISSING,
+                    priority=CompletionPriority.HIGH,
+                    target_fields=["test_field"],
+                    description="Test task",
+                    estimated_effort=10)])
 
         completion_processor._prioritize_tasks = Mock(side_effect=lambda tasks: tasks)
 
@@ -475,7 +478,8 @@ class TestDataMigrationService:
             )
         ]
 
-        migration_service.quality_auditor.conduct_full_audit = Mock(return_value=mock_audit_report)
+        migration_service.quality_auditor.conduct_full_audit = Mock(
+            return_value=mock_audit_report)
 
         # Mock completion processor
         mock_tasks = [
@@ -489,7 +493,8 @@ class TestDataMigrationService:
             )
         ]
 
-        migration_service.completion_processor.generate_completion_plan = Mock(return_value=mock_tasks)
+        migration_service.completion_processor.generate_completion_plan = Mock(
+            return_value=mock_tasks)
 
         # Mock helper methods
         migration_service._estimate_migration_time = Mock(return_value=0.5)
@@ -610,7 +615,8 @@ class TestDataMigrationService:
             ]
         )
 
-        migration_service.completion_processor.execute_completion_plan = Mock(return_value=mock_batch_result)
+        migration_service.completion_processor.execute_completion_plan = Mock(
+            return_value=mock_batch_result)
 
         # Mock validation
         migration_service._validate_migration_results = Mock(return_value={
@@ -750,7 +756,8 @@ class TestIntegrationScenarios:
                 )
             ]
 
-            service.quality_auditor.conduct_full_audit = Mock(return_value=mock_audit_report)
+            service.quality_auditor.conduct_full_audit = Mock(
+                return_value=mock_audit_report)
 
             # Mock completion processor
             mock_tasks = [
@@ -764,7 +771,8 @@ class TestIntegrationScenarios:
                 )
             ]
 
-            service.completion_processor.generate_completion_plan = Mock(return_value=mock_tasks)
+            service.completion_processor.generate_completion_plan = Mock(
+                return_value=mock_tasks)
 
             mock_batch_result = BatchCompletionResult(
                 batch_id="test-batch-1",
@@ -776,10 +784,12 @@ class TestIntegrationScenarios:
                 success_rate=1.0
             )
 
-            service.completion_processor.execute_completion_plan = Mock(return_value=mock_batch_result)
+            service.completion_processor.execute_completion_plan = Mock(
+                return_value=mock_batch_result)
 
             # Mock other methods
-            service._validate_migration_results = Mock(return_value={'validation_passed': True})
+            service._validate_migration_results = Mock(
+                return_value={'validation_passed': True})
             service._generate_migration_report = Mock(return_value=Mock())
             service._save_migration_report = Mock()
 
