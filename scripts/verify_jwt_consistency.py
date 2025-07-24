@@ -147,7 +147,7 @@ def test_jwt_consistency():
             print("✅ Environment JWT_SECRET_KEY matches Production configuration")
         else:
             print(
-                f"⚠️  Environment JWT_SECRET_KEY is different: {env_jwt_secret[:20]}..."
+                "⚠️  Environment JWT_SECRET_KEY is different from expected configurations"
             )
     else:
         print("❌ JWT_SECRET_KEY not set in environment")
@@ -180,7 +180,7 @@ def test_with_auth_middleware():
 
         print("✅ Auth middleware imported successfully")
         print(
-            f"   Middleware JWT_SECRET_KEY: {JWT_SECRET_KEY[:20] if len(JWT_SECRET_KEY) > 20 else JWT_SECRET_KEY}..."
+            f"   Middleware JWT_SECRET_KEY: {'*' * 20}... (hidden for security)"
         )
 
         # Test token creation and verification

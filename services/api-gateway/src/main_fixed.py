@@ -242,7 +242,7 @@ async def health_check():
         logger.error(f"Health check failed: {e}")
         return JSONResponse(
             status_code=503,
-            content={"status": "unhealthy", "error": str(e), "version": "1.0.0"},
+            content={"status": "unhealthy", "error": "Service temporarily unavailable", "version": "1.0.0"},
         )
 
 

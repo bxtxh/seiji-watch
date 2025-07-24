@@ -697,7 +697,7 @@ async def get_batch_job_status(job_id: str):
         log_error(f"Failed to get job status for {job_id}", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": "Internal server error",
             "message": "ジョブステータスの取得に失敗しました",
         }
 
