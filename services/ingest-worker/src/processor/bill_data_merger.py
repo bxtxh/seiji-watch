@@ -517,12 +517,12 @@ class BillDataMerger:
             "total_bills": total_bills,
             "bills_with_conflicts": bills_with_conflicts,
             "total_conflicts": total_conflicts,
-            "conflict_rate": bills_with_conflicts / total_bills
-            if total_bills > 0
-            else 0.0,
-            "avg_conflicts_per_bill": total_conflicts / total_bills
-            if total_bills > 0
-            else 0.0,
+            "conflict_rate": (
+                bills_with_conflicts / total_bills if total_bills > 0 else 0.0
+            ),
+            "avg_conflicts_per_bill": (
+                total_conflicts / total_bills if total_bills > 0 else 0.0
+            ),
             "source_distribution": source_distribution,
             "avg_quality_score": avg_quality_score,
         }

@@ -53,8 +53,7 @@ class RealMemberDataCollector:
 
         # Session for web scraping
         self.scraping_headers = {
-            "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
-        }
+     "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)" }
 
     async def _rate_limited_request(
         self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
@@ -134,9 +133,9 @@ class RealMemberDataCollector:
                                             name=name,
                                             house="参議院",
                                             party_name=party if party else None,
-                                            constituency=constituency
-                                            if constituency
-                                            else None,
+                                            constituency=(
+                                                constituency if constituency else None
+                                            ),
                                             is_active=True,
                                         )
                                         members.append(member)

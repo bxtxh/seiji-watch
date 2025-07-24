@@ -76,9 +76,9 @@ async def ingest_bills_to_airtable():
                 "category": bill.category,
                 "url": bill.url,
                 "summary": bill.summary,
-                "submission_date": bill.submission_date.isoformat()
-                if bill.submission_date
-                else None,
+                "submission_date": (
+                    bill.submission_date.isoformat() if bill.submission_date else None
+                ),
                 "collected_at": datetime.now().isoformat(),
             }
             bills_data.append(bill_dict)

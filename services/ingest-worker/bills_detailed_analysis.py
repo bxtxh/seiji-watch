@@ -90,9 +90,9 @@ async def analyze_bills_detailed():
             field_analysis[field] = {
                 "filled_count": filled_count,
                 "empty_count": empty_count,
-                "completeness_rate": filled_count / len(all_records)
-                if all_records
-                else 0,
+                "completeness_rate": (
+                    filled_count / len(all_records) if all_records else 0
+                ),
                 "sample_values": sample_values,
             }
 

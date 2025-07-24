@@ -82,9 +82,9 @@ async def get_speech(
             speaker_name=fields.get("Speaker_Name"),
             original_text=fields.get("Original_Text", ""),
             summary=fields.get("Summary"),
-            topics=fields.get("Topics", "").split(",")
-            if fields.get("Topics")
-            else None,
+            topics=(
+                fields.get("Topics", "").split(",") if fields.get("Topics") else None
+            ),
             is_processed=fields.get("Is_Processed", False),
         )
     except Exception as e:
@@ -117,9 +117,11 @@ async def list_speeches(
                     speaker_name=fields.get("Speaker_Name"),
                     original_text=fields.get("Original_Text", ""),
                     summary=fields.get("Summary"),
-                    topics=fields.get("Topics", "").split(",")
-                    if fields.get("Topics")
-                    else None,
+                    topics=(
+                        fields.get("Topics", "").split(",")
+                        if fields.get("Topics")
+                        else None
+                    ),
                     is_processed=fields.get("Is_Processed", False),
                 )
             )
@@ -339,9 +341,11 @@ async def search_speeches_by_topic(
                     speaker_name=fields.get("Speaker_Name"),
                     original_text=fields.get("Original_Text", ""),
                     summary=fields.get("Summary"),
-                    topics=fields.get("Topics", "").split(",")
-                    if fields.get("Topics")
-                    else None,
+                    topics=(
+                        fields.get("Topics", "").split(",")
+                        if fields.get("Topics")
+                        else None
+                    ),
                     is_processed=fields.get("Is_Processed", False),
                 )
             )

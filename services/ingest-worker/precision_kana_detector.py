@@ -182,7 +182,8 @@ class PrecisionKanaDetector:
 
         normalized_kana = self.normalize_kana(name_kana)
 
-        # Check if kana exactly matches a known surname AND name starts with that surname kanji
+        # Check if kana exactly matches a known surname AND name starts with that
+        # surname kanji
         for surname_kana, surname_kanji in self.common_surnames.items():
             if normalized_kana == surname_kana and name.startswith(surname_kanji):
                 return True, f"Perfect surname match: {surname_kana} = {surname_kanji}"
@@ -371,7 +372,8 @@ class PrecisionKanaDetector:
         print("📊 DETECTION SUMMARY:")
         print(f"   Total analyzed: {results['total_analyzed']}")
         print(f"   🚨 CRITICAL issues: {len(results['critical_issues'])}")
-        print(f"   ⚠️ HIGH confidence flags: {len(results['combined_high_confidence'])}")
+        print(
+            f"   ⚠️ HIGH confidence flags: {len(results['combined_high_confidence'])}")
         print(f"   📝 MEDIUM confidence: {len(results['fuzzy_length_flags'])}")
         print(f"   💡 LOW confidence: {len(results['morpheme_count_flags'])}")
         print(f"   ✅ Complete readings: {len(results['already_complete'])}")

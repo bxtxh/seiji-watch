@@ -410,9 +410,8 @@ async def process_changes_background(
         total_changes = len(results)
 
         logger.info(
-            f"Background processing complete: {successful_changes}/{total_changes} successful, "
-            f"{notifications_sent} notifications sent"
-        )
+    f"Background processing complete: {successful_changes}/{total_changes} successful, "
+    f"{notifications_sent} notifications sent" )
 
     except Exception as e:
         logger.error(f"Background processing error: {e}")
@@ -473,9 +472,9 @@ async def webhook_health_check():
             "components": {
                 "airtable_manager": "healthy" if airtable_healthy else "unhealthy",
                 "discord_bot": "healthy" if discord_healthy else "unhealthy",
-                "webhook_config": "healthy"
-                if webhook_config.webhook_secret
-                else "warning",
+                "webhook_config": (
+                    "healthy" if webhook_config.webhook_secret else "warning"
+                ),
             },
             "timestamp": datetime.now().isoformat(),
         }

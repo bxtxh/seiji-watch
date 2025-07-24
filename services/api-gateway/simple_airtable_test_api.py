@@ -4,7 +4,7 @@ Simple Airtable API test - EPIC 11 T97 verification
 """
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 import aiohttp
 from dotenv import load_dotenv
@@ -136,7 +136,7 @@ async def health_check():
 
 @app.get("/api/bills")
 async def get_bills(
-    max_records: int = Query(100, le=1000), category: Optional[str] = None
+    max_records: int = Query(100, le=1000), category: str | None = None
 ):
     """Get bills from real Airtable data."""
     try:
@@ -162,9 +162,11 @@ async def get_bills(
                     "Status": "実データ統合済み",
                     "Category": "実データ",
                     "Title": fields.get("Name", "")[:100],
-                    "Summary": fields.get("Notes", "")[:200] + "..."
-                    if len(fields.get("Notes", "")) > 200
-                    else fields.get("Notes", ""),
+                    "Summary": (
+                        fields.get("Notes", "")[:200] + "..."
+                        if len(fields.get("Notes", "")) > 200
+                        else fields.get("Notes", "")
+                    ),
                 },
             }
             transformed_bills.append(transformed_bill)

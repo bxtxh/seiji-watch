@@ -447,12 +447,12 @@ class HouseOfRepresentativesVotingScraper:
         """Get scraper statistics"""
         stats = {
             "pdf_processor": self.pdf_processor.get_processing_statistics(),
-            "member_names_cached": len(self._member_names_cache)
-            if self._member_names_cache
-            else 0,
-            "cache_expires": self._cache_expiry.isoformat()
-            if self._cache_expiry
-            else None,
+            "member_names_cached": (
+                len(self._member_names_cache) if self._member_names_cache else 0
+            ),
+            "cache_expires": (
+                self._cache_expiry.isoformat() if self._cache_expiry else None
+            ),
         }
 
         if self._resilient_scraper:

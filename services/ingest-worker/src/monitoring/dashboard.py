@@ -85,9 +85,9 @@ class DashboardDataProvider:
         active_alerts = alert_stats.get("active_alerts_count", 0)
 
         overview = {
-            "service_status": "healthy"
-            if health_score > 70 and active_alerts == 0
-            else "degraded",
+            "service_status": (
+                "healthy" if health_score > 70 and active_alerts == 0 else "degraded"
+            ),
             "uptime_hours": round(uptime_hours, 2),
             "total_operations_processed": total_processed,
             "processing_rate_per_hour": round(processing_per_hour, 2),
@@ -406,27 +406,33 @@ class DashboardDataProvider:
             "overall_status": overall_status,
             "health_score": round(sum(health_factors) / len(health_factors) * 100, 1),
             "components": {
-                "system_resources": "healthy"
-                if all(
-                    [
-                        system_resources.get("cpu", {}).get("status")
-                        in ["normal", "warning"],
-                        system_resources.get("memory", {}).get("status")
-                        in ["normal", "warning"],
-                        system_resources.get("disk", {}).get("status")
-                        in ["normal", "warning"],
-                    ]
-                )
-                else "unhealthy",
-                "processing_pipeline": "healthy"
-                if all(
-                    status["status"] in ["healthy", "idle"]
-                    for status in pipeline_status.values()
-                )
-                else "degraded",
-                "alerting_system": "healthy"
-                if alert_summary["active_alerts_count"] == 0
-                else "degraded",
+                "system_resources": (
+                    "healthy"
+                    if all(
+                        [
+                            system_resources.get("cpu", {}).get("status")
+                            in ["normal", "warning"],
+                            system_resources.get("memory", {}).get("status")
+                            in ["normal", "warning"],
+                            system_resources.get("disk", {}).get("status")
+                            in ["normal", "warning"],
+                        ]
+                    )
+                    else "unhealthy"
+                ),
+                "processing_pipeline": (
+                    "healthy"
+                    if all(
+                        status["status"] in ["healthy", "idle"]
+                        for status in pipeline_status.values()
+                    )
+                    else "degraded"
+                ),
+                "alerting_system": (
+                    "healthy"
+                    if alert_summary["active_alerts_count"] == 0
+                    else "degraded"
+                ),
             },
             "last_updated": datetime.utcnow().isoformat(),
         }

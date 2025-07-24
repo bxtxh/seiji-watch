@@ -238,9 +238,8 @@ class BillHistoryRecorder:
 
                 # Log summary
                 self.logger.info(
-                    f"History recording completed: {result.changes_detected} changes detected, "
-                    f"{result.history_records_created} records created from {result.total_bills_checked} bills"
-                )
+    f"History recording completed: {result.changes_detected} changes detected, "
+    f"{result.history_records_created} records created from {result.total_bills_checked} bills" )
 
                 return result
 

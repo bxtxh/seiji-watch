@@ -994,11 +994,13 @@ async def get_issue_detail(issue_id: str):
         {
             "bill_id": bill_id,
             "title": bill.get("title", ""),
-            "status": "under_review"
-            if stage == "審議中"
-            else "enacted"
-            if stage == "成立"
-            else "pending_vote",
+            "status": (
+                "under_review"
+                if stage == "審議中"
+                else "enacted"
+                if stage == "成立"
+                else "pending_vote"
+            ),
             "stage": stage,
             "bill_number": bill_id,
             "relevance_score": 1.0,
@@ -1087,19 +1089,23 @@ async def get_issue_related_bills(issue_id: str):
         {
             "bill_id": bill_id,
             "title": bill.get("title", ""),
-            "summary": bill.get("title", "")[:100] + "..."
-            if len(bill.get("title", "")) > 100
-            else bill.get("title", ""),
+            "summary": (
+                bill.get("title", "")[:100] + "..."
+                if len(bill.get("title", "")) > 100
+                else bill.get("title", "")
+            ),
             "policy_category": {
                 "id": f"cat_{bill_category}",
                 "title_ja": bill_category,
                 "layer": "L1",
             },
-            "status": "under_review"
-            if stage == "審議中"
-            else "enacted"
-            if stage == "成立"
-            else "pending_vote",
+            "status": (
+                "under_review"
+                if stage == "審議中"
+                else "enacted"
+                if stage == "成立"
+                else "pending_vote"
+            ),
             "stage": stage,
             "bill_number": bill_id,
             "diet_url": bill.get("url", "#"),

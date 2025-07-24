@@ -186,12 +186,16 @@ async def extract_dual_level_issues(
         extraction_result = await issue_client.extract_dual_level_issues(bill_data)
 
         return {
-            "success": True,
-            "message": f"Extracted and created {len(extraction_result.get('created_issues', []))} issue pairs",
-            "bill_id": request.bill_id,
-            "created_issues": extraction_result.get("created_issues", []),
-            "extraction_metadata": extraction_result.get("extraction_metadata", {}),
-        }
+    "success": True,
+    "message": f"Extracted and created {len(extraction_result.get('created_issues', []))} issue pairs",
+    "bill_id": request.bill_id,
+    "created_issues": extraction_result.get(
+        "created_issues",
+        []),
+        "extraction_metadata": extraction_result.get(
+            "extraction_metadata",
+            {}),
+             }
 
     except Exception as e:
         logger.error(f"Failed to extract issues for bill {request.bill_id}: {e}")
@@ -235,10 +239,14 @@ async def batch_extract_issues(
         batch_result = await issue_client.batch_extract_issues(bills_data)
 
         return {
-            "message": f"Processed {len(requests)} bills, {batch_result.get('successful_count', 0)} successful",
-            "total_issues_created": batch_result.get("total_issues_created", 0),
-            "results": batch_result.get("results", []),
-        }
+    "message": f"Processed {len(requests)} bills, {batch_result.get('successful_count', 0)} successful",
+    "total_issues_created": batch_result.get(
+        "total_issues_created",
+        0),
+        "results": batch_result.get(
+            "results",
+            []),
+             }
 
     except Exception as e:
         logger.error(f"Batch extraction failed: {e}")

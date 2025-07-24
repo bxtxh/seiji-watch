@@ -458,9 +458,9 @@ class AlertManager:
             "active_alerts": len(active_alerts),
             "alerts_by_severity": by_severity,
             "alerts_by_component": by_component,
-            "oldest_active_alert": min([a.triggered_at for a in active_alerts])
-            if active_alerts
-            else None,
+            "oldest_active_alert": (
+                min([a.triggered_at for a in active_alerts]) if active_alerts else None
+            ),
         }
 
 
@@ -594,15 +594,15 @@ class MonitoringAlertingSystem:
             error_rate_metric = metrics.get("error_rate", {})
             if error_rate_metric.get("latest", 0) > 5.0:  # 5% error rate
                 alerts.append(
-                    Alert(
-                        id="high_error_rate",
-                        title="High Error Rate Detected",
-                        description=f"Error rate is {error_rate_metric['latest']:.1f}%, exceeding 5% threshold",
-                        severity=AlertSeverity.HIGH,
-                        component="system",
-                        metadata={"error_rate": error_rate_metric["latest"]},
-                    )
-                )
+    Alert(
+        id="high_error_rate",
+        title="High Error Rate Detected",
+        description=f"Error rate is {error_rate_metric['latest']:.1f}%, exceeding 5% threshold",
+        severity=AlertSeverity.HIGH,
+        component="system",
+        metadata={
+            "error_rate": error_rate_metric["latest"]},
+             ) )
 
             return alerts
 
@@ -612,15 +612,15 @@ class MonitoringAlertingSystem:
             for component_name, result in health_results.items():
                 if result.status == HealthStatus.UNHEALTHY:
                     alerts.append(
-                        Alert(
-                            id=f"component_unhealthy_{component_name}",
-                            title=f"Component {component_name} Unhealthy",
-                            description=f"Health check failed: {result.error_message or 'Unknown error'}",
-                            severity=AlertSeverity.CRITICAL,
-                            component=component_name,
-                            metadata={"response_time_ms": result.response_time_ms},
-                        )
-                    )
+    Alert(
+        id=f"component_unhealthy_{component_name}",
+        title=f"Component {component_name} Unhealthy",
+        description=f"Health check failed: {result.error_message or 'Unknown error'}",
+        severity=AlertSeverity.CRITICAL,
+        component=component_name,
+        metadata={
+            "response_time_ms": result.response_time_ms},
+             ) )
 
             return alerts
 
@@ -630,19 +630,18 @@ class MonitoringAlertingSystem:
             for sla in sla_metrics:
                 if sla.is_violation():
                     alerts.append(
-                        Alert(
-                            id=f"sla_violation_{sla.name}",
-                            title=f"SLA Violation: {sla.name}",
-                            description=f"SLA {sla.name} violated: {sla.current_value} vs target {sla.target_value}",
-                            severity=AlertSeverity.HIGH,
-                            component="sla",
-                            metadata={
-                                "sla_name": sla.name,
-                                "current": sla.current_value,
-                                "target": sla.target_value,
-                            },
-                        )
-                    )
+    Alert(
+        id=f"sla_violation_{sla.name}",
+        title=f"SLA Violation: {sla.name}",
+        description=f"SLA {sla.name} violated: {sla.current_value} vs target {sla.target_value}",
+        severity=AlertSeverity.HIGH,
+        component="sla",
+        metadata={
+            "sla_name": sla.name,
+            "current": sla.current_value,
+            "target": sla.target_value,
+            },
+             ) )
 
             return alerts
 

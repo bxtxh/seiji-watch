@@ -113,9 +113,9 @@ class BatchJobExecution:
             "job_type": self.job_config.job_type.value,
             "status": self.status.value,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "duration_seconds": self.duration_seconds,
             "progress": {
                 "total": self.total_items,

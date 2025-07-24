@@ -185,16 +185,21 @@ class LimitedScrapeCoordinator:
                 "start_time": start_time.isoformat(),
                 "end_time": end_time.isoformat(),
                 "duration_seconds": result.total_time,
-                "bills_per_second": result.bills_collected / result.total_time
-                if result.total_time > 0
-                else 0,
-                "voting_sessions_per_second": result.voting_sessions_collected
-                / result.total_time
-                if result.total_time > 0
-                else 0,
-                "embeddings_per_second": result.embeddings_generated / result.total_time
-                if result.total_time > 0
-                else 0,
+                "bills_per_second": (
+                    result.bills_collected / result.total_time
+                    if result.total_time > 0
+                    else 0
+                ),
+                "voting_sessions_per_second": (
+                    result.voting_sessions_collected / result.total_time
+                    if result.total_time > 0
+                    else 0
+                ),
+                "embeddings_per_second": (
+                    result.embeddings_generated / result.total_time
+                    if result.total_time > 0
+                    else 0
+                ),
                 "error_rate": len(result.errors)
                 / max(1, result.bills_collected + result.voting_sessions_collected),
                 "target_configuration": {

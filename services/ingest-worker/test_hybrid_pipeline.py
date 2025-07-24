@@ -178,9 +178,8 @@ async def test_statistics_tracking():
             f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)"
         )
         print(
-            f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
-            f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)"
-        )
+    f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
+    f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)" )
 
         print("\nReliability:")
         print(f"  Fallback Rate: {stats['reliability']['fallback_rate']:.1f}%")

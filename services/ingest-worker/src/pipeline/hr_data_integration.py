@@ -415,9 +415,11 @@ class HRDataIntegrator:
                 votes_against=vote_summary.get("反対", 0),
                 abstentions=vote_summary.get("棄権", 0),
                 absent=vote_summary.get("欠席", 0),
-                result="可決"
-                if vote_summary.get("賛成", 0) > vote_summary.get("反対", 0)
-                else "否決",
+                result=(
+                    "可決"
+                    if vote_summary.get("賛成", 0) > vote_summary.get("反対", 0)
+                    else "否決"
+                ),
                 created_at=datetime.now(),
                 updated_at=datetime.now(),
             )
@@ -480,9 +482,8 @@ class HRDataIntegrator:
                         if existing_record.vote_result != vote_record.vote_result:
                             result["conflicts"] += 1
                             logger.warning(
-                                f"Vote conflict for {member.name}: "
-                                f"{existing_record.vote_result} vs {vote_record.vote_result}"
-                            )
+    f"Vote conflict for {member.name}: "
+    f"{existing_record.vote_result} vs {vote_record.vote_result}" )
 
                             if self.conflict_strategy == DataConflictStrategy.OVERWRITE:
                                 existing_record.vote_result = vote_record.vote_result

@@ -179,9 +179,11 @@ async def integrate_bills_to_airtable():
                     "category": bill.category,
                     "url": bill.url,
                     "summary": bill.summary,
-                    "submission_date": bill.submission_date.isoformat()
-                    if bill.submission_date
-                    else None,
+                    "submission_date": (
+                        bill.submission_date.isoformat()
+                        if bill.submission_date
+                        else None
+                    ),
                 }
 
                 # Airtableフィールド形式に変換

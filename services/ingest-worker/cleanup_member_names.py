@@ -116,7 +116,8 @@ async def cleanup_member_names():
         print(f"   💾 Backup saved: {backup_filename}")
         print(f"   ⏱️ Estimated time: {len(records_to_clean) * 0.1:.1f} seconds")
 
-        # For automated execution, we'll proceed (in production, you'd want user confirmation)
+        # For automated execution, we'll proceed (in production, you'd want user
+        # confirmation)
         proceed = True
 
         if not proceed:

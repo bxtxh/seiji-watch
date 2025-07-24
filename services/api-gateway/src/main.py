@@ -585,9 +585,11 @@ async def warmup_cache():
         return {
             "success": warmup_result["success"],
             "cached_members": warmup_result.get("cached_members", 0),
-            "message": "キャッシュウォームアップが完了しました"
-            if warmup_result["success"]
-            else "キャッシュウォームアップに失敗しました",
+            "message": (
+                "キャッシュウォームアップが完了しました"
+                if warmup_result["success"]
+                else "キャッシュウォームアップに失敗しました"
+            ),
         }
 
     except Exception as e:
@@ -984,14 +986,16 @@ async def get_members_list(
                 "member_id": f"member_{i:03d}",
                 "name": f"議員{i}",
                 "name_kana": f"ぎいん{i}",
-                "house": "house_of_representatives"
-                if i % 2 == 0
-                else "house_of_councillors",
-                "party": "自由民主党"
-                if i % 3 == 0
-                else "立憲民主党"
-                if i % 3 == 1
-                else "日本維新の会",
+                "house": (
+                    "house_of_representatives" if i % 2 == 0 else "house_of_councillors"
+                ),
+                "party": (
+                    "自由民主党"
+                    if i % 3 == 0
+                    else "立憲民主党"
+                    if i % 3 == 1
+                    else "日本維新の会"
+                ),
                 "constituency": f"東京都第{(i % 10) + 1}区",
                 "terms_served": (i % 5) + 1,
             }
@@ -1124,9 +1128,11 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Status": "実データ統合済み",
                     "Category": "実データ",
                     "Title": fields.get("Name", "")[:100],  # Use Name as Title
-                    "Summary": fields.get("Notes", "")[:200] + "..."
-                    if len(fields.get("Notes", "")) > 200
-                    else fields.get("Notes", ""),
+                    "Summary": (
+                        fields.get("Notes", "")[:200] + "..."
+                        if len(fields.get("Notes", "")) > 200
+                        else fields.get("Notes", "")
+                    ),
                 },
             }
             transformed_bills.append(transformed_bill)

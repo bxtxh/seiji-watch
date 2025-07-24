@@ -308,30 +308,28 @@ class DataQualityAuditor:
 
             if value is None:
                 issues.append(
-                    QualityIssue(
-                        bill_id=bill.bill_id,
-                        issue_type=QualityIssueType.MISSING_REQUIRED_FIELD,
-                        severity=QualityIssueSeverity.CRITICAL,
-                        field_name=field_name,
-                        description=f"Required field '{field_name}' is missing",
-                        current_value=None,
-                        suggested_fix=f"Populate '{field_name}' field with appropriate data",
-                        confidence=1.0,
-                    )
-                )
+    QualityIssue(
+        bill_id=bill.bill_id,
+        issue_type=QualityIssueType.MISSING_REQUIRED_FIELD,
+        severity=QualityIssueSeverity.CRITICAL,
+        field_name=field_name,
+        description=f"Required field '{field_name}' is missing",
+        current_value=None,
+        suggested_fix=f"Populate '{field_name}' field with appropriate data",
+        confidence=1.0,
+         ) )
             elif isinstance(value, str) and not value.strip():
                 issues.append(
-                    QualityIssue(
-                        bill_id=bill.bill_id,
-                        issue_type=QualityIssueType.EMPTY_FIELD,
-                        severity=QualityIssueSeverity.HIGH,
-                        field_name=field_name,
-                        description=f"Required field '{field_name}' is empty",
-                        current_value=value,
-                        suggested_fix=f"Populate '{field_name}' field with appropriate data",
-                        confidence=1.0,
-                    )
-                )
+    QualityIssue(
+        bill_id=bill.bill_id,
+        issue_type=QualityIssueType.EMPTY_FIELD,
+        severity=QualityIssueSeverity.HIGH,
+        field_name=field_name,
+        description=f"Required field '{field_name}' is empty",
+        current_value=value,
+        suggested_fix=f"Populate '{field_name}' field with appropriate data",
+        confidence=1.0,
+         ) )
 
         return issues
 
@@ -361,17 +359,16 @@ class DataQualityAuditor:
                     and len(value.strip()) < self.quality_thresholds["text_min_length"]
                 ):
                     issues.append(
-                        QualityIssue(
-                            bill_id=bill.bill_id,
-                            issue_type=QualityIssueType.POOR_JAPANESE_TEXT,
-                            severity=QualityIssueSeverity.MEDIUM,
-                            field_name=field_name,
-                            description=f"Field '{field_name}' has insufficient content",
-                            current_value=value,
-                            suggested_fix=f"Expand '{field_name}' content with more detailed information",
-                            confidence=0.8,
-                        )
-                    )
+    QualityIssue(
+        bill_id=bill.bill_id,
+        issue_type=QualityIssueType.POOR_JAPANESE_TEXT,
+        severity=QualityIssueSeverity.MEDIUM,
+        field_name=field_name,
+        description=f"Field '{field_name}' has insufficient content",
+        current_value=value,
+        suggested_fix=f"Expand '{field_name}' content with more detailed information",
+        confidence=0.8,
+         ) )
 
         return issues
 
@@ -383,32 +380,30 @@ class DataQualityAuditor:
         if bill.submitted_date and bill.updated_at:
             if bill.submitted_date > bill.updated_at.date():
                 issues.append(
-                    QualityIssue(
-                        bill_id=bill.bill_id,
-                        issue_type=QualityIssueType.INCONSISTENT_DATA,
-                        severity=QualityIssueSeverity.HIGH,
-                        field_name="submitted_date",
-                        description="Submitted date is after last updated date",
-                        current_value=f"submitted: {bill.submitted_date}, updated: {bill.updated_at}",
-                        suggested_fix="Verify and correct date fields",
-                        confidence=0.95,
-                    )
-                )
+    QualityIssue(
+        bill_id=bill.bill_id,
+        issue_type=QualityIssueType.INCONSISTENT_DATA,
+        severity=QualityIssueSeverity.HIGH,
+        field_name="submitted_date",
+        description="Submitted date is after last updated date",
+        current_value=f"submitted: {bill.submitted_date}, updated: {bill.updated_at}",
+        suggested_fix="Verify and correct date fields",
+        confidence=0.95,
+         ) )
 
         # Check status consistency
         if bill.status == "成立" and bill.stage != "enacted":
             issues.append(
-                QualityIssue(
-                    bill_id=bill.bill_id,
-                    issue_type=QualityIssueType.INCONSISTENT_DATA,
-                    severity=QualityIssueSeverity.MEDIUM,
-                    field_name="status",
-                    description="Status indicates bill is enacted but stage doesn't match",
-                    current_value=f"status: {bill.status}, stage: {bill.stage}",
-                    suggested_fix="Align status and stage fields",
-                    confidence=0.85,
-                )
-            )
+    QualityIssue(
+        bill_id=bill.bill_id,
+        issue_type=QualityIssueType.INCONSISTENT_DATA,
+        severity=QualityIssueSeverity.MEDIUM,
+        field_name="status",
+        description="Status indicates bill is enacted but stage doesn't match",
+        current_value=f"status: {bill.status}, stage: {bill.stage}",
+        suggested_fix="Align status and stage fields",
+        confidence=0.85,
+         ) )
 
         return issues
 
@@ -435,9 +430,9 @@ class DataQualityAuditor:
                             severity=QualityIssueSeverity.MEDIUM,
                             field_name=field_name,
                             description=f"Japanese text quality is poor in '{field_name}'",
-                            current_value=value[:100] + "..."
-                            if len(value) > 100
-                            else value,
+                            current_value=(
+                                value[:100] + "..." if len(value) > 100 else value
+                            ),
                             suggested_fix="Improve Japanese text quality and formatting",
                             confidence=0.7,
                         )
@@ -834,9 +829,11 @@ class DataQualityAuditor:
                     "period_days": days,
                     "total_bills": len(recent_bills),
                     "daily_scores": daily_scores,
-                    "overall_average": sum(s["avg_score"] for s in scores) / len(scores)
-                    if scores
-                    else 0,
+                    "overall_average": (
+                        sum(s["avg_score"] for s in scores) / len(scores)
+                        if scores
+                        else 0
+                    ),
                 }
 
         except Exception as e:

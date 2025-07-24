@@ -193,9 +193,9 @@ class TaskQueue:
                             "id": job.id,
                             "queue": priority.value,
                             "description": job.description,
-                            "failed_at": job.ended_at.isoformat()
-                            if job.ended_at
-                            else None,
+                            "failed_at": (
+                                job.ended_at.isoformat() if job.ended_at else None
+                            ),
                             "exc_info": job.exc_info,
                             "meta": job.meta,
                         }

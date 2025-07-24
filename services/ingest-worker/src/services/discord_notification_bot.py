@@ -420,9 +420,9 @@ class DiscordNotificationBot:
             "enabled": self.config.enabled,
             "notification_time": self.config.notification_time.strftime("%H:%M"),
             "timezone": self.config.timezone,
-            "next_notification": next_notification.isoformat()
-            if next_notification
-            else None,
+            "next_notification": (
+                next_notification.isoformat() if next_notification else None
+            ),
             "webhook_configured": bool(self.config.webhook_url),
             "retry_attempts": self.config.retry_attempts,
             "retry_delay": self.config.retry_delay,

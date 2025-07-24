@@ -214,74 +214,61 @@ async def get_categories(max_records: int = 100):
     """Get all issue categories with CAP classification."""
     try:
         # Complete mock data based on CAP standards with Japanese translations
-        mock_categories = [
-            {
-                "id": "rec_l1_macroeconomics",
-                "fields": {
-                    "CAP_Code": "1",
-                    "Layer": "L1",
-                    "Title_JA": "マクロ経済学",
-                    "Title_EN": "Macroeconomics",
-                    "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
-                    "Is_Seed": True,
-                },
-            },
-            {
-                "id": "rec_l1_civil_rights",
-                "fields": {
-                    "CAP_Code": "2",
-                    "Layer": "L1",
-                    "Title_JA": "市民権・自由・少数者問題",
-                    "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
-                    "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
-                    "Is_Seed": True,
-                },
-            },
-            {
-                "id": "rec_l1_health",
-                "fields": {
-                    "CAP_Code": "3",
-                    "Layer": "L1",
-                    "Title_JA": "健康",
-                    "Title_EN": "Health",
-                    "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
-                    "Is_Seed": True,
-                },
-            },
-            {
-                "id": "rec_l1_agriculture",
-                "fields": {
-                    "CAP_Code": "4",
-                    "Layer": "L1",
-                    "Title_JA": "農業",
-                    "Title_EN": "Agriculture",
-                    "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
-                    "Is_Seed": True,
-                },
-            },
-            {
-                "id": "rec_l1_labor",
-                "fields": {
-                    "CAP_Code": "5",
-                    "Layer": "L1",
-                    "Title_JA": "労働・雇用",
-                    "Title_EN": "Labour and Employment",
-                    "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野。働き方改革と雇用の安定化を促進します。",
-                    "Is_Seed": True,
-                },
-            },
-            {
-                "id": "rec_l1_education",
-                "fields": {
-                    "CAP_Code": "6",
-                    "Layer": "L1",
-                    "Title_JA": "教育",
-                    "Title_EN": "Education",
-                    "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野。生涯学習社会の実現と教育機会の平等を目指します。",
-                    "Is_Seed": True,
-                },
-            },
-        ]
+        mock_categories = [ { "id": "rec_l1_macroeconomics",
+    "fields": { "CAP_Code": "1",
+    "Layer": "L1",
+    "Title_JA": "マクロ経済学",
+    "Title_EN": "Macroeconomics",
+    "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
+    "Is_Seed": True,
+    },
+    },
+    { "id": "rec_l1_civil_rights",
+    "fields": { "CAP_Code": "2",
+    "Layer": "L1",
+    "Title_JA": "市民権・自由・少数者問題",
+    "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
+    "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
+    "Is_Seed": True,
+    },
+    },
+    { "id": "rec_l1_health",
+    "fields": { "CAP_Code": "3",
+    "Layer": "L1",
+    "Title_JA": "健康",
+    "Title_EN": "Health",
+    "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
+    "Is_Seed": True,
+    },
+    },
+    { "id": "rec_l1_agriculture",
+    "fields": { "CAP_Code": "4",
+    "Layer": "L1",
+    "Title_JA": "農業",
+    "Title_EN": "Agriculture",
+    "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
+    "Is_Seed": True,
+    },
+    },
+    { "id": "rec_l1_labor",
+    "fields": { "CAP_Code": "5",
+    "Layer": "L1",
+    "Title_JA": "労働・雇用",
+    "Title_EN": "Labour and Employment",
+    "Summary_150JA": "労働政策、雇用創出、労働者の権利保護に関する政策分野。働き方改革と雇用の安定化を促進します。",
+    "Is_Seed": True,
+    },
+    },
+    { "id": "rec_l1_education",
+    "fields": { "CAP_Code": "6",
+    "Layer": "L1",
+    "Title_JA": "教育",
+    "Title_EN": "Education",
+    "Summary_150JA": "教育制度、学校政策、教育の質向上に関する政策分野。生涯学習社会の実現と教育機会の平等を目指します。",
+    "Is_Seed": True,
+    },
+    },
+     ]
         return mock_categories[:max_records]
     except Exception as e:
         logger.error(f"Failed to get categories: {e}")
@@ -604,28 +591,34 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"マクロ経済政策関連法案{i}",
                     "Summary": f"これは法案{i}の要約です。マクロ経済学に関する重要な政策が含まれており、経済成長と安定化を目指しています。",
-                    "Status": "審議中"
-                    if i % 3 == 0
-                    else "成立"
-                    if i % 3 == 1
-                    else "否決",
-                    "Category": "マクロ経済学"
-                    if i <= 5
-                    else "市民権・自由・少数者問題"
-                    if i <= 8
-                    else "健康",
-                    "Category_ID": "rec_l1_macroeconomics"
-                    if i <= 5
-                    else "rec_l1_civil_rights"
-                    if i <= 8
-                    else "rec_l1_health",
+                    "Status": (
+                        "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決"
+                    ),
+                    "Category": (
+                        "マクロ経済学"
+                        if i <= 5
+                        else "市民権・自由・少数者問題"
+                        if i <= 8
+                        else "健康"
+                    ),
+                    "Category_ID": (
+                        "rec_l1_macroeconomics"
+                        if i <= 5
+                        else "rec_l1_civil_rights"
+                        if i <= 8
+                        else "rec_l1_health"
+                    ),
                     "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15",
-                    "Keywords": ["経済政策", "成長戦略", "財政"]
-                    if i <= 5
-                    else ["人権", "平等", "自由"]
-                    if i <= 8
-                    else ["医療", "健康", "保険"],
+                    "Keywords": (
+                        ["経済政策", "成長戦略", "財政"]
+                        if i <= 5
+                        else (
+                            ["人権", "平等", "自由"]
+                            if i <= 8
+                            else ["医療", "健康", "保険"]
+                        )
+                    ),
                 },
             }
             for i in range(1, min(max_records + 1, 21))
@@ -657,11 +650,13 @@ async def get_members(limit: int = 50):
             {
                 "id": f"member_{i:03d}",
                 "name": f"議員{i}",
-                "party": "自由民主党"
-                if i % 3 == 0
-                else "立憲民主党"
-                if i % 3 == 1
-                else "日本維新の会",
+                "party": (
+                    "自由民主党"
+                    if i % 3 == 0
+                    else "立憲民主党"
+                    if i % 3 == 1
+                    else "日本維新の会"
+                ),
                 "house": "衆議院" if i % 2 == 0 else "参議院",
             }
             for i in range(1, min(limit + 1, 51))

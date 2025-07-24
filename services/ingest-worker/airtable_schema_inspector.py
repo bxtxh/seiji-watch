@@ -376,9 +376,9 @@ class AirtableSchemaInspector:
                             "table_name": table_name,
                             "inspection_date": datetime.now().isoformat(),
                             "schema_info": schema_info,
-                            "test_results": test_results
-                            if table_name == "Bills (法案)"
-                            else {},
+                            "test_results": (
+                                test_results if table_name == "Bills (法案)" else {}
+                            ),
                         },
                         f,
                         indent=2,

@@ -175,23 +175,19 @@ def generate_coverage_report():
 def run_test_suite_ci():
     """Run complete test suite for CI/CD."""
     commands = [
-        (
-            "python -m pytest tests/test_policy_issue_extractor.py -v",
-            "Unit Tests - Policy Extractor",
-        ),
-        (
-            "python -m pytest tests/test_airtable_issue_manager.py -v",
-            "Unit Tests - Airtable Manager",
-        ),
-        (
-            "python -m pytest tests/test_integration_workflow.py::TestCompleteExtractionWorkflow -v",
-            "Integration Tests - Core Workflow",
-        ),
-        (
-            "python -m pytest tests/test_integration_workflow.py::TestDataConsistency -v",
-            "Integration Tests - Data Consistency",
-        ),
-    ]
+    ( "python -m pytest tests/test_policy_issue_extractor.py -v",
+    "Unit Tests - Policy Extractor",
+    ),
+    ( "python -m pytest tests/test_airtable_issue_manager.py -v",
+    "Unit Tests - Airtable Manager",
+    ),
+    ( "python -m pytest tests/test_integration_workflow.py::TestCompleteExtractionWorkflow -v",
+    "Integration Tests - Core Workflow",
+    ),
+    ( "python -m pytest tests/test_integration_workflow.py::TestDataConsistency -v",
+    "Integration Tests - Data Consistency",
+    ),
+     ]
 
     all_success = True
     for cmd, description in commands:

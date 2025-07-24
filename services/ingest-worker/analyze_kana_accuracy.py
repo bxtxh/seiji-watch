@@ -308,19 +308,21 @@ class KanaAccuracyAnalyzer:
                 "corrections_needed": self.analysis_results["corrections_needed"],
                 "verified_correct": len(self.analysis_results["verified_correct"]),
                 "accuracy_rate": (
-                    len(self.analysis_results["verified_correct"])
-                    / (
+                    (
+                        len(self.analysis_results["verified_correct"])
+                        / (
+                            len(self.analysis_results["verified_correct"])
+                            + self.analysis_results["corrections_needed"]
+                        )
+                        * 100
+                    )
+                    if (
                         len(self.analysis_results["verified_correct"])
                         + self.analysis_results["corrections_needed"]
                     )
-                    * 100
-                )
-                if (
-                    len(self.analysis_results["verified_correct"])
-                    + self.analysis_results["corrections_needed"]
-                )
-                > 0
-                else 0,
+                    > 0
+                    else 0
+                ),
             },
         }
 

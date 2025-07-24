@@ -197,16 +197,20 @@ def upgrade():
     op.create_index("idx_bills_data_quality", "bills", ["data_quality_score"])
 
     # Create full-text search index for bill_outline
-    op.execute("""
+    op.execute(
+        """
         CREATE INDEX IF NOT EXISTS idx_bills_bill_outline_fts
         ON bills USING gin(to_tsvector('japanese', COALESCE(bill_outline, '')))
-    """)
+    """
+    )
 
     # Create full-text search index for background_context
-    op.execute("""
+    op.execute(
+        """
         CREATE INDEX IF NOT EXISTS idx_bills_background_context_fts
         ON bills USING gin(to_tsvector('japanese', COALESCE(background_context, '')))
-    """)
+    """
+    )
 
     # Create GIN index for JSONB fields
     op.create_index(

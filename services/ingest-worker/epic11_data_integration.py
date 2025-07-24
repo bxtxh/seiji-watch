@@ -257,7 +257,8 @@ class Epic11DataIntegrator:
                 )
                 return True
             else:
-                logger.warning("⚠️ Integration partially successful but below threshold")
+                logger.warning(
+                    "⚠️ Integration partially successful but below threshold")
                 return False
 
         except Exception as e:

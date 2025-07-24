@@ -31,10 +31,12 @@ def test_jwt_consistency():
 
     # Test configurations - 統一された設定
     test_configs = {
-        "Production": "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w",
-        "Test/CI-CD": "test-jwt-secret-unified-for-ci-cd",
-        "Environment": os.getenv("JWT_SECRET_KEY", "NOT_SET"),
-    }
+    "Production": "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w",
+    "Test/CI-CD": "test-jwt-secret-unified-for-ci-cd",
+    "Environment": os.getenv(
+        "JWT_SECRET_KEY",
+        "NOT_SET"),
+         }
 
     print("\n📋 JWT_SECRET_KEY Configurations:")
     for name, secret in test_configs.items():
@@ -179,9 +181,7 @@ def test_with_auth_middleware():
         from middleware.auth import JWT_SECRET_KEY, create_access_token, verify_token
 
         print("✅ Auth middleware imported successfully")
-        print(
-            f"   Middleware JWT_SECRET_KEY: {'*' * 20}... (hidden for security)"
-        )
+        print(f"   Middleware JWT_SECRET_KEY: {'*' * 20}... (hidden for security)")
 
         # Test token creation and verification
         test_token = create_access_token(

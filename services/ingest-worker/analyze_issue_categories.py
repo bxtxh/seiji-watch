@@ -214,9 +214,11 @@ async def analyze_issue_categories():
                 layer: len(records) for layer, records in layers.items()
             },
             "bills_to_issue_mapping": bills_to_issue_mapping,
-            "sample_issue_category": {k: str(v)[:100] for k, v in sample_record.items()}
-            if sample_record
-            else None,
+            "sample_issue_category": (
+                {k: str(v)[:100] for k, v in sample_record.items()}
+                if sample_record
+                else None
+            ),
         }
 
         output_file = "bills_to_issue_categories_mapping_t129.json"

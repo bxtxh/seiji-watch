@@ -343,11 +343,9 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"サンプル法案{i} - 社会保障制度改革",
                     "Summary": f"これは法案{i}の要約です。社会保障制度の重要な改革に関する内容が含まれています。",
-                    "Status": "審議中"
-                    if i % 3 == 0
-                    else "成立"
-                    if i % 3 == 1
-                    else "否決",
+                    "Status": (
+                        "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決"
+                    ),
                     "Category": "社会保障・医療",
                     "Category_ID": "cat_001",
                     "Diet_Session": "第213回国会",

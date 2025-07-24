@@ -775,18 +775,15 @@ async def main():
             stats = router.get_routing_statistics()
             print("\n📈 Routing Statistics:")
             print(
-                f"  NDL API: {stats['routing_distribution']['ndl_api_requests']} requests "
-                f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)"
-            )
+    f"  NDL API: {stats['routing_distribution']['ndl_api_requests']} requests "
+    f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)" )
             print(
-                f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
-                f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)"
-            )
+    f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
+    f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)" )
             print(f"  Fallback Rate: {stats['reliability']['fallback_rate']:.1f}%")
             print(
-                f"  Total Processed: {stats['throughput']['total_meetings_processed']} meetings, "
-                f"{stats['throughput']['total_speeches_processed']} speeches"
-            )
+    f"  Total Processed: {stats['throughput']['total_meetings_processed']} meetings, "
+    f"{stats['throughput']['total_speeches_processed']} speeches" )
 
 
 if __name__ == "__main__":

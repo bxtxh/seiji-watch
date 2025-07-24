@@ -198,9 +198,9 @@ class MetricsCollector:
             "uptime_seconds": uptime_seconds,
             "total_requests": self.total_requests,
             "active_requests": self.active_requests,
-            "requests_per_second": self.total_requests / uptime_seconds
-            if uptime_seconds > 0
-            else 0,
+            "requests_per_second": (
+                self.total_requests / uptime_seconds if uptime_seconds > 0 else 0
+            ),
             "response_time_percentiles": {"p50_ms": p50, "p95_ms": p95, "p99_ms": p99},
             "error_rate_percent": error_rate,
             "recent_errors": recent_errors,

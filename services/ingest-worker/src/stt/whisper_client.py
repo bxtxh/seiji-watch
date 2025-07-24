@@ -227,7 +227,8 @@ class WhisperClient:
                 return False
 
         # Check for reasonable Japanese content (basic check)
-        # This is a simplified check - can be improved with proper Japanese text analysis
+        # This is a simplified check - can be improved with proper Japanese text
+        # analysis
         japanese_chars = sum(1 for c in transcription.text if ord(c) > 127)
         if japanese_chars < len(transcription.text) * 0.3:  # At least 30% non-ASCII
             logger.warning("Low Japanese character ratio")

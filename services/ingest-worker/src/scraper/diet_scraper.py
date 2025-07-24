@@ -174,9 +174,11 @@ class DietScraper:
                     for j, row in enumerate(rows[:3]):
                         cells = row.find_all(["td", "th"])
                         cell_texts = [
-                            c.get_text(strip=True)[:20] + "..."
-                            if len(c.get_text(strip=True)) > 20
-                            else c.get_text(strip=True)
+                            (
+                                c.get_text(strip=True)[:20] + "..."
+                                if len(c.get_text(strip=True)) > 20
+                                else c.get_text(strip=True)
+                            )
                             for c in cells
                         ]
                         self.logger.debug(f"  Row {j}: {cell_texts}")

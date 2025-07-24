@@ -84,24 +84,23 @@ def analyze_llm_issue_extraction(pilot_data: dict[str, Any]) -> QualityMetric:
     extraction_quality = (categorization_rate + complexity_score) / 2
 
     return QualityMetric(
-        name="llm_issue_extraction",
-        value=extraction_quality,
-        threshold=0.70,
-        passed=extraction_quality >= 0.70,
-        description=f"Issue extraction potential: {extraction_quality:.2f} (based on categorization)",
-        recommendations=[
+    name="llm_issue_extraction",
+    value=extraction_quality,
+    threshold=0.70,
+    passed=extraction_quality >= 0.70,
+    description=f"Issue extraction potential: {extraction_quality:.2f} (based on categorization)",
+    recommendations=(
+        [
             "Implement LLM-powered issue extraction from bill content",
             "Use structured prompts for consistent issue identification",
             "Validate extracted issues against manual annotations",
             "Monitor relevance and accuracy of extracted issues",
-        ]
-        if extraction_quality < 0.70
-        else [
-            "Good foundation for LLM issue extraction",
-            "Implement production LLM pipeline",
-            "Add quality validation for extracted issues",
-        ],
-    )
+            ] if extraction_quality < 0.70 else [
+                "Good foundation for LLM issue extraction",
+                "Implement production LLM pipeline",
+                "Add quality validation for extracted issues",
+                ] ),
+                 )
 
 
 def analyze_semantic_search_quality(pilot_data: dict[str, Any]) -> QualityMetric:
@@ -159,18 +158,20 @@ def analyze_semantic_search_quality(pilot_data: dict[str, Any]) -> QualityMetric
         threshold=0.75,
         passed=overall_quality >= 0.75,
         description=f"Semantic search readiness: {overall_quality:.2f}",
-        recommendations=[
-            "Generate embeddings for all bill content",
-            "Implement vector similarity search with Weaviate",
-            "Test semantic search accuracy with query examples",
-            "Optimize embedding model for Japanese content",
-        ]
-        if overall_quality < 0.75
-        else [
-            "Good foundation for semantic search",
-            "Proceed with embedding generation",
-            "Implement similarity search endpoints",
-        ],
+        recommendations=(
+            [
+                "Generate embeddings for all bill content",
+                "Implement vector similarity search with Weaviate",
+                "Test semantic search accuracy with query examples",
+                "Optimize embedding model for Japanese content",
+            ]
+            if overall_quality < 0.75
+            else [
+                "Good foundation for semantic search",
+                "Proceed with embedding generation",
+                "Implement similarity search endpoints",
+            ]
+        ),
     )
 
 
@@ -275,9 +276,11 @@ def generate_quality_report(
     readiness_status = (
         "PRODUCTION_READY"
         if overall_quality_score >= 0.80
-        else "NEEDS_IMPROVEMENT"
-        if overall_quality_score >= 0.60
-        else "REQUIRES_MAJOR_WORK"
+        else (
+            "NEEDS_IMPROVEMENT"
+            if overall_quality_score >= 0.60
+            else "REQUIRES_MAJOR_WORK"
+        )
     )
 
     report = {
@@ -366,9 +369,11 @@ def generate_quality_report(
                 "Conduct performance testing under load",
             ],
             "production_readiness": {
-                "estimated_completion": "2025-07-12"
-                if readiness_status == "PRODUCTION_READY"
-                else "2025-07-15",
+                "estimated_completion": (
+                    "2025-07-12"
+                    if readiness_status == "PRODUCTION_READY"
+                    else "2025-07-15"
+                ),
                 "blocking_issues": [
                     metric.name
                     for result in validation_results

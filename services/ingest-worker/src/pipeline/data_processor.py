@@ -190,9 +190,11 @@ class DataProcessor:
             status=status_mapping.get(bill_data.stage, BillStatus.BACKLOG),
             category=category_mapping.get(bill_data.category, BillCategory.OTHER),
             diet_url=bill_data.url,
-            submitted_date=bill_data.submission_date.strftime("%Y-%m-%d")
-            if bill_data.submission_date
-            else None,
+            submitted_date=(
+                bill_data.submission_date.strftime("%Y-%m-%d")
+                if bill_data.submission_date
+                else None
+            ),
             submitter_type=bill_data.submitter,
             diet_session=diet_session,
             house_of_origin="参議院",  # Since we're scraping from Senate website

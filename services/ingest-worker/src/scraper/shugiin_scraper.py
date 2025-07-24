@@ -49,15 +49,14 @@ class ShugiinScraper:
     def __init__(self, delay_seconds: float = 2.0):
         self.session = requests.Session()
         self.session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "ja,en-US;q=0.7,en;q=0.3",
-                "Accept-Encoding": "gzip, deflate",
-                "Connection": "keep-alive",
-                "Upgrade-Insecure-Requests": "1",
-            }
-        )
+    {
+        "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ja,en-US;q=0.7,en;q=0.3",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+         } )
         self.delay_seconds = delay_seconds
         self.logger = logging.getLogger(__name__)
         self._last_request_time = 0

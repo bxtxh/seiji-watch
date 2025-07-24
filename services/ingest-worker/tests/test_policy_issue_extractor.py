@@ -442,7 +442,8 @@ class TestIntegration:
 
     async def test_end_to_end_extraction_pipeline(self):
         """Test the complete extraction pipeline end-to-end."""
-        # This test would require actual API keys and should be run in integration environment
+        # This test would require actual API keys and should be run in integration
+        # environment
         pass
 
     async def test_validation_pipeline(self):

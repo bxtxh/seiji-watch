@@ -123,19 +123,18 @@ async def create_test_vote():
 
     # Test vote record
     test_vote_data = {
-        "fields": {
-            "Name": f"{sample_vote_record['member_name']} - {sample_voting_session['bill_title']}",
-            "Member_Name": sample_vote_record["member_name"],
-            "Member_Name_Kana": sample_vote_record["member_name_kana"],
-            "Party_Name": sample_vote_record["party_name"],
-            "Constituency": sample_vote_record["constituency"],
-            "House": sample_vote_record["house"],
-            "Vote_Result": sample_vote_record["vote_result"],
-            "Bill_Title": sample_voting_session["bill_title"],
-            "Vote_Date": sample_voting_session["vote_date"],
-            "Status": sample_vote_record["vote_result"],
-        }
-    }
+    "fields": {
+        "Name": f"{sample_vote_record['member_name']} - {sample_voting_session['bill_title']}",
+        "Member_Name": sample_vote_record["member_name"],
+        "Member_Name_Kana": sample_vote_record["member_name_kana"],
+        "Party_Name": sample_vote_record["party_name"],
+        "Constituency": sample_vote_record["constituency"],
+        "House": sample_vote_record["house"],
+        "Vote_Result": sample_vote_record["vote_result"],
+        "Bill_Title": sample_voting_session["bill_title"],
+        "Vote_Date": sample_voting_session["vote_date"],
+        "Status": sample_vote_record["vote_result"],
+         } }
 
     base_url = f"https://api.airtable.com/v0/{base_id}"
 

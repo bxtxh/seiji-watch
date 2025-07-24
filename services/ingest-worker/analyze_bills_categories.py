@@ -159,9 +159,11 @@ async def analyze_bills_categories():
             "category_distribution": dict(categories),
             "suggested_mappings": suggested_mappings,
             "mapping_candidates": mapping_candidates,
-            "sample_record": {k: str(v)[:100] for k, v in sample_record.items()}
-            if sample_record
-            else None,
+            "sample_record": (
+                {k: str(v)[:100] for k, v in sample_record.items()}
+                if sample_record
+                else None
+            ),
         }
 
         output_file = "bills_category_analysis_t129.json"

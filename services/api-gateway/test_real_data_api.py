@@ -105,9 +105,11 @@ async def get_bills(
                     "Status": "実データ統合済み",
                     "Category": "実データ",
                     "Title": fields.get("Name", "")[:100],
-                    "Summary": fields.get("Notes", "")[:200] + "..."
-                    if len(fields.get("Notes", "")) > 200
-                    else fields.get("Notes", ""),
+                    "Summary": (
+                        fields.get("Notes", "")[:200] + "..."
+                        if len(fields.get("Notes", "")) > 200
+                        else fields.get("Notes", "")
+                    ),
                 },
             }
             transformed_bills.append(transformed_bill)

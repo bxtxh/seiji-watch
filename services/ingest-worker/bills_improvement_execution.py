@@ -34,32 +34,35 @@ class BillsImprovementExecutor:
 
         # Bills table improvement strategies
         self.improvement_strategies = {
-            "status_standardization": {
-                "description": "Standardize Bill_Status values to consistent vocabulary",
-                "priority": "high",
-                "target_fields": ["Bill_Status"],
-            },
-            "category_classification": {
-                "description": "Auto-classify bills into policy categories based on title analysis",
-                "priority": "high",
-                "target_fields": ["Category"],
+    "status_standardization": {
+        "description": "Standardize Bill_Status values to consistent vocabulary",
+        "priority": "high",
+        "target_fields": ["Bill_Status"],
+        },
+        "category_classification": {
+            "description": "Auto-classify bills into policy categories based on title analysis",
+            "priority": "high",
+            "target_fields": ["Category"],
             },
             "priority_scoring": {
                 "description": "Intelligent priority assignment based on bill characteristics",
                 "priority": "medium",
                 "target_fields": ["Priority"],
-            },
-            "session_normalization": {
-                "description": "Normalize Diet_Session format for consistency",
-                "priority": "medium",
-                "target_fields": ["Diet_Session"],
-            },
-            "completeness_enhancement": {
-                "description": "Fill missing essential fields with intelligent defaults",
-                "priority": "high",
-                "target_fields": ["Stage", "Bill_Type", "Process_Method"],
-            },
-        }
+                },
+                "session_normalization": {
+                    "description": "Normalize Diet_Session format for consistency",
+                    "priority": "medium",
+                    "target_fields": ["Diet_Session"],
+                    },
+                    "completeness_enhancement": {
+                        "description": "Fill missing essential fields with intelligent defaults",
+                        "priority": "high",
+                        "target_fields": [
+                            "Stage",
+                            "Bill_Type",
+                            "Process_Method"],
+                            },
+                             }
 
         # Standard vocabularies and mappings
         self.status_mapping = {
@@ -252,9 +255,11 @@ class BillsImprovementExecutor:
                     "type": "completeness",
                     "current_rate": completeness_rate,
                     "missing_count": empty_count,
-                    "priority": "high"
-                    if field in ["Title", "Bill_Status", "Category"]
-                    else "medium",
+                    "priority": (
+                        "high"
+                        if field in ["Title", "Bill_Status", "Category"]
+                        else "medium"
+                    ),
                 }
 
         return analysis

@@ -89,8 +89,8 @@ class MemberService:
 
                 except Exception as e:
                     logger.error(
-                        f"Failed to process member {member_data.get('name', 'Unknown')}: {e}"
-                    )
+    f"Failed to process member {member_data.get('name', 'Unknown')}: "
+    f"{e}" )
                     results["errors"].append(
                         f"Member {member_data.get('name', 'Unknown')}: {str(e)}"
                     )
@@ -109,9 +109,9 @@ class MemberService:
                 "name": "田中太郎",
                 "name_kana": "たなか　たろう",
                 "house": house,
-                "constituency": "東京都第1区"
-                if house == "house_of_representatives"
-                else "東京都",
+                "constituency": (
+                    "東京都第1区" if house == "house_of_representatives" else "東京都"
+                ),
                 "party_name": "自由民主党",
                 "birth_date": "1970-01-01",
                 "first_elected": "2009-08-30",
@@ -125,9 +125,9 @@ class MemberService:
                 "name": "佐藤花子",
                 "name_kana": "さとう　はなこ",
                 "house": house,
-                "constituency": "大阪府第2区"
-                if house == "house_of_representatives"
-                else "大阪府",
+                "constituency": (
+                    "大阪府第2区" if house == "house_of_representatives" else "大阪府"
+                ),
                 "party_name": "立憲民主党",
                 "birth_date": "1975-03-15",
                 "first_elected": "2017-10-22",

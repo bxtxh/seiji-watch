@@ -668,9 +668,11 @@ def _normalize_bill_data(bill_data: BillData) -> dict[str, str]:
         "status": status_mapping.get(bill_data.stage, "BACKLOG"),
         "category": category_mapping.get(bill_data.category, "OTHER"),
         "diet_url": bill_data.url,
-        "submitted_date": bill_data.submission_date.strftime("%Y-%m-%d")
-        if bill_data.submission_date
-        else None,
+        "submitted_date": (
+            bill_data.submission_date.strftime("%Y-%m-%d")
+            if bill_data.submission_date
+            else None
+        ),
         "submitter_type": bill_data.submitter,
         "diet_session": diet_session,
         "house_of_origin": "参議院",
@@ -980,9 +982,9 @@ async def execute_scheduled_task(task_data: dict[str, Any]) -> dict[str, Any]:
         success = await scheduler.handle_pubsub_message(task_data)
         return {
             "success": success,
-            "message": "Task execution completed"
-            if success
-            else "Task execution failed",
+            "message": (
+                "Task execution completed" if success else "Task execution failed"
+            ),
         }
     except Exception as e:
         logger.error(f"Failed to execute scheduled task: {e}")
@@ -1406,9 +1408,11 @@ async def process_hr_pdfs(
         if integration_result:
             return HRProcessingResponse(
                 success=pipeline_result["success"],
-                message="HR PDF processing completed successfully"
-                if pipeline_result["success"]
-                else "HR PDF processing completed with errors",
+                message=(
+                    "HR PDF processing completed successfully"
+                    if pipeline_result["success"]
+                    else "HR PDF processing completed with errors"
+                ),
                 sessions_processed=integration_result.sessions_processed,
                 processing_time=pipeline_result["total_time"],
                 bills_created=integration_result.bills_created,
@@ -1604,9 +1608,11 @@ async def execute_t52_limited_scraping(request: T52ScrapeRequest) -> T52ScrapeRe
 
         return T52ScrapeResponse(
             success=result.success,
-            message="T52 limited scraping completed successfully"
-            if result.success
-            else "T52 limited scraping completed with errors",
+            message=(
+                "T52 limited scraping completed successfully"
+                if result.success
+                else "T52 limited scraping completed with errors"
+            ),
             total_time=result.total_time,
             bills_collected=result.bills_collected,
             voting_sessions_collected=result.voting_sessions_collected,

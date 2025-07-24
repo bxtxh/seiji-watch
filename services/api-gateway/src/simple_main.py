@@ -255,11 +255,9 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"経済政策関連法案{i}",
                     "Summary": f"これは法案{i}の要約です。マクロ経済学に関する重要な政策が含まれています。",
-                    "Status": "審議中"
-                    if i % 3 == 0
-                    else "成立"
-                    if i % 3 == 1
-                    else "否決",
+                    "Status": (
+                        "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決"
+                    ),
                     "Category": "マクロ経済学",
                     "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15",

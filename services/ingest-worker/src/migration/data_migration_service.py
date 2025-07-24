@@ -274,9 +274,11 @@ class DataMigrationService:
 
             execution.phase_results["completion"] = {
                 "report_generated": True,
-                "final_quality_score": migration_report.final_quality_report.overall_metrics.overall_quality_score
-                if migration_report.final_quality_report
-                else None,
+                "final_quality_score": (
+                    migration_report.final_quality_report.overall_metrics.overall_quality_score
+                    if migration_report.final_quality_report
+                    else None
+                ),
             }
 
             # Mark as completed
@@ -519,14 +521,16 @@ class DataMigrationService:
                 "accuracy_rate": report.initial_quality_report.overall_metrics.accuracy_rate,
                 "total_issues": len(report.initial_quality_report.issues),
             },
-            "final_quality_metrics": {
-                "overall_quality_score": report.final_quality_report.overall_metrics.overall_quality_score,
-                "completeness_rate": report.final_quality_report.overall_metrics.completeness_rate,
-                "accuracy_rate": report.final_quality_report.overall_metrics.accuracy_rate,
-                "total_issues": len(report.final_quality_report.issues),
-            }
-            if report.final_quality_report
-            else None,
+            "final_quality_metrics": (
+                {
+                    "overall_quality_score": report.final_quality_report.overall_metrics.overall_quality_score,
+                    "completeness_rate": report.final_quality_report.overall_metrics.completeness_rate,
+                    "accuracy_rate": report.final_quality_report.overall_metrics.accuracy_rate,
+                    "total_issues": len(report.final_quality_report.issues),
+                }
+                if report.final_quality_report
+                else None
+            ),
             "batch_results": [
                 {
                     "batch_id": batch.batch_id,
@@ -561,9 +565,11 @@ class DataMigrationService:
                 "plan_id": execution.plan_id,
                 "status": execution.status.value,
                 "started_at": execution.started_at.isoformat(),
-                "completed_at": execution.completed_at.isoformat()
-                if execution.completed_at
-                else None,
+                "completed_at": (
+                    execution.completed_at.isoformat()
+                    if execution.completed_at
+                    else None
+                ),
                 "progress_percentage": execution.progress_percentage,
                 "tasks_completed": execution.tasks_completed,
                 "tasks_failed": execution.tasks_failed,
@@ -606,13 +612,15 @@ class DataMigrationService:
             "success_rate": successful / len(recent_executions),
             "total_tasks_completed": sum(e.tasks_completed for e in recent_executions),
             "total_tasks_failed": sum(e.tasks_failed for e in recent_executions),
-            "average_processing_time_ms": sum(
-                e.phase_results.get("execution", {}).get("processing_time_ms", 0)
-                for e in recent_executions
-            )
-            / len(recent_executions)
-            if recent_executions
-            else 0,
+            "average_processing_time_ms": (
+                sum(
+                    e.phase_results.get("execution", {}).get("processing_time_ms", 0)
+                    for e in recent_executions
+                )
+                / len(recent_executions)
+                if recent_executions
+                else 0
+            ),
         }
 
     def cleanup_old_reports(self, retention_days: int = 90):

@@ -69,13 +69,15 @@ app = FastAPI(
 # Security middleware - CORS with strict settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://seiji-watch.com",
-        "https://www.seiji-watch.com",
-        "http://localhost:3000",  # Development only
-    ]
-    if os.getenv("ENVIRONMENT") != "production"
-    else ["https://seiji-watch.com", "https://www.seiji-watch.com"],
+    allow_origins=(
+        [
+            "https://seiji-watch.com",
+            "https://www.seiji-watch.com",
+            "http://localhost:3000",  # Development only
+        ]
+        if os.getenv("ENVIRONMENT") != "production"
+        else ["https://seiji-watch.com", "https://www.seiji-watch.com"]
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["*"],
@@ -245,7 +247,7 @@ async def health_check():
             content={
                 "status": "unhealthy",
                 "error": "Service temporarily unavailable",
-                "version": "1.0.0"
+                "version": "1.0.0",
             },
         )
 

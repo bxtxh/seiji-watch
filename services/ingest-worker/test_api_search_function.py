@@ -187,13 +187,14 @@ def test_search_performance_estimation():
 
     # パフォーマンス予測
     estimated_improvements = [
-        (
-            "検索範囲の拡大",
-            f"3倍増加（{search_fields_count}/{old_search_fields_count} = {search_fields_count / old_search_fields_count:.1f}倍）",
-        ),
-        ("検索精度の向上", "非構造化テキストから構造化フィールドへ"),
-        ("インデックス利用効率", "フィールド別インデックスによる高速化"),
-    ]
+    ( "検索範囲の拡大",
+    f"3倍増加（{search_fields_count}/{old_search_fields_count} = {search_fields_count / old_search_fields_count:.1f}倍）",
+    ),
+    ("検索精度の向上",
+    "非構造化テキストから構造化フィールドへ"),
+    ("インデックス利用効率",
+    "フィールド別インデックスによる高速化"),
+     ]
 
     print("\n予想されるパフォーマンス改善:")
     for improvement, description in estimated_improvements:

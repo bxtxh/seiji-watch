@@ -289,29 +289,29 @@ class DataCompletionProcessor:
 
         if inconsistent_fields:
             tasks.append(
-                CompletionTask(
-                    bill_id=bill_id,
-                    strategy=CompletionStrategy.VALIDATE_AND_FIX,
-                    priority=CompletionPriority.HIGH,
-                    target_fields=inconsistent_fields,
-                    description=f"Fix inconsistent fields: {', '.join(inconsistent_fields)}",
-                    estimated_effort=len(inconsistent_fields) * 5,
-                    metadata={"issue_types": ["inconsistent_data"]},
-                )
-            )
+    CompletionTask(
+        bill_id=bill_id,
+        strategy=CompletionStrategy.VALIDATE_AND_FIX,
+        priority=CompletionPriority.HIGH,
+        target_fields=inconsistent_fields,
+        description=f"Fix inconsistent fields: {', '.join(inconsistent_fields)}",
+        estimated_effort=len(inconsistent_fields) * 5,
+        metadata={
+            "issue_types": ["inconsistent_data"]},
+             ) )
 
         if poor_quality_fields:
             tasks.append(
-                CompletionTask(
-                    bill_id=bill_id,
-                    strategy=CompletionStrategy.ENHANCE_EXISTING,
-                    priority=CompletionPriority.MEDIUM,
-                    target_fields=poor_quality_fields,
-                    description=f"Enhance text quality: {', '.join(poor_quality_fields)}",
-                    estimated_effort=len(poor_quality_fields) * 8,
-                    metadata={"issue_types": ["poor_quality"]},
-                )
-            )
+    CompletionTask(
+        bill_id=bill_id,
+        strategy=CompletionStrategy.ENHANCE_EXISTING,
+        priority=CompletionPriority.MEDIUM,
+        target_fields=poor_quality_fields,
+        description=f"Enhance text quality: {', '.join(poor_quality_fields)}",
+        estimated_effort=len(poor_quality_fields) * 8,
+        metadata={
+            "issue_types": ["poor_quality"]},
+             ) )
 
         return tasks
 

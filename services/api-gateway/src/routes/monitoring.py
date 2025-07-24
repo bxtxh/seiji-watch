@@ -592,9 +592,9 @@ async def monitoring_api_health_check(
             "status": "healthy" if overall_healthy else "unhealthy",
             "components": {
                 "monitoring_system": "healthy" if monitoring_healthy else "unhealthy",
-                "error_recovery_system": "healthy"
-                if error_recovery_healthy
-                else "unhealthy",
+                "error_recovery_system": (
+                    "healthy" if error_recovery_healthy else "unhealthy"
+                ),
             },
             "timestamp": datetime.now().isoformat(),
         }

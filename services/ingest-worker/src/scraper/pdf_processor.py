@@ -419,16 +419,18 @@ class PDFProcessor:
 
             # Create session object
             session = PDFVotingSession(
-                session_id=f"hr_{bill_info['bill_number']}_{bill_info['vote_date'].strftime('%Y%m%d')}",
-                bill_number=bill_info["bill_number"],
-                bill_title=bill_info["bill_title"],
-                vote_date=bill_info["vote_date"],
-                vote_type=bill_info.get("vote_type", "本会議"),
-                committee_name=bill_info.get("committee_name"),
-                pdf_url=pdf_url,
-                total_members=len(vote_records),
-                vote_records=vote_records,
-            )
+    session_id=f"hr_{bill_info['bill_number']}_{bill_info['vote_date'].strftime('%Y%m%d')}",
+    bill_number=bill_info["bill_number"],
+    bill_title=bill_info["bill_title"],
+    vote_date=bill_info["vote_date"],
+    vote_type=bill_info.get(
+        "vote_type",
+        "本会議"),
+        committee_name=bill_info.get("committee_name"),
+        pdf_url=pdf_url,
+        total_members=len(vote_records),
+        vote_records=vote_records,
+         )
 
             logger.info(
                 f"Parsed voting session: {session.bill_number} with {len(vote_records)} votes"

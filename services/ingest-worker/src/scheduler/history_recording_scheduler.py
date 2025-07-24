@@ -224,10 +224,9 @@ class HistoryRecordingScheduler:
 
             # Log result
             self.logger.info(
-                f"History recording completed successfully: "
-                f"{result.changes_detected} changes detected, "
-                f"{result.history_records_created} records created in {execution_time:.1f}ms"
-            )
+    f"History recording completed successfully: "
+    f"{result.changes_detected} changes detected, "
+    f"{result.history_records_created} records created in {execution_time:.1f}ms" )
 
             # Store detailed execution history
             self._store_execution_history(True, result, execution_time)
@@ -269,9 +268,8 @@ class HistoryRecordingScheduler:
             execution_time = (datetime.now() - start_time).total_seconds() * 1000
 
             self.logger.info(
-                f"Full scan completed: {result.changes_detected} changes detected, "
-                f"{result.history_records_created} records created in {execution_time:.1f}ms"
-            )
+    f"Full scan completed: {result.changes_detected} changes detected, "
+    f"{result.history_records_created} records created in {execution_time:.1f}ms" )
 
             # Store full scan history
             self._store_execution_history(
@@ -391,9 +389,11 @@ class HistoryRecordingScheduler:
 
         return {
             "is_running": self.status.is_running,
-            "last_execution": self.status.last_execution.isoformat()
-            if self.status.last_execution
-            else None,
+            "last_execution": (
+                self.status.last_execution.isoformat()
+                if self.status.last_execution
+                else None
+            ),
             "next_execution": next_run.isoformat() if next_run else None,
             "total_executions": self.status.total_executions,
             "successful_executions": self.status.successful_executions,

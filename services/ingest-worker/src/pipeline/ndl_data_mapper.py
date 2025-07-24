@@ -167,9 +167,11 @@ class NDLDataMapper:
                 "committee_name": ndl_meeting.committee_name,
                 "diet_session": str(ndl_meeting.diet_session),
                 "house": ndl_meeting.house,
-                "meeting_date": ndl_meeting.meeting_date.isoformat()
-                if ndl_meeting.meeting_date
-                else None,
+                "meeting_date": (
+                    ndl_meeting.meeting_date.isoformat()
+                    if ndl_meeting.meeting_date
+                    else None
+                ),
                 "transcript_url": ndl_meeting.pdf_url,
                 "is_processed": False,
                 "transcript_processed": True,  # NDL provides processed transcripts
@@ -218,12 +220,16 @@ class NDLDataMapper:
                 "speech_type": self.SPEECH_TYPE_MAPPING.get(
                     ndl_speech.speech_type, "発言"
                 ),
-                "start_time": ndl_speech.speech_datetime.isoformat()
-                if ndl_speech.speech_datetime
-                else None,
-                "word_count": len(ndl_speech.speech_content.split())
-                if ndl_speech.speech_content
-                else 0,
+                "start_time": (
+                    ndl_speech.speech_datetime.isoformat()
+                    if ndl_speech.speech_datetime
+                    else None
+                ),
+                "word_count": (
+                    len(ndl_speech.speech_content.split())
+                    if ndl_speech.speech_content
+                    else 0
+                ),
                 "is_processed": False,
                 "needs_review": False,
             }

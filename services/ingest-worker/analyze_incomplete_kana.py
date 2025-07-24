@@ -328,12 +328,14 @@ class IncompleteKanaAnalyzer:
                 "too_short_cases": len(self.analysis_results["too_short_cases"]),
                 "suspicious_cases": len(self.analysis_results["suspicious_cases"]),
                 "completeness_rate": (
-                    len(self.analysis_results["good_cases"])
-                    / self.analysis_results["total_analyzed"]
-                    * 100
-                )
-                if self.analysis_results["total_analyzed"] > 0
-                else 0,
+                    (
+                        len(self.analysis_results["good_cases"])
+                        / self.analysis_results["total_analyzed"]
+                        * 100
+                    )
+                    if self.analysis_results["total_analyzed"] > 0
+                    else 0
+                ),
             },
         }
 

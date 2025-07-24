@@ -54,8 +54,7 @@ class ShugiinMemberCollector:
 
         # Session for web scraping
         self.scraping_headers = {
-            "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
-        }
+     "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)" }
 
     async def _rate_limited_request(
         self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
@@ -192,9 +191,11 @@ class ShugiinMemberCollector:
                                 name=name,
                                 constituency=current_constituency,
                                 party_name=current_party,
-                                profile_url=profile_url
-                                if profile_url.startswith("http")
-                                else None,
+                                profile_url=(
+                                    profile_url
+                                    if profile_url.startswith("http")
+                                    else None
+                                ),
                                 is_active=True,
                             )
                             members.append(member)

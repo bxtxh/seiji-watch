@@ -293,9 +293,11 @@ def validate_and_sanitize_request(
             if isinstance(value, str):
                 sanitized_body[key] = InputValidator.sanitize_string(
                     value,
-                    max_length=InputValidator.MAX_SEARCH_QUERY_LENGTH
-                    if "query" in key.lower()
-                    else InputValidator.MAX_GENERAL_TEXT_LENGTH,
+                    max_length=(
+                        InputValidator.MAX_SEARCH_QUERY_LENGTH
+                        if "query" in key.lower()
+                        else InputValidator.MAX_GENERAL_TEXT_LENGTH
+                    ),
                 )
             else:
                 sanitized_body[key] = value

@@ -67,9 +67,9 @@ def analyze_member_policy_stance(
                 "stance": "支持",  # 支持/反対/中立
                 "confidence": 0.75,
                 "reasoning": (
-        f"{issue_tag}に関する発言と投票行動を分析した結果、"
-        "支持的な立場を取っていることが確認されました。"
-    ),
+                    f"{issue_tag}に関する発言と投票行動を分析した結果、"
+                    "支持的な立場を取っていることが確認されました。"
+                ),
                 "vote_count": 15,
                 "supporting_votes": 12,
                 "opposing_votes": 2,
@@ -257,12 +257,14 @@ class MemberTaskManager:
         priority_enum = TaskPriority(priority)
 
         job_id = self.task_queue.enqueue_task(
-            func=bulk_calculate_member_statistics,
-            args=(member_ids, self.airtable_config),
-            priority=priority_enum,
-            job_timeout="30m",
-            description=f"Bulk member statistics calculation for {len(member_ids)} members",
-        )
+    func=bulk_calculate_member_statistics,
+    args=(
+        member_ids,
+        self.airtable_config),
+        priority=priority_enum,
+        job_timeout="30m",
+        description=f"Bulk member statistics calculation for {len(member_ids)} members",
+         )
 
         return job_id
 

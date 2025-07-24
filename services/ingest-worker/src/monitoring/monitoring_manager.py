@@ -279,12 +279,14 @@ class MonitoringManager:
                 "quality_metrics": quality_metrics,
                 "service_status": {
                     "is_running": self.is_running,
-                    "start_time": self.start_time.isoformat()
-                    if self.start_time
-                    else None,
-                    "uptime_seconds": (datetime.now() - self.start_time).total_seconds()
-                    if self.start_time
-                    else 0,
+                    "start_time": (
+                        self.start_time.isoformat() if self.start_time else None
+                    ),
+                    "uptime_seconds": (
+                        (datetime.now() - self.start_time).total_seconds()
+                        if self.start_time
+                        else 0
+                    ),
                 },
             }
 
@@ -511,12 +513,14 @@ class MonitoringManager:
             return {
                 "manager_status": {
                     "is_running": self.is_running,
-                    "start_time": self.start_time.isoformat()
-                    if self.start_time
-                    else None,
-                    "uptime_seconds": (datetime.now() - self.start_time).total_seconds()
-                    if self.start_time
-                    else 0,
+                    "start_time": (
+                        self.start_time.isoformat() if self.start_time else None
+                    ),
+                    "uptime_seconds": (
+                        (datetime.now() - self.start_time).total_seconds()
+                        if self.start_time
+                        else 0
+                    ),
                 },
                 "monitoring_service_status": self.monitoring_service.get_service_status(),
                 "dashboard_status": self.dashboard.get_dashboard_status(),

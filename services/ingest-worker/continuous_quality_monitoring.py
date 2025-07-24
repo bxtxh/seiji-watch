@@ -310,48 +310,44 @@ class ContinuousQualityMonitor:
 
         if avg_completeness < thresholds.get("critical_threshold", 0.7):
             metrics["alerts"].append(
-                {
-                    "type": "CRITICAL",
-                    "metric": "completeness",
-                    "current": avg_completeness,
-                    "threshold": thresholds["critical_threshold"],
-                    "message": f"Completeness below critical threshold ({avg_completeness:.1%} < {thresholds['critical_threshold']:.1%})",
-                }
-            )
+    {
+        "type": "CRITICAL",
+        "metric": "completeness",
+        "current": avg_completeness,
+        "threshold": thresholds["critical_threshold"],
+        "message": f"Completeness below critical threshold ({avg_completeness:.1%} < {thresholds['critical_threshold']:.1%})",
+         } )
         elif avg_completeness < thresholds.get("warning_threshold", 0.8):
             metrics["alerts"].append(
-                {
-                    "type": "WARNING",
-                    "metric": "completeness",
-                    "current": avg_completeness,
-                    "threshold": thresholds["warning_threshold"],
-                    "message": f"Completeness below warning threshold ({avg_completeness:.1%} < {thresholds['warning_threshold']:.1%})",
-                }
-            )
+    {
+        "type": "WARNING",
+        "metric": "completeness",
+        "current": avg_completeness,
+        "threshold": thresholds["warning_threshold"],
+        "message": f"Completeness below warning threshold ({avg_completeness:.1%} < {thresholds['warning_threshold']:.1%})",
+         } )
 
         if metrics["uniqueness"]["duplicate_count"] > thresholds.get(
             "max_duplicates", 5
         ):
             metrics["alerts"].append(
-                {
-                    "type": "WARNING",
-                    "metric": "uniqueness",
-                    "current": metrics["uniqueness"]["duplicate_count"],
-                    "threshold": thresholds["max_duplicates"],
-                    "message": f"Too many duplicates ({metrics['uniqueness']['duplicate_count']} > {thresholds['max_duplicates']})",
-                }
-            )
+    {
+        "type": "WARNING",
+        "metric": "uniqueness",
+        "current": metrics["uniqueness"]["duplicate_count"],
+        "threshold": thresholds["max_duplicates"],
+        "message": f"Too many duplicates ({metrics['uniqueness']['duplicate_count']} > {thresholds['max_duplicates']})",
+         } )
 
         if invalid_count > thresholds.get("max_invalid_records", 10):
             metrics["alerts"].append(
-                {
-                    "type": "WARNING",
-                    "metric": "validity",
-                    "current": invalid_count,
-                    "threshold": thresholds["max_invalid_records"],
-                    "message": f"Too many invalid records ({invalid_count} > {thresholds['max_invalid_records']})",
-                }
-            )
+    {
+        "type": "WARNING",
+        "metric": "validity",
+        "current": invalid_count,
+        "threshold": thresholds["max_invalid_records"],
+        "message": f"Too many invalid records ({invalid_count} > {thresholds['max_invalid_records']})",
+         } )
 
         return metrics
 
@@ -397,11 +393,13 @@ class ContinuousQualityMonitor:
             trends["table_trends"][table_name] = {
                 "completeness_change": round(completeness_delta, 3),
                 "quality_score_change": round(score_delta, 3),
-                "trend_direction": "improving"
-                if score_delta > 0.01
-                else "declining"
-                if score_delta < -0.01
-                else "stable",
+                "trend_direction": (
+                    "improving"
+                    if score_delta > 0.01
+                    else "declining"
+                    if score_delta < -0.01
+                    else "stable"
+                ),
                 "current_grade": last_report.get("quality_grade", "F"),
                 "previous_grade": first_report.get("quality_grade", "F"),
             }
@@ -409,23 +407,21 @@ class ContinuousQualityMonitor:
             # Generate trend alerts
             if completeness_delta < -0.05:  # 5% decline
                 trends["alerts"].append(
-                    {
-                        "type": "WARNING",
-                        "table": table_name,
-                        "metric": "completeness_trend",
-                        "message": f"{table_name} completeness declining by {completeness_delta:.1%}",
-                    }
-                )
+    {
+        "type": "WARNING",
+        "table": table_name,
+        "metric": "completeness_trend",
+        "message": f"{table_name} completeness declining by {completeness_delta:.1%}",
+         } )
 
             if score_delta < -0.1:  # 10% score decline
                 trends["alerts"].append(
-                    {
-                        "type": "CRITICAL",
-                        "table": table_name,
-                        "metric": "quality_trend",
-                        "message": f"{table_name} overall quality declining by {score_delta:.1%}",
-                    }
-                )
+    {
+        "type": "CRITICAL",
+        "table": table_name,
+        "metric": "quality_trend",
+        "message": f"{table_name} overall quality declining by {score_delta:.1%}",
+         } )
 
         return trends
 
@@ -439,38 +435,35 @@ class ContinuousQualityMonitor:
         for table_name, metrics in current_metrics.items():
             if metrics.get("overall_score", 0) < 0.8:
                 recommendations.append(
-                    {
-                        "priority": "HIGH",
-                        "table": table_name,
-                        "action": "immediate_quality_review",
-                        "description": f"Conduct immediate quality review for {table_name} (score: {metrics.get('overall_score', 0):.1%})",
-                        "estimated_effort": "2-4 hours",
-                    }
-                )
+    {
+        "priority": "HIGH",
+        "table": table_name,
+        "action": "immediate_quality_review",
+        "description": f"Conduct immediate quality review for {table_name} (score: {metrics.get('overall_score', 0):.1%})",
+        "estimated_effort": "2-4 hours",
+         } )
 
             completeness = metrics.get("completeness", {}).get("overall", 0)
             if completeness < 0.85:
                 recommendations.append(
-                    {
-                        "priority": "MEDIUM",
-                        "table": table_name,
-                        "action": "completeness_improvement",
-                        "description": f"Improve data completeness for {table_name} (current: {completeness:.1%})",
-                        "estimated_effort": "4-8 hours",
-                    }
-                )
+    {
+        "priority": "MEDIUM",
+        "table": table_name,
+        "action": "completeness_improvement",
+        "description": f"Improve data completeness for {table_name} (current: {completeness:.1%})",
+        "estimated_effort": "4-8 hours",
+         } )
 
             duplicate_count = metrics.get("uniqueness", {}).get("duplicate_count", 0)
             if duplicate_count > 0:
                 recommendations.append(
-                    {
-                        "priority": "MEDIUM",
-                        "table": table_name,
-                        "action": "duplicate_cleanup",
-                        "description": f"Clean up {duplicate_count} duplicate records in {table_name}",
-                        "estimated_effort": "1-3 hours",
-                    }
-                )
+    {
+        "priority": "MEDIUM",
+        "table": table_name,
+        "action": "duplicate_cleanup",
+        "description": f"Clean up {duplicate_count} duplicate records in {table_name}",
+        "estimated_effort": "1-3 hours",
+         } )
 
         # Based on trends
         for table_name, trend in trends.get("table_trends", {}).items():

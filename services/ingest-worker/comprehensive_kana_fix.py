@@ -287,7 +287,8 @@ class ComprehensiveKanaFixer:
                     break
 
             if not matched:
-                # If we can't match the remaining character, try some common single character readings
+                # If we can't match the remaining character, try some common single
+                # character readings
                 single_char = remaining[0]
                 if single_char in KANJI_KANA_PATTERNS:
                     result += KANJI_KANA_PATTERNS[single_char]

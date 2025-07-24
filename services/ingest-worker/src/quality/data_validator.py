@@ -86,17 +86,14 @@ class DataQualityValidator:
         completeness_score = complete_records / len(bills) if bills else 0
 
         metrics.append(
-            QualityMetric(
-                name="completeness",
-                value=completeness_score,
-                threshold=self.thresholds["completeness"],
-                passed=completeness_score >= self.thresholds["completeness"],
-                description=f"{complete_records}/{len(bills)} bills have all required fields",
-                recommendations=self._get_completeness_recommendations(
-                    completeness_score
-                ),
-            )
-        )
+    QualityMetric(
+        name="completeness",
+        value=completeness_score,
+        threshold=self.thresholds["completeness"],
+        passed=completeness_score >= self.thresholds["completeness"],
+        description=f"{complete_records}/{len(bills)} bills have all required fields",
+        recommendations=self._get_completeness_recommendations( completeness_score ),
+         ) )
 
         # Uniqueness check
         unique_ids = set(bill.get("bill_id", "") for bill in bills)
@@ -118,15 +115,14 @@ class DataQualityValidator:
         validity_score = valid_records / len(bills) if bills else 0
 
         metrics.append(
-            QualityMetric(
-                name="validity",
-                value=validity_score,
-                threshold=self.thresholds["validity"],
-                passed=validity_score >= self.thresholds["validity"],
-                description=f"{valid_records}/{len(bills)} bills pass format validation",
-                recommendations=self._get_validity_recommendations(validity_score),
-            )
-        )
+    QualityMetric(
+        name="validity",
+        value=validity_score,
+        threshold=self.thresholds["validity"],
+        passed=validity_score >= self.thresholds["validity"],
+        description=f"{valid_records}/{len(bills)} bills pass format validation",
+        recommendations=self._get_validity_recommendations(validity_score),
+         ) )
 
         # Title quality check
         title_quality_score = self._assess_title_quality(bills)
@@ -189,17 +185,14 @@ class DataQualityValidator:
         )
 
         metrics.append(
-            QualityMetric(
-                name="completeness",
-                value=completeness_score,
-                threshold=self.thresholds["completeness"],
-                passed=completeness_score >= self.thresholds["completeness"],
-                description=f"{complete_sessions}/{len(voting_sessions)} sessions have complete data",
-                recommendations=self._get_voting_completeness_recommendations(
-                    completeness_score
-                ),
-            )
-        )
+    QualityMetric(
+        name="completeness",
+        value=completeness_score,
+        threshold=self.thresholds["completeness"],
+        passed=completeness_score >= self.thresholds["completeness"],
+        description=f"{complete_sessions}/{len(voting_sessions)} sessions have complete data",
+        recommendations=self._get_voting_completeness_recommendations( completeness_score ),
+         ) )
 
         # Vote record consistency
         consistency_score = self._assess_vote_record_consistency(voting_sessions)

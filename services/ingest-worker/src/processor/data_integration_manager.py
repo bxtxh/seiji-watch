@@ -541,9 +541,9 @@ class DataIntegrationManager:
                     "session_id": result.session_id,
                     "processing_stage": result.processing_stage.value,
                     "start_time": result.start_time.isoformat(),
-                    "end_time": result.end_time.isoformat()
-                    if result.end_time
-                    else None,
+                    "end_time": (
+                        result.end_time.isoformat() if result.end_time else None
+                    ),
                     "total_bills_processed": result.total_bills_processed,
                     "sangiin_bills_count": result.sangiin_bills_count,
                     "shugiin_bills_count": result.shugiin_bills_count,

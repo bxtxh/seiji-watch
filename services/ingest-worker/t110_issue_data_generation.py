@@ -388,15 +388,17 @@ class IssueDataGenerator:
                     "Priority": issue.priority,
                     "Source_Bill_ID": issue.source_bill_id,
                     "Impact_Level": issue.impact_level,
-                    "Stakeholders": ", ".join(issue.stakeholders)
-                    if issue.stakeholders
-                    else None,
+                    "Stakeholders": (
+                        ", ".join(issue.stakeholders) if issue.stakeholders else None
+                    ),
                     "Estimated_Timeline": issue.estimated_timeline,
                     "AI_Confidence": issue.ai_confidence,
                     "Tags": ", ".join(issue.tags) if issue.tags else None,
-                    "Related_Keywords": ", ".join(issue.related_keywords)
-                    if issue.related_keywords
-                    else None,
+                    "Related_Keywords": (
+                        ", ".join(issue.related_keywords)
+                        if issue.related_keywords
+                        else None
+                    ),
                     "Created_At": datetime.now().isoformat(),
                     "Updated_At": datetime.now().isoformat(),
                 }

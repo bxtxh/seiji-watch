@@ -166,19 +166,27 @@ class AirtableIssueManager:
                 parent_id=fields.get("Parent_ID"),
                 confidence=fields.get("Confidence", 0.0),
                 status=fields.get("Status", "pending"),
-                valid_from=datetime.fromisoformat(fields["Valid_From"]).date()
-                if fields.get("Valid_From")
-                else date.today(),
-                valid_to=datetime.fromisoformat(fields["Valid_To"]).date()
-                if fields.get("Valid_To")
-                else None,
+                valid_from=(
+                    datetime.fromisoformat(fields["Valid_From"]).date()
+                    if fields.get("Valid_From")
+                    else date.today()
+                ),
+                valid_to=(
+                    datetime.fromisoformat(fields["Valid_To"]).date()
+                    if fields.get("Valid_To")
+                    else None
+                ),
                 source_bill_id=fields.get("Source_Bill_ID"),
-                created_at=datetime.fromisoformat(fields["Created_At"])
-                if fields.get("Created_At")
-                else datetime.now(),
-                updated_at=datetime.fromisoformat(fields["Updated_At"])
-                if fields.get("Updated_At")
-                else datetime.now(),
+                created_at=(
+                    datetime.fromisoformat(fields["Created_At"])
+                    if fields.get("Created_At")
+                    else datetime.now()
+                ),
+                updated_at=(
+                    datetime.fromisoformat(fields["Updated_At"])
+                    if fields.get("Updated_At")
+                    else datetime.now()
+                ),
                 reviewer_notes=fields.get("Reviewer_Notes"),
                 quality_score=fields.get("Quality_Score", 0.0),
                 extraction_version=fields.get("Extraction_Version", "1.0.0"),

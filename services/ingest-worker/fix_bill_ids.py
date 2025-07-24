@@ -228,9 +228,11 @@ class BillIDFixer:
                     "missing_bills_details": [
                         {
                             "record_id": bill.record_id,
-                            "title": bill.title[:100] + "..."
-                            if len(bill.title) > 100
-                            else bill.title,
+                            "title": (
+                                bill.title[:100] + "..."
+                                if len(bill.title) > 100
+                                else bill.title
+                            ),
                             "submitter": bill.submitter,
                             "category": bill.category,
                             "house": bill.house,
@@ -276,9 +278,11 @@ class BillIDFixer:
                 results["generated_ids"].append(
                     {
                         "record_id": bill.record_id,
-                        "title": bill.title[:50] + "..."
-                        if len(bill.title) > 50
-                        else bill.title,
+                        "title": (
+                            bill.title[:50] + "..."
+                            if len(bill.title) > 50
+                            else bill.title
+                        ),
                         "generated_id": generated_id,
                         "submitter": bill.submitter,
                         "house": bill.house,

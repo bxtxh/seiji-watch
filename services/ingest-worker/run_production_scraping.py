@@ -50,9 +50,9 @@ async def execute_simplified_production_scraping(diet_scraper, voting_scraper, t
                 "category": bill.category,
                 "url": bill.url,
                 "summary": bill.summary,
-                "submission_date": bill.submission_date.isoformat()
-                if bill.submission_date
-                else None,
+                "submission_date": (
+                    bill.submission_date.isoformat() if bill.submission_date else None
+                ),
                 "collected_at": datetime.now().isoformat(),
             }
             bills_data.append(bill_data)
@@ -117,12 +117,12 @@ async def execute_simplified_production_scraping(diet_scraper, voting_scraper, t
             "transcriptions_completed": 0,  # Not implemented in simplified version
             "errors": [],
             "performance_metrics": {
-                "bills_per_second": len(bills_data) / total_time
-                if total_time > 0
-                else 0,
-                "voting_sessions_per_second": len(voting_data) / total_time
-                if total_time > 0
-                else 0,
+                "bills_per_second": (
+                    len(bills_data) / total_time if total_time > 0 else 0
+                ),
+                "voting_sessions_per_second": (
+                    len(voting_data) / total_time if total_time > 0 else 0
+                ),
                 "total_vote_records": total_vote_records,
                 "error_rate": 0.0,
             },
@@ -251,37 +251,42 @@ async def execute_production_scraping():
                 "performance_metrics": result["performance_metrics"],
             },
             "data_quality_summary": {
-                "collection_completeness": result["bills_collected"]
-                / target["max_bills"]
-                if target["max_bills"] > 0
-                else 0,
-                "voting_completeness": result["voting_sessions_collected"]
-                / target["max_voting_sessions"]
-                if target["max_voting_sessions"] > 0
-                else 0,
-                "speech_completeness": result["speeches_processed"]
-                / target["max_speeches"]
-                if target["max_speeches"] > 0
-                else 0,
+                "collection_completeness": (
+                    result["bills_collected"] / target["max_bills"]
+                    if target["max_bills"] > 0
+                    else 0
+                ),
+                "voting_completeness": (
+                    result["voting_sessions_collected"] / target["max_voting_sessions"]
+                    if target["max_voting_sessions"] > 0
+                    else 0
+                ),
+                "speech_completeness": (
+                    result["speeches_processed"] / target["max_speeches"]
+                    if target["max_speeches"] > 0
+                    else 0
+                ),
                 "ai_processing_success": result["embeddings_generated"] > 0
                 and result["transcriptions_completed"] >= 0,
                 "overall_success_rate": (
-                    result["bills_collected"]
-                    + result["voting_sessions_collected"]
-                    + result["speeches_processed"]
-                )
-                / (
-                    target["max_bills"]
-                    + target["max_voting_sessions"]
-                    + target["max_speeches"]
-                )
-                if (
-                    target["max_bills"]
-                    + target["max_voting_sessions"]
-                    + target["max_speeches"]
-                )
-                > 0
-                else 0,
+                    (
+                        result["bills_collected"]
+                        + result["voting_sessions_collected"]
+                        + result["speeches_processed"]
+                    )
+                    / (
+                        target["max_bills"]
+                        + target["max_voting_sessions"]
+                        + target["max_speeches"]
+                    )
+                    if (
+                        target["max_bills"]
+                        + target["max_voting_sessions"]
+                        + target["max_speeches"]
+                    )
+                    > 0
+                    else 0
+                ),
             },
             "production_readiness": {
                 "data_collection": result["success"],

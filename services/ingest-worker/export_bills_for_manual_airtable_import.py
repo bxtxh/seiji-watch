@@ -56,9 +56,9 @@ def bill_to_airtable_row(bill):
         "Bill_Type": bill.submitter or "議員",
         "Diet_URL": bill.url or "",
         "Summary": bill.summary or "",
-        "Submitted_Date": bill.submission_date.isoformat()
-        if bill.submission_date
-        else "",
+        "Submitted_Date": (
+            bill.submission_date.isoformat() if bill.submission_date else ""
+        ),
         "Created_At": datetime.now().isoformat(),
         "Updated_At": datetime.now().isoformat(),
     }
@@ -111,9 +111,9 @@ def export_bills_to_json(bills, output_path):
             "category": bill.category,
             "url": bill.url,
             "summary": bill.summary,
-            "submission_date": bill.submission_date.isoformat()
-            if bill.submission_date
-            else None,
+            "submission_date": (
+                bill.submission_date.isoformat() if bill.submission_date else None
+            ),
             "collected_at": datetime.now().isoformat(),
         }
         bills_data.append(bill_dict)

@@ -318,12 +318,14 @@ class BillsDataEmergencyFixV2:
             "duplicate_groups_found": len(duplicate_groups),
             "records_kept": len(records_to_keep),
             "records_removed": delete_success_count,
-            "update_success_rate": update_success_count / len(records_to_keep)
-            if records_to_keep
-            else 0,
-            "delete_success_rate": delete_success_count / len(record_ids_to_remove)
-            if record_ids_to_remove
-            else 0,
+            "update_success_rate": (
+                update_success_count / len(records_to_keep) if records_to_keep else 0
+            ),
+            "delete_success_rate": (
+                delete_success_count / len(record_ids_to_remove)
+                if record_ids_to_remove
+                else 0
+            ),
             "writable_fields_used": list(self.essential_fields),
             "computed_fields_excluded": list(self.computed_fields),
         }

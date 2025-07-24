@@ -53,9 +53,13 @@ def test_api_endpoint(
             "status_code": response.status_code,
             "success": response.status_code == 200,
             "headers": dict(response.headers),
-            "response": response.json()
-            if response.headers.get("content-type", "").startswith("application/json")
-            else response.text[:200],
+            "response": (
+                response.json()
+                if response.headers.get("content-type", "").startswith(
+                    "application/json"
+                )
+                else response.text[:200]
+            ),
         }
 
     except requests.exceptions.ConnectionError:

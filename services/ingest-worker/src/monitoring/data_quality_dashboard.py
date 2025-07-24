@@ -229,9 +229,9 @@ class DataQualityDashboard:
                 name="Data Accuracy",
                 value=accuracy,
                 unit="percentage",
-                severity=MetricSeverity.SUCCESS
-                if accuracy > 0.9
-                else MetricSeverity.WARNING,
+                severity=(
+                    MetricSeverity.SUCCESS if accuracy > 0.9 else MetricSeverity.WARNING
+                ),
                 description="Percentage of bills with accurate data",
                 timestamp=datetime.now(),
             )
@@ -245,9 +245,11 @@ class DataQualityDashboard:
                 name="Data Consistency",
                 value=consistency,
                 unit="percentage",
-                severity=MetricSeverity.SUCCESS
-                if consistency > 0.85
-                else MetricSeverity.WARNING,
+                severity=(
+                    MetricSeverity.SUCCESS
+                    if consistency > 0.85
+                    else MetricSeverity.WARNING
+                ),
                 description="Percentage of bills with consistent data",
                 timestamp=datetime.now(),
             )
@@ -779,37 +781,28 @@ class DataQualityDashboard:
                 overall_score
                 < self.config["alert_thresholds"]["quality_score_critical"]
             ):
-                alerts.append(
-                    {
-                        "type": "critical",
-                        "message": f"Data quality score critically low: {overall_score:.2f}",
-                        "timestamp": datetime.now().isoformat(),
-                        "metric": "quality_score",
-                    }
-                )
+                alerts.append( { "type": "critical",
+    "message": f"Data quality score critically low: {overall_score:.2f}",
+    "timestamp": datetime.now().isoformat(),
+    "metric": "quality_score",
+     } )
             elif (
                 overall_score < self.config["alert_thresholds"]["quality_score_warning"]
             ):
-                alerts.append(
-                    {
-                        "type": "warning",
-                        "message": f"Data quality score below threshold: {overall_score:.2f}",
-                        "timestamp": datetime.now().isoformat(),
-                        "metric": "quality_score",
-                    }
-                )
+                alerts.append( { "type": "warning",
+    "message": f"Data quality score below threshold: {overall_score:.2f}",
+    "timestamp": datetime.now().isoformat(),
+    "metric": "quality_score",
+     } )
 
             # Check completeness alerts
             completeness = quality_metrics.get("completeness_rate", 0)
             if completeness < self.config["alert_thresholds"]["completeness_critical"]:
-                alerts.append(
-                    {
-                        "type": "critical",
-                        "message": f"Data completeness critically low: {completeness:.2f}",
-                        "timestamp": datetime.now().isoformat(),
-                        "metric": "completeness",
-                    }
-                )
+                alerts.append( { "type": "critical",
+    "message": f"Data completeness critically low: {completeness:.2f}",
+    "timestamp": datetime.now().isoformat(),
+    "metric": "completeness",
+     } )
 
             # Check error rate alerts
             error_rate = processing_metrics.get("error_rate", 0)
@@ -826,14 +819,11 @@ class DataQualityDashboard:
             # Check for critical issues
             critical_issues = quality_metrics.get("critical_issues", 0)
             if critical_issues > 0:
-                alerts.append(
-                    {
-                        "type": "warning",
-                        "message": f"{critical_issues} critical data quality issues detected",
-                        "timestamp": datetime.now().isoformat(),
-                        "metric": "quality_issues",
-                    }
-                )
+                alerts.append( { "type": "warning",
+    "message": f"{critical_issues} critical data quality issues detected",
+    "timestamp": datetime.now().isoformat(),
+    "metric": "quality_issues",
+     } )
 
             return alerts
 
@@ -911,9 +901,11 @@ class DataQualityDashboard:
         return {
             "status": "running",
             "cache_size": len(self.metrics_cache),
-            "last_updated": max(self.cache_timestamps.values()).isoformat()
-            if self.cache_timestamps
-            else None,
+            "last_updated": (
+                max(self.cache_timestamps.values()).isoformat()
+                if self.cache_timestamps
+                else None
+            ),
             "alert_thresholds": self.config["alert_thresholds"],
             "cache_ttl": self.config["metrics_cache_ttl"],
         }

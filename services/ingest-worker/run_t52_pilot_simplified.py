@@ -63,9 +63,9 @@ async def collect_pilot_bills_data():
                 "category": bill.category,
                 "url": bill.url,
                 "summary": bill.summary,
-                "submission_date": bill.submission_date.isoformat()
-                if bill.submission_date
-                else None,
+                "submission_date": (
+                    bill.submission_date.isoformat() if bill.submission_date else None
+                ),
                 "collected_at": datetime.now().isoformat(),
             }
             structured_bills.append(bill_data)

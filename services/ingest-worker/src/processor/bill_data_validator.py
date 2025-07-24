@@ -324,16 +324,15 @@ class BillDataValidator:
                 if isinstance(value, str):
                     if not re.match(pattern, value):
                         result.issues.append(
-                            ValidationIssue(
-                                field_name=field_name,
-                                issue_type="invalid_format",
-                                severity=ValidationSeverity.WARNING,
-                                message=f"Field '{field_name}' has invalid format",
-                                suggested_fix=f"Ensure '{field_name}' matches pattern: {pattern}",
-                                current_value=value,
-                                expected_format=pattern,
-                            )
-                        )
+    ValidationIssue(
+        field_name=field_name,
+        issue_type="invalid_format",
+        severity=ValidationSeverity.WARNING,
+        message=f"Field '{field_name}' has invalid format",
+        suggested_fix=f"Ensure '{field_name}' matches pattern: {pattern}",
+        current_value=value,
+        expected_format=pattern,
+         ) )
                 elif isinstance(value, int | float):
                     # Convert to string for pattern matching
                     str_value = str(value)
@@ -357,55 +356,51 @@ class BillDataValidator:
         # Check status consistency
         if bill_data.status and bill_data.status not in self.valid_statuses:
             result.issues.append(
-                ValidationIssue(
-                    field_name="status",
-                    issue_type="invalid_value",
-                    severity=ValidationSeverity.WARNING,
-                    message=f"Status '{bill_data.status}' is not in valid status list",
-                    suggested_fix=f"Use one of: {', '.join(list(self.valid_statuses)[:5])}...",
-                    current_value=bill_data.status,
-                )
-            )
+    ValidationIssue(
+        field_name="status",
+        issue_type="invalid_value",
+        severity=ValidationSeverity.WARNING,
+        message=f"Status '{bill_data.status}' is not in valid status list",
+        suggested_fix=f"Use one of: {', '.join(list(self.valid_statuses)[:5])}...",
+        current_value=bill_data.status,
+         ) )
 
         # Check stage consistency
         if bill_data.stage and bill_data.stage not in self.valid_stages:
             result.issues.append(
-                ValidationIssue(
-                    field_name="stage",
-                    issue_type="invalid_value",
-                    severity=ValidationSeverity.WARNING,
-                    message=f"Stage '{bill_data.stage}' is not in valid stage list",
-                    suggested_fix=f"Use one of: {', '.join(list(self.valid_stages)[:5])}...",
-                    current_value=bill_data.stage,
-                )
-            )
+    ValidationIssue(
+        field_name="stage",
+        issue_type="invalid_value",
+        severity=ValidationSeverity.WARNING,
+        message=f"Stage '{bill_data.stage}' is not in valid stage list",
+        suggested_fix=f"Use one of: {', '.join(list(self.valid_stages)[:5])}...",
+        current_value=bill_data.stage,
+         ) )
 
         # Check category consistency
         if bill_data.category and bill_data.category not in self.valid_categories:
             result.issues.append(
-                ValidationIssue(
-                    field_name="category",
-                    issue_type="invalid_value",
-                    severity=ValidationSeverity.WARNING,
-                    message=f"Category '{bill_data.category}' is not in valid category list",
-                    suggested_fix=f"Use one of: {', '.join(list(self.valid_categories)[:5])}...",
-                    current_value=bill_data.category,
-                )
-            )
+    ValidationIssue(
+        field_name="category",
+        issue_type="invalid_value",
+        severity=ValidationSeverity.WARNING,
+        message=f"Category '{bill_data.category}' is not in valid category list",
+        suggested_fix=f"Use one of: {', '.join(list(self.valid_categories)[:5])}...",
+        current_value=bill_data.category,
+         ) )
 
         # Check data quality score range
         if bill_data.data_quality_score is not None:
             if not (0.0 <= bill_data.data_quality_score <= 1.0):
                 result.issues.append(
-                    ValidationIssue(
-                        field_name="data_quality_score",
-                        issue_type="out_of_range",
-                        severity=ValidationSeverity.WARNING,
-                        message=f"Data quality score {bill_data.data_quality_score} is out of range [0.0, 1.0]",
-                        suggested_fix="Ensure data quality score is between 0.0 and 1.0",
-                        current_value=bill_data.data_quality_score,
-                    )
-                )
+    ValidationIssue(
+        field_name="data_quality_score",
+        issue_type="out_of_range",
+        severity=ValidationSeverity.WARNING,
+        message=f"Data quality score {bill_data.data_quality_score} is out of range [0.0, 1.0]",
+        suggested_fix="Ensure data quality score is between 0.0 and 1.0",
+        current_value=bill_data.data_quality_score,
+         ) )
 
     def _validate_japanese_content(
         self, bill_data: EnhancedBillData, result: ValidationResult
@@ -432,24 +427,23 @@ class BillDataValidator:
                             severity=ValidationSeverity.INFO,
                             message=f"Field '{field_name}' does not contain Japanese characters",
                             suggested_fix="Ensure Japanese text fields contain appropriate Japanese content",
-                            current_value=value[:100] + "..."
-                            if len(value) > 100
-                            else value,
+                            current_value=(
+                                value[:100] + "..." if len(value) > 100 else value
+                            ),
                         )
                     )
 
                 # Check for minimum length
                 if len(value.strip()) < 10:
                     result.issues.append(
-                        ValidationIssue(
-                            field_name=field_name,
-                            issue_type="insufficient_content",
-                            severity=ValidationSeverity.INFO,
-                            message=f"Field '{field_name}' has insufficient content (< 10 characters)",
-                            suggested_fix="Ensure text fields contain meaningful content",
-                            current_value=value,
-                        )
-                    )
+    ValidationIssue(
+        field_name=field_name,
+        issue_type="insufficient_content",
+        severity=ValidationSeverity.INFO,
+        message=f"Field '{field_name}' has insufficient content (< 10 characters)",
+        suggested_fix="Ensure text fields contain meaningful content",
+        current_value=value,
+         ) )
 
     def _validate_logical_relationships(
         self, bill_data: EnhancedBillData, result: ValidationResult
@@ -469,29 +463,27 @@ class BillDataValidator:
                 valid_stages = status_stage_mapping[bill_data.status]
                 if bill_data.stage not in valid_stages:
                     result.issues.append(
-                        ValidationIssue(
-                            field_name="stage",
-                            issue_type="inconsistent_status_stage",
-                            severity=ValidationSeverity.WARNING,
-                            message=f"Stage '{bill_data.stage}' is inconsistent with status '{bill_data.status}'",
-                            suggested_fix=f"Use stage that matches status: {', '.join(valid_stages)}",
-                            current_value=bill_data.stage,
-                        )
-                    )
+    ValidationIssue(
+        field_name="stage",
+        issue_type="inconsistent_status_stage",
+        severity=ValidationSeverity.WARNING,
+        message=f"Stage '{bill_data.stage}' is inconsistent with status '{bill_data.status}'",
+        suggested_fix=f"Use stage that matches status: {', '.join(valid_stages)}",
+        current_value=bill_data.stage,
+         ) )
 
         # Check submitter-submitter_type consistency
         if bill_data.submitter and bill_data.submitter_type:
             if bill_data.submitter != bill_data.submitter_type:
                 result.issues.append(
-                    ValidationIssue(
-                        field_name="submitter_type",
-                        issue_type="inconsistent_submitter_fields",
-                        severity=ValidationSeverity.WARNING,
-                        message=f"Submitter '{bill_data.submitter}' and submitter_type '{bill_data.submitter_type}' are inconsistent",
-                        suggested_fix="Ensure submitter and submitter_type fields match",
-                        current_value=bill_data.submitter_type,
-                    )
-                )
+    ValidationIssue(
+        field_name="submitter_type",
+        issue_type="inconsistent_submitter_fields",
+        severity=ValidationSeverity.WARNING,
+        message=f"Submitter '{bill_data.submitter}' and submitter_type '{bill_data.submitter_type}' are inconsistent",
+        suggested_fix="Ensure submitter and submitter_type fields match",
+        current_value=bill_data.submitter_type,
+         ) )
 
         # Check date logical order
         dates = [
@@ -525,15 +517,15 @@ class BillDataValidator:
 
             if current_date > next_date:
                 result.issues.append(
-                    ValidationIssue(
-                        field_name=next_field,
-                        issue_type="chronological_order_violation",
-                        severity=ValidationSeverity.WARNING,
-                        message=f"Date in '{next_field}' is earlier than '{current_field}'",
-                        suggested_fix="Ensure dates are in chronological order",
-                        current_value=str(next_date.date()),
-                    )
-                )
+    ValidationIssue(
+        field_name=next_field,
+        issue_type="chronological_order_violation",
+        severity=ValidationSeverity.WARNING,
+        message=f"Date in '{next_field}' is earlier than '{current_field}'",
+        suggested_fix="Ensure dates are in chronological order",
+        current_value=str(
+            next_date.date()),
+             ) )
 
     def _validate_merge_quality(
         self, merge_result: MergeResult, validation_result: ValidationResult
@@ -543,28 +535,27 @@ class BillDataValidator:
         # Check merge quality score
         if merge_result.merge_quality_score < 0.5:
             validation_result.issues.append(
-                ValidationIssue(
-                    field_name="_merge_quality",
-                    issue_type="low_merge_quality",
-                    severity=ValidationSeverity.WARNING,
-                    message=f"Merge quality score {merge_result.merge_quality_score:.2f} is below threshold (0.5)",
-                    suggested_fix="Review merge conflicts and improve data quality",
-                    current_value=merge_result.merge_quality_score,
-                )
-            )
+    ValidationIssue(
+        field_name="_merge_quality",
+        issue_type="low_merge_quality",
+        severity=ValidationSeverity.WARNING,
+        message=f"Merge quality score {merge_result.merge_quality_score:.2f} is below threshold (0.5)",
+        suggested_fix="Review merge conflicts and improve data quality",
+        current_value=merge_result.merge_quality_score,
+         ) )
 
         # Check for high number of conflicts
         if len(merge_result.conflicts) > 5:
             validation_result.issues.append(
-                ValidationIssue(
-                    field_name="_merge_conflicts",
-                    issue_type="high_conflict_count",
-                    severity=ValidationSeverity.WARNING,
-                    message=f"High number of merge conflicts: {len(merge_result.conflicts)}",
-                    suggested_fix="Review data sources and improve data consistency",
-                    current_value=len(merge_result.conflicts),
-                )
-            )
+    ValidationIssue(
+        field_name="_merge_conflicts",
+        issue_type="high_conflict_count",
+        severity=ValidationSeverity.WARNING,
+        message=f"High number of merge conflicts: {len(merge_result.conflicts)}",
+        suggested_fix="Review data sources and improve data consistency",
+        current_value=len(
+            merge_result.conflicts),
+             ) )
 
         # Check for low-confidence conflicts
         low_confidence_conflicts = [
@@ -572,15 +563,14 @@ class BillDataValidator:
         ]
         if low_confidence_conflicts:
             validation_result.issues.append(
-                ValidationIssue(
-                    field_name="_merge_confidence",
-                    issue_type="low_confidence_resolution",
-                    severity=ValidationSeverity.INFO,
-                    message=f"{len(low_confidence_conflicts)} conflicts resolved with low confidence",
-                    suggested_fix="Review low-confidence merge resolutions manually",
-                    current_value=len(low_confidence_conflicts),
-                )
-            )
+    ValidationIssue(
+        field_name="_merge_confidence",
+        issue_type="low_confidence_resolution",
+        severity=ValidationSeverity.INFO,
+        message=f"{len(low_confidence_conflicts)} conflicts resolved with low confidence",
+        suggested_fix="Review low-confidence merge resolutions manually",
+        current_value=len(low_confidence_conflicts),
+         ) )
 
     def _calculate_completeness_score(
         self, bill_data: EnhancedBillData, validation_level: str

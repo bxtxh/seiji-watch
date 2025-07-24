@@ -379,9 +379,11 @@ async def main():
             {
                 "completion_date": datetime.now().isoformat(),
                 "perfection_results": results,
-                "achievement_status": "99% TARGET ACHIEVED"
-                if results["target_achieved"]
-                else f"HIGH QUALITY: {results['final_quality_rate']:.1f}%",
+                "achievement_status": (
+                    "99% TARGET ACHIEVED"
+                    if results["target_achieved"]
+                    else f"HIGH QUALITY: {results['final_quality_rate']:.1f}%"
+                ),
             },
             f,
             indent=2,

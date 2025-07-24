@@ -351,9 +351,11 @@ class AdvancedFilterEngine:
                     total_count=total_count,
                     query_time_ms=query_time_ms,
                     sql_query=str(final_query),
-                    parameters=final_query.compile().params
-                    if hasattr(final_query, "compile")
-                    else None,
+                    parameters=(
+                        final_query.compile().params
+                        if hasattr(final_query, "compile")
+                        else None
+                    ),
                 )
 
         except Exception as e:
@@ -372,12 +374,14 @@ class AdvancedFilterEngine:
         # Get table metadata
         with self.engine.connect() as connection:
             connection.execute(
-                text("""
+                text(
+                    """
                 SELECT column_name, data_type
                 FROM information_schema.columns
                 WHERE table_name = 'bills'
                 ORDER BY ordinal_position
-            """)
+            """
+                )
             ).fetchall()
 
         # Build select columns
@@ -778,14 +782,16 @@ class AdvancedFilterEngine:
                         suggestions = valid_vals
                 else:
                     # For other fields, query distinct values
-                    query = text(f"""
+                    query = text(
+                        f"""
                         SELECT DISTINCT {column_name} as value
                         FROM bills
                         WHERE {column_name} IS NOT NULL
                         AND {column_name} ILIKE :partial_value
                         ORDER BY {column_name}
                         LIMIT :limit
-                    """)
+                    """
+                    )
 
                     result = session.execute(
                         query, {"partial_value": f"%{partial_value}%", "limit": limit}
@@ -829,13 +835,15 @@ class AdvancedFilterEngine:
 
                 # Type-specific statistics
                 if field_type == date:
-                    date_stats_query = text(f"""
+                    date_stats_query = text(
+                        f"""
                         SELECT
                             MIN({column_name}) as min_date,
                             MAX({column_name}) as max_date
                         FROM bills
                         WHERE {column_name} IS NOT NULL
-                    """)
+                    """
+                    )
                     result = session.execute(date_stats_query).fetchone()
                     if result:
                         stats["min_date"] = (
@@ -846,7 +854,8 @@ class AdvancedFilterEngine:
                         )
 
                 elif field_type == float:
-                    numeric_stats_query = text(f"""
+                    numeric_stats_query = text(
+                        f"""
                         SELECT
                             MIN({column_name}) as min_val,
                             MAX({column_name}) as max_val,
@@ -854,7 +863,8 @@ class AdvancedFilterEngine:
                             STDDEV({column_name}) as stddev_val
                         FROM bills
                         WHERE {column_name} IS NOT NULL
-                    """)
+                    """
+                    )
                     result = session.execute(numeric_stats_query).fetchone()
                     if result:
                         stats["min_value"] = (
@@ -879,14 +889,16 @@ class AdvancedFilterEngine:
                         )
 
                 elif field_type == str:
-                    text_stats_query = text(f"""
+                    text_stats_query = text(
+                        f"""
                         SELECT
                             MIN(LENGTH({column_name})) as min_length,
                             MAX(LENGTH({column_name})) as max_length,
                             AVG(LENGTH({column_name})) as avg_length
                         FROM bills
                         WHERE {column_name} IS NOT NULL
-                    """)
+                    """
+                    )
                     result = session.execute(text_stats_query).fetchone()
                     if result:
                         stats["min_length"] = result.min_length
@@ -896,14 +908,16 @@ class AdvancedFilterEngine:
                         )
 
                 # Get top values
-                top_values_query = text(f"""
+                top_values_query = text(
+                    f"""
                     SELECT {column_name} as value, COUNT(*) as count
                     FROM bills
                     WHERE {column_name} IS NOT NULL
                     GROUP BY {column_name}
                     ORDER BY count DESC
                     LIMIT 10
-                """)
+                """
+                )
                 result = session.execute(top_values_query).fetchall()
                 stats["top_values"] = [
                     {"value": row.value, "count": row.count} for row in result

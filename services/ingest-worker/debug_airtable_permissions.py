@@ -120,11 +120,10 @@ async def test_write_permissions(accessible_tables):
         async with aiohttp.ClientSession() as session:
             # Test creating a test record (we'll delete it immediately)
             test_data = {
-                "fields": {
-                    "Name": "TEST_RECORD_EPIC16_DEBUG",
-                    "Notes": "This is a test record for debugging EPIC 16 permissions. Safe to delete.",
-                }
-            }
+    "fields": {
+        "Name": "TEST_RECORD_EPIC16_DEBUG",
+        "Notes": "This is a test record for debugging EPIC 16 permissions. Safe to delete.",
+         } }
 
             try:
                 url = f"{base_url}/{test_table}"

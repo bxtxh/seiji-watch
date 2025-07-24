@@ -99,9 +99,7 @@ class TableCompletenessImprover:
             },
             "Parties (政党)": {
                 "priority_fields": ["Name", "Is_Active"],
-                "enhancement_fields": [
-                    "Members"  # Linked records
-                ],
+                "enhancement_fields": ["Members"],  # Linked records
                 "target_completeness": 0.98,
                 "improvement_actions": [
                     "update_member_counts",
@@ -214,9 +212,11 @@ class TableCompletenessImprover:
                             "current_rate": field_analysis["completeness_rate"],
                             "missing_records": field_analysis["empty_count"],
                             "improvement_potential": improvement_potential,
-                            "priority": "high"
-                            if field in strategy.get("priority_fields", [])
-                            else "medium",
+                            "priority": (
+                                "high"
+                                if field in strategy.get("priority_fields", [])
+                                else "medium"
+                            ),
                         }
                     )
 
@@ -655,12 +655,11 @@ class TableCompletenessImprover:
                     for r in results.values()
                     if r["improvements_made"]
                 ),
-                "average_improvement": sum(
-                    r["improvement_delta"] for r in results.values()
-                )
-                / len(results)
-                if results
-                else 0,
+                "average_improvement": (
+                    sum(r["improvement_delta"] for r in results.values()) / len(results)
+                    if results
+                    else 0
+                ),
             },
             "table_results": results,
             "recommendations": [

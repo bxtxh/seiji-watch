@@ -48,25 +48,24 @@ class Epic11MinimalIntegrator:
         """Transform vote record using structured fields"""
 
         return {
-            "fields": {
-                "Name": f"{vote_record['member_name']} - {voting_session['bill_title'][:40]}",
-                "Vote_Result": vote_record["vote_result"],
-                "Member_Name": vote_record["member_name"],
-                "Member_Name_Kana": vote_record["member_name_kana"],
-                "Party_Name": vote_record["party_name"],
-                "Constituency": vote_record["constituency"],
-                "House": vote_record["house"],
-                "Bill_Title": voting_session["bill_title"],
-                "Vote_Date": voting_session["vote_date"],
-                "Vote_Type": voting_session["vote_type"],
-                "Vote_Stage": voting_session["vote_stage"],
-                "Yes_Votes": voting_session["yes_votes"],
-                "No_Votes": voting_session["no_votes"],
-                "Abstain_Votes": voting_session["abstain_votes"],
-                "Absent_Votes": voting_session["absent_votes"],
-                "Total_Votes": voting_session["total_votes"],
-            }
-        }
+    "fields": {
+        "Name": f"{vote_record['member_name']} - {voting_session['bill_title'][:40]}",
+        "Vote_Result": vote_record["vote_result"],
+        "Member_Name": vote_record["member_name"],
+        "Member_Name_Kana": vote_record["member_name_kana"],
+        "Party_Name": vote_record["party_name"],
+        "Constituency": vote_record["constituency"],
+        "House": vote_record["house"],
+        "Bill_Title": voting_session["bill_title"],
+        "Vote_Date": voting_session["vote_date"],
+        "Vote_Type": voting_session["vote_type"],
+        "Vote_Stage": voting_session["vote_stage"],
+        "Yes_Votes": voting_session["yes_votes"],
+        "No_Votes": voting_session["no_votes"],
+        "Abstain_Votes": voting_session["abstain_votes"],
+        "Absent_Votes": voting_session["absent_votes"],
+        "Total_Votes": voting_session["total_votes"],
+         } }
 
     async def quick_test_insert(self):
         """Quick test with a single record"""

@@ -459,7 +459,8 @@ class ComprehensiveDataQualityAnalyzer:
         if not records:
             return 1.0
 
-        # Simple heuristic: records with more complete required fields are likely more accurate
+        # Simple heuristic: records with more complete required fields are likely
+        # more accurate
         required_fields = config["required_fields"]
         total_score = 0.0
 
@@ -503,7 +504,8 @@ class ComprehensiveDataQualityAnalyzer:
 
             if most_recent:
                 days_old = (now - most_recent.replace(tzinfo=None)).days
-                # Score decreases with age: 1.0 for <30 days, 0.5 for 1 year, 0.0 for >2 years
+                # Score decreases with age: 1.0 for <30 days, 0.5 for 1 year, 0.0 for >2
+                # years
                 if days_old <= 30:
                     score = 1.0
                 elif days_old <= 365:

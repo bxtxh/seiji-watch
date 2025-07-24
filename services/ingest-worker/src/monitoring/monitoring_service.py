@@ -118,9 +118,9 @@ class Alert:
             "triggered_at": self.triggered_at.isoformat(),
             "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
             "acknowledgment_required": self.acknowledgment_required,
-            "acknowledged_at": self.acknowledged_at.isoformat()
-            if self.acknowledged_at
-            else None,
+            "acknowledged_at": (
+                self.acknowledged_at.isoformat() if self.acknowledged_at else None
+            ),
             "acknowledged_by": self.acknowledged_by,
         }
 
@@ -174,9 +174,9 @@ class MonitoringStats:
             "health_checks_passed": self.health_checks_passed,
             "health_checks_failed": self.health_checks_failed,
             "uptime_percentage": self.uptime_percentage,
-            "last_alert_time": self.last_alert_time.isoformat()
-            if self.last_alert_time
-            else None,
+            "last_alert_time": (
+                self.last_alert_time.isoformat() if self.last_alert_time else None
+            ),
         }
 
 
@@ -504,9 +504,11 @@ class MonitoringService:
                     "threshold": rule.threshold,
                 },
                 triggered_at=datetime.now(),
-                acknowledgment_required=rule.acknowledgment_required
-                if hasattr(rule, "acknowledgment_required")
-                else False,
+                acknowledgment_required=(
+                    rule.acknowledgment_required
+                    if hasattr(rule, "acknowledgment_required")
+                    else False
+                ),
             )
 
             # Store alert
@@ -973,9 +975,11 @@ Dashboard: http://localhost:3000/dashboard/quality
     def get_service_status(self) -> dict[str, Any]:
         """Get monitoring service status"""
         return {
-            "status": "running"
-            if self.monitoring_thread and self.monitoring_thread.is_alive()
-            else "stopped",
+            "status": (
+                "running"
+                if self.monitoring_thread and self.monitoring_thread.is_alive()
+                else "stopped"
+            ),
             "configuration": self.config,
             "active_rules": len([r for r in self.alert_rules.values() if r.enabled]),
             "total_rules": len(self.alert_rules),

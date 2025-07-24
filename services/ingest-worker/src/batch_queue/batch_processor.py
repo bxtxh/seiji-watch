@@ -101,9 +101,9 @@ class BatchTask:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat()
-            if self.completed_at
-            else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
             "timeout_seconds": self.timeout_seconds,
@@ -297,9 +297,11 @@ class TranscriptionTaskProcessor(TaskProcessor):
                     "text": transcription_result.text,
                     "duration": transcription_result.duration,
                     "language": transcription_result.language,
-                    "segments_count": len(transcription_result.segments)
-                    if transcription_result.segments
-                    else 0,
+                    "segments_count": (
+                        len(transcription_result.segments)
+                        if transcription_result.segments
+                        else 0
+                    ),
                 }
                 results.append(result)
 
@@ -686,7 +688,8 @@ class BatchProcessor:
         if task_id in self.active_tasks:
             task = self.active_tasks[task_id]
             task.status = TaskStatus.CANCELLED
-            # Note: The task will still complete processing, but will be marked as cancelled
+            # Note: The task will still complete processing, but will be marked as
+            # cancelled
             logger.info(f"Marked active task for cancellation: {task_id}")
             return True
 

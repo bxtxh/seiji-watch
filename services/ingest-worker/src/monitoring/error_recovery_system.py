@@ -121,9 +121,9 @@ class DeadLetterMessage:
             "failed_at": self.failed_at.isoformat(),
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
-            "next_retry_at": self.next_retry_at.isoformat()
-            if self.next_retry_at
-            else None,
+            "next_retry_at": (
+                self.next_retry_at.isoformat() if self.next_retry_at else None
+            ),
         }
 
 
@@ -195,9 +195,9 @@ class CircuitBreaker:
             "state": self.state.value,
             "failure_count": self.failure_count,
             "success_count": self.success_count,
-            "last_failure_time": self.last_failure_time.isoformat()
-            if self.last_failure_time
-            else None,
+            "last_failure_time": (
+                self.last_failure_time.isoformat() if self.last_failure_time else None
+            ),
             "last_state_change": self.last_state_change.isoformat(),
             "can_execute": self.can_execute(),
         }
@@ -268,9 +268,11 @@ class DeadLetterQueue:
             "total_messages": len(self.messages),
             "retry_ready_messages": retry_ready,
             "messages_by_operation": by_operation,
-            "oldest_message": min([m.failed_at for m in self.messages.values()])
-            if self.messages
-            else None,
+            "oldest_message": (
+                min([m.failed_at for m in self.messages.values()])
+                if self.messages
+                else None
+            ),
         }
 
 

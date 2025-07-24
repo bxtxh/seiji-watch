@@ -250,8 +250,8 @@ async def search_bills(
                                     break
                             except Exception as e:
                                 logger.warning(
-                                    f"Failed to check layer for category {category_id}: {e}"
-                                )
+    f"Failed to check layer for category {category_id}: "
+    f"{e}" )
 
                 if matches_filter:
                     filtered_bills.append(bill)

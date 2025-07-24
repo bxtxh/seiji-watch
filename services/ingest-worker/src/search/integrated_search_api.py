@@ -381,9 +381,11 @@ class IntegratedSearchAPI:
         # Create filter query with no filters
         filter_query = FilterQuery(
             filters=None,
-            sort=request.sort
-            if request.sort
-            else [SortCriteria("submitted_date", SortOrder.DESC)],
+            sort=(
+                request.sort
+                if request.sort
+                else [SortCriteria("submitted_date", SortOrder.DESC)]
+            ),
             limit=min(request.limit, self.config["max_results"]),
             offset=request.offset,
             include_count=True,
@@ -667,10 +669,10 @@ class IntegratedSearchAPI:
         return {
             "cache_size": len(self._cache),
             "cache_entries": list(self._cache.keys()),
-            "oldest_entry": min(self._cache_timestamps.values())
-            if self._cache_timestamps
-            else None,
-            "newest_entry": max(self._cache_timestamps.values())
-            if self._cache_timestamps
-            else None,
+            "oldest_entry": (
+                min(self._cache_timestamps.values()) if self._cache_timestamps else None
+            ),
+            "newest_entry": (
+                max(self._cache_timestamps.values()) if self._cache_timestamps else None
+            ),
         }

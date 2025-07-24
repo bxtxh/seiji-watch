@@ -209,9 +209,7 @@ class TestDataQualityDashboard:
         )
 
         dashboard._get_processing_metrics = Mock(
-            return_value={
-                "error_rate": 0.15  # Above critical threshold
-            }
+            return_value={"error_rate": 0.15}  # Above critical threshold
         )
 
         alerts = dashboard.get_alerts()
@@ -677,8 +675,7 @@ class TestMonitoringManager:
 
         # Check that old data was cleaned up
         monitoring_manager.migration_service.cleanup_old_reports.assert_called_once_with(
-            30
-        )
+            30 )
         monitoring_manager.dashboard.clear_cache.assert_called_once()
 
         # Check that only recent alert remains

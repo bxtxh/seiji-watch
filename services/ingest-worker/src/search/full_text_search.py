@@ -234,7 +234,8 @@ class FullTextSearchEngine:
             with self.engine.connect() as connection:
                 # Create compound tsvector index for multiple fields
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_fulltext_search
                     ON bills USING GIN((
                         setweight(to_tsvector('japanese', COALESCE(title, '')), 'A') ||
@@ -243,65 +244,82 @@ class FullTextSearchEngine:
                         setweight(to_tsvector('japanese', COALESCE(expected_effects, '')), 'C') ||
                         setweight(to_tsvector('japanese', COALESCE(summary, '')), 'D')
                     ))
-                """)
+                """
+                    )
                 )
 
                 # Create separate indexes for specific fields
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_title_search
                     ON bills USING GIN(to_tsvector('japanese', title))
-                """)
+                """
+                    )
                 )
 
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_outline_search
                     ON bills USING GIN(to_tsvector('japanese', bill_outline))
-                """)
+                """
+                    )
                 )
 
                 # Create trigram index for fuzzy matching
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE EXTENSION IF NOT EXISTS pg_trgm
-                """)
+                """
+                    )
                 )
 
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_title_trigram
                     ON bills USING GIN(title gin_trgm_ops)
-                """)
+                """
+                    )
                 )
 
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_outline_trigram
                     ON bills USING GIN(bill_outline gin_trgm_ops)
-                """)
+                """
+                    )
                 )
 
                 # Create indexes for filtering
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_category_status
                     ON bills (category, status)
-                """)
+                """
+                    )
                 )
 
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_submitter_session
                     ON bills (submitter, diet_session)
-                """)
+                """
+                    )
                 )
 
                 connection.execute(
-                    text("""
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_dates
                     ON bills (submitted_date, final_vote_date)
-                """)
+                """
+                    )
                 )
 
                 connection.commit()
@@ -662,9 +680,9 @@ class FullTextSearchEngine:
             "status": row.status,
             "diet_session": row.diet_session,
             "house_of_origin": row.house_of_origin,
-            "submitted_date": row.submitted_date.isoformat()
-            if row.submitted_date
-            else None,
+            "submitted_date": (
+                row.submitted_date.isoformat() if row.submitted_date else None
+            ),
         }
 
         return SearchResult(
@@ -716,13 +734,15 @@ class FullTextSearchEngine:
 
         try:
             # Get similar terms using trigram similarity
-            similar_query = text("""
+            similar_query = text(
+                """
                 SELECT DISTINCT title
                 FROM bills
                 WHERE title % :query
                 ORDER BY similarity(title, :query) DESC
                 LIMIT 5
-            """)
+            """
+            )
 
             result = session.execute(similar_query, {"query": query.query})
             suggestions = [row.title for row in result.fetchall()]
@@ -740,40 +760,46 @@ class FullTextSearchEngine:
 
         try:
             # Get category facets
-            category_query = text("""
+            category_query = text(
+                """
                 SELECT category, COUNT(*) as count
                 FROM bills
                 WHERE category IS NOT NULL
                 GROUP BY category
                 ORDER BY count DESC
                 LIMIT 10
-            """)
+            """
+            )
 
             result = session.execute(category_query)
             facets["category"] = {row.category: row.count for row in result.fetchall()}
 
             # Get status facets
-            status_query = text("""
+            status_query = text(
+                """
                 SELECT status, COUNT(*) as count
                 FROM bills
                 WHERE status IS NOT NULL
                 GROUP BY status
                 ORDER BY count DESC
                 LIMIT 10
-            """)
+            """
+            )
 
             result = session.execute(status_query)
             facets["status"] = {row.status: row.count for row in result.fetchall()}
 
             # Get submitter facets
-            submitter_query = text("""
+            submitter_query = text(
+                """
                 SELECT submitter, COUNT(*) as count
                 FROM bills
                 WHERE submitter IS NOT NULL
                 GROUP BY submitter
                 ORDER BY count DESC
                 LIMIT 10
-            """)
+            """
+            )
 
             result = session.execute(submitter_query)
             facets["submitter"] = {
@@ -820,21 +846,25 @@ class FullTextSearchEngine:
 
                 # Get index sizes
                 index_sizes = session.execute(
-                    text("""
+                    text(
+                        """
                     SELECT schemaname, tablename, indexname, pg_size_pretty(pg_relation_size(indexrelid)) as size
                     FROM pg_stat_user_indexes
                     WHERE tablename = 'bills'
                     ORDER BY pg_relation_size(indexrelid) DESC
-                """)
+                """
+                    )
                 ).fetchall()
 
                 # Get most recent indexing time
                 last_analyze = session.execute(
-                    text("""
+                    text(
+                        """
                     SELECT last_analyze, last_autoanalyze
                     FROM pg_stat_user_tables
                     WHERE relname = 'bills'
-                """)
+                """
+                    )
                 ).fetchone()
 
                 return {
@@ -842,12 +872,16 @@ class FullTextSearchEngine:
                     "index_sizes": [
                         {"name": row.indexname, "size": row.size} for row in index_sizes
                     ],
-                    "last_analyze": last_analyze.last_analyze.isoformat()
-                    if last_analyze and last_analyze.last_analyze
-                    else None,
-                    "last_autoanalyze": last_analyze.last_autoanalyze.isoformat()
-                    if last_analyze and last_analyze.last_autoanalyze
-                    else None,
+                    "last_analyze": (
+                        last_analyze.last_analyze.isoformat()
+                        if last_analyze and last_analyze.last_analyze
+                        else None
+                    ),
+                    "last_autoanalyze": (
+                        last_analyze.last_autoanalyze.isoformat()
+                        if last_analyze and last_analyze.last_autoanalyze
+                        else None
+                    ),
                     "search_config": self.search_config,
                 }
 
