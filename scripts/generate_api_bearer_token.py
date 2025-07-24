@@ -17,7 +17,9 @@ except ImportError:
     print("⚠️  PyJWT library not available. Install with: pip install PyJWT")
 
 # 本番用: GitHub Secretsに登録するJWT_SECRET_KEY
-PRODUCTION_SECRET_KEY = "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
+PRODUCTION_SECRET_KEY = (
+    "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
+)
 
 # テスト用: CI/CDで使用する統一されたJWT_SECRET_KEY
 TEST_SECRET_KEY = "test-jwt-secret-unified-for-ci-cd"

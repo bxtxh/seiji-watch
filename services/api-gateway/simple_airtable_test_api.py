@@ -66,7 +66,7 @@ class SimpleAirtableClient:
                 else:
                     raise Exception(f"Airtable error: {response.status}")
 
-    async def get_bill(self, record_id: str) -> Dict[str, Any]:
+    async def get_bill(self, record_id: str) -> dict[str, Any]:
         """Get a specific bill"""
         url = f"{self.base_url}/Bills (法案)/{record_id}"
 

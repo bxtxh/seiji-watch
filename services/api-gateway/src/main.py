@@ -200,7 +200,8 @@ async def startup_event():
             )
         else:
             logger.warning(
-                f"Member cache warmup failed: {warmup_result.get('error', 'Unknown error')}"
+                f"Member cache warmup failed: "
+                f"{warmup_result.get('error', 'Unknown error')}"
             )
 
     except Exception as e:
@@ -453,7 +454,10 @@ async def get_embedding_stats():
             "bills": bills_count,
             "votes": votes_count,
             "speeches": 0,  # Not implemented yet
-            "message": f"Real data integration complete - {bills_count} bills, {votes_count} votes",
+            "message": (
+                f"Real data integration complete - "
+                f"{bills_count} bills, {votes_count} votes"
+            ),
         }
     except Exception as e:
         log_error("Failed to get embedding stats", error=e)
