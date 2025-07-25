@@ -95,7 +95,7 @@ def main():
     # Use environment variable or fallback to test secret
     secret_key = os.getenv("JWT_SECRET_KEY", test_secret)
 
-    print(f"🔑 Using secret: {secret_key[:20]}...")
+    print("🔑 Using secret: [MASKED]")
 
     # Generate test token
     print("\n📝 Generating test token...")

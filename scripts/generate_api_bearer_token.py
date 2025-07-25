@@ -125,7 +125,7 @@ if __name__ == "__main__":
         print("   Or run: poetry add PyJWT")
         exit(1)
 
-    print(f"🔑 Using SECRET_KEY: {SECRET_KEY[:20]}...")
+    print("🔑 Using SECRET_KEY: [MASKED]")
 
     try:
         # Generate tokens

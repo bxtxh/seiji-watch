@@ -20,6 +20,7 @@ from .routes import (
     monitoring,
     speeches,
 )
+from .utils.error_sanitizer import create_error_response, sanitize_error_for_api
 
 # Import monitoring utilities
 try:
@@ -368,7 +369,7 @@ async def health_check():
                 "status": "unhealthy",
                 "service": "api-gateway",
                 "version": "1.0.0",
-                "error": str(e),
+                "error": "Service health check failed",
             },
             status_code=503,
         )
@@ -470,7 +471,7 @@ async def get_embedding_stats():
             "bills": 0,
             "votes": 0,
             "speeches": 0,
-            "message": f"Failed to fetch real data: {str(e)}",
+            "message": "Failed to fetch real data",
         }
 
 
@@ -541,7 +542,7 @@ async def search_bills(request: Request):
         log_error("Search request failed", error=e)
         return {
             "success": False,
-            "message": f"検索に失敗しました: {str(e)}",
+            "message": "検索に失敗しました",
             "results": [],
             "total_found": 0,
         }
@@ -711,7 +712,7 @@ async def get_batch_job_status(job_id: str):
         log_error(f"Failed to get job status for {job_id}", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": "Failed to retrieve job status",
             "message": "ジョブステータスの取得に失敗しました",
         }
 
