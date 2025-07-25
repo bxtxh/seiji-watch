@@ -114,6 +114,9 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
+      if: env.GCP_SA_KEY != ''
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -220,6 +223,9 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
+      if: env.GCP_SA_KEY != ''
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -356,6 +362,9 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
+      if: env.GCP_SA_KEY != ''
+      env:
+        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         
     - name: Terraform Init
       working-directory: ${{ env.TERRAFORM_DIR }}
