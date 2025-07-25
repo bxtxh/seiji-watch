@@ -116,9 +116,9 @@ async def cleanup_remaining_empty_bills():
                 print(f"⚠️ Empty records in sample: {empty_remaining}")
 
     # Print final summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("📋 BILLS CLEANUP FINAL SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"🗑️ Total empty records deleted: {deleted_count}")
     print(f"❌ Errors encountered: {errors}")
 

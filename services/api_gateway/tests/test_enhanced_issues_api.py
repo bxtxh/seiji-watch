@@ -233,14 +233,16 @@ class TestEnhancedIssuesAPI:
             "rec_lv2_456",
         )
 
-        with patch(
-            "routes.enhanced_issues.get_airtable_issue_manager",
-            return_value=mock_airtable_manager,
-        ), patch(
-            "routes.enhanced_issues.get_policy_issue_extractor",
-            return_value=mock_policy_extractor,
+        with (
+            patch(
+                "routes.enhanced_issues.get_airtable_issue_manager",
+                return_value=mock_airtable_manager,
+            ),
+            patch(
+                "routes.enhanced_issues.get_policy_issue_extractor",
+                return_value=mock_policy_extractor,
+            ),
         ):
-
             response = client.post("/api/issues/extract", json=request_data)
 
             assert response.status_code == 200
@@ -291,14 +293,16 @@ class TestEnhancedIssuesAPI:
 
         mock_airtable_manager.create_issue_pair.return_value = ("rec_lv1", "rec_lv2")
 
-        with patch(
-            "routes.enhanced_issues.get_airtable_issue_manager",
-            return_value=mock_airtable_manager,
-        ), patch(
-            "routes.enhanced_issues.get_policy_issue_extractor",
-            return_value=mock_policy_extractor,
+        with (
+            patch(
+                "routes.enhanced_issues.get_airtable_issue_manager",
+                return_value=mock_airtable_manager,
+            ),
+            patch(
+                "routes.enhanced_issues.get_policy_issue_extractor",
+                return_value=mock_policy_extractor,
+            ),
         ):
-
             response = client.post("/api/issues/extract/batch", json=request_data)
 
             assert response.status_code == 200
@@ -419,14 +423,16 @@ class TestEnhancedIssuesAPI:
 
     def test_health_check(self, client, mock_airtable_manager, mock_policy_extractor):
         """Test health check endpoint."""
-        with patch(
-            "routes.enhanced_issues.get_airtable_issue_manager",
-            return_value=mock_airtable_manager,
-        ), patch(
-            "routes.enhanced_issues.get_policy_issue_extractor",
-            return_value=mock_policy_extractor,
+        with (
+            patch(
+                "routes.enhanced_issues.get_airtable_issue_manager",
+                return_value=mock_airtable_manager,
+            ),
+            patch(
+                "routes.enhanced_issues.get_policy_issue_extractor",
+                return_value=mock_policy_extractor,
+            ),
         ):
-
             response = client.get("/api/issues/health")
 
             assert response.status_code == 200
@@ -521,8 +527,9 @@ class TestInputValidation:
         }
 
         # Should handle special characters gracefully
-        with patch("routes.enhanced_issues.get_airtable_issue_manager"), patch(
-            "routes.enhanced_issues.get_policy_issue_extractor"
+        with (
+            patch("routes.enhanced_issues.get_airtable_issue_manager"),
+            patch("routes.enhanced_issues.get_policy_issue_extractor"),
         ):
             response = client.post("/api/issues/extract", json=special_chars_data)
             # Should not crash due to special characters

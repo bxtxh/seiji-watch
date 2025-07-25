@@ -1458,12 +1458,12 @@ class EnhancedSanguinMemberCollector:
                         result = await response.json()
                         success_count += len(result.get("records", []))
                         print(
-                            f"Successfully inserted batch {i//batch_size + 1}: {len(result.get('records', []))} members"
+                            f"Successfully inserted batch {i // batch_size + 1}: {len(result.get('records', []))} members"
                         )
                     else:
                         error_text = await response.text()
                         print(
-                            f"Failed to insert batch {i//batch_size + 1}: {response.status} - {error_text}"
+                            f"Failed to insert batch {i // batch_size + 1}: {response.status} - {error_text}"
                         )
 
                 # バッチ間の待機

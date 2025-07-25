@@ -543,12 +543,10 @@ class TestIntegrationScenarios:
             recorder = BillHistoryRecorder("postgresql://test")
 
             # Mock the workflow
-            with patch.object(
-                recorder, "_get_bills_to_check"
-            ) as mock_get_bills, patch.object(
-                recorder, "_process_bill_batch"
-            ) as mock_process:
-
+            with (
+                patch.object(recorder, "_get_bills_to_check") as mock_get_bills,
+                patch.object(recorder, "_process_bill_batch") as mock_process,
+            ):
                 # Mock bills
                 mock_bills = [Mock(), Mock()]
                 mock_get_bills.return_value = mock_bills

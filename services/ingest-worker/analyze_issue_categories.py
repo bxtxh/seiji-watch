@@ -41,7 +41,6 @@ async def analyze_issue_categories():
     bills_categories = bills_analysis.get("category_distribution", {})
 
     async with aiohttp.ClientSession() as session:
-
         # First check if IssueCategories table exists
         print("\n📋 Step 1: Checking IssueCategories table access...")
 

@@ -415,7 +415,7 @@ class HistoricalDataIngester:
         # Process meetings
         for i, meeting in enumerate(meetings):
             try:
-                self.logger.info(f"Processing {i+1}/{len(meetings)}: {meeting.title}")
+                self.logger.info(f"Processing {i + 1}/{len(meetings)}: {meeting.title}")
 
                 success, stats = await self.process_meeting(meeting)
 

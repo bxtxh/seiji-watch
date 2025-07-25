@@ -87,10 +87,10 @@ async def test_new_pat_integration():
                     result = await client.create_bill(bill_data)
                     success_count += 1
                     record_id = result.get("id", "Unknown")
-                    print(f"  {i+1}/3: ✅ {bill.bill_id} → {record_id}")
+                    print(f"  {i + 1}/3: ✅ {bill.bill_id} → {record_id}")
 
                 except Exception as e:
-                    print(f"  {i+1}/3: ❌ {bill.bill_id} → {str(e)}")
+                    print(f"  {i + 1}/3: ❌ {bill.bill_id} → {str(e)}")
 
             print(f"\n📊 統合結果: {success_count}/3 成功")
 

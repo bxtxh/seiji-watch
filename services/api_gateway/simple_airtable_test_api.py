@@ -2,6 +2,7 @@
 """
 Simple Airtable API test - EPIC 11 T97 verification
 """
+
 import os
 from typing import Any
 
@@ -287,7 +288,7 @@ async def search_bills(request: Request):
 
             result = {
                 "bill_id": bill.get("id"),
-                "title": name[:100] if name else f"法案 {i+1}",
+                "title": name[:100] if name else f"法案 {i + 1}",
                 "summary": notes[:200] + "..." if len(notes) > 200 else notes,
                 "status": "実データ",
                 "search_method": "airtable_text",

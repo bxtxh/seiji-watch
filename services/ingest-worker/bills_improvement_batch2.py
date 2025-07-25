@@ -62,7 +62,7 @@ async def bills_improvement_batch2():
                 fields = record.get("fields", {})
                 updates = {}
 
-                print(f"\n🔧 Processing record {i+1}/50: {record_id}")
+                print(f"\n🔧 Processing record {i + 1}/50: {record_id}")
 
                 # 1. Priority assignment (enhanced logic)
                 if not fields.get("Priority"):
@@ -223,9 +223,9 @@ async def bills_improvement_batch2():
                 await asyncio.sleep(0.1)
 
     # Print summary
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("📋 BILLS IMPROVEMENT BATCH 2 SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"⭐ Priorities assigned: {improvements['priorities_assigned']}")
     print(f"📊 Stages filled: {improvements['stages_filled']}")
     print(f"🔧 Statuses standardized: {improvements['statuses_standardized']}")

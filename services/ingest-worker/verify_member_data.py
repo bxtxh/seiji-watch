@@ -232,7 +232,7 @@ class MemberDataVerifier:
                     print(f"    対象: {', '.join(missing_names)}")
                 else:
                     print(
-                        f"    対象: {', '.join(missing_names[:5])}...他{len(missing_names)-5}名"
+                        f"    対象: {', '.join(missing_names[:5])}...他{len(missing_names) - 5}名"
                     )
 
         # Duplicates

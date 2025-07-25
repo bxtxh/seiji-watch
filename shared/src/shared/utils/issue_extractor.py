@@ -64,7 +64,7 @@ class IssueExtractor:
       "title": "30文字以内の簡潔なイシュータイトル",
       "description": "100文字程度の詳細説明",
       "suggested_tags": ["関連するタグ候補1", "タグ候補2"],
-      "category": "{'/'.join(self.issue_categories)}から選択",
+      "category": "{"/".join(self.issue_categories)}から選択",
       "priority": "high/medium/low",
       "confidence": 0.0-1.0の信頼度スコア
     }}

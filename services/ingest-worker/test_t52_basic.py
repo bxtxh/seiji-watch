@@ -2,6 +2,7 @@
 """
 Basic test script for T52 - Tests core scraping functionality without external dependencies
 """
+
 import asyncio
 import logging
 import sys
@@ -178,9 +179,9 @@ async def test_rate_limiting():
             try:
                 # Use a lightweight endpoint for testing
                 response = scraper._make_request("https://www.sangiin.go.jp/robots.txt")
-                print(f"  Request {i+1}: ✅ Success ({response.status_code})")
+                print(f"  Request {i + 1}: ✅ Success ({response.status_code})")
             except Exception as e:
-                print(f"  Request {i+1}: ❌ Failed ({e})")
+                print(f"  Request {i + 1}: ❌ Failed ({e})")
 
         end_time = time.time()
         total_time = end_time - start_time

@@ -64,9 +64,7 @@ async def fix_bills_empty_records():
 
         # Identify empty or mostly empty records
         empty_records = []
-        minimal_records = (
-            []
-        )  # Records with only Bill_Status but missing other essential fields
+        minimal_records = []  # Records with only Bill_Status but missing other essential fields
 
         essential_fields = ["Title", "Bill_Number", "Diet_Session", "House"]
 
@@ -125,7 +123,7 @@ async def fix_bills_empty_records():
             updates = {}
 
             if not fields.get("Title"):
-                updates["Title"] = f"法案{i+1:03d}"  # 法案001, 法案002, etc.
+                updates["Title"] = f"法案{i + 1:03d}"  # 法案001, 法案002, etc.
 
             if not fields.get("Bill_Number"):
                 # Start from 100 to avoid conflicts
@@ -166,7 +164,7 @@ async def fix_bills_empty_records():
                     ) as update_response:
                         if update_response.status == 200:
                             print(
-                                f"   ✅ Filled record {i+1}: {record_id} with {len(updates)} fields"
+                                f"   ✅ Filled record {i + 1}: {record_id} with {len(updates)} fields"
                             )
                             results["records_filled"] += 1
                         else:
@@ -195,9 +193,9 @@ async def fix_bills_empty_records():
             )
 
     # Print summary
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("📋 BILLS EMPTY RECORDS FIX SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"🔍 Empty records found: {results['empty_records_found']}")
     print(f"📝 Records filled with defaults: {results['records_filled']}")
     print(f"🗑️ Records deleted: {results['records_deleted']}")

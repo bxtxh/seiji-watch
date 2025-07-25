@@ -123,20 +123,20 @@ async def run_bills_integration_with_correct_client():
                     await client.create_bill(bill_data)
                     successful_count += 1
 
-                    print(f"  {i+1:2d}/10: ✅ {bill.bill_id} → 成功")
+                    print(f"  {i + 1:2d}/10: ✅ {bill.bill_id} → 成功")
 
                     # レート制限対応
                     await asyncio.sleep(0.2)
 
                 except Exception as e:
                     failed_count += 1
-                    print(f"  {i+1:2d}/10: ❌ {bill.bill_id} → {str(e)}")
+                    print(f"  {i + 1:2d}/10: ❌ {bill.bill_id} → {str(e)}")
 
             print("\n📊 統合結果:")
             print(f"  ✅ 成功: {successful_count}件")
             print(f"  ❌ 失敗: {failed_count}件")
             print(
-                f"  📈 成功率: {successful_count/(successful_count+failed_count)*100:.1f}%"
+                f"  📈 成功率: {successful_count / (successful_count + failed_count) * 100:.1f}%"
             )
 
             return successful_count > 0

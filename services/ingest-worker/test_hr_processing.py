@@ -116,14 +116,16 @@ async def test_error_handling():
 
         # Test with impossible parameters
         sessions = await processor.process_enhanced_hr_data(
-            days_back=0, max_concurrent=1  # Should handle gracefully
+            days_back=0,
+            max_concurrent=1,  # Should handle gracefully
         )
 
         logger.info(f"Processed {len(sessions)} sessions with days_back=0")
 
         # Test with very old date range (should find no PDFs)
         sessions = await processor.process_enhanced_hr_data(
-            days_back=3650, max_concurrent=1  # 10 years back - should be empty
+            days_back=3650,
+            max_concurrent=1,  # 10 years back - should be empty
         )
 
         logger.info(f"Processed {len(sessions)} sessions with days_back=3650")
@@ -148,7 +150,8 @@ async def test_performance():
         start_time = time.time()
 
         sessions = await processor.process_enhanced_hr_data(
-            days_back=1, max_concurrent=2  # Single day for performance test
+            days_back=1,
+            max_concurrent=2,  # Single day for performance test
         )
 
         processing_time = time.time() - start_time

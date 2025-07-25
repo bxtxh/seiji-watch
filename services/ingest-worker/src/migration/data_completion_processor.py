@@ -186,7 +186,7 @@ class DataCompletionProcessor:
             for i in range(0, len(tasks), self.config["batch_size"]):
                 batch_tasks = tasks[i : i + self.config["batch_size"]]
                 self.logger.info(
-                    f"Processing batch {i//self.config['batch_size'] + 1} with {len(batch_tasks)} tasks"
+                    f"Processing batch {i // self.config['batch_size'] + 1} with {len(batch_tasks)} tasks"
                 )
 
                 # Process batch with concurrency

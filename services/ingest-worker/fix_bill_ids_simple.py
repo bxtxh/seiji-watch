@@ -249,7 +249,7 @@ async def main():
             print(f"  総法案数: {len(bills)}")
             print(f"  Bill_ID有り: {len(existing_ids)}")
             print(f"  Bill_ID無し: {missing_count}")
-            print(f"  欠損率: {(missing_count/len(bills))*100:.1f}%")
+            print(f"  欠損率: {(missing_count / len(bills)) * 100:.1f}%")
 
             # 3. 修正が必要か確認
             if missing_count == 0:
@@ -307,7 +307,7 @@ async def main():
             print("\n📊 Step 4: 修正完了")
             print(f"  更新成功: {updated}件")
             print(f"  更新失敗: {failed}件")
-            print(f"  成功率: {(updated/(updated+failed))*100:.1f}%")
+            print(f"  成功率: {(updated / (updated + failed)) * 100:.1f}%")
 
             # 6. 最終確認
             if updated > 0:
@@ -319,7 +319,7 @@ async def main():
 
                 print(f"  修正後の欠損数: {final_missing}")
                 print(
-                    f"  全体完了率: {((len(final_data)-final_missing)/len(final_data))*100:.1f}%"
+                    f"  全体完了率: {((len(final_data) - final_missing) / len(final_data)) * 100:.1f}%"
                 )
 
                 if final_missing == 0:

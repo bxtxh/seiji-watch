@@ -400,7 +400,9 @@ class ContinuousQualityMonitor:
                 "trend_direction": (
                     "improving"
                     if score_delta > 0.01
-                    else "declining" if score_delta < -0.01 else "stable"
+                    else "declining"
+                    if score_delta < -0.01
+                    else "stable"
                 ),
                 "current_grade": last_report.get("quality_grade", "F"),
                 "previous_grade": first_report.get("quality_grade", "F"),
@@ -558,9 +560,9 @@ class ContinuousQualityMonitor:
             if a.get("type") == "CRITICAL"
         )
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("📋 DAILY QUALITY MONITORING SUMMARY")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(f"📊 Tables Monitored: {len(monitoring_results['table_metrics'])}")
         print(f"🚨 Total Alerts: {total_alerts} (Critical: {critical_alerts})")
         print(f"📝 Recommendations: {len(monitoring_results['recommendations'])}")

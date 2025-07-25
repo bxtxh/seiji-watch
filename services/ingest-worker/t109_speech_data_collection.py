@@ -170,7 +170,7 @@ class SpeechDataCollector:
             speaker = (
                 member_names[i % len(member_names)]
                 if member_names
-                else f"議員{i+1:02d}"
+                else f"議員{i + 1:02d}"
             )
             meeting = meeting_types[i % len(meeting_types)]
             house = houses[i % 2]
@@ -193,8 +193,8 @@ class SpeechDataCollector:
                 category=template["category"],
                 duration_minutes=template["duration"],
                 is_government_answer=random.choice([True, False]),
-                transcript_url=f"https://kokkai.ndl.go.jp/transcript/{i+1:04d}",
-                video_url=f"https://webtv.sangiin.go.jp/video/{i+1:04d}",
+                transcript_url=f"https://kokkai.ndl.go.jp/transcript/{i + 1:04d}",
+                video_url=f"https://webtv.sangiin.go.jp/video/{i + 1:04d}",
                 ai_summary=f"AI要約: {template['content'][:50]}...",
                 sentiment=random.choice(["positive", "neutral", "critical"]),
                 topics=[meeting.replace("委員会", ""), "政策議論"],

@@ -431,9 +431,9 @@ class FinalPlaceholderFixer:
         """Print final elimination summary"""
         results = self.fix_results
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("🎯 FINAL PLACEHOLDER ELIMINATION SUMMARY")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print("📊 PROCESSING SUMMARY:")
         print(f"   Total processed: {results['total_processed']}")

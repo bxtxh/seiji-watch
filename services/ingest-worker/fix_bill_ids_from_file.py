@@ -246,7 +246,7 @@ def main():
         print(f"  Bill_ID無し: {analysis['missing_bill_id']}")
         print(f"  不正フォーマット: {analysis['invalid_format']}")
         print(
-            f"  欠損率: {(analysis['missing_bill_id']/analysis['total_bills'])*100:.1f}%"
+            f"  欠損率: {(analysis['missing_bill_id'] / analysis['total_bills']) * 100:.1f}%"
         )
 
         if analysis["id_patterns"]:
@@ -258,7 +258,7 @@ def main():
         if analysis["missing_bills"]:
             print("\n  欠損データ例 (先頭10件):")
             for i, bill in enumerate(analysis["missing_bills"][:10]):
-                print(f"    {i+1}. {bill.title}")
+                print(f"    {i + 1}. {bill.title}")
                 print(f"       提出者: {bill.submitter}, カテゴリ: {bill.category}")
 
         # Bill ID生成
@@ -279,7 +279,7 @@ def main():
             if successful:
                 print("\n  生成されたID例 (先頭10件):")
                 for i, result in enumerate(successful[:10]):
-                    print(f"    {i+1}. {result['new_id']}: {result['title']}")
+                    print(f"    {i + 1}. {result['new_id']}: {result['title']}")
                     print(
                         f"       提出者: {result['submitter']}, カテゴリ: {result['category']}"
                     )

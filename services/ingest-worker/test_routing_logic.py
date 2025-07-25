@@ -205,7 +205,7 @@ def test_routing_decisions():
         print(f"   Confidence: {decision.confidence:.2f}")
         print()
 
-    print(f"📊 Results: {passed}/{total} tests passed ({(passed/total)*100:.1f}%)")
+    print(f"📊 Results: {passed}/{total} tests passed ({(passed / total) * 100:.1f}%)")
     return passed == total
 
 

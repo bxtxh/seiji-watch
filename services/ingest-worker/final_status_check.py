@@ -96,7 +96,7 @@ def main():
     print("\n🎯 統合状況:")
     print(f"  📄 収集法案数: {len(bills)}")
     print(f"  📋 Airtableレコード数: {len(all_records)}")
-    print(f"  📈 統合率: {len(all_records)/len(bills)*100:.1f}%")
+    print(f"  📈 統合率: {len(all_records) / len(bills) * 100:.1f}%")
 
     if len(all_records) >= 220:  # 97%以上
         print("\n🎉 第217回国会法案データ統合完了!")

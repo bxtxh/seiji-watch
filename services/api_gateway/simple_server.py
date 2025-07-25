@@ -3,6 +3,7 @@
 Simple FastAPI server for Diet Issue Tracker MVP
 Serves production data collected from scraping
 """
+
 import json
 import logging
 from datetime import datetime, timedelta
@@ -692,7 +693,7 @@ async def get_issues_kanban(
         issue_title = full_title[:20] + "..." if len(full_title) > 20 else full_title
 
         kanban_issue = {
-            "id": f"ISS-{i+1:03d}",
+            "id": f"ISS-{i + 1:03d}",
             "title": issue_title,
             "stage": stage,
             "schedule": {"from": schedule_from, "to": schedule_to},
@@ -804,7 +805,7 @@ async def get_issues(
         issue_title = full_title[:50] + "..." if len(full_title) > 50 else full_title
 
         issue = {
-            "id": f"ISS-{i+1:03d}",
+            "id": f"ISS-{i + 1:03d}",
             "title": issue_title,
             "description": f"法案「{full_title}」に関連する政策課題",
             "stage": stage,
@@ -1006,7 +1007,9 @@ async def get_issue_detail(issue_id: str):
             "status": (
                 "under_review"
                 if stage == "審議中"
-                else "enacted" if stage == "成立" else "pending_vote"
+                else "enacted"
+                if stage == "成立"
+                else "pending_vote"
             ),
             "stage": stage,
             "bill_number": bill_id,
@@ -1109,7 +1112,9 @@ async def get_issue_related_bills(issue_id: str):
             "status": (
                 "under_review"
                 if stage == "審議中"
-                else "enacted" if stage == "成立" else "pending_vote"
+                else "enacted"
+                if stage == "成立"
+                else "pending_vote"
             ),
             "stage": stage,
             "bill_number": bill_id,

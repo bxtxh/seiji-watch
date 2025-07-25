@@ -2,6 +2,7 @@
 """
 T52 test with environment variables loaded from .env.local
 """
+
 import os
 import sys
 from pathlib import Path
@@ -154,9 +155,9 @@ async def main():
     # Run T52 test
     success, count = await run_t52_limited_test()
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("🏁 Test Summary")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     if success:
         print("✅ T52 API integration test: PASSED")

@@ -574,7 +574,7 @@ Alert Details:
 - Triggered: {alert.triggered_at.isoformat()}
 
 Metrics:
-{json.dumps(alert.details.get('metrics', {}), indent=2)}
+{json.dumps(alert.details.get("metrics", {}), indent=2)}
 
 Dashboard: http://localhost:3000/dashboard/quality
             """

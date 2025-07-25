@@ -274,10 +274,7 @@ class WeaviateClient:
                     {self.SPEECH_CLASS}(
                         nearVector: {{vector: {query_vector}}}
                         limit: {limit}
-                        {(
-                            f'where: {json.dumps(where_filter)}'
-                            if where_filter else ''
-                        )}
+                        {(f"where: {json.dumps(where_filter)}" if where_filter else "")}
                     ) {{
                         airtableRecordId
                         content
@@ -356,10 +353,7 @@ class WeaviateClient:
                     {self.BILL_CLASS}(
                         nearVector: {{vector: {query_vector}}}
                         limit: {limit}
-                        {(
-                            f'where: {json.dumps(where_filter)}'
-                            if where_filter else ''
-                        )}
+                        {(f"where: {json.dumps(where_filter)}" if where_filter else "")}
                     ) {{
                         airtableRecordId
                         billNumber
@@ -429,11 +423,13 @@ class WeaviateClient:
                     ) {{
                         airtableRecordId
                         content
-                        {(
-                            "speakerName meetingId speechType sentiment topics"
-                            if content_type == "speech"
-                            else "billNumber title category status dietSession tags"
-                        )}
+                        {
+                (
+                    "speakerName meetingId speechType sentiment topics"
+                    if content_type == "speech"
+                    else "billNumber title category status dietSession tags"
+                )
+            }
                         _additional {{
                             id
                             score

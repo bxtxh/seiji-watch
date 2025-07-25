@@ -232,10 +232,10 @@ class AirtableSchemaInspector:
                         problematic_fields[field_name] = value
 
                 if problematic_fields:
-                    test_results["problematic_fields_test"] = (
-                        await self.test_single_update(
-                            session, table_name, record_id, problematic_fields
-                        )
+                    test_results[
+                        "problematic_fields_test"
+                    ] = await self.test_single_update(
+                        session, table_name, record_id, problematic_fields
                     )
 
                 return test_results
@@ -282,9 +282,9 @@ class AirtableSchemaInspector:
 
     def print_schema_report(self, table_name: str, schema_info: dict):
         """Print detailed schema report"""
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print(f"📋 AIRTABLE SCHEMA ANALYSIS: {table_name}")
-        print(f"{'='*70}")
+        print(f"{'=' * 70}")
 
         if "error" in schema_info:
             print(f"❌ Error: {schema_info['error']}")
@@ -298,7 +298,7 @@ class AirtableSchemaInspector:
         fields = schema_info.get("fields", {})
 
         print("\n📋 FIELD ANALYSIS:")
-        print(f"{'-'*70}")
+        print(f"{'-' * 70}")
 
         for field_name, analysis in fields.items():
             print(f"\n🔍 {field_name}")
@@ -327,7 +327,7 @@ class AirtableSchemaInspector:
     def print_test_results(self, test_results: dict):
         """Print field update test results"""
         print("\n🧪 FIELD UPDATE TESTS:")
-        print(f"{'-'*50}")
+        print(f"{'-' * 50}")
 
         for test_name, result in test_results.items():
             print(f"\n🔬 {test_name.replace('_', ' ').title()}")

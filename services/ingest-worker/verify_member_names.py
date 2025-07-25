@@ -79,7 +79,7 @@ async def verify_member_names():
             print("\n📋 Names still with trailing numbers:")
             for i, item in enumerate(names_with_numbers[:20]):  # Show first 20
                 print(
-                    f"   {i+1:2d}. {item['name']} ({item['house']}, {item['constituency']})"
+                    f"   {i + 1:2d}. {item['name']} ({item['house']}, {item['constituency']})"
                 )
 
             if len(names_with_numbers) > 20:

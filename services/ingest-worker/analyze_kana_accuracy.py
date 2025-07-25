@@ -246,9 +246,9 @@ class KanaAccuracyAnalyzer:
         """Print comprehensive analysis report"""
         results = self.analysis_results
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("🔍 MEMBERS NAME_KANA ACCURACY ANALYSIS REPORT")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print("📊 ANALYSIS SUMMARY:")
         print(f"   Total analyzed: {results['total_analyzed']}")

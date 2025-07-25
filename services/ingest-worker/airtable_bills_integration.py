@@ -195,24 +195,24 @@ async def integrate_bills_to_airtable():
                 if result:
                     successful_integrations += 1
                     record_id = result.get("id", "Unknown")
-                    print(f"  {i+1:2d}/20: ✅ {bill.bill_id} → {record_id}")
+                    print(f"  {i + 1:2d}/20: ✅ {bill.bill_id} → {record_id}")
                 else:
                     failed_integrations += 1
-                    print(f"  {i+1:2d}/20: ❌ {bill.bill_id} 統合失敗")
+                    print(f"  {i + 1:2d}/20: ❌ {bill.bill_id} 統合失敗")
 
                 # レート制限対応（5 requests/second）
                 time.sleep(0.2)
 
             except Exception as e:
                 failed_integrations += 1
-                print(f"  {i+1:2d}/20: ❌ {bill.bill_id} エラー: {str(e)}")
+                print(f"  {i + 1:2d}/20: ❌ {bill.bill_id} エラー: {str(e)}")
 
         print()
         print("📊 統合結果:")
         print(f"  ✅ 成功: {successful_integrations}件")
         print(f"  ❌ 失敗: {failed_integrations}件")
         print(
-            f"  📈 成功率: {successful_integrations/(successful_integrations+failed_integrations)*100:.1f}%"
+            f"  📈 成功率: {successful_integrations / (successful_integrations + failed_integrations) * 100:.1f}%"
         )
         print()
 

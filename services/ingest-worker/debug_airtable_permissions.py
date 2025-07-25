@@ -26,7 +26,6 @@ async def test_pat_scopes():
     print("=" * 50)
 
     async with aiohttp.ClientSession() as session:
-
         # Test 1: Metadata API access (requires schema.bases:read)
         try:
             metadata_url = f"{base_url}/meta/bases/{AIRTABLE_BASE_ID}/tables"

@@ -211,7 +211,7 @@ if __name__ == "__main__":
             "Bills-PolicyCategory API is ready for T128 completion."
         )
     else:
-        print("\n❌ Some validations failed. " "Please fix issues before proceeding.")
+        print("\n❌ Some validations failed. Please fix issues before proceeding.")
         print("\n🎯 Next steps for T128 completion:")
         print(
             "   1. Start the API server: cd /Users/shogen/seiji-watch/"

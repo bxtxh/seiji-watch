@@ -61,9 +61,13 @@ class AirtableWebhookPayload(BaseModel):
     timestamp: str
     action_metadata: dict[str, Any] | None = Field(None, alias="actionMetadata")
     changed_tables_by_id: dict[str, Any] | None = Field(None, alias="changedTablesById")
-    created_records_by_id: dict[str, Any] | None = Field(None, alias="createdRecordsById")
+    created_records_by_id: dict[str, Any] | None = Field(
+        None, alias="createdRecordsById"
+    )
     destroyed_record_ids: list[str] | None = Field(None, alias="destroyedRecordIds")
-    changed_records_by_id: dict[str, Any] | None = Field(None, alias="changedRecordsById")
+    changed_records_by_id: dict[str, Any] | None = Field(
+        None, alias="changedRecordsById"
+    )
 
     @validator("timestamp")
     def validate_timestamp(self, v):

@@ -557,7 +557,7 @@ class ComprehensiveDataQualityAnalyzer:
 
         if metrics.overall_quality_score < config["target_score"] / 100:
             recommendations.append(
-                f"目標品質スコア{config['target_score']}%未達 (現在{metrics.overall_quality_score*100:.1f}%)"
+                f"目標品質スコア{config['target_score']}%未達 (現在{metrics.overall_quality_score * 100:.1f}%)"
             )
 
         return recommendations
@@ -651,7 +651,7 @@ class ComprehensiveDataQualityAnalyzer:
         )
 
         print(
-            f"✅ {table_name} analysis complete: {overall_score*100:.1f}% quality score"
+            f"✅ {table_name} analysis complete: {overall_score * 100:.1f}% quality score"
         )
         return metrics
 
@@ -676,7 +676,7 @@ class ComprehensiveDataQualityAnalyzer:
 
             if metrics.overall_quality_score * 100 < target:
                 critical_issues.append(
-                    f"{table_name}: {metrics.overall_quality_score*100:.1f}% < {target}%目標"
+                    f"{table_name}: {metrics.overall_quality_score * 100:.1f}% < {target}%目標"
                 )
 
         # Generate improvement priorities
@@ -716,7 +716,7 @@ class ComprehensiveDataQualityAnalyzer:
         print(f"📅 Analysis Date: {report.analysis_date}")
         print(f"📊 Total Tables: {report.total_tables}")
         print(f"📊 Total Records: {report.total_records:,}")
-        print(f"🎯 Overall Database Score: {report.overall_database_score*100:.1f}%")
+        print(f"🎯 Overall Database Score: {report.overall_database_score * 100:.1f}%")
 
         print("\n📋 TABLE-BY-TABLE QUALITY METRICS:")
         print("-" * 80)
@@ -729,14 +729,14 @@ class ComprehensiveDataQualityAnalyzer:
             print(f"\n{status} {table_name}")
             print(f"   📊 Records: {metrics.total_records:,}")
             print(
-                f"   🎯 Overall Score: {metrics.overall_quality_score*100:.1f}% (Target: {target}%)"
+                f"   🎯 Overall Score: {metrics.overall_quality_score * 100:.1f}% (Target: {target}%)"
             )
-            print(f"   📈 Completeness: {metrics.completeness_score*100:.1f}%")
-            print(f"   🔍 Uniqueness: {metrics.uniqueness_score*100:.1f}%")
-            print(f"   ✅ Validity: {metrics.validity_score*100:.1f}%")
-            print(f"   🔗 Consistency: {metrics.consistency_score*100:.1f}%")
-            print(f"   🎪 Accuracy: {metrics.accuracy_score*100:.1f}%")
-            print(f"   ⏰ Timeliness: {metrics.timeliness_score*100:.1f}%")
+            print(f"   📈 Completeness: {metrics.completeness_score * 100:.1f}%")
+            print(f"   🔍 Uniqueness: {metrics.uniqueness_score * 100:.1f}%")
+            print(f"   ✅ Validity: {metrics.validity_score * 100:.1f}%")
+            print(f"   🔗 Consistency: {metrics.consistency_score * 100:.1f}%")
+            print(f"   🎪 Accuracy: {metrics.accuracy_score * 100:.1f}%")
+            print(f"   ⏰ Timeliness: {metrics.timeliness_score * 100:.1f}%")
 
             if metrics.recommendations:
                 print("   💡 Recommendations:")
@@ -760,7 +760,7 @@ class ComprehensiveDataQualityAnalyzer:
         achieved_count = sum(report.target_achievements.values())
         total_count = len(report.target_achievements)
         print(
-            f"\n🎯 Targets Achieved: {achieved_count}/{total_count} ({achieved_count/total_count*100:.1f}%)"
+            f"\n🎯 Targets Achieved: {achieved_count}/{total_count} ({achieved_count / total_count * 100:.1f}%)"
         )
 
         print("\n📈 IMPROVEMENT PRIORITIES:")

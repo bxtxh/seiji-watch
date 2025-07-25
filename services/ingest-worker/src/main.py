@@ -68,7 +68,15 @@ limited_scrape_coordinator: LimitedScrapeCoordinator | None = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler"""
-    global diet_scraper, voting_scraper, hr_voting_scraper, whisper_client, vector_client, scheduler, batch_processor, limited_scrape_coordinator
+    global \
+        diet_scraper, \
+        voting_scraper, \
+        hr_voting_scraper, \
+        whisper_client, \
+        vector_client, \
+        scheduler, \
+        batch_processor, \
+        limited_scrape_coordinator
 
     # Startup
     logger.info("Starting ingest-worker service...")

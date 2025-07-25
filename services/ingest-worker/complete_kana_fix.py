@@ -561,9 +561,9 @@ class CompleteKanaFixer:
         """Print complete fix summary"""
         results = self.fix_results
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("🔧 COMPLETE NAME_KANA FIX SUMMARY - ULTRA THOROUGH")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print("📊 PROCESSING SUMMARY:")
         print(f"   Total processed: {results['total_processed']}")

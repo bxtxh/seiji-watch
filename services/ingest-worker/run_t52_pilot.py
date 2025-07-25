@@ -2,6 +2,7 @@
 """
 Execute T52 pilot dataset generation for quality validation
 """
+
 import asyncio
 import json
 import os
@@ -54,7 +55,8 @@ async def execute_t52_pilot_generation():
         print()
 
         result = await coordinator.execute_limited_scraping(
-            target=target, dry_run=False  # Real execution
+            target=target,
+            dry_run=False,  # Real execution
         )
 
         # Display results
@@ -107,9 +109,9 @@ async def execute_t52_pilot_generation():
         print(f"\n💾 Results saved to: {results_file}")
 
         # Summary and next steps
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("🏁 T52 Pilot Dataset Generation Summary")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         if result.success:
             print("✅ SUCCESS: Pilot dataset generated successfully!")

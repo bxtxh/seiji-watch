@@ -94,10 +94,10 @@ async def check_member_data():
 
                 print("📊 全体統計:")
                 print(
-                    f"  🤖 ダミーデータ: {total_dummy}件 ({total_dummy/len(records)*100:.1f}%)"
+                    f"  🤖 ダミーデータ: {total_dummy}件 ({total_dummy / len(records) * 100:.1f}%)"
                 )
                 print(
-                    f"  👤 実データ: {total_real}件 ({total_real/len(records)*100:.1f}%)"
+                    f"  👤 実データ: {total_real}件 ({total_real / len(records) * 100:.1f}%)"
                 )
 
                 if total_dummy > total_real:

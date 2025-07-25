@@ -65,7 +65,7 @@ def main():
             batch_bills = bills[batch_start:batch_end]
 
             print(
-                f"\n📦 バッチ {batch_start//batch_size + 1}: {batch_start+1}-{batch_end}"
+                f"\n📦 バッチ {batch_start // batch_size + 1}: {batch_start + 1}-{batch_end}"
             )
 
             batch_success = 0
@@ -105,7 +105,9 @@ def main():
         print("\n📊 最終結果:")
         print(f"  ✅ 成功: {total_success}")
         print(f"  ❌ 失敗: {total_failed}")
-        print(f"  📈 成功率: {total_success/(total_success+total_failed)*100:.1f}%")
+        print(
+            f"  📈 成功率: {total_success / (total_success + total_failed) * 100:.1f}%"
+        )
 
         if total_success > 200:
             print("\n🎉 第217回国会法案データ統合完了!")

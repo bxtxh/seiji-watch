@@ -227,9 +227,9 @@ class MembersDuplicateReviewer:
         self, duplicate_type: str, groups: dict[str, list[dict]]
     ):
         """Print detailed duplicate analysis"""
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"🔍 {duplicate_type.upper()} ANALYSIS")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         if not groups:
             print("✅ No duplicates found!")
@@ -241,7 +241,7 @@ class MembersDuplicateReviewer:
 
         for i, (key, group) in enumerate(groups.items(), 1):
             print(f"\n🔍 Group {i}: {key}")
-            print(f"{'─'*60}")
+            print(f"{'─' * 60}")
 
             analysis = self.analyze_duplicate_group(group)
 
@@ -257,7 +257,7 @@ class MembersDuplicateReviewer:
                     else "🔴 REMOVE"
                 )
                 print(
-                    f"   {marker} Record {j+1} (Q:{record_info['quality_score']}): {record_info['id']}"
+                    f"   {marker} Record {j + 1} (Q:{record_info['quality_score']}): {record_info['id']}"
                 )
 
                 fields = record_info["fields"]
@@ -390,9 +390,9 @@ class MembersDuplicateReviewer:
             )
 
             # Summary
-            print(f"\n{'='*80}")
+            print(f"\n{'=' * 80}")
             print("📋 MEMBERS DUPLICATE ANALYSIS SUMMARY")
-            print(f"{'='*80}")
+            print(f"{'=' * 80}")
             print(f"📊 Total Members: {len(all_records)}")
             print(f"🔍 Exact Duplicate Groups: {len(exact_duplicates)}")
             print(f"🔍 Potential Duplicate Groups: {len(potential_duplicates)}")

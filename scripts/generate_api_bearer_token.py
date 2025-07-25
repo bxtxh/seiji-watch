@@ -146,7 +146,7 @@ if __name__ == "__main__":
         decode_and_verify_token(tokens["24hours"], SECRET_KEY)
 
         print("\n🧪 Test your token:")
-        print(f"   curl -H \"Authorization: Bearer {tokens['24hours'][:50]}...\" \\")
+        print(f'   curl -H "Authorization: Bearer {tokens["24hours"][:50]}..." \\')
         print("        http://localhost:8000/api/issues/")
 
         print("\n📝 Server Expected Payload Structure:")

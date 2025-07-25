@@ -365,9 +365,9 @@ class PrecisionKanaDetector:
         """Print comprehensive precision detection report"""
         results = self.detection_results
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("🔍 PRECISION NAME_KANA DETECTION REPORT")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print("📊 DETECTION SUMMARY:")
         print(f"   Total analyzed: {results['total_analyzed']}")

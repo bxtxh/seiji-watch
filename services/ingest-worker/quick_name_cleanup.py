@@ -88,7 +88,7 @@ async def quick_name_cleanup():
 
             if batch_cleaned > 0:
                 print(
-                    f"   ✅ Batch {batch_start//batch_size + 1}: Cleaned {batch_cleaned} names"
+                    f"   ✅ Batch {batch_start // batch_size + 1}: Cleaned {batch_cleaned} names"
                 )
 
         # Quick verification
@@ -112,9 +112,9 @@ async def quick_name_cleanup():
                     f"📊 Sample check: {remaining_issues}/100 still have trailing numbers"
                 )
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print("🧹 QUICK CLEANUP SUMMARY")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"✅ Names cleaned: {cleaned_count}")
     print(f"❌ Errors: {errors}")
 

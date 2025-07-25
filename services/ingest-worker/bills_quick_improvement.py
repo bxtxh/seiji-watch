@@ -58,7 +58,7 @@ async def quick_bills_improvement():
                 fields = record.get("fields", {})
                 updates = {}
 
-                print(f"\n🔧 Processing record {i+1}/20: {record_id}")
+                print(f"\n🔧 Processing record {i + 1}/20: {record_id}")
 
                 # 1. Status standardization
                 status = fields.get("Bill_Status", "")
@@ -173,9 +173,9 @@ async def quick_bills_improvement():
                 print(f"📈 Sample completeness: {avg_completeness:.1%}")
 
     # Print summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("📋 QUICK BILLS IMPROVEMENT SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"🔧 Status standardized: {improvements['status_standardized']}")
     print(f"🏷️ Categories filled: {improvements['categories_filled']}")
     print(f"⭐ Priorities assigned: {improvements['priorities_assigned']}")

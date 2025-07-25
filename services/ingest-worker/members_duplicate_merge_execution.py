@@ -436,9 +436,9 @@ class MembersDuplicateMerger:
 
     def print_execution_summary(self, report: dict):
         """Print comprehensive execution summary"""
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("📋 MEMBERS DUPLICATE MERGE EXECUTION SUMMARY")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print(f"⏱️ Execution Time: {report['execution_time_seconds']:.1f} seconds")
         print(

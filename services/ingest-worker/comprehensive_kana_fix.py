@@ -432,9 +432,9 @@ class ComprehensiveKanaFixer:
         """Print comprehensive fix summary"""
         results = self.fix_results
 
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print("🔧 COMPREHENSIVE NAME_KANA FIX SUMMARY")
-        print(f"{'='*70}")
+        print(f"{'=' * 70}")
 
         print("📊 PROCESSING SUMMARY:")
         print(f"   Total processed: {results['total_processed']}")

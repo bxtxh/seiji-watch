@@ -154,7 +154,7 @@ class BillsPolicyCategoryMigrator:
         for i, rel in enumerate(relationships_to_create[:3]):
             fields = rel["fields"]
             print(
-                f"     {i+1}. Bill: {fields['Bill_ID']} → PolicyCategory: {fields['PolicyCategory_ID']}"
+                f"     {i + 1}. Bill: {fields['Bill_ID']} → PolicyCategory: {fields['PolicyCategory_ID']}"
             )
             print(f"        Notes: {fields['Notes']}")
 
@@ -183,11 +183,11 @@ class BillsPolicyCategoryMigrator:
                         created_records = response_data.get("records", [])
                         created_count += len(created_records)
                         print(
-                            f"   ✅ Batch {i//10 + 1}: Created {len(created_records)} relationships"
+                            f"   ✅ Batch {i // 10 + 1}: Created {len(created_records)} relationships"
                         )
                     else:
                         error_data = await response.json()
-                        print(f"   ❌ Batch {i//10 + 1} failed: {response.status}")
+                        print(f"   ❌ Batch {i // 10 + 1} failed: {response.status}")
                         print(f"      Error: {error_data}")
                         failed_count += len(batch)
 
@@ -195,7 +195,7 @@ class BillsPolicyCategoryMigrator:
                 await asyncio.sleep(0.3)
 
             except Exception as e:
-                print(f"   ❌ Batch {i//10 + 1} error: {e}")
+                print(f"   ❌ Batch {i // 10 + 1} error: {e}")
                 failed_count += len(batch)
 
         print("\n📊 Migration results:")

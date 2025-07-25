@@ -249,7 +249,7 @@ class MembersNameKanaFixer:
             # Step 4: Show preview
             print("\n👀 Preview of changes (first 10):")
             for i, item in enumerate(records_to_fix[:10]):
-                print(f"   {i+1:2d}. {item['name']}")
+                print(f"   {i + 1:2d}. {item['name']}")
                 print(f"       Before: '{item['current_kana']}'")
                 print(f"       After:  '{item['new_kana']}'")
 
@@ -268,7 +268,7 @@ class MembersNameKanaFixer:
                 total_fixed += batch_fixed
 
                 print(
-                    f"   ✅ Batch {i//batch_size + 1}: Fixed {batch_fixed}/{len(batch)} records"
+                    f"   ✅ Batch {i // batch_size + 1}: Fixed {batch_fixed}/{len(batch)} records"
                 )
 
             self.results["total_processed"] = len(records_to_fix)
@@ -299,9 +299,9 @@ class MembersNameKanaFixer:
 
     def print_summary(self):
         """Print comprehensive summary"""
-        print(f"\n{'='*70}")
+        print(f"\n{'=' * 70}")
         print("🔤 MEMBERS NAME_KANA FIX SUMMARY")
-        print(f"{'='*70}")
+        print(f"{'=' * 70}")
         print(f"📊 Total processed: {self.results['total_processed']}")
         print(f"🔄 Placeholder fixed: {self.results['placeholder_fixed']}")
         print(f"🔤 Empty fixed: {self.results['empty_fixed']}")

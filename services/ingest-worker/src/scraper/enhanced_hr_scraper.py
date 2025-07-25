@@ -608,7 +608,6 @@ class EnhancedHRProcessor:
                 and session.quality_metrics["confidence_score"] >= 0.5
                 and session.quality_metrics["consistency_score"] >= 0.5
             ):
-
                 valid_sessions.append(session)
                 logger.info(f"Validated session: {session.session_id}")
             else:

@@ -119,7 +119,7 @@ def print_analysis_report(analysis: dict[str, Any]):
         # Show first 10 examples
         for i, record in enumerate(analysis["records_with_trailing_numbers"][:10]):
             print(
-                f"{i+1:2d}. '{record['full_name']}' -> '{record['base_name']}' (number: {record['trailing_number']})"
+                f"{i + 1:2d}. '{record['full_name']}' -> '{record['base_name']}' (number: {record['trailing_number']})"
             )
 
         if len(analysis["records_with_trailing_numbers"]) > 10:

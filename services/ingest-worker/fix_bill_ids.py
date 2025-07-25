@@ -380,7 +380,7 @@ async def main():
             print(f"  Bill_ID有り: {analysis['has_bill_id']}")
             print(f"  Bill_ID無し: {analysis['missing_bill_id']}")
             print(
-                f"  欠損率: {(analysis['missing_bill_id']/analysis['total_bills'])*100:.1f}%"
+                f"  欠損率: {(analysis['missing_bill_id'] / analysis['total_bills']) * 100:.1f}%"
             )
 
             if analysis["id_patterns"]:

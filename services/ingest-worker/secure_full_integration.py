@@ -92,11 +92,11 @@ def main():
 
                 if response.status_code == 200:
                     success_count += 1
-                    print(f"  {i+1:3d}/{len(bills)}: ✅ {bill.bill_id}")
+                    print(f"  {i + 1:3d}/{len(bills)}: ✅ {bill.bill_id}")
                 else:
                     failed_count += 1
                     print(
-                        f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (エラー {response.status_code})"
+                        f"  {i + 1:3d}/{len(bills)}: ❌ {bill.bill_id} (エラー {response.status_code})"
                     )
 
                 # レート制限対応 (5 req/sec)
@@ -108,13 +108,13 @@ def main():
                     remaining = len(bills) - (i + 1)
                     est_time = (elapsed / (i + 1)) * remaining
                     print(
-                        f"    📊 進捗: {i+1}/{len(bills)} ({success_count}成功, {failed_count}失敗) - 残り約{est_time:.0f}秒"
+                        f"    📊 進捗: {i + 1}/{len(bills)} ({success_count}成功, {failed_count}失敗) - 残り約{est_time:.0f}秒"
                     )
 
             except Exception as e:
                 failed_count += 1
                 print(
-                    f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (例外: {str(e)[:50]})"
+                    f"  {i + 1:3d}/{len(bills)}: ❌ {bill.bill_id} (例外: {str(e)[:50]})"
                 )
 
         elapsed_total = time.time() - start_time
@@ -122,7 +122,9 @@ def main():
         print("\n📊 統合結果:")
         print(f"  ✅ 成功: {success_count}件")
         print(f"  ❌ 失敗: {failed_count}件")
-        print(f"  📈 成功率: {success_count/(success_count+failed_count)*100:.1f}%")
+        print(
+            f"  📈 成功率: {success_count / (success_count + failed_count) * 100:.1f}%"
+        )
         print(f"  ⏱️  実行時間: {elapsed_total:.1f}秒")
 
         if success_count > 200:  # 80%以上成功

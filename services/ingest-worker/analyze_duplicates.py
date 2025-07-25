@@ -52,7 +52,7 @@ def analyze_duplicates():
         for i, base_name in enumerate(examples[:5]):  # Show first 5 examples
             group = base_name_groups[base_name]
             numbers = [record["trailing_number"] for record in group]
-            print(f"  {i+1}. '{base_name}' -> numbers: {sorted(numbers)}")
+            print(f"  {i + 1}. '{base_name}' -> numbers: {sorted(numbers)}")
 
             # Show some additional details for the first few
             if i < 2:
@@ -103,7 +103,7 @@ def analyze_duplicates():
     if suspicious_duplicates:
         print("SUSPICIOUS DUPLICATES EXAMPLES:")
         for i, (base_name, group) in enumerate(suspicious_duplicates[:5]):
-            print(f"{i+1}. '{base_name}' ({len(group)} records):")
+            print(f"{i + 1}. '{base_name}' ({len(group)} records):")
             for record in group:
                 fields = record["fields"]
                 house = fields.get("House", "Unknown")
@@ -117,7 +117,7 @@ def analyze_duplicates():
     if likely_different_people:
         print("LIKELY DIFFERENT PEOPLE EXAMPLES:")
         for i, (base_name, group) in enumerate(likely_different_people[:3]):
-            print(f"{i+1}. '{base_name}' ({len(group)} records):")
+            print(f"{i + 1}. '{base_name}' ({len(group)} records):")
             for record in group:
                 fields = record["fields"]
                 house = fields.get("House", "Unknown")
@@ -138,7 +138,7 @@ def analyze_duplicates():
 
     print("NUMBER FREQUENCY:")
     for number, count in sorted(number_counter.items(), key=lambda x: int(x[0])):
-        print(f"  {number}: {count} times ({count/len(all_numbers)*100:.1f}%)")
+        print(f"  {number}: {count} times ({count / len(all_numbers) * 100:.1f}%)")
 
     # Check if numbers are sequential within groups
     sequential_groups = 0

@@ -575,7 +575,6 @@ class PDFProcessor:
                             and len(name) <= 15
                             and vote in ["賛成", "反対", "欠席", "棄権"]
                         ):
-
                             record = PDFVoteRecord(
                                 member_name=name,
                                 member_name_kana=None,  # Not available in PDFs usually

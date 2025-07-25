@@ -434,7 +434,7 @@ class IngestWorkerMetrics:
                 prom_type = "gauge"
 
             lines.append(
-                f'# HELP {metric_name} {metric_name.replace("_", " ").title()}'
+                f"# HELP {metric_name} {metric_name.replace('_', ' ').title()}"
             )
             lines.append(f"# TYPE {metric_name} {prom_type}")
 

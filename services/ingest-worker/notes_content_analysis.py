@@ -116,7 +116,7 @@ def analyze_notes_patterns(records):
 
             # 代表例表示（最初の3件）
             for i, item in enumerate(items[:3]):
-                print(f"\n例{i+1}: {item['name'][:50]}...")
+                print(f"\n例{i + 1}: {item['name'][:50]}...")
                 print(f"Notes内容: {item['notes'][:200]}...")
                 if len(item["notes"]) > 200:
                     print("  [省略...]")

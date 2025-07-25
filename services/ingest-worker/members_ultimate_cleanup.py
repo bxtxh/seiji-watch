@@ -220,9 +220,9 @@ async def members_ultimate_cleanup():
     estimated_improvement = deleted_count * 0.06  # Conservative estimate
     estimated_quality = min(95.0, 91.6 + estimated_improvement)
 
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("🏆 MEMBERS ULTIMATE CLEANUP SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"🗑️ Total records deleted: {deleted_count}")
     print(f"🧹 Synthetic data removed: {synthetic_removed}")
     print(f"❌ Errors: {errors}")

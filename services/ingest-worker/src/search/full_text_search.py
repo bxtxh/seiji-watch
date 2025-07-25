@@ -175,7 +175,7 @@ class JapaneseTextProcessor:
                 "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
                 "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
                 "０１２３４５６７８９",
-                "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789",
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
             )
         )
 
@@ -505,8 +505,8 @@ class FullTextSearchEngine:
                 house_of_origin,
                 submitted_date,
                 {rank_expression} as relevance_score,
-                ts_headline('japanese', COALESCE(title, ''), {ts_query if query.mode != SearchMode.EXACT else 'plainto_tsquery(:query)'}) as title_highlight,
-                ts_headline('japanese', COALESCE(bill_outline, ''), {ts_query if query.mode != SearchMode.EXACT else 'plainto_tsquery(:query)'}) as outline_highlight
+                ts_headline('japanese', COALESCE(title, ''), {ts_query if query.mode != SearchMode.EXACT else "plainto_tsquery(:query)"}) as title_highlight,
+                ts_headline('japanese', COALESCE(bill_outline, ''), {ts_query if query.mode != SearchMode.EXACT else "plainto_tsquery(:query)"}) as outline_highlight
             FROM bills
             WHERE {where_clause}
             ORDER BY {order_by}
@@ -618,7 +618,9 @@ class FullTextSearchEngine:
                     weight = (
                         "A"
                         if field == SearchField.TITLE
-                        else "B" if field == SearchField.OUTLINE else "C"
+                        else "B"
+                        if field == SearchField.OUTLINE
+                        else "C"
                     )
                     field_vectors.append(
                         f"setweight(to_tsvector('japanese', COALESCE({field.value}, '')), '{weight}')"

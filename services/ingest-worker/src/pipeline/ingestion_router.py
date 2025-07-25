@@ -724,7 +724,6 @@ async def main():
     )
 
     async with HybridIngestionRouter() as router:
-
         if args.test_date:
             # Test routing decision
             test_date = datetime.strptime(args.test_date, "%Y-%m-%d").date()

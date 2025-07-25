@@ -199,7 +199,8 @@ class MemberService:
         try:
             # Fetch from Airtable
             members = await self.airtable.list_members(
-                filter_formula=filter_formula, max_records=1000  # Adjust based on needs
+                filter_formula=filter_formula,
+                max_records=1000,  # Adjust based on needs
             )
 
             # Process and enrich member data

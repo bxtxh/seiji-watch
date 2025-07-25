@@ -387,9 +387,9 @@ class CustomAssertions:
     @staticmethod
     def assert_performance_acceptable(duration, max_duration):
         """Assert that performance is acceptable."""
-        assert (
-            duration <= max_duration
-        ), f"Performance not acceptable: {duration}s > {max_duration}s"
+        assert duration <= max_duration, (
+            f"Performance not acceptable: {duration}s > {max_duration}s"
+        )
 
 
 @pytest.fixture

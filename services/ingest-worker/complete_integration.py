@@ -158,15 +158,15 @@ def main():
             if create_record(pat, base_id, fields):
                 created_count += 1
                 print(
-                    f"  ✅ {i+1}/{len(new_bills)}: {bill.bill_id} - {bill.title[:40]}..."
+                    f"  ✅ {i + 1}/{len(new_bills)}: {bill.bill_id} - {bill.title[:40]}..."
                 )
             else:
-                print(f"  ❌ {i+1}/{len(new_bills)}: {bill.bill_id} - 作成失敗")
+                print(f"  ❌ {i + 1}/{len(new_bills)}: {bill.bill_id} - 作成失敗")
 
             time.sleep(0.2)  # レート制限対応
 
         except Exception as e:
-            print(f"  ❌ {i+1}/{len(new_bills)}: {bill.bill_id} - エラー: {str(e)}")
+            print(f"  ❌ {i + 1}/{len(new_bills)}: {bill.bill_id} - エラー: {str(e)}")
 
     print(f"\n📊 新規作成結果: {created_count}件作成")
 

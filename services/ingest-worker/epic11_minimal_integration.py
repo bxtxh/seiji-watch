@@ -88,7 +88,6 @@ class Epic11MinimalIntegrator:
                     headers=self.headers,
                     json=test_bill,
                 ) as response:
-
                     if response.status == 200:
                         result = await response.json()
                         print(f"✅ Test successful! Record ID: {result['id']}")
@@ -116,7 +115,7 @@ class Epic11MinimalIntegrator:
             for i in range(0, len(bills), batch_size):
                 batch = bills[i : i + batch_size]
                 print(
-                    f"📦 Processing batch {i//batch_size + 1}: bills {i+1}-{min(i+batch_size, len(bills))}"
+                    f"📦 Processing batch {i // batch_size + 1}: bills {i + 1}-{min(i + batch_size, len(bills))}"
                 )
 
                 for j, bill in enumerate(batch):
@@ -128,7 +127,6 @@ class Epic11MinimalIntegrator:
                             headers=self.headers,
                             json=airtable_bill,
                         ) as response:
-
                             if response.status == 200:
                                 await response.json()
                                 success_count += 1
@@ -198,7 +196,6 @@ class Epic11MinimalIntegrator:
                                 headers=self.headers,
                                 json=airtable_vote,
                             ) as response:
-
                                 if response.status == 200:
                                     await response.json()
                                     success_count += 1
@@ -283,11 +280,11 @@ class Epic11MinimalIntegrator:
         print("=" * 60)
         print(f"⏱️  Total time: {duration:.1f} seconds")
         print(
-            f"📋 Bills: {bills_success}/{len(bills)} ({bills_success/len(bills)*100:.1f}%)"
+            f"📋 Bills: {bills_success}/{len(bills)} ({bills_success / len(bills) * 100:.1f}%)"
         )
 
         votes_rate = (
-            f"{votes_success/total_votes*100:.1f}%" if total_votes > 0 else "N/A"
+            f"{votes_success / total_votes * 100:.1f}%" if total_votes > 0 else "N/A"
         )
         print(f"🗳️ Votes: {votes_success}/{total_votes} ({votes_rate})")
 

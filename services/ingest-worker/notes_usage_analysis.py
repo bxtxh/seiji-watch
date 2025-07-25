@@ -111,7 +111,7 @@ def generate_fix_priority(analysis_results):
             for usage in file_info["usages"][:3]:  # 最初の3件のみ表示
                 print(f"    L{usage['line']}: {usage['content']}")
             if len(file_info["usages"]) > 3:
-                print(f"    ... 他{len(file_info['usages'])-3}件")
+                print(f"    ... 他{len(file_info['usages']) - 3}件")
 
             priority_plan.append(
                 {

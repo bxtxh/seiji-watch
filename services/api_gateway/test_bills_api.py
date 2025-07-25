@@ -22,7 +22,6 @@ async def test_bills_endpoints():
     # Test data
 
     async with aiohttp.ClientSession() as session:
-
         # Test 1: List bills
         print("\n1. Testing GET /api/bills/")
         try:

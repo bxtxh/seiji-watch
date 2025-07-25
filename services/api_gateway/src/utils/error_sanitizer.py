@@ -9,7 +9,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def sanitize_error_for_api(error: Exception, default_message: str = "Internal server error") -> str:
+def sanitize_error_for_api(
+    error: Exception, default_message: str = "Internal server error"
+) -> str:
     """
     Sanitize error messages for API responses to prevent information leakage.
 
@@ -27,7 +29,9 @@ def sanitize_error_for_api(error: Exception, default_message: str = "Internal se
     return default_message
 
 
-def create_error_response(success: bool = False, message: str = "Operation failed", **kwargs) -> dict:
+def create_error_response(
+    success: bool = False, message: str = "Operation failed", **kwargs
+) -> dict:
     """
     Create a standardized error response for API endpoints.
 
@@ -39,9 +43,5 @@ def create_error_response(success: bool = False, message: str = "Operation faile
     Returns:
         Standardized error response dictionary
     """
-    response = {
-        "success": success,
-        "error": message,
-        **kwargs
-    }
+    response = {"success": success, "error": message, **kwargs}
     return response

@@ -350,8 +350,8 @@ class IssueDataGenerator:
         for i, template in enumerate(issue_templates):
             for j in range(10):  # 各テンプレートから10個ずつ
                 issue = IssueData(
-                    title=f"{template['title']} (バリエーション{j+1})",
-                    description=f"{template['description']} 具体的な実施方策{j+1}の検討。",
+                    title=f"{template['title']} (バリエーション{j + 1})",
+                    description=f"{template['description']} 具体的な実施方策{j + 1}の検討。",
                     category_l1=template["l1"],
                     category_l2=template["l2"],
                     category_l3=template["l3"],
@@ -359,7 +359,7 @@ class IssueDataGenerator:
                     status="active",
                     impact_level=template["impact"],
                     stakeholders=["関係省庁", "実施機関", "関係団体"],
-                    estimated_timeline=f"{1+(j%3)}年",
+                    estimated_timeline=f"{1 + (j % 3)}年",
                     ai_confidence=0.7 + (j * 0.01),
                     tags=[template["l2"], "政策課題"],
                     related_keywords=[template["l2"], template["l3"], "政策"],

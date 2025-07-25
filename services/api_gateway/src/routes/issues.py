@@ -63,7 +63,7 @@ class IssueCreateRequest(BaseModel):
         allowed_priorities = ["low", "medium", "high", "urgent"]
         if v not in allowed_priorities:
             raise ValueError(
-                f'Priority must be one of: {", ".join(allowed_priorities)}'
+                f"Priority must be one of: {', '.join(allowed_priorities)}"
             )
         return v
 
@@ -116,7 +116,7 @@ class IssueTagCreateRequest(BaseModel):
         ]
         if v not in allowed_categories:
             raise ValueError(
-                f'Category must be one of: {", ".join(allowed_categories)}'
+                f"Category must be one of: {', '.join(allowed_categories)}"
             )
         return v
 

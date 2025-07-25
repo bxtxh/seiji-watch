@@ -30,7 +30,6 @@ async def analyze_bills_categories():
     print("=" * 60)
 
     async with aiohttp.ClientSession() as session:
-
         # Get all Bills records
         print("\n📋 Step 1: Fetching all Bills records...")
         bills_url = f"{base_url}/Bills%20(%E6%B3%95%E6%A1%88)"

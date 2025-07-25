@@ -31,13 +31,13 @@ class Epic11QuickTest:
 
         # Create comprehensive Notes field with all details
         notes = f"""【法案詳細】
-🏛️ 法案ID: {bill['bill_id']}
-📋 ステータス: {bill['status']}
-🔄 段階: {bill['stage']}
-👤 提出者: {bill['submitter']}
-🏷️ カテゴリ: {bill['category']}
-🔗 URL: {bill['url']}
-📅 収集日時: {bill['collected_at']}
+🏛️ 法案ID: {bill["bill_id"]}
+📋 ステータス: {bill["status"]}
+🔄 段階: {bill["stage"]}
+👤 提出者: {bill["submitter"]}
+🏷️ カテゴリ: {bill["category"]}
+🔗 URL: {bill["url"]}
+📅 収集日時: {bill["collected_at"]}
 
 【追加情報】
 - データソース: 参議院公式サイト
@@ -78,7 +78,6 @@ class Epic11QuickTest:
                         headers=self.headers,
                         json=test_bill,
                     ) as response:
-
                         if response.status == 200:
                             await response.json()
                             success_count += 1

@@ -182,9 +182,7 @@ class TestCompleteExtractionWorkflow:
         with patch("aiohttp.ClientSession") as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 204
-            mock_session.return_value.__aenter__.return_value.post.return_value.__aenter__.return_value = (
-                mock_response
-            )
+            mock_session.return_value.__aenter__.return_value.post.return_value.__aenter__.return_value = mock_response
 
             # Step 1: Get pending issues count
             mock_components["airtable_client"]._rate_limited_request.return_value = {
@@ -454,9 +452,9 @@ class TestPerformanceAndScalability:
 
         # Mock responses for batch operations
         mock_responses = [{"id": f"rec_{i}", "fields": {}} for i in range(20)]
-        mock_components["airtable_client"]._rate_limited_request.side_effect = (
-            mock_responses
-        )
+        mock_components[
+            "airtable_client"
+        ]._rate_limited_request.side_effect = mock_responses
 
         # Create test issues for batch processing
         dual_issues = [
@@ -522,9 +520,9 @@ class TestDataConsistency:
             ]
         }
 
-        mock_components["airtable_client"]._rate_limited_request.return_value = (
-            mock_tree_response
-        )
+        mock_components[
+            "airtable_client"
+        ]._rate_limited_request.return_value = mock_tree_response
 
         # Get issue tree
         tree = await issue_manager.get_issue_tree("approved")

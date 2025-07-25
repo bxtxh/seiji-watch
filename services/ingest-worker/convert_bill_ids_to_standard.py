@@ -304,7 +304,9 @@ def main():
             if successful:
                 print("\n  変換例 (先頭10件):")
                 for i, result in enumerate(successful[:10]):
-                    print(f"    {i+1}. {result['legacy_id']} → {result['standard_id']}")
+                    print(
+                        f"    {i + 1}. {result['legacy_id']} → {result['standard_id']}"
+                    )
                     print(f"       {result['title']}")
                     print(
                         f"       提出者: {result['submitter']}, カテゴリ: {result['category']}"

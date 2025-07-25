@@ -77,7 +77,7 @@ class IssueStatusUpdateRequest(BaseModel):
     def validate_status(self, v):
         allowed_statuses = ["pending", "approved", "rejected", "failed_validation"]
         if v not in allowed_statuses:
-            raise ValueError(f'Status must be one of: {", ".join(allowed_statuses)}')
+            raise ValueError(f"Status must be one of: {', '.join(allowed_statuses)}")
         return v
 
     @validator("reviewer_notes")

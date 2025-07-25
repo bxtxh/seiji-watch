@@ -364,7 +364,7 @@ async def get_bills(max_records: int = 100, category: str | None = None):
             {
                 "id": f"bill_01{i}",
                 "fields": {
-                    "Bill_Number": f"第213回国会第{i+5}号",
+                    "Bill_Number": f"第213回国会第{i + 5}号",
                     "Title": f"経済政策法案{i} - 中小企業支援",
                     "Summary": f"これは経済政策法案{i}の要約です。中小企業支援に関する重要な内容が含まれています。",
                     "Status": "審議中" if i % 2 == 0 else "成立",

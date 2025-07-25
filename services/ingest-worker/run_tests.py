@@ -14,10 +14,10 @@ from pathlib import Path
 def run_command(command, description=""):
     """Run a command and return success status."""
     if description:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Running: {description}")
         print(f"Command: {command}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
     result = subprocess.run(command, shell=True, capture_output=False)
     return result.returncode == 0

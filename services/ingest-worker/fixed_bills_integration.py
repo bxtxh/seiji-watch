@@ -189,17 +189,17 @@ async def main():
                 if result:
                     success_count += 1
                     record_id = result.get("id", "Unknown")
-                    print(f"  {i+1}/5: ✅ {bill.bill_id} → {record_id}")
+                    print(f"  {i + 1}/5: ✅ {bill.bill_id} → {record_id}")
                 else:
                     failed_count += 1
-                    print(f"  {i+1}/5: ❌ {bill.bill_id} 統合失敗")
+                    print(f"  {i + 1}/5: ❌ {bill.bill_id} 統合失敗")
 
                 # レート制限対応（5 requests/second）
                 time.sleep(0.2)
 
             except Exception as e:
                 failed_count += 1
-                print(f"  {i+1}/5: ❌ {bill.bill_id} エラー: {str(e)}")
+                print(f"  {i + 1}/5: ❌ {bill.bill_id} エラー: {str(e)}")
 
         print("\n📊 テスト結果:")
         print(f"  ✅ 成功: {success_count}/5")

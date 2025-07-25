@@ -413,7 +413,6 @@ class IssueVersioningService:
                     and version.valid_to < cutoff_date
                     and version.version_id != current_version.version_id
                 ):
-
                     # Check if this version has rollback dependencies
                     if not self._has_rollback_dependencies(version):
                         versions.remove(version)

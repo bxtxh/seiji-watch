@@ -239,7 +239,7 @@ class BillDataMigrator:
                 print(f"📋 処理議案数: {result['bills_processed']}件")
                 print(f"🔄 移行成功: {success_count}件")
                 print(
-                    f"📈 成功率: {(success_count/len(bills)*100):.1f}%"
+                    f"📈 成功率: {(success_count / len(bills) * 100):.1f}%"
                     if bills
                     else "0%"
                 )

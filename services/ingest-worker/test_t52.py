@@ -3,6 +3,7 @@
 Test script for T52 - Limited scope scraping pipeline
 Tests the data pipeline coordination for 2025 June first week
 """
+
 import asyncio
 import json
 import logging

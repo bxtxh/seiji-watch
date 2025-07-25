@@ -62,7 +62,6 @@ class Epic11BatchIntegrator:
                         headers=self.headers,
                         json=airtable_bill,
                     ) as response:
-
                         if response.status == 200:
                             await response.json()
                             success_count += 1
@@ -143,7 +142,7 @@ class Epic11BatchIntegrator:
         print("=" * 60)
         print(f"⏱️  Total time: {duration:.1f} seconds")
         print(
-            f"📋 Bills: {total_success}/{len(bills)} ({total_success/len(bills)*100:.1f}%)"
+            f"📋 Bills: {total_success}/{len(bills)} ({total_success / len(bills) * 100:.1f}%)"
         )
         print(f"✅ Success: {total_success}")
         print(f"❌ Failed: {total_failed}")

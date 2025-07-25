@@ -3,6 +3,7 @@
 Production scraping execution for June 2025 full month
 Execute comprehensive data collection with all AI features enabled
 """
+
 import asyncio
 import json
 import os
@@ -197,9 +198,9 @@ async def execute_production_scraping():
         )
 
         # Display results
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("📊 Production Scraping Results")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"✅ Success: {result['success']}")
         print(f"⏱️  Total Duration: {result['total_time']:.2f}s")
         print(f"📄 Bills Collected: {result['bills_collected']}")
@@ -309,9 +310,9 @@ async def execute_production_scraping():
         print(f"\n💾 Results saved to: {results_file}")
 
         # Summary
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("🏁 Production Scraping Summary")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         if result["success"]:
             print("✅ SUCCESS: Production data collection completed!")

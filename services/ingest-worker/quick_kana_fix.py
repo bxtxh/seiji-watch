@@ -225,7 +225,7 @@ async def quick_kana_fix():
 
             if batch_fixed > 0:
                 print(
-                    f"   ✅ Batch {batch_start//batch_size + 1}: Fixed {batch_fixed} records"
+                    f"   ✅ Batch {batch_start // batch_size + 1}: Fixed {batch_fixed} records"
                 )
 
         # Quick verification
@@ -247,9 +247,9 @@ async def quick_kana_fix():
 
                 print(f"📊 Sample check: {remaining_issues}/50 still need fixes")
 
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print("🔤 QUICK KANA FIX SUMMARY")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"✅ Records fixed: {fixed_count}")
     print(f"❌ Errors: {errors}")
 

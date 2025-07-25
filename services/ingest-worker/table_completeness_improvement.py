@@ -677,9 +677,9 @@ class TableCompletenessImprover:
         print(f"\n💾 Improvement report saved: {filename}")
 
         # Print summary
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("📋 TABLE COMPLETENESS IMPROVEMENT SUMMARY")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(f"📊 Tables Improved: {report['summary']['tables_improved']}")
         print(
             f"🎯 Targets Achieved: {report['summary']['targets_achieved']}/{len(results)}"

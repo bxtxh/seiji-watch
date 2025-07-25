@@ -339,7 +339,7 @@ class ShugiinMemberAdder:
 
             # Add index to make names unique
             if i >= 50:
-                name = f"{surname}{given_name}{(i//50)+1}"
+                name = f"{surname}{given_name}{(i // 50) + 1}"
 
             prefecture = prefectures[i % len(prefectures)]
             district = (i % 15) + 1  # Up to 15 districts per prefecture
@@ -505,13 +505,13 @@ class ShugiinMemberAdder:
                 print(f"⏱️  実行時間: {result['total_time']:.2f}秒")
                 print(f"📋 準備議員数: {result['members_prepared']}名")
                 print(f"💾 投入議員数: {total_inserted}名")
-                print(f"📈 成功率: {(total_inserted/len(new_members)*100):.1f}%")
+                print(f"📈 成功率: {(total_inserted / len(new_members) * 100):.1f}%")
 
                 if result["success"]:
                     print("\n🎉 SHUGIIN MEMBER DATA EXPANSION COMPLETE!")
                     print("✅ 衆議院議員データベース大幅拡充完了")
                     print(
-                        f"✅ 合計: 既存50名 + 新規{total_inserted}名 = 約{50+total_inserted}名"
+                        f"✅ 合計: 既存50名 + 新規{total_inserted}名 = 約{50 + total_inserted}名"
                     )
                     print("✅ 衆議院465議席に向けた包括的データベース")
                 else:

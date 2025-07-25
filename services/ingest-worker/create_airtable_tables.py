@@ -218,7 +218,6 @@ async def create_airtable_tables():
                 async with session.post(
                     create_url, headers=headers, json=table_schema
                 ) as response:
-
                     print(f"  Status: {response.status}")
 
                     if response.status == 200:

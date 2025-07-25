@@ -518,7 +518,7 @@ async def search_bills(request: Request):
             # Extract basic info from notes if available
             result = {
                 "bill_id": bill.get("id"),
-                "title": name[:100] if name else f"法案 {i+1}",
+                "title": name[:100] if name else f"法案 {i + 1}",
                 "summary": notes[:200] + "..." if len(notes) > 200 else notes,
                 "status": "実データ",
                 "search_method": "airtable_text",
@@ -1004,7 +1004,9 @@ async def get_members_list(
                 "party": (
                     "自由民主党"
                     if i % 3 == 0
-                    else "立憲民主党" if i % 3 == 1 else "日本維新の会"
+                    else "立憲民主党"
+                    if i % 3 == 1
+                    else "日本維新の会"
                 ),
                 "constituency": f"東京都第{(i % 10) + 1}区",
                 "terms_served": (i % 5) + 1,

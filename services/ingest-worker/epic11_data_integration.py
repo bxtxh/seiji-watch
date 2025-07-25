@@ -115,7 +115,7 @@ class Epic11DataIntegrator:
         for i in range(0, len(bills), self.batch_size):
             batch = bills[i : i + self.batch_size]
             logger.info(
-                f"Processing batch {i//self.batch_size + 1}: bills {i+1}-{min(i+self.batch_size, len(bills))}"
+                f"Processing batch {i // self.batch_size + 1}: bills {i + 1}-{min(i + self.batch_size, len(bills))}"
             )
 
             try:
@@ -130,7 +130,7 @@ class Epic11DataIntegrator:
                         )
                         inserted_ids.append(result["id"])
                         logger.info(
-                            f"✅ Inserted bill: {bills[i+j]['title'][:50]}... (ID: {result['id']})"
+                            f"✅ Inserted bill: {bills[i + j]['title'][:50]}... (ID: {result['id']})"
                         )
 
                         # Rate limiting - wait between requests
@@ -138,13 +138,13 @@ class Epic11DataIntegrator:
 
                     except Exception as e:
                         logger.error(
-                            f"❌ Failed to insert bill: {bills[i+j]['title'][:50]}... Error: {e}"
+                            f"❌ Failed to insert bill: {bills[i + j]['title'][:50]}... Error: {e}"
                         )
                         failed_bills.append(bills[i + j])
 
             except Exception as e:
                 logger.error(
-                    f"❌ Batch insertion failed for batch {i//self.batch_size + 1}: {e}"
+                    f"❌ Batch insertion failed for batch {i // self.batch_size + 1}: {e}"
                 )
                 failed_bills.extend(batch)
 

@@ -312,9 +312,9 @@ class FinalPerfectionSystem:
         """Print comprehensive perfection summary"""
         results = self.perfection_results
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("🏆 FINAL PERFECTION SYSTEM SUMMARY")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         print("📊 PERFECTION METRICS:")
         print(f"   Total analyzed: {results['total_analyzed']}")

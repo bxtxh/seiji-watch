@@ -61,7 +61,7 @@ def main():
             if response.status_code == 200:
                 success += 1
                 if i % 10 == 0:
-                    print(f"  {i+1}/50: ✅ 進行中... ({success}成功)")
+                    print(f"  {i + 1}/50: ✅ 進行中... ({success}成功)")
 
             time.sleep(0.1)  # 高速処理
 

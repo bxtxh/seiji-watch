@@ -800,8 +800,7 @@ class AirtableClient:
     ) -> list[dict[str, Any]]:
         """Get all bills linked to a specific policy category."""
         filter_formula = (
-            f"FIND('{policy_category_record_id}', "
-            f"ARRAYJOIN({{PolicyCategory}})) > 0"
+            f"FIND('{policy_category_record_id}', ARRAYJOIN({{PolicyCategory}})) > 0"
         )
         return await self.list_bill_policy_category_relationships(
             filter_formula=filter_formula

@@ -599,7 +599,7 @@ class QuickRealMemberReplacer:
                 print(f"⏱️  実行時間: {result['total_time']:.2f}秒")
                 print(f"🗑️  削除件数: {cleared_count}件")
                 print(f"💾 投入件数: {success_count}件")
-                print(f"📈 成功率: {(success_count/len(real_members)*100):.1f}%")
+                print(f"📈 成功率: {(success_count / len(real_members) * 100):.1f}%")
 
                 if result["success"]:
                     print("\n🎉 REAL MEMBER DATA REPLACEMENT COMPLETE!")

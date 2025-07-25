@@ -355,12 +355,15 @@ class TestIntegratedSearchAPI:
     def search_api(self, mock_engines):
         """Create test search API"""
         mock_ft_engine, mock_filter_engine = mock_engines
-        with patch(
-            "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine",
-            return_value=mock_ft_engine,
-        ), patch(
-            "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine",
-            return_value=mock_filter_engine,
+        with (
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine",
+                return_value=mock_ft_engine,
+            ),
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine",
+                return_value=mock_filter_engine,
+            ),
         ):
             return IntegratedSearchAPI("postgresql://test")
 
@@ -585,12 +588,14 @@ class TestIntegrationScenarios:
         engine, session = mock_database
 
         # Mock all components
-        with patch(
-            "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine"
-        ) as mock_ft, patch(
-            "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine"
-        ) as mock_filter:
-
+        with (
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine"
+            ) as mock_ft,
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine"
+            ) as mock_filter,
+        ):
             # Setup mock responses
             mock_ft_instance = Mock()
             mock_filter_instance = Mock()
@@ -663,12 +668,14 @@ class TestIntegrationScenarios:
         """Test search performance characteristics"""
         engine, session = mock_database
 
-        with patch(
-            "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine"
-        ) as mock_ft, patch(
-            "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine"
-        ) as mock_filter:
-
+        with (
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine"
+            ) as mock_ft,
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine"
+            ) as mock_filter,
+        ):
             # Setup mock with performance data
             mock_ft_instance = Mock()
             mock_filter_instance = Mock()
@@ -708,12 +715,14 @@ class TestIntegrationScenarios:
         """Test error handling in search pipeline"""
         engine, session = mock_database
 
-        with patch(
-            "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine"
-        ) as mock_ft, patch(
-            "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine"
-        ) as mock_filter:
-
+        with (
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.FullTextSearchEngine"
+            ) as mock_ft,
+            patch(
+                "services.ingest-worker.src.search.integrated_search_api.AdvancedFilterEngine"
+            ) as mock_filter,
+        ):
             # Setup mock to raise exception
             mock_ft_instance = Mock()
             mock_filter_instance = Mock()

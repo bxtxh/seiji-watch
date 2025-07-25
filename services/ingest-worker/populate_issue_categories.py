@@ -299,7 +299,6 @@ async def populate_issue_categories():
     )
 
     async with aiohttp.ClientSession() as session:
-
         # Check if table exists and is accessible
         try:
             async with session.get(issue_categories_url, headers=headers) as response:
@@ -358,7 +357,7 @@ async def populate_issue_categories():
                         batch_created = len(response_data.get("records", []))
                         created_count += batch_created
                         print(
-                            f"✅ Batch {i//10 + 1}: Created {batch_created} categories"
+                            f"✅ Batch {i // 10 + 1}: Created {batch_created} categories"
                         )
 
                         # Show created categories
@@ -371,7 +370,7 @@ async def populate_issue_categories():
 
                     else:
                         error_text = await response.text()
-                        print(f"❌ Batch {i//10 + 1} failed: {response.status}")
+                        print(f"❌ Batch {i // 10 + 1} failed: {response.status}")
                         print(f"   Error: {error_text}")
                         error_count += len(batch)
 
@@ -379,7 +378,7 @@ async def populate_issue_categories():
                 await asyncio.sleep(0.5)
 
             except Exception as e:
-                print(f"❌ Batch {i//10 + 1} error: {e}")
+                print(f"❌ Batch {i // 10 + 1} error: {e}")
                 error_count += len(batch)
 
         print("\n🎉 Population Complete!")

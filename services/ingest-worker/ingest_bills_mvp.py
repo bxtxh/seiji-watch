@@ -52,7 +52,7 @@ async def ingest_bills_to_airtable():
         # 2. サンプル表示
         print("📋 収集データサンプル:")
         for i, bill in enumerate(bills[:5]):
-            print(f"  {i+1}. {bill.bill_id}: {bill.title[:60]}...")
+            print(f"  {i + 1}. {bill.bill_id}: {bill.title[:60]}...")
         print()
 
         # 3. Airtable統合（簡易版）

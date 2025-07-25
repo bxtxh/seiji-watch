@@ -158,7 +158,7 @@ async def main():
     print("\n" + "=" * 50)
     passed = sum(results)
     total = len(results)
-    print(f"Test Results: {passed}/{total} passed ({passed/total*100:.1f}%)")
+    print(f"Test Results: {passed}/{total} passed ({passed / total * 100:.1f}%)")
 
     if passed == total:
         print("🎉 All EPIC 2 API tests passed!")

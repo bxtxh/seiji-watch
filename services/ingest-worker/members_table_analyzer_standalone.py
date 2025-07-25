@@ -130,16 +130,16 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
 
     print(f"Total records: {total_records}")
     print(
-        f"Records with ANY Name_Kana: {total_present} ({total_present/total_records*100:.1f}%)"
+        f"Records with ANY Name_Kana: {total_present} ({total_present / total_records * 100:.1f}%)"
     )
     print(
-        f"Records with VALID Name_Kana: {valid_count} ({valid_count/total_records*100:.1f}%)"
+        f"Records with VALID Name_Kana: {valid_count} ({valid_count / total_records * 100:.1f}%)"
     )
     print(
-        f"Records with PLACEHOLDER kana (たなかたろう): {placeholder_count} ({placeholder_count/total_records*100:.1f}%)"
+        f"Records with PLACEHOLDER kana (たなかたろう): {placeholder_count} ({placeholder_count / total_records * 100:.1f}%)"
     )
     print(
-        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)"
+        f"Records missing Name_Kana: {missing_count} ({missing_count / total_records * 100:.1f}%)"
     )
     print()
 
@@ -147,7 +147,7 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
     print("🚨 CRITICAL FINDING:")
     total_needing_kana = missing_count + placeholder_count
     print(
-        f"Records needing proper kana: {total_needing_kana}/{total_records} ({total_needing_kana/total_records*100:.1f}%)"
+        f"Records needing proper kana: {total_needing_kana}/{total_records} ({total_needing_kana / total_records * 100:.1f}%)"
     )
     print()
 
@@ -293,10 +293,10 @@ def analyze_reality_indicators(records: list[dict[str, Any]]) -> None:
 
     total_analyzed = kanji_names + hiragana_names + katakana_names + mixed_names
     print(
-        f"  Kanji only: {kanji_names}/{total_analyzed} ({kanji_names/total_analyzed*100:.1f}%)"
+        f"  Kanji only: {kanji_names}/{total_analyzed} ({kanji_names / total_analyzed * 100:.1f}%)"
     )
     print(
-        f"  Mixed (kanji + kana): {mixed_names}/{total_analyzed} ({mixed_names/total_analyzed*100:.1f}%)"
+        f"  Mixed (kanji + kana): {mixed_names}/{total_analyzed} ({mixed_names / total_analyzed * 100:.1f}%)"
     )
     print(f"  Hiragana only: {hiragana_names}/{total_analyzed}")
     print(f"  Katakana only: {katakana_names}/{total_analyzed}")

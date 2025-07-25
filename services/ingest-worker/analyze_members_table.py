@@ -90,10 +90,10 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
 
     print(f"Total records: {total_records}")
     print(
-        f"Records with Name_Kana: {present_count} ({present_count/total_records*100:.1f}%)"
+        f"Records with Name_Kana: {present_count} ({present_count / total_records * 100:.1f}%)"
     )
     print(
-        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)"
+        f"Records missing Name_Kana: {missing_count} ({missing_count / total_records * 100:.1f}%)"
     )
     print()
 

@@ -59,7 +59,6 @@ async def test_direct_airtable_access():
                     headers=headers,
                     params={"maxRecords": 3},
                 ) as response:
-
                     print(f"  Status: {response.status}")
 
                     if response.status == 200:
@@ -107,7 +106,6 @@ async def test_direct_airtable_access():
             async with session.post(
                 f"{base_url}/Bills (法案)", headers=headers, json=test_data
             ) as response:
-
                 print(f"  Write Status: {response.status}")
 
                 if response.status == 200:
@@ -135,7 +133,7 @@ async def test_direct_airtable_access():
         print("=" * 60)
         print(f"✅ Accessible Tables: {success_count}/{len(test_tables)}")
         print(f"📈 Total Records Found: {total_records}")
-        print(f"🎯 Success Rate: {success_count/len(test_tables)*100:.1f}%")
+        print(f"🎯 Success Rate: {success_count / len(test_tables) * 100:.1f}%")
 
         if success_count == len(test_tables):
             print("\n🎉 ALL TABLES ACCESSIBLE!")

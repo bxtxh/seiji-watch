@@ -144,7 +144,6 @@ class IssueRelationshipBatchProcessor:
         versioning_service: IssueVersioningService | None = None,
         discord_bot: DiscordNotificationBot | None = None,
     ):
-
         self.airtable_client = airtable_client or AirtableClient()
         self.issue_manager = issue_manager or AirtableIssueManager()
         self.versioning_service = versioning_service or IssueVersioningService()

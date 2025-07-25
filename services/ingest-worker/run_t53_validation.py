@@ -3,6 +3,7 @@
 T53 Data Quality Validation & Report
 Validates pilot dataset quality and generates comprehensive report
 """
+
 import asyncio
 import json
 import sys
@@ -418,9 +419,9 @@ async def run_t53_validation():
         validator = DataQualityValidator()
         print("✅ Data quality validator initialized")
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("📊 Running Data Validation Tests")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         # Run core data validation
         validation_results = validator.validate_pilot_dataset(pilot_data)
@@ -435,9 +436,9 @@ async def run_t53_validation():
                     f"    {metric_icon} {metric.name}: {metric.value:.2f} (threshold: {metric.threshold:.2f})"
                 )
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("🤖 Running AI/ML Feature Analysis")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         # Analyze AI/ML features
         stt_metric = analyze_stt_accuracy()
@@ -451,9 +452,9 @@ async def run_t53_validation():
         search_icon = "✅" if search_metric.passed else "⚠️"
         print(f"{search_icon} Semantic Search: {search_metric.description}")
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("📋 Generating Quality Assessment Report")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         # Generate comprehensive report
         quality_report = generate_quality_report(

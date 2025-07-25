@@ -210,7 +210,6 @@ async def create_bills_policy_category_relationships(
     failed_mappings = 0
 
     async with aiohttp.ClientSession() as session:
-
         # First, test if the table exists
         try:
             async with session.get(
@@ -309,11 +308,11 @@ async def create_bills_policy_category_relationships(
                         batch_created = len(response_data.get("records", []))
                         created_count += batch_created
                         print(
-                            f"✅ Batch {i//10 + 1}: Created {batch_created} relationships"
+                            f"✅ Batch {i // 10 + 1}: Created {batch_created} relationships"
                         )
                     else:
                         error_text = await response.text()
-                        print(f"❌ Batch {i//10 + 1} failed: {response.status}")
+                        print(f"❌ Batch {i // 10 + 1} failed: {response.status}")
                         print(f"   Error: {error_text}")
                         error_count += len(batch)
 
@@ -321,7 +320,7 @@ async def create_bills_policy_category_relationships(
                 await asyncio.sleep(0.5)
 
             except Exception as e:
-                print(f"❌ Batch {i//10 + 1} error: {e}")
+                print(f"❌ Batch {i // 10 + 1} error: {e}")
                 error_count += len(batch)
 
         print("\n🎉 Migration Complete!")
@@ -389,7 +388,7 @@ async def verify_migration():
                         source = fields.get("Source", "Unknown")
 
                         print(
-                            f"   {i+1}. Bill {bill_id} → PolicyCategory {policy_cat_id} (conf: {confidence}, source: {source})"
+                            f"   {i + 1}. Bill {bill_id} → PolicyCategory {policy_cat_id} (conf: {confidence}, source: {source})"
                         )
 
                     return True

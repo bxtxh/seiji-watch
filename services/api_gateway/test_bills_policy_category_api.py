@@ -116,7 +116,7 @@ async def test_bills_api():
                         .get("Title_JA", "Unknown")
                     )
                     confidence = rel.get("confidence_score", 0.0)
-                    print(f"   {i+1}. {category_name} (confidence: {confidence})")
+                    print(f"   {i + 1}. {category_name} (confidence: {confidence})")
             else:
                 print("   ❌ Failed to get bill with policy categories")
 

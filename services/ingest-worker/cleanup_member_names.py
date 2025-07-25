@@ -104,7 +104,7 @@ async def cleanup_member_names():
         # Step 4: Show preview of changes
         print("\n👀 Preview of changes (first 10):")
         for i, item in enumerate(records_to_clean[:10]):
-            print(f"   {i+1:2d}. '{item['current_name']}' → '{item['clean_name']}'")
+            print(f"   {i + 1:2d}. '{item['current_name']}' → '{item['clean_name']}'")
 
         if len(records_to_clean) > 10:
             print(f"   ... and {len(records_to_clean) - 10} more changes")
@@ -195,9 +195,9 @@ async def cleanup_member_names():
         )
 
     # Generate final report
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("🧹 MEMBERS NAME CLEANUP SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"✅ Names cleaned: {cleanup_results['names_cleaned']}")
     print(f"📝 Records updated: {cleanup_results['records_updated']}")
     print(f"❌ Errors: {cleanup_results['errors']}")

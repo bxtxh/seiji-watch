@@ -146,9 +146,7 @@ def test_jwt_consistency():
         elif env_jwt_secret == test_configs["Production"]:
             print("✅ Environment JWT_SECRET_KEY matches Production configuration")
         else:
-            print(
-                "⚠️  Environment JWT_SECRET_KEY is different: [MASKED]"
-            )
+            print("⚠️  Environment JWT_SECRET_KEY is different: [MASKED]")
     else:
         print("❌ JWT_SECRET_KEY not set in environment")
 
@@ -179,9 +177,7 @@ def test_with_auth_middleware():
         from middleware.auth import create_access_token, verify_token
 
         print("✅ Auth middleware imported successfully")
-        print(
-            "   Middleware JWT_SECRET_KEY: [MASKED]"
-        )
+        print("   Middleware JWT_SECRET_KEY: [MASKED]")
 
         # Test token creation and verification
         test_token = create_access_token(

@@ -3,6 +3,7 @@
 Execute T52 pilot dataset generation (simplified version without external dependencies)
 Focus on data collection and quality assessment without vector embeddings
 """
+
 import asyncio
 import json
 import os
@@ -280,7 +281,7 @@ def analyze_data_quality(bills_data, voting_data):
     bills_metrics = quality_metrics["bills_analysis"]
     print(f"  • Total bills: {bills_metrics['total_collected']}")
     print(
-        f"  • Complete records: {bills_metrics['complete_records']} ({bills_metrics['complete_records']/bills_metrics['total_collected']*100:.1f}%)"
+        f"  • Complete records: {bills_metrics['complete_records']} ({bills_metrics['complete_records'] / bills_metrics['total_collected'] * 100:.1f}%)"
     )
     print(f"  • Missing summaries: {bills_metrics['missing_summaries']}")
     print(
@@ -359,9 +360,9 @@ async def execute_t52_pilot_simplified():
     print(f"\n💾 Results saved to: {results_file}")
 
     # Summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("🏁 T52 Simplified Pilot Generation Summary")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     print(f"⏱️  Duration: {total_time:.2f}s")
     print(f"📄 Bills Collected: {len(bills_data)}")

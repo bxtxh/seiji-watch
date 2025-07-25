@@ -267,7 +267,9 @@ class LimitedScrapeCoordinator:
             # TODO: Store in Airtable
             # For now, just log the data
             for i, bill in enumerate(limited_bills[:3]):  # Log first 3 for verification
-                self.logger.debug(f"Bill {i+1}: {bill.bill_id} - {bill.title[:50]}...")
+                self.logger.debug(
+                    f"Bill {i + 1}: {bill.bill_id} - {bill.title[:50]}..."
+                )
 
             return {"count": len(limited_bills), "data": limited_bills, "errors": []}
 
@@ -309,7 +311,7 @@ class LimitedScrapeCoordinator:
                 limited_sessions[:2]
             ):  # Log first 2 for verification
                 self.logger.debug(
-                    f"Session {i+1}: {session.bill_number} - {session.bill_title[:50]}..."
+                    f"Session {i + 1}: {session.bill_number} - {session.bill_title[:50]}..."
                 )
                 self.logger.debug(f"  Votes: {len(session.vote_records)} records")
 
@@ -390,8 +392,8 @@ class LimitedScrapeCoordinator:
 
                     # Store test metadata
                     test_metadata = {
-                        "bill_number": f"TEST-{i+1}",
-                        "title": f"テスト法案{i+1}",
+                        "bill_number": f"TEST-{i + 1}",
+                        "title": f"テスト法案{i + 1}",
                         "summary": text,
                         "category": "TEST",
                         "created_at": datetime.now().isoformat(),
@@ -403,13 +405,13 @@ class LimitedScrapeCoordinator:
                     )
                     if uuid:
                         embeddings_generated += 1
-                        self.logger.debug(f"Generated embedding {i+1}: {uuid}")
+                        self.logger.debug(f"Generated embedding {i + 1}: {uuid}")
 
                     # Rate limiting
                     await asyncio.sleep(0.5)
 
                 except Exception as e:
-                    self.logger.warning(f"Failed to generate embedding {i+1}: {e}")
+                    self.logger.warning(f"Failed to generate embedding {i + 1}: {e}")
 
             self.logger.info(f"Generated {embeddings_generated} test embeddings")
 

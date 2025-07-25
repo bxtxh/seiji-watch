@@ -573,7 +573,7 @@ class ShugiinMemberCollector:
 
             # Vary the names to avoid exact duplicates
             if i > 30:
-                name = f"{surname}{given_name}{i//30}"
+                name = f"{surname}{given_name}{i // 30}"
 
             constituency_base = prefectures[i % len(prefectures)]
             district_num = (i % 10) + 1
@@ -785,7 +785,7 @@ class ShugiinMemberCollector:
                 print(f"🗑️  クリア件数: {cleared_count}件")
                 print(f"📋 収集議員数: {result['members_collected']}名")
                 print(f"💾 投入議員数: {success_count}名")
-                print(f"📈 成功率: {(success_count/len(members)*100):.1f}%")
+                print(f"📈 成功率: {(success_count / len(members) * 100):.1f}%")
 
                 if result["success"]:
                     print("\n🎉 ALL SHUGIIN MEMBERS COLLECTION COMPLETE!")

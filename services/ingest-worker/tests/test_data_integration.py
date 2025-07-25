@@ -533,12 +533,11 @@ class TestDataIntegrationManager:
     def test_process_bills_complete_pipeline(self, integration_manager):
         """Test complete bill processing pipeline"""
         # Mock the components
-        with patch.object(integration_manager, "merger") as mock_merger, patch.object(
-            integration_manager, "validator"
-        ) as mock_validator, patch.object(
-            integration_manager, "progress_tracker"
-        ) as mock_tracker:
-
+        with (
+            patch.object(integration_manager, "merger") as mock_merger,
+            patch.object(integration_manager, "validator") as mock_validator,
+            patch.object(integration_manager, "progress_tracker") as mock_tracker,
+        ):
             # Mock merge result
             mock_merge_result = MergeResult(
                 success=True,
@@ -694,14 +693,17 @@ class TestIntegrationScenarios:
     def test_full_integration_pipeline(self):
         """Test complete integration pipeline"""
         # Mock all components
-        with patch(
-            "services.ingest-worker.src.processor.data_integration_manager.BillDataMerger"
-        ) as mock_merger_class, patch(
-            "services.ingest-worker.src.processor.data_integration_manager.BillDataValidator"
-        ) as mock_validator_class, patch(
-            "services.ingest-worker.src.processor.data_integration_manager.BillProgressTracker"
-        ) as mock_tracker_class:
-
+        with (
+            patch(
+                "services.ingest-worker.src.processor.data_integration_manager.BillDataMerger"
+            ) as mock_merger_class,
+            patch(
+                "services.ingest-worker.src.processor.data_integration_manager.BillDataValidator"
+            ) as mock_validator_class,
+            patch(
+                "services.ingest-worker.src.processor.data_integration_manager.BillProgressTracker"
+            ) as mock_tracker_class,
+        ):
             # Setup mocks
             mock_merger = Mock()
             mock_validator = Mock()

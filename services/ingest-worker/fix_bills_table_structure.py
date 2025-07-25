@@ -228,7 +228,9 @@ async def fix_bills_table_structure():
                 print("\n📊 Summary:")
                 print(f"  Total fields to add: {len(fields_to_add)}")
                 print(f"  Successfully added: {success_count}")
-                print(f"  Success rate: {success_count/len(fields_to_add)*100:.1f}%")
+                print(
+                    f"  Success rate: {success_count / len(fields_to_add) * 100:.1f}%"
+                )
 
                 return success_count >= len(fields_to_add) * 0.8  # 80% success rate
 

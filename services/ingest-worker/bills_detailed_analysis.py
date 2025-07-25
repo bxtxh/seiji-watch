@@ -97,9 +97,9 @@ async def analyze_bills_detailed():
             }
 
         # Print detailed analysis
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("📋 BILLS TABLE DETAILED FIELD ANALYSIS")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(f"📊 Total Records: {len(all_records)}")
 
         for field, analysis in field_analysis.items():
@@ -146,7 +146,7 @@ async def analyze_bills_detailed():
         # Sample record inspection
         print("\n📝 SAMPLE RECORD INSPECTION:")
         for i, record in enumerate(all_records[:3]):
-            print(f"\nRecord {i+1} ({record['id']}):")
+            print(f"\nRecord {i + 1} ({record['id']}):")
             fields = record.get("fields", {})
             for field in essential_fields:
                 value = fields.get(field, "❌ MISSING")

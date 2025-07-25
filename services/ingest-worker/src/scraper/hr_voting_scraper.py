@@ -223,7 +223,6 @@ class HouseOfRepresentativesVotingScraper:
                         keyword in link_text or keyword in href_lower
                         for keyword in voting_keywords
                     ):
-
                         # Try to extract date from link text or URL
                         if self._is_recent_enough(link_text, href, cutoff_date):
                             pdf_urls.append(pdf_url)
@@ -423,7 +422,7 @@ class HouseOfRepresentativesVotingScraper:
 
         for i, pdf_url in enumerate(pdf_urls):
             try:
-                self.logger.info(f"Processing PDF {i+1}/{len(pdf_urls)}: {pdf_url}")
+                self.logger.info(f"Processing PDF {i + 1}/{len(pdf_urls)}: {pdf_url}")
 
                 session = await self.pdf_processor.extract_voting_data_from_pdf(
                     pdf_url, member_names

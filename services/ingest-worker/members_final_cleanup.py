@@ -292,9 +292,9 @@ async def members_final_cleanup():
         total_removed = len(all_records) - final_count
 
     # Print summary
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print("📋 MEMBERS FINAL CLEANUP SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"🗑️ Synthetic data removed: {cleanup_results['synthetic_data_removed']}")
     print(
         f"🔄 Obvious duplicates merged: {cleanup_results['obvious_duplicates_merged']}"
