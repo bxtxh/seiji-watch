@@ -26,7 +26,7 @@ def sanitize_error_for_api(
     # SECURITY: Log error details only in development environment
     # Full stack traces could expose sensitive information in production logs
     environment = os.getenv("ENVIRONMENT", "production").lower()
-    
+
     if environment in ["development", "dev", "testing", "test"]:
         # In development: Log full details for debugging
         logger.error(f"Internal error: {str(error)}", exc_info=True)

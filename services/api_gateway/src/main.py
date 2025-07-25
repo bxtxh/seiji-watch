@@ -12,7 +12,6 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .middleware.auth import require_admin_access
-from .utils.error_sanitizer import sanitize_error_for_api
 from .routes import (
     airtable_webhooks,
     batch_management,
@@ -22,6 +21,7 @@ from .routes import (
     monitoring,
     speeches,
 )
+from .utils.error_sanitizer import sanitize_error_for_api
 
 # Import monitoring utilities
 try:
@@ -105,7 +105,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy (secure by default)
         # SECURITY: Removed unsafe-inline and unsafe-eval to prevent XSS
         environment = os.getenv("ENVIRONMENT", "production").lower()
-        
+
         if environment in ["development", "dev"]:
             # Development: More permissive CSP for easier debugging
             csp = (
