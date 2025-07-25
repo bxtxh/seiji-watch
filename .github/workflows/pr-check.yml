@@ -51,7 +51,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [shared, api-gateway, ingest-worker]
+        service: [shared, api_gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -106,7 +106,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [shared, api-gateway, ingest-worker]
+        service: [shared, api_gateway, ingest-worker]
         python-version: ['3.11']
     
     steps:

@@ -12,7 +12,7 @@ def validate_bills_routes():
 
     # Read the bills routes file
     bills_routes_path = (
-        "/Users/shogen/seiji-watch/services/api-gateway/src/routes/bills.py"
+        "/Users/shogen/seiji-watch/services/api_gateway/src/routes/bills.py"
     )
 
     if not os.path.exists(bills_routes_path):

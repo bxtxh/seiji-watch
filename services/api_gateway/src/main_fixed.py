@@ -27,10 +27,8 @@ try:
         RequestContextMiddleware,
         log_api_request,
         log_error,
-        log_security_event,
-        structured_logger,
     )
-    from .monitoring.metrics import RequestTracker, health_checker, metrics_collector
+    from .monitoring.metrics import health_checker, metrics_collector
 except ImportError:
     # Fallback for standalone execution
     from monitoring.logger import (
@@ -42,13 +40,8 @@ except ImportError:
 
 # Import cache and services
 try:
-    from shared.clients.airtable import AirtableClient
-
-    from .batch.member_tasks import MemberTaskManager
-    from .batch.task_queue import batch_processor, task_queue
+    from .batch.task_queue import task_queue
     from .cache.redis_client import RedisCache
-    from .services.member_service import MemberService
-    from .services.policy_analysis_service import PolicyAnalysisService
 except ImportError:
     # Fallback for standalone execution
     from batch.task_queue import task_queue

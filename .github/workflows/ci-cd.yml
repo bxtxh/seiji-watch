@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [shared, api-gateway, ingest-worker]
+        service: [shared, api_gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -148,7 +148,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api-gateway, ingest-worker, web-frontend]
+        service: [api_gateway, ingest-worker, web-frontend]
     
     steps:
     - name: Checkout code
@@ -207,7 +207,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api-gateway, ingest-worker]
+        service: [api_gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -259,7 +259,7 @@ jobs:
         sleep 30
         
         # Health check (adjust endpoint as needed)
-        if [ "${{ matrix.service }}" = "api-gateway" ]; then
+        if [ "${{ matrix.service }}" = "api_gateway" ]; then
           curl -f "$SERVICE_URL/health" || exit 1
         else
           # For ingest-worker, just check if service responds
@@ -279,7 +279,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api-gateway, ingest-worker]
+        service: [api_gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -331,7 +331,7 @@ jobs:
         sleep 30
         
         # Health check
-        if [ "${{ matrix.service }}" = "api-gateway" ]; then
+        if [ "${{ matrix.service }}" = "api_gateway" ]; then
           curl -f "$SERVICE_URL/health" || exit 1
         else
           curl -f "$SERVICE_URL/" || exit 1
