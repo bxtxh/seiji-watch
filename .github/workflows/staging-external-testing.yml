@@ -113,10 +113,10 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-      if: env.GCP_SA_KEY != ''
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+      if: env.GCP_SERVICE_ACCOUNT_JSON != ''
       env:
-        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -222,10 +222,10 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-      if: env.GCP_SA_KEY != ''
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+      if: env.GCP_SERVICE_ACCOUNT_JSON != ''
       env:
-        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -284,7 +284,7 @@ jobs:
       working-directory: services/ingest-worker
       env:
         ENVIRONMENT: staging-external-test
-        AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+        AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_PAT }}
         AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       run: |
@@ -293,7 +293,7 @@ jobs:
         
     - name: Create Test User Accounts
       env:
-        JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY_STAGING }}
+        JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         API_GATEWAY_URL: "https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
       run: |
         echo "Creating test user accounts..."
@@ -361,10 +361,10 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-      if: env.GCP_SA_KEY != ''
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+      if: env.GCP_SERVICE_ACCOUNT_JSON != ''
       env:
-        GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         
     - name: Terraform Init
       working-directory: ${{ env.TERRAFORM_DIR }}
