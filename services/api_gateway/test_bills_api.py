@@ -205,22 +205,22 @@ async def test_airtable_connection():
     print("\n🔍 Testing Direct Airtable Connection")
     print("=" * 50)
 
-    AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
-    AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
+    airtable_pat = os.getenv("AIRTABLE_PAT")
+    airtable_base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    if not AIRTABLE_PAT or not AIRTABLE_BASE_ID:
+    if not airtable_pat or not airtable_base_id:
         print("❌ AIRTABLE_PAT and AIRTABLE_BASE_ID environment variables required")
         return False
 
     try:
         async with aiohttp.ClientSession() as session:
             headers = {
-                "Authorization": f"Bearer {AIRTABLE_PAT}",
+                "Authorization": f"Bearer {airtable_pat}",
                 "Content-Type": "application/json",
             }
 
             # Test Bills table
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Bills%20%28%E6%B3%95%E6%A1%88%29?maxRecords=1"
+            url = f"https://api.airtable.com/v0/{airtable_base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29?maxRecords=1"
             async with session.get(url, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()

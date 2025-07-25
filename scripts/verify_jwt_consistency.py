@@ -176,7 +176,7 @@ def test_with_auth_middleware():
 
     try:
         # Import the auth middleware
-        from middleware.auth import JWT_SECRET_KEY, create_access_token, verify_token
+        from middleware.auth import create_access_token, verify_token
 
         print("✅ Auth middleware imported successfully")
         print(
