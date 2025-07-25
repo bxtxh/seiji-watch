@@ -16,17 +16,17 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 
-# JWT Configuration with production security check
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+# JWT Configuration - SECURITY: No fallback secrets allowed
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
 
-# Production security check
-if (
-    os.getenv("ENVIRONMENT") == "production"
-    and JWT_SECRET_KEY == "your-secret-key-change-in-production"
-):
-    raise RuntimeError("JWT_SECRET_KEY must be set in production environment")
+# Security check: JWT_SECRET_KEY is required in all environments
+if not JWT_SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY environment variable must be set. "
+        "This is required for security - no fallback secrets allowed."
+    )
 
 # Security scheme
 security = HTTPBearer()
@@ -199,7 +199,9 @@ async def verify_api_key(api_key: str = Depends(HTTPBearer())) -> str:
 
 # Rate limiting decorator
 
-# Simple in-memory rate limiter (use Redis in production)
+# PRODUCTION WARNING: Simple in-memory rate limiter doesn't scale
+# TODO: Replace with Redis-based implementation for production deployment
+# This implementation loses data on restart and doesn't work with multiple instances
 request_counts = defaultdict(list)
 
 

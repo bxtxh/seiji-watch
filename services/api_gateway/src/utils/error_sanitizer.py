@@ -5,6 +5,7 @@ Prevents internal error details from leaking to external users.
 """
 
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +23,19 @@ def sanitize_error_for_api(
     Returns:
         Sanitized error message safe for external consumption
     """
-    # Log the actual error for debugging
-    logger.error(f"Internal error: {str(error)}", exc_info=True)
+    # SECURITY: Log error details only in development environment
+    # Full stack traces could expose sensitive information in production logs
+    environment = os.getenv("ENVIRONMENT", "production").lower()
+    
+    if environment in ["development", "dev", "testing", "test"]:
+        # In development: Log full details for debugging
+        logger.error(f"Internal error: {str(error)}", exc_info=True)
+    else:
+        # In production: Log minimal details to prevent information exposure
+        error_type = type(error).__name__
+        logger.error(f"Internal error ({error_type}): [REDACTED FOR SECURITY]")
 
-    # Return generic message to external users
+    # Always return generic message to external users
     return default_message
 
 

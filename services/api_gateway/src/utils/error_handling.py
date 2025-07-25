@@ -4,6 +4,7 @@ Provides specific error types and better error context for debugging.
 """
 
 import logging
+import os
 from enum import Enum
 from typing import Any
 
@@ -146,15 +147,27 @@ def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
 
     error_id = f"err_{hash(str(error)) % 10000:04d}"
 
-    logger.error(
-        f"Unexpected error in {operation}: {type(error).__name__}: {str(error)}",
-        extra={
-            "error_id": error_id,
-            "operation": operation,
-            "error_type": type(error).__name__,
-        },
-        exc_info=True,
-    )
+    # SECURITY: Log stack traces only in development
+    environment = os.getenv("ENVIRONMENT", "production").lower()
+    if environment in ["development", "dev", "testing", "test"]:
+        logger.error(
+            f"Unexpected error in {operation}: {type(error).__name__}: {str(error)}",
+            extra={
+                "error_id": error_id,
+                "operation": operation,
+                "error_type": type(error).__name__,
+            },
+            exc_info=True,
+        )
+    else:
+        logger.error(
+            f"Internal error in {operation} ({type(error).__name__}): [REDACTED FOR SECURITY]",
+            extra={
+                "error_id": error_id,
+                "operation": operation,
+                "error_type": type(error).__name__,
+            },
+        )
 
     return HTTPException(
         status_code=500,

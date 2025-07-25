@@ -291,7 +291,12 @@ async def get_bills(max_records: int = 100, category: str | None = None):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    # SECURITY: Prevent information exposure through logs
+    environment = os.getenv("ENVIRONMENT", "production").lower()
+    if environment in ["development", "dev", "testing", "test"]:
+        logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    else:
+        logger.error(f"Internal error ({type(exc).__name__}): [REDACTED FOR SECURITY]")
     return JSONResponse(status_code=500, content={"error": "Internal server error"})
 
 

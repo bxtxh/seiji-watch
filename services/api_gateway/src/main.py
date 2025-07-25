@@ -68,6 +68,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Rate limiting storage
+# PRODUCTION WARNING: In-memory storage doesn't scale across instances
+# TODO: Implement Redis-based rate limiting for production deployment
 rate_limit_storage: dict[str, list[float]] = defaultdict(list)
 
 # Initialize services
@@ -100,17 +102,36 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-        # Content Security Policy (development-friendly)
-        csp = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "img-src 'self' data: https:; "
-            "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; "
-            "connect-src 'self'; "
-            "frame-ancestors 'none'"
-        )
+        # Content Security Policy (secure by default)
+        # SECURITY: Removed unsafe-inline and unsafe-eval to prevent XSS
+        environment = os.getenv("ENVIRONMENT", "production").lower()
+        
+        if environment in ["development", "dev"]:
+            # Development: More permissive CSP for easier debugging
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; "
+                "connect-src 'self'; "
+                "frame-ancestors 'none'"
+            )
+        else:
+            # Production: Strict CSP for maximum security
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "style-src 'self' https://fonts.googleapis.com; "
+                "style-src-elem 'self' https://fonts.googleapis.com; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; "
+                "connect-src 'self'; "
+                "frame-ancestors 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self'"
+            )
         response.headers["Content-Security-Policy"] = csp
 
         return response
