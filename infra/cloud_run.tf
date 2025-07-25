@@ -266,7 +266,7 @@ resource "google_cloud_run_service" "ingest_worker" {
 
 # VPC Connector for Cloud Run services
 resource "google_vpc_access_connector" "connector" {
-  name          = "seiji-watch-vpc-conn-${var.environment}"
+  name          = "vpc-conn-${substr(var.environment, 0, 10)}"
   ip_cidr_range = "10.8.0.0/28"
   network       = google_compute_network.vpc.name
   region        = var.region

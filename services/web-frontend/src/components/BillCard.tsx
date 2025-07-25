@@ -10,12 +10,6 @@ export default function BillCard({ bill }: BillCardProps) {
   const [showDetail, setShowDetail] = useState(false);
   const [issueTags, setIssueTags] = useState<IssueTag[]>([]);
 
-  useEffect(() => {
-    if (bill.issue_tags && bill.issue_tags.length > 0) {
-      fetchIssueTags();
-    }
-  }, [bill.issue_tags, fetchIssueTags]);
-
   const fetchIssueTags = useCallback(async () => {
     try {
       const response = await fetch("/api/issues/tags/");
@@ -39,6 +33,12 @@ export default function BillCard({ bill }: BillCardProps) {
       console.error("Failed to fetch issue tags:", error);
     }
   }, [bill.issue_tags]);
+
+  useEffect(() => {
+    if (bill.issue_tags && bill.issue_tags.length > 0) {
+      fetchIssueTags();
+    }
+  }, [bill.issue_tags, fetchIssueTags]);
 
   const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {

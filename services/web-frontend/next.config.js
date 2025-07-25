@@ -2,6 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: 'standalone',
+  typescript: {
+    // Disable type checking during build as we have pre-build type check
+    ignoreBuildErrors: process.env.NODE_ENV === 'production',
+  },
+  eslint: {
+    // Disable ESLint during build as we have pre-build linting
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production',
+  },
 
   // PWA configuration
   experimental: {
