@@ -2,7 +2,7 @@
 
 # Service Account for Cloud Run
 resource "google_service_account" "cloud_run" {
-  account_id   = "${var.app_name}-cloud-run-${var.environment}"
+  account_id   = "seiji-cr-${substr(var.environment, 0, 15)}"
   display_name = "Cloud Run Service Account for ${var.app_name} ${var.environment}"
   description  = "Service account used by Cloud Run services"
 }
