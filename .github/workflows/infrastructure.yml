@@ -146,12 +146,14 @@ jobs:
     - name: Terraform Plan
       working-directory: infra
       run: |
+        set +e  # Don't exit on non-zero terraform exit code
         terraform plan \
           -var="environment=dev" \
           -out=tfplan-dev \
           -detailed-exitcode
-        # Capture exit code
         PLAN_EXIT_CODE=$?
+        set -e  # Re-enable exit on error
+        
         echo "Terraform plan exit code: $PLAN_EXIT_CODE"
         
         # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
@@ -292,12 +294,14 @@ jobs:
     - name: Terraform Plan
       working-directory: infra
       run: |
+        set +e  # Don't exit on non-zero terraform exit code
         terraform plan \
           -var="environment=staging" \
           -out=tfplan-staging \
           -detailed-exitcode
-        # Capture exit code
         PLAN_EXIT_CODE=$?
+        set -e  # Re-enable exit on error
+        
         echo "Terraform plan exit code: $PLAN_EXIT_CODE"
         
         # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
@@ -372,12 +376,14 @@ jobs:
     - name: Terraform Plan
       working-directory: infra
       run: |
+        set +e  # Don't exit on non-zero terraform exit code
         terraform plan \
           -var="environment=prod" \
           -out=tfplan-prod \
           -detailed-exitcode
-        # Capture exit code
         PLAN_EXIT_CODE=$?
+        set -e  # Re-enable exit on error
+        
         echo "Terraform plan exit code: $PLAN_EXIT_CODE"
         
         # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
