@@ -51,7 +51,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [shared, api_gateway, ingest-worker]
+        service: [api_gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -106,7 +106,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [shared, api_gateway, ingest-worker]
+        service: [api_gateway, ingest-worker]
         python-version: ['3.11']
     
     steps:
@@ -266,6 +266,9 @@ jobs:
     name: Security Scan
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    permissions:
+      contents: read
+      security-events: write
     
     steps:
     - name: Checkout code
