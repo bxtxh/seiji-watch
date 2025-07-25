@@ -16,56 +16,28 @@ import jwt
 import requests
 
 
-# Test user profiles for different testing scenarios
+# Test user profiles for external user testing (3 non-technical reviewers)
 TEST_USERS = {
-    "political_expert": {
-        "email": "political.expert@test.diet-tracker.jp",
-        "name": "政治専門家",
-        "role": "expert",
-        "permissions": ["view_all", "analyze_data", "export_data"],
-        "description": "Political expert for data accuracy verification",
+    "external_reviewer_1": {
+        "email": "g.nakamura703@gmail.com",
+        "name": "外部レビュワー1",
+        "role": "external_reviewer",
+        "permissions": ["view_all", "browser_testing"],
+        "description": "External reviewer 1 for browser-based usability testing",
     },
-    "accessibility_specialist": {
-        "email": "accessibility.specialist@test.diet-tracker.jp", 
-        "name": "アクセシビリティ専門家",
-        "role": "accessibility_tester",
-        "permissions": ["view_all", "test_accessibility"],
-        "description": "Accessibility specialist for WCAG 2.1 AA compliance testing",
+    "external_reviewer_2": {
+        "email": "external.reviewer.2@example.com",  # 要更新: 実際のメールアドレス取得後
+        "name": "外部レビュワー2",
+        "role": "external_reviewer",
+        "permissions": ["view_all", "browser_testing"],
+        "description": "External reviewer 2 for browser-based usability testing",
     },
-    "general_user": {
-        "email": "general.user@test.diet-tracker.jp",
-        "name": "一般ユーザー",
-        "role": "user",
-        "permissions": ["view_public"],
-        "description": "General user for usability testing",
-    },
-    "legal_compliance": {
-        "email": "legal.compliance@test.diet-tracker.jp",
-        "name": "法務専門家", 
-        "role": "compliance_officer",
-        "permissions": ["view_all", "audit_compliance"],
-        "description": "Legal compliance specialist for election law and copyright verification",
-    },
-    "journalist": {
-        "email": "journalist@test.diet-tracker.jp",
-        "name": "ジャーナリスト",
-        "role": "journalist",
-        "permissions": ["view_all", "export_data", "api_access"],
-        "description": "Journalist for data analysis and export functionality testing",
-    },
-    "researcher": {
-        "email": "researcher@test.diet-tracker.jp",
-        "name": "研究者",
-        "role": "researcher", 
-        "permissions": ["view_all", "api_access", "bulk_export"],
-        "description": "Academic researcher for advanced analysis features",
-    },
-    "admin_tester": {
-        "email": "admin.tester@test.diet-tracker.jp",
-        "name": "管理者テスター",
-        "role": "admin",
-        "permissions": ["admin_access", "system_management"],
-        "description": "Administrator for system management testing",
+    "internal_reviewer": {
+        "email": "internal.reviewer@example.com",  # 要更新: 実際のメールアドレス取得後
+        "name": "内部レビュワー",
+        "role": "internal_reviewer",
+        "permissions": ["view_all", "browser_testing", "admin_access"],
+        "description": "Internal team reviewer for comprehensive testing",
     }
 }
 
@@ -213,50 +185,36 @@ class TestAccountManager:
                     }
                 }
                 
-        # Add testing instructions
+        # Add testing instructions (simplified for 3 non-technical reviewers)
         credentials['testing_instructions'] = {
             'phases': [
                 {
                     'phase': 1,
-                    'name': 'System Foundation Testing',
-                    'duration': '2 days',
-                    'focus': 'Authentication, API, microservices integration',
-                    'participants': ['admin_tester', 'political_expert']
+                    'name': '基本機能検証',
+                    'duration': '1日',
+                    'focus': 'ログイン・ナビゲーション・基本操作',
+                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
                 },
                 {
                     'phase': 2, 
-                    'name': 'Data Quality Testing',
-                    'duration': '3 days',
-                    'focus': 'Political data accuracy, CAP classification, neutrality',
-                    'participants': ['political_expert', 'journalist', 'legal_compliance']
+                    'name': '実用シナリオ検証',
+                    'duration': '2日',
+                    'focus': '法案検索・詳細閲覧・データ理解度',
+                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
                 },
                 {
                     'phase': 3,
-                    'name': 'Usability & Accessibility',
-                    'duration': '3 days', 
-                    'focus': 'PWA, WCAG 2.1 AA, information architecture',
-                    'participants': ['accessibility_specialist', 'general_user']
+                    'name': 'ユーザビリティ評価',
+                    'duration': '1日', 
+                    'focus': '使いやすさ・情報の見つけやすさ',
+                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
                 },
                 {
                     'phase': 4,
-                    'name': 'Performance Testing',
-                    'duration': '2 days',
-                    'focus': 'Load testing, Lighthouse scores, Core Web Vitals',
-                    'participants': ['admin_tester', 'researcher']
-                },
-                {
-                    'phase': 5,
-                    'name': 'Security & Compliance',
-                    'duration': '2 days',
-                    'focus': 'Authentication, legal requirements, privacy',
-                    'participants': ['legal_compliance', 'admin_tester']
-                },
-                {
-                    'phase': 6,
-                    'name': 'End-to-End Scenarios',
-                    'duration': '2 days',
-                    'focus': 'Complete user workflows, use cases',
-                    'participants': ['all']
+                    'name': '総合評価',
+                    'duration': '1日',
+                    'focus': '全体的な使い勝手・改善提案・本番承認',
+                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
                 }
             ],
             'contact': {
