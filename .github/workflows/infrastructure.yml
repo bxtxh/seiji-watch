@@ -150,7 +150,21 @@ jobs:
           -var="environment=dev" \
           -out=tfplan-dev \
           -detailed-exitcode
-      continue-on-error: true
+        # Capture exit code
+        PLAN_EXIT_CODE=$?
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+        
+        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+        if [ $PLAN_EXIT_CODE -eq 0 ]; then
+          echo "✅ No infrastructure changes detected"
+          exit 0
+        elif [ $PLAN_EXIT_CODE -eq 2 ] || [ $PLAN_EXIT_CODE -eq 3 ]; then
+          echo "📋 Infrastructure changes detected (this is expected for PR review)"
+          exit 0
+        else
+          echo "❌ Terraform plan failed with error"
+          exit 1
+        fi
       
     - name: Upload plan artifact
       uses: actions/upload-artifact@v4
@@ -280,7 +294,23 @@ jobs:
       run: |
         terraform plan \
           -var="environment=staging" \
-          -out=tfplan-staging
+          -out=tfplan-staging \
+          -detailed-exitcode
+        # Capture exit code
+        PLAN_EXIT_CODE=$?
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+        
+        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+        if [ $PLAN_EXIT_CODE -eq 0 ]; then
+          echo "✅ No infrastructure changes detected"
+          exit 0
+        elif [ $PLAN_EXIT_CODE -eq 2 ] || [ $PLAN_EXIT_CODE -eq 3 ]; then
+          echo "📋 Infrastructure changes detected (this is expected for PR review)"
+          exit 0
+        else
+          echo "❌ Terraform plan failed with error"
+          exit 1
+        fi
           
     - name: Upload plan artifact
       uses: actions/upload-artifact@v4
@@ -344,7 +374,23 @@ jobs:
       run: |
         terraform plan \
           -var="environment=prod" \
-          -out=tfplan-prod
+          -out=tfplan-prod \
+          -detailed-exitcode
+        # Capture exit code
+        PLAN_EXIT_CODE=$?
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+        
+        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+        if [ $PLAN_EXIT_CODE -eq 0 ]; then
+          echo "✅ No infrastructure changes detected"
+          exit 0
+        elif [ $PLAN_EXIT_CODE -eq 2 ] || [ $PLAN_EXIT_CODE -eq 3 ]; then
+          echo "📋 Infrastructure changes detected (this is expected for PR review)"
+          exit 0
+        else
+          echo "❌ Terraform plan failed with error"
+          exit 1
+        fi
           
     - name: Upload plan artifact
       uses: actions/upload-artifact@v4
