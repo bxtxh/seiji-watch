@@ -12,7 +12,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 # Comprehensive correct readings database for Japanese politicians
 CORRECT_POLITICIAN_READINGS = {
@@ -26,7 +26,6 @@ CORRECT_POLITICIAN_READINGS = {
     "稲田朋美": "いなだともみ",  # Was: たなかたろう
     "橋本聖子": "はしもとせいこ",  # Was: たなかたろう
     "高市早苗": "たかいちさなえ",  # Was: たなかたろう
-
     # Prime Ministers and major political figures
     "安倍晋三": "あべしんぞう",
     "菅義偉": "すがよしひで",
@@ -38,14 +37,12 @@ CORRECT_POLITICIAN_READINGS = {
     "福田康夫": "ふくだやすお",
     "小泉純一郎": "こいずみじゅんいちろう",
     "小泉進次郎": "こいずみしんじろう",
-
     # Current party leaders
     "枝野幸男": "えだのゆきお",
     "志位和夫": "しいかずお",
     "山口那津男": "やまぐちなつお",
     "玉木雄一郎": "たまきゆういちろう",
     "福島みずほ": "ふくしまみずほ",
-
     # Cabinet ministers and key figures
     "河野太郎": "こうのたろう",
     "茂木敏充": "もてぎとしみつ",
@@ -62,7 +59,6 @@ CORRECT_POLITICIAN_READINGS = {
     "坂本哲志": "さかもとてつし",
     "井上信治": "いのうえしんじ",
     "小此木八郎": "おこのぎはちろう",
-
     # Opposition party leaders and prominent figures
     "蓮舫": "れんほう",
     "辻元清美": "つじもときよみ",
@@ -71,19 +67,16 @@ CORRECT_POLITICIAN_READINGS = {
     "川田龍平": "かわだりゅうへい",
     "浜田昌良": "はまだまさよし",
     "吉田忠智": "よしだただとも",
-
     # Other important politicians
     "逢沢一郎": "あいざわいちろう",
     "二階俊博": "にかいとしひろ",
     "下村博文": "しもむらはくぶん",
-
     # Common name patterns corrections
     "田中太郎": "たなかたろう",
     "佐藤花子": "さとうはなこ",
     "山田一郎": "やまだいちろう",
     "鈴木次郎": "すずきじろう",
     "森次郎": "もりじろう",  # Fix the "つぐろう" error
-
     # Additional corrections based on common patterns
     "中村明": "なかむらあきら",
     "西村誠": "にしむらまこと",
@@ -94,7 +87,7 @@ CORRECT_POLITICIAN_READINGS = {
     "吉田太郎": "よしだたろう",
     "井上博": "いのうえひろし",
     "斎藤正": "さいとうただし",
-    "木村明": "きむらあきら"
+    "木村明": "きむらあきら",
 }
 
 
@@ -108,7 +101,7 @@ class KanaAccuracyFixer:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         self.fix_results = {
@@ -118,7 +111,7 @@ class KanaAccuracyFixer:
             "pattern_fixed": 0,
             "already_correct": 0,
             "errors": 0,
-            "corrections_applied": []
+            "corrections_applied": [],
         }
 
     async def get_all_members(self, session):
@@ -132,16 +125,14 @@ class KanaAccuracyFixer:
                 params["offset"] = offset
 
             async with session.get(
-                f"{self.base_url}/Members (議員)",
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/Members (議員)", headers=self.headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -169,7 +160,7 @@ class KanaAccuracyFixer:
         placeholder_patterns = [
             ("たなかたろう", "Unknown politician reading needed"),
             ("さとうはなこ", "Unknown politician reading needed"),
-            ("やまだ", "Unknown politician reading needed")
+            ("やまだ", "Unknown politician reading needed"),
         ]
 
         for pattern, reason in placeholder_patterns:
@@ -185,25 +176,70 @@ class KanaAccuracyFixer:
         """Generate a better kana reading for unknown names"""
         # Common surname readings
         surname_readings = {
-            '田中': 'たなか', '佐藤': 'さとう', '鈴木': 'すずき', '高橋': 'たかはし',
-            '伊藤': 'いとう', '渡辺': 'わたなべ', '山本': 'やまもと', '中村': 'なかむら',
-            '小林': 'こばやし', '加藤': 'かとう', '吉田': 'よしだ', '山田': 'やまだ',
-            '佐々木': 'ささき', '山口': 'やまぐち', '松本': 'まつもと', '井上': 'いのうえ',
-            '木村': 'きむら', '林': 'はやし', '斎藤': 'さいとう', '清水': 'しみず',
-            '山崎': 'やまざき', '森': 'もり', '阿部': 'あべ', '池田': 'いけだ',
-            '橋本': 'はしもと', '山下': 'やました', '石川': 'いしかわ', '中島': 'なかじま',
-            '前田': 'まえだ', '藤田': 'ふじた', '後藤': 'ごとう', '岡田': 'おかだ',
-            '長谷川': 'はせがわ', '村上': 'むらかみ', '近藤': 'こんどう', '石田': 'いしだ',
-            '西村': 'にしむら', '松田': 'まつだ', '原田': 'はらだ', '和田': 'わだ'
+            "田中": "たなか",
+            "佐藤": "さとう",
+            "鈴木": "すずき",
+            "高橋": "たかはし",
+            "伊藤": "いとう",
+            "渡辺": "わたなべ",
+            "山本": "やまもと",
+            "中村": "なかむら",
+            "小林": "こばやし",
+            "加藤": "かとう",
+            "吉田": "よしだ",
+            "山田": "やまだ",
+            "佐々木": "ささき",
+            "山口": "やまぐち",
+            "松本": "まつもと",
+            "井上": "いのうえ",
+            "木村": "きむら",
+            "林": "はやし",
+            "斎藤": "さいとう",
+            "清水": "しみず",
+            "山崎": "やまざき",
+            "森": "もり",
+            "阿部": "あべ",
+            "池田": "いけだ",
+            "橋本": "はしもと",
+            "山下": "やました",
+            "石川": "いしかわ",
+            "中島": "なかじま",
+            "前田": "まえだ",
+            "藤田": "ふじた",
+            "後藤": "ごとう",
+            "岡田": "おかだ",
+            "長谷川": "はせがわ",
+            "村上": "むらかみ",
+            "近藤": "こんどう",
+            "石田": "いしだ",
+            "西村": "にしむら",
+            "松田": "まつだ",
+            "原田": "はらだ",
+            "和田": "わだ",
         }
 
         # Common given name readings
         given_name_readings = {
-            '太郎': 'たろう', '次郎': 'じろう', '三郎': 'さぶろう', '一郎': 'いちろう',
-            '花子': 'はなこ', '美穂': 'みほ', '恵子': 'けいこ', '由美': 'ゆみ',
-            '明': 'あきら', '誠': 'まこと', '宏': 'ひろし', '健一': 'けんいち',
-            '正': 'ただし', '博': 'ひろし', '和夫': 'かずお', '幸男': 'ゆきお',
-            '裕': 'ゆたか', '守': 'まもる', '薫': 'かおる', '茂': 'しげる'
+            "太郎": "たろう",
+            "次郎": "じろう",
+            "三郎": "さぶろう",
+            "一郎": "いちろう",
+            "花子": "はなこ",
+            "美穂": "みほ",
+            "恵子": "けいこ",
+            "由美": "ゆみ",
+            "明": "あきら",
+            "誠": "まこと",
+            "宏": "ひろし",
+            "健一": "けんいち",
+            "正": "ただし",
+            "博": "ひろし",
+            "和夫": "かずお",
+            "幸男": "ゆきお",
+            "裕": "ゆたか",
+            "守": "まもる",
+            "薫": "かおる",
+            "茂": "しげる",
         }
 
         # Try to construct reading from parts
@@ -214,7 +250,7 @@ class KanaAccuracyFixer:
         for kanji, kana in surname_readings.items():
             if remaining.startswith(kanji):
                 result += kana
-                remaining = remaining[len(kanji):]
+                remaining = remaining[len(kanji) :]
                 break
 
         # Then try given names
@@ -237,37 +273,34 @@ class KanaAccuracyFixer:
 
         for record_info in records_to_fix:
             try:
-                update_data = {
-                    "fields": {
-                        "Name_Kana": record_info['new_kana']
-                    }
-                }
+                update_data = {"fields": {"Name_Kana": record_info["new_kana"]}}
 
                 async with session.patch(
                     f"{self.base_url}/Members (議員)/{record_info['id']}",
                     headers=self.headers,
-                    json=update_data
+                    json=update_data,
                 ) as response:
                     if response.status == 200:
                         successful_fixes += 1
 
                         # Track fix type
-                        if record_info['fix_type'] == 'known_correction':
-                            self.fix_results['definitely_wrong_fixed'] += 1
-                        elif record_info['fix_type'] == 'placeholder_fix':
-                            self.fix_results['placeholder_fixed'] += 1
+                        if record_info["fix_type"] == "known_correction":
+                            self.fix_results["definitely_wrong_fixed"] += 1
+                        elif record_info["fix_type"] == "placeholder_fix":
+                            self.fix_results["placeholder_fixed"] += 1
                         else:
-                            self.fix_results['pattern_fixed'] += 1
+                            self.fix_results["pattern_fixed"] += 1
 
-                        self.fix_results['corrections_applied'].append(record_info)
+                        self.fix_results["corrections_applied"].append(record_info)
 
                     else:
-                        self.fix_results['errors'] += 1
+                        self.fix_results["errors"] += 1
                         print(
-                            f"   ❌ Error updating {record_info['name']}: {response.status}")
+                            f"   ❌ Error updating {record_info['name']}: {response.status}"
+                        )
 
             except Exception as e:
-                self.fix_results['errors'] += 1
+                self.fix_results["errors"] += 1
                 print(f"   ❌ Exception updating {record_info['name']}: {e}")
 
             # Rate limiting
@@ -297,27 +330,29 @@ class KanaAccuracyFixer:
             records_to_fix = []
 
             for record in all_records:
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                current_kana = fields.get('Name_Kana', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                current_kana = fields.get("Name_Kana", "")
 
                 if name:
-                    self.fix_results['total_processed'] += 1
+                    self.fix_results["total_processed"] += 1
 
                     correction, fix_type = self.determine_correction(name, current_kana)
 
                     if correction:
-                        records_to_fix.append({
-                            'id': record['id'],
-                            'name': name,
-                            'current_kana': current_kana,
-                            'new_kana': correction,
-                            'fix_type': fix_type,
-                            'house': fields.get('House', ''),
-                            'constituency': fields.get('Constituency', '')
-                        })
-                    elif fix_type == 'already_correct':
-                        self.fix_results['already_correct'] += 1
+                        records_to_fix.append(
+                            {
+                                "id": record["id"],
+                                "name": name,
+                                "current_kana": current_kana,
+                                "new_kana": correction,
+                                "fix_type": fix_type,
+                                "house": fields.get("House", ""),
+                                "constituency": fields.get("Constituency", ""),
+                            }
+                        )
+                    elif fix_type == "already_correct":
+                        self.fix_results["already_correct"] += 1
 
             print(f"🔍 Found {len(records_to_fix)} records requiring corrections")
 
@@ -330,11 +365,11 @@ class KanaAccuracyFixer:
             backup_data = {
                 "backup_date": datetime.now().isoformat(),
                 "records_to_fix": len(records_to_fix),
-                "corrections": records_to_fix
+                "corrections": records_to_fix,
             }
 
             backup_filename = f"members_kana_accuracy_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(backup_filename, 'w', encoding='utf-8') as f:
+            with open(backup_filename, "w", encoding="utf-8") as f:
                 json.dump(backup_data, f, indent=2, ensure_ascii=False)
 
             print(f"✅ Backup saved: {backup_filename}")
@@ -377,21 +412,25 @@ class KanaAccuracyFixer:
         print(f"   📝 Pattern fixed: {results['pattern_fixed']}")
         print(f"   ❌ Errors: {results['errors']}")
 
-        total_fixed = results['definitely_wrong_fixed'] + \
-            results['placeholder_fixed'] + results['pattern_fixed']
+        total_fixed = (
+            results["definitely_wrong_fixed"]
+            + results["placeholder_fixed"]
+            + results["pattern_fixed"]
+        )
         print(f"\n📈 TOTAL CORRECTIONS APPLIED: {total_fixed}")
 
         # Show key corrections
-        if results['corrections_applied']:
+        if results["corrections_applied"]:
             print("\n🎯 KEY CORRECTIONS APPLIED:")
-            for correction in results['corrections_applied'][:10]:
-                if correction['fix_type'] == 'known_correction':
+            for correction in results["corrections_applied"][:10]:
+                if correction["fix_type"] == "known_correction":
                     print(
-                        f"   ✅ {correction['name']}: '{correction['current_kana']}' → '{correction['new_kana']}'")
+                        f"   ✅ {correction['name']}: '{correction['current_kana']}' → '{correction['new_kana']}'"
+                    )
 
         # Calculate new accuracy estimate
-        total_analyzed = results['total_processed']
-        estimated_correct = results['already_correct'] + total_fixed
+        total_analyzed = results["total_processed"]
+        estimated_correct = results["already_correct"] + total_fixed
         if total_analyzed > 0:
             estimated_accuracy = (estimated_correct / total_analyzed) * 100
             print(f"\n📈 ESTIMATED NEW ACCURACY RATE: {estimated_accuracy:.1f}%")
@@ -415,13 +454,16 @@ async def main():
 
     # Save final report
     report_filename = f"members_kana_accuracy_fix_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(report_filename, 'w', encoding='utf-8') as f:
-        json.dump({
-            "completion_date": datetime.now().isoformat(),
-            "fix_results": results
-        }, f, indent=2, ensure_ascii=False)
+    with open(report_filename, "w", encoding="utf-8") as f:
+        json.dump(
+            {"completion_date": datetime.now().isoformat(), "fix_results": results},
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     print(f"💾 Final report saved: {report_filename}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

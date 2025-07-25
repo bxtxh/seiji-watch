@@ -17,6 +17,7 @@ try:
     import datetime
 
     import jwt
+
     JWT_AVAILABLE = True
 except ImportError:
     JWT_AVAILABLE = False
@@ -32,7 +33,7 @@ def generate_test_token(secret_key: str, hours: int = 1) -> str:
         "scopes": ["read", "write", "admin"],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=hours),
         "iat": datetime.datetime.utcnow(),
-        "type": "access_token"
+        "type": "access_token",
     }
 
     token = jwt.encode(payload, secret_key, algorithm="HS256")
@@ -40,43 +41,47 @@ def generate_test_token(secret_key: str, hours: int = 1) -> str:
 
 
 def test_api_endpoint(
-        token: str,
-        endpoint: str = "http://localhost:8000/api/issues/") -> dict:
+    token: str, endpoint: str = "http://localhost:8000/api/issues/"
+) -> dict:
     """Test an API endpoint with the generated token."""
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
     try:
         response = requests.get(endpoint, headers=headers, timeout=10)
 
-        return {'status_code': response.status_code,
-                'success': response.status_code == 200,
-                'headers': dict(response.headers),
-                'response': response.json() if response.headers.get('content-type',
-                                                                    '').startswith('application/json') else response.text[:200]}
+        return {
+            "status_code": response.status_code,
+            "success": response.status_code == 200,
+            "headers": dict(response.headers),
+            "response": (
+                response.json()
+                if response.headers.get("content-type", "").startswith(
+                    "application/json"
+                )
+                else response.text[:200]
+            ),
+        }
 
     except requests.exceptions.ConnectionError:
         return {
-            'status_code': None,
-            'success': False,
-            'error': 'Connection failed - API server not running?',
-            'response': None
+            "status_code": None,
+            "success": False,
+            "error": "Connection failed - API server not running?",
+            "response": None,
         }
     except requests.exceptions.Timeout:
         return {
-            'status_code': None,
-            'success': False,
-            'error': 'Request timeout',
-            'response': None
+            "status_code": None,
+            "success": False,
+            "error": "Request timeout",
+            "response": None,
         }
     except Exception as e:
         return {
-            'status_code': None,
-            'success': False,
-            'error': str(e),
-            'response': None
+            "status_code": None,
+            "success": False,
+            "error": str(e),
+            "response": None,
         }
 
 
@@ -88,7 +93,7 @@ def main():
     test_secret = "test-jwt-secret-unified-for-ci-cd"
 
     # Use environment variable or fallback to test secret
-    secret_key = os.getenv('JWT_SECRET_KEY', test_secret)
+    secret_key = os.getenv("JWT_SECRET_KEY", test_secret)
 
     print(f"🔑 Using secret: {secret_key[:20]}...")
 
@@ -115,7 +120,7 @@ def main():
     test_endpoints = [
         "http://localhost:8000/api/issues/",
         "http://localhost:8000/api/issues/statistics",
-        "http://localhost:8000/api/issues/health"
+        "http://localhost:8000/api/issues/health",
     ]
 
     print("\n🌐 Testing API endpoints:")
@@ -127,25 +132,25 @@ def main():
         print(f"\nTesting: {endpoint}")
         result = test_api_endpoint(token, endpoint)
 
-        if result['success']:
+        if result["success"]:
             print(f"✅ SUCCESS - Status: {result['status_code']}")
-            if isinstance(result['response'], dict):
+            if isinstance(result["response"], dict):
                 print(f"   Response keys: {list(result['response'].keys())}")
             else:
                 print(f"   Response: {str(result['response'])[:100]}...")
         else:
             print(f"❌ FAILED - Status: {result['status_code']}")
-            if 'error' in result:
+            if "error" in result:
                 print(f"   Error: {result['error']}")
             else:
                 print(f"   Response: {str(result['response'])[:100]}...")
 
-            if result['status_code'] == 401:
+            if result["status_code"] == 401:
                 print("   ⚠️  401 Unauthorized - JWT format mismatch?")
                 all_tests_passed = False
-            elif result['status_code'] == 403:
+            elif result["status_code"] == 403:
                 print("   ⚠️  403 Forbidden - Insufficient permissions?")
-            elif result['status_code'] is None:
+            elif result["status_code"] is None:
                 print("   ⚠️  Connection issue - Server running?")
 
     # Summary
@@ -162,7 +167,9 @@ def main():
 
         # Debugging suggestions
         print("\n🔧 Debugging suggestions:")
-        print("   1. Verify server is running: curl http://localhost:8000/api/issues/health")
+        print(
+            "   1. Verify server is running: curl http://localhost:8000/api/issues/health"
+        )
         print("   2. Check JWT_SECRET_KEY matches server configuration")
         print("   3. Verify token payload matches server expectations:")
         print("      - user_id (not sub)")

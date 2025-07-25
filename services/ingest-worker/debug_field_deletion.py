@@ -17,9 +17,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -33,8 +33,8 @@ def get_table_schema(pat, base_id):
 
     if response.status_code == 200:
         data = response.json()
-        for table in data.get('tables', []):
-            if table.get('name') == "Bills (法案)":
+        for table in data.get("tables", []):
+            if table.get("name") == "Bills (法案)":
                 return table
     return None
 
@@ -62,8 +62,8 @@ def main():
     env_file = Path(__file__).parent / ".env.local"
     load_env_file(env_file)
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat or not base_id:
         print("❌ 環境変数不足")
@@ -80,20 +80,27 @@ def main():
         print("❌ スキーマ取得失敗")
         return 1
 
-    table_id = table_schema.get('id')
-    fields = table_schema.get('fields', [])
+    table_id = table_schema.get("id")
+    fields = table_schema.get("fields", [])
 
     print(f"✅ テーブルID: {table_id}")
     print(f"✅ フィールド数: {len(fields)}")
 
     # 削除対象フィールドの詳細調査
-    SAFE_TO_DELETE = ["Assignee", "Attachments", "Submission_Date",
-                      "Full_Text", "Related_Documents", "AI_Analysis", "Keywords"]
+    SAFE_TO_DELETE = [
+        "Assignee",
+        "Attachments",
+        "Submission_Date",
+        "Full_Text",
+        "Related_Documents",
+        "AI_Analysis",
+        "Keywords",
+    ]
 
     for field in fields:
-        field_name = field.get('name')
-        field_id = field.get('id')
-        field_type = field.get('type')
+        field_name = field.get("name")
+        field_id = field.get("id")
+        field_type = field.get("type")
 
         if field_name in SAFE_TO_DELETE:
             print(f"\n📋 {field_name} ({field_type})")

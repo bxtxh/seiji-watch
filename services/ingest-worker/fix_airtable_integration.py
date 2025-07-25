@@ -22,9 +22,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -35,9 +35,9 @@ async def test_correct_airtable_integration():
     print("=" * 50)
 
     # 環境変数の正規化 (AIRTABLE_PATに統一)
-    api_key_from_old = os.environ.get('AIRTABLE_API_KEY')
-    pat_from_new = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    api_key_from_old = os.environ.get("AIRTABLE_API_KEY")
+    pat_from_new = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     print("🔍 環境変数確認:")
     print(f"  AIRTABLE_API_KEY: {'存在' if api_key_from_old else '未設定'}")
@@ -52,7 +52,7 @@ async def test_correct_airtable_integration():
         return False
 
     # AIRTABLE_PATを設定（既存のAirtableClientが使用するため）
-    os.environ['AIRTABLE_PAT'] = pat_value
+    os.environ["AIRTABLE_PAT"] = pat_value
 
     print("\n✅ PAT設定完了:")
     print(f"  使用PAT: {pat_value[:15]}... (長さ: {len(pat_value)})")
@@ -136,7 +136,8 @@ async def run_bills_integration_with_correct_client():
             print(f"  ✅ 成功: {successful_count}件")
             print(f"  ❌ 失敗: {failed_count}件")
             print(
-                f"  📈 成功率: {successful_count/(successful_count+failed_count)*100:.1f}%")
+                f"  📈 成功率: {successful_count/(successful_count+failed_count)*100:.1f}%"
+            )
 
             return successful_count > 0
 
@@ -172,6 +173,7 @@ async def main():
     else:
         print("\n❌ 法案データ統合に失敗しました")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

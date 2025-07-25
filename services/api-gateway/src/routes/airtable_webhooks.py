@@ -23,13 +23,8 @@ from services.airtable_issue_manager import AirtableIssueManager
 from services.discord_notification_bot import DiscordNotificationBot
 
 sys.path.append(
-    os.path.join(
-        os.path.dirname(__file__),
-        '..',
-        '..',
-        '..',
-        'ingest-worker',
-        'src'))
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "ingest-worker", "src")
+)
 
 
 logger = logging.getLogger(__name__)
@@ -43,6 +38,7 @@ security = HTTPBearer()
 @dataclass
 class WebhookConfig:
     """Configuration for Airtable webhook handling."""
+
     webhook_secret: str
     max_payload_size: int = 1024 * 1024  # 1MB
     rate_limit_per_minute: int = 60
@@ -59,6 +55,7 @@ webhook_config = WebhookConfig(
 # Request Models
 class AirtableWebhookPayload(BaseModel):
     """Airtable webhook payload structure."""
+
     base: dict[str, str]
     webhook: dict[str, str]
     timestamp: str
@@ -68,17 +65,18 @@ class AirtableWebhookPayload(BaseModel):
     destroyedRecordIds: list[str] | None = None
     changedRecordsById: dict[str, Any] | None = None
 
-    @validator('timestamp')
+    @validator("timestamp")
     def validate_timestamp(self, v):
         try:
-            datetime.fromisoformat(v.replace('Z', '+00:00'))
+            datetime.fromisoformat(v.replace("Z", "+00:00"))
             return v
         except ValueError:
-            raise ValueError('Invalid timestamp format')
+            raise ValueError("Invalid timestamp format")
 
 
 class WebhookProcessingResult(BaseModel):
     """Result of webhook processing."""
+
     success: bool
     processed_changes: int
     notifications_sent: int
@@ -105,7 +103,7 @@ def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> boo
 
     try:
         # Airtable sends signature as: sha256=<hex_digest>
-        if not signature.startswith('sha256='):
+        if not signature.startswith("sha256="):
             logger.error("Invalid signature format")
             return False
 
@@ -113,9 +111,7 @@ def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> boo
 
         # Calculate HMAC
         calculated_signature = hmac.new(
-            secret.encode('utf-8'),
-            payload,
-            hashlib.sha256
+            secret.encode("utf-8"), payload, hashlib.sha256
         ).hexdigest()
 
         # Secure comparison
@@ -134,88 +130,97 @@ def extract_issue_changes(payload: AirtableWebhookPayload) -> list[dict[str, Any
     if payload.changedRecordsById:
         for record_id, record_data in payload.changedRecordsById.items():
             # Check if this is an Issues table change
-            current = record_data.get('current', {})
-            previous = record_data.get('previous', {})
+            current = record_data.get("current", {})
+            previous = record_data.get("previous", {})
 
             # Look for status changes
-            current_status = current.get('fields', {}).get('Status')
-            previous_status = previous.get('fields', {}).get('Status')
+            current_status = current.get("fields", {}).get("Status")
+            previous_status = previous.get("fields", {}).get("Status")
 
             if current_status and current_status != previous_status:
-                changes.append({
-                    'record_id': record_id,
-                    'change_type': 'status_change',
-                    'old_status': previous_status,
-                    'new_status': current_status,
-                    'fields': current.get('fields', {}),
-                    'timestamp': payload.timestamp
-                })
+                changes.append(
+                    {
+                        "record_id": record_id,
+                        "change_type": "status_change",
+                        "old_status": previous_status,
+                        "new_status": current_status,
+                        "fields": current.get("fields", {}),
+                        "timestamp": payload.timestamp,
+                    }
+                )
 
     # Process created records
     if payload.createdRecordsById:
         for record_id, record_data in payload.createdRecordsById.items():
-            fields = record_data.get('fields', {})
-            if fields.get('Status'):
-                changes.append({
-                    'record_id': record_id,
-                    'change_type': 'record_created',
-                    'new_status': fields.get('Status'),
-                    'fields': fields,
-                    'timestamp': payload.timestamp
-                })
+            fields = record_data.get("fields", {})
+            if fields.get("Status"):
+                changes.append(
+                    {
+                        "record_id": record_id,
+                        "change_type": "record_created",
+                        "new_status": fields.get("Status"),
+                        "fields": fields,
+                        "timestamp": payload.timestamp,
+                    }
+                )
 
     # Process destroyed records
     if payload.destroyedRecordIds:
         for record_id in payload.destroyedRecordIds:
-            changes.append({
-                'record_id': record_id,
-                'change_type': 'record_deleted',
-                'timestamp': payload.timestamp
-            })
+            changes.append(
+                {
+                    "record_id": record_id,
+                    "change_type": "record_deleted",
+                    "timestamp": payload.timestamp,
+                }
+            )
 
     return changes
 
 
-async def process_status_change(change: dict[str, Any],
-                                airtable_manager: AirtableIssueManager,
-                                discord_bot: DiscordNotificationBot) -> dict[str, Any]:
+async def process_status_change(
+    change: dict[str, Any],
+    airtable_manager: AirtableIssueManager,
+    discord_bot: DiscordNotificationBot,
+) -> dict[str, Any]:
     """Process a single status change event."""
     result = {
-        'record_id': change['record_id'],
-        'success': False,
-        'actions_taken': [],
-        'errors': []
+        "record_id": change["record_id"],
+        "success": False,
+        "actions_taken": [],
+        "errors": [],
     }
 
     try:
-        record_id = change['record_id']
-        new_status = change['new_status']
-        old_status = change.get('old_status')
+        record_id = change["record_id"]
+        new_status = change["new_status"]
+        old_status = change.get("old_status")
 
         logger.info(
-            f"Processing status change for {record_id}: {old_status} -> {new_status}")
+            f"Processing status change for {record_id}: {old_status} -> {new_status}"
+        )
 
         # Get the full issue record for context
         issue_record = await airtable_manager.get_issue_record(record_id)
         if not issue_record:
-            result['errors'].append(f"Issue record {record_id} not found")
+            result["errors"].append(f"Issue record {record_id} not found")
             return result
 
         # Log the status transition
         audit_log = {
-            'record_id': record_id,
-            'issue_id': issue_record.issue_id,
-            'status_change': f"{old_status} -> {new_status}",
-            'timestamp': change['timestamp'],
-            'fields': change.get('fields', {})
+            "record_id": record_id,
+            "issue_id": issue_record.issue_id,
+            "status_change": f"{old_status} -> {new_status}",
+            "timestamp": change["timestamp"],
+            "fields": change.get("fields", {}),
         }
         logger.info(f"Issue status audit: {json.dumps(audit_log)}")
-        result['actions_taken'].append('audit_logged')
+        result["actions_taken"].append("audit_logged")
 
         # Handle specific status transitions
-        if new_status == 'approved':
+        if new_status == "approved":
             # Issue was approved - might trigger cache refresh, notifications, etc.
-            result['actions_taken'].append('approval_processed')
+            result["actions_taken"].append("approval_processed")
 
             # Send notification for high-impact approvals
             if issue_record.quality_score > 0.8:
@@ -225,35 +230,35 @@ async def process_status_change(change: dict[str, Any],
                     f"**Level 1:** {issue_record.label_lv1}\n"
                     f"**Level 2:** {issue_record.label_lv2}\n"
                     f"**関連法案:** {issue_record.source_bill_id}",
-                    color=0x00ff00
+                    color=0x00FF00,
                 )
-                result['actions_taken'].append('notification_sent')
+                result["actions_taken"].append("notification_sent")
 
-        elif new_status == 'rejected':
+        elif new_status == "rejected":
             # Issue was rejected
-            result['actions_taken'].append('rejection_processed')
+            result["actions_taken"].append("rejection_processed")
 
             # Log rejection reason if available
-            reviewer_notes = change.get('fields', {}).get('Reviewer_Notes')
+            reviewer_notes = change.get("fields", {}).get("Reviewer_Notes")
             if reviewer_notes:
                 logger.info(f"Issue {record_id} rejected with notes: {reviewer_notes}")
 
-        elif new_status == 'failed_validation':
+        elif new_status == "failed_validation":
             # Issue failed validation
-            result['actions_taken'].append('validation_failure_processed')
+            result["actions_taken"].append("validation_failure_processed")
 
             # Could trigger reprocessing or manual review alerts
 
         # Update any cached data if needed
         # (This would integrate with caching system when implemented)
-        result['actions_taken'].append('cache_invalidated')
+        result["actions_taken"].append("cache_invalidated")
 
-        result['success'] = True
+        result["success"] = True
 
     except Exception as e:
         error_msg = f"Failed to process status change for {change['record_id']}: {e}"
         logger.error(error_msg)
-        result['errors'].append(error_msg)
+        result["errors"].append(error_msg)
 
     return result
 
@@ -288,7 +293,7 @@ async def handle_issue_status_changes(
     request: Request,
     background_tasks: BackgroundTasks,
     airtable_manager: AirtableIssueManager = Depends(get_airtable_manager),
-    discord_bot: DiscordNotificationBot = Depends(get_discord_bot)
+    discord_bot: DiscordNotificationBot = Depends(get_discord_bot),
 ):
     """Handle Airtable webhook for issue status changes."""
     start_time = datetime.now()
@@ -313,15 +318,14 @@ async def handle_issue_status_changes(
             raise HTTPException(status_code=401, detail="Missing signature")
 
         if not verify_webhook_signature(
-                raw_payload,
-                signature,
-                webhook_config.webhook_secret):
+            raw_payload, signature, webhook_config.webhook_secret
+        ):
             logger.error("Webhook signature verification failed")
             raise HTTPException(status_code=401, detail="Invalid signature")
 
         # Parse payload
         try:
-            payload_dict = json.loads(raw_payload.decode('utf-8'))
+            payload_dict = json.loads(raw_payload.decode("utf-8"))
             payload = AirtableWebhookPayload(**payload_dict)
         except (json.JSONDecodeError, ValueError) as e:
             logger.error(f"Invalid webhook payload: {e}")
@@ -330,10 +334,11 @@ async def handle_issue_status_changes(
         # Validate timestamp (prevent replay attacks)
         try:
             webhook_time = datetime.fromisoformat(
-                payload.timestamp.replace('Z', '+00:00'))
+                payload.timestamp.replace("Z", "+00:00")
+            )
             time_diff = abs(
-                (datetime.now().astimezone() -
-                 webhook_time).total_seconds())
+                (datetime.now().astimezone() - webhook_time).total_seconds()
+            )
 
             if time_diff > webhook_config.timestamp_tolerance:
                 logger.warning(f"Webhook timestamp too old: {time_diff} seconds")
@@ -344,22 +349,25 @@ async def handle_issue_status_changes(
 
         # Log webhook receipt
         logger.info(
-            f"Received Airtable webhook from {client_ip}: {payload.webhook.get('id', 'unknown')}")
+            f"Received Airtable webhook from {client_ip}: {payload.webhook.get('id', 'unknown')}"
+        )
 
         # Extract issue changes
         changes = extract_issue_changes(payload)
 
         if not changes:
             return WebhookProcessingResult(
-                success=True, processed_changes=0, notifications_sent=0, processing_time_ms=int(
-                    (datetime.now() - start_time).total_seconds() * 1000))
+                success=True,
+                processed_changes=0,
+                notifications_sent=0,
+                processing_time_ms=int(
+                    (datetime.now() - start_time).total_seconds() * 1000
+                ),
+            )
 
         # Process changes in background
         background_tasks.add_task(
-            process_changes_background,
-            changes,
-            airtable_manager,
-            discord_bot
+            process_changes_background, changes, airtable_manager, discord_bot
         )
 
         processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
@@ -368,7 +376,7 @@ async def handle_issue_status_changes(
             success=True,
             processed_changes=len(changes),
             notifications_sent=0,  # Will be updated in background
-            processing_time_ms=processing_time
+            processing_time_ms=processing_time,
         )
 
     except HTTPException:
@@ -378,29 +386,34 @@ async def handle_issue_status_changes(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-async def process_changes_background(changes: list[dict[str, Any]],
-                                     airtable_manager: AirtableIssueManager,
-                                     discord_bot: DiscordNotificationBot):
+async def process_changes_background(
+    changes: list[dict[str, Any]],
+    airtable_manager: AirtableIssueManager,
+    discord_bot: DiscordNotificationBot,
+):
     """Process webhook changes in background."""
     try:
         results = []
         notifications_sent = 0
 
         for change in changes:
-            if change['change_type'] in ['status_change', 'record_created']:
-                result = await process_status_change(change, airtable_manager, discord_bot)
+            if change["change_type"] in ["status_change", "record_created"]:
+                result = await process_status_change(
+                    change, airtable_manager, discord_bot
+                )
                 results.append(result)
 
-                if 'notification_sent' in result.get('actions_taken', []):
+                if "notification_sent" in result.get("actions_taken", []):
                     notifications_sent += 1
 
         # Log summary
-        successful_changes = sum(1 for r in results if r['success'])
+        successful_changes = sum(1 for r in results if r["success"])
         total_changes = len(results)
 
         logger.info(
             f"Background processing complete: {successful_changes}/{total_changes} successful, "
-            f"{notifications_sent} notifications sent")
+            f"{notifications_sent} notifications sent"
+        )
 
     except Exception as e:
         logger.error(f"Background processing error: {e}")
@@ -415,8 +428,8 @@ async def test_webhook_handler():
         "config": {
             "secret_configured": bool(webhook_config.webhook_secret),
             "max_payload_size": webhook_config.max_payload_size,
-            "rate_limit": webhook_config.rate_limit_per_minute
-        }
+            "rate_limit": webhook_config.rate_limit_per_minute,
+        },
     }
 
 
@@ -429,16 +442,16 @@ async def get_webhook_status():
             "webhook_secret_configured": bool(webhook_config.webhook_secret),
             "max_payload_size_mb": webhook_config.max_payload_size // (1024 * 1024),
             "rate_limit_per_minute": webhook_config.rate_limit_per_minute,
-            "timestamp_tolerance_seconds": webhook_config.timestamp_tolerance
+            "timestamp_tolerance_seconds": webhook_config.timestamp_tolerance,
         },
         "rate_limiting": {
             "current_state_size": len(_rate_limit_state),
-            "implementation": "in_memory"
+            "implementation": "in_memory",
         },
         "security": {
             "signature_verification": "hmac_sha256",
-            "replay_protection": "timestamp_validation"
-        }
+            "replay_protection": "timestamp_validation",
+        },
     }
 
 
@@ -461,13 +474,17 @@ async def webhook_health_check():
             "components": {
                 "airtable_manager": "healthy" if airtable_healthy else "unhealthy",
                 "discord_bot": "healthy" if discord_healthy else "unhealthy",
-                "webhook_config": "healthy" if webhook_config.webhook_secret else "warning"},
-            "timestamp": datetime.now().isoformat()}
+                "webhook_config": (
+                    "healthy" if webhook_config.webhook_secret else "warning"
+                ),
+            },
+            "timestamp": datetime.now().isoformat(),
+        }
 
     except Exception as e:
         logger.error(f"Webhook health check failed: {e}")
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }

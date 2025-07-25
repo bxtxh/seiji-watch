@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchResult:
     """Weaviate search result with similarity score."""
+
     id: str
     airtable_record_id: str
     content: str
@@ -37,16 +38,14 @@ class WeaviateClient:
 
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Class names for different content types
         self.SPEECH_CLASS = "DietSpeech"
         self.BILL_CLASS = "DietBill"
 
-    async def _request(
-        self, method: str, endpoint: str, **kwargs
-    ) -> dict[str, Any]:
+    async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
         """Make request to Weaviate API."""
         url = f"{self.cluster_url}/v1/{endpoint}"
 
@@ -73,50 +72,48 @@ class WeaviateClient:
                 {
                     "name": "airtableRecordId",
                     "dataType": ["text"],
-                    "description": "Airtable record ID for the speech"
+                    "description": "Airtable record ID for the speech",
                 },
                 {
                     "name": "content",
                     "dataType": ["text"],
-                    "description": "Speech text content"
+                    "description": "Speech text content",
                 },
                 {
                     "name": "speakerName",
                     "dataType": ["text"],
-                    "description": "Name of the speaker"
+                    "description": "Name of the speaker",
                 },
                 {
                     "name": "meetingId",
                     "dataType": ["text"],
-                    "description": "Airtable meeting record ID"
+                    "description": "Airtable meeting record ID",
                 },
                 {
                     "name": "speechType",
                     "dataType": ["text"],
                     "description": (
                         "Type of speech (question, answer, discussion, etc.)"
-                    )
+                    ),
                 },
                 {
                     "name": "sentiment",
                     "dataType": ["text"],
-                    "description": "Sentiment analysis result"
+                    "description": "Sentiment analysis result",
                 },
                 {
                     "name": "topics",
                     "dataType": ["text[]"],
-                    "description": "Topic tags extracted from speech"
+                    "description": "Topic tags extracted from speech",
                 },
                 {
                     "name": "createdAt",
                     "dataType": ["date"],
-                    "description": "Creation timestamp"
-                }
+                    "description": "Creation timestamp",
+                },
             ],
             "vectorizer": "none",  # We'll provide embeddings manually
-            "vectorIndexConfig": {
-                "distance": "cosine"
-            }
+            "vectorIndexConfig": {"distance": "cosine"},
         }
 
         # Bill class for storing bill embeddings
@@ -127,53 +124,47 @@ class WeaviateClient:
                 {
                     "name": "airtableRecordId",
                     "dataType": ["text"],
-                    "description": "Airtable record ID for the bill"
+                    "description": "Airtable record ID for the bill",
                 },
                 {
                     "name": "billNumber",
                     "dataType": ["text"],
-                    "description": "Official bill number"
+                    "description": "Official bill number",
                 },
-                {
-                    "name": "title",
-                    "dataType": ["text"],
-                    "description": "Bill title"
-                },
+                {"name": "title", "dataType": ["text"], "description": "Bill title"},
                 {
                     "name": "content",
                     "dataType": ["text"],
-                    "description": "Bill text content for embedding"
+                    "description": "Bill text content for embedding",
                 },
                 {
                     "name": "category",
                     "dataType": ["text"],
-                    "description": "Bill category"
+                    "description": "Bill category",
                 },
                 {
                     "name": "status",
                     "dataType": ["text"],
-                    "description": "Current status of the bill"
+                    "description": "Current status of the bill",
                 },
                 {
                     "name": "dietSession",
                     "dataType": ["text"],
-                    "description": "Diet session number"
+                    "description": "Diet session number",
                 },
                 {
                     "name": "tags",
                     "dataType": ["text[]"],
-                    "description": "Tags associated with the bill"
+                    "description": "Tags associated with the bill",
                 },
                 {
                     "name": "createdAt",
                     "dataType": ["date"],
-                    "description": "Creation timestamp"
-                }
+                    "description": "Creation timestamp",
+                },
             ],
             "vectorizer": "none",
-            "vectorIndexConfig": {
-                "distance": "cosine"
-            }
+            "vectorIndexConfig": {"distance": "cosine"},
         }
 
         try:
@@ -210,9 +201,9 @@ class WeaviateClient:
                 "speechType": metadata.get("speech_type", ""),
                 "sentiment": metadata.get("sentiment", ""),
                 "topics": metadata.get("topics", []),
-                "createdAt": metadata.get("created_at", "")
+                "createdAt": metadata.get("created_at", ""),
             },
-            "vector": embedding
+            "vector": embedding,
         }
 
         response = await self._request("POST", "objects", json=object_data)
@@ -238,9 +229,9 @@ class WeaviateClient:
                 "status": metadata.get("status", ""),
                 "dietSession": metadata.get("diet_session", ""),
                 "tags": metadata.get("tags", []),
-                "createdAt": metadata.get("created_at", "")
+                "createdAt": metadata.get("created_at", ""),
             },
-            "vector": embedding
+            "vector": embedding,
         }
 
         response = await self._request("POST", "objects", json=object_data)
@@ -310,21 +301,23 @@ class WeaviateClient:
         results = []
         if "data" in response and "Get" in response["data"]:
             for item in response["data"]["Get"][self.SPEECH_CLASS]:
-                results.append(SearchResult(
-                    id=item["_additional"]["id"],
-                    airtable_record_id=item["airtableRecordId"],
-                    content=item["content"],
-                    metadata={
-                        "speaker_name": item.get("speakerName", ""),
-                        "meeting_id": item.get("meetingId", ""),
-                        "speech_type": item.get("speechType", ""),
-                        "sentiment": item.get("sentiment", ""),
-                        "topics": item.get("topics", [])
-                    },
-                    similarity=(
-                        1.0 - item["_additional"]["distance"]
-                    )  # Convert distance to similarity
-                ))
+                results.append(
+                    SearchResult(
+                        id=item["_additional"]["id"],
+                        airtable_record_id=item["airtableRecordId"],
+                        content=item["content"],
+                        metadata={
+                            "speaker_name": item.get("speakerName", ""),
+                            "meeting_id": item.get("meetingId", ""),
+                            "speech_type": item.get("speechType", ""),
+                            "sentiment": item.get("sentiment", ""),
+                            "topics": item.get("topics", []),
+                        },
+                        similarity=(
+                            1.0 - item["_additional"]["distance"]
+                        ),  # Convert distance to similarity
+                    )
+                )
 
         return results
 
@@ -391,20 +384,22 @@ class WeaviateClient:
         results = []
         if "data" in response and "Get" in response["data"]:
             for item in response["data"]["Get"][self.BILL_CLASS]:
-                results.append(SearchResult(
-                    id=item["_additional"]["id"],
-                    airtable_record_id=item["airtableRecordId"],
-                    content=item["content"],
-                    metadata={
-                        "bill_number": item.get("billNumber", ""),
-                        "title": item.get("title", ""),
-                        "category": item.get("category", ""),
-                        "status": item.get("status", ""),
-                        "diet_session": item.get("dietSession", ""),
-                        "tags": item.get("tags", [])
-                    },
-                    similarity=1.0 - item["_additional"]["distance"]
-                ))
+                results.append(
+                    SearchResult(
+                        id=item["_additional"]["id"],
+                        airtable_record_id=item["airtableRecordId"],
+                        content=item["content"],
+                        metadata={
+                            "bill_number": item.get("billNumber", ""),
+                            "title": item.get("title", ""),
+                            "category": item.get("category", ""),
+                            "status": item.get("status", ""),
+                            "diet_session": item.get("dietSession", ""),
+                            "tags": item.get("tags", []),
+                        },
+                        similarity=1.0 - item["_additional"]["distance"],
+                    )
+                )
 
         return results
 
@@ -418,9 +413,7 @@ class WeaviateClient:
     ) -> list[SearchResult]:
         """Perform hybrid search combining text and vector similarity."""
 
-        class_name = (
-            self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
-        )
+        class_name = self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
 
         query = {
             "query": f"""
@@ -462,7 +455,7 @@ class WeaviateClient:
                         "meeting_id": item.get("meetingId", ""),
                         "speech_type": item.get("speechType", ""),
                         "sentiment": item.get("sentiment", ""),
-                        "topics": item.get("topics", [])
+                        "topics": item.get("topics", []),
                     }
                 else:
                     metadata = {
@@ -471,22 +464,22 @@ class WeaviateClient:
                         "category": item.get("category", ""),
                         "status": item.get("status", ""),
                         "diet_session": item.get("dietSession", ""),
-                        "tags": item.get("tags", [])
+                        "tags": item.get("tags", []),
                     }
 
-                results.append(SearchResult(
-                    id=item["_additional"]["id"],
-                    airtable_record_id=item["airtableRecordId"],
-                    content=item["content"],
-                    metadata=metadata,
-                    similarity=item["_additional"]["score"]
-                ))
+                results.append(
+                    SearchResult(
+                        id=item["_additional"]["id"],
+                        airtable_record_id=item["airtableRecordId"],
+                        content=item["content"],
+                        metadata=metadata,
+                        similarity=item["_additional"]["score"],
+                    )
+                )
 
         return results
 
-    async def update_object(
-        self, object_id: str, properties: dict[str, Any]
-    ) -> None:
+    async def update_object(self, object_id: str, properties: dict[str, Any]) -> None:
         """Update an existing object in Weaviate."""
         await self._request(
             "PATCH", f"objects/{object_id}", json={"properties": properties}
@@ -503,9 +496,7 @@ class WeaviateClient:
     ) -> dict[str, Any] | None:
         """Get Weaviate object by Airtable record ID."""
 
-        class_name = (
-            self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
-        )
+        class_name = self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
 
         query = {
             "query": f"""
@@ -551,15 +542,11 @@ class WeaviateClient:
         """Get current schema information."""
         return await self._request("GET", "schema")
 
-    async def get_object_count(
-        self, class_name: str | None = None
-    ) -> dict[str, int]:
+    async def get_object_count(self, class_name: str | None = None) -> dict[str, int]:
         """Get object count for classes."""
         counts = {}
 
-        classes = (
-            [class_name] if class_name else [self.SPEECH_CLASS, self.BILL_CLASS]
-        )
+        classes = [class_name] if class_name else [self.SPEECH_CLASS, self.BILL_CLASS]
 
         for cls in classes:
             query = {
@@ -580,9 +567,7 @@ class WeaviateClient:
                 response = await self._request("POST", "graphql", json=query)
                 if "data" in response and "Aggregate" in response["data"]:
                     count_data = response["data"]["Aggregate"][cls]
-                    counts[cls] = (
-                        count_data[0]["meta"]["count"] if count_data else 0
-                    )
+                    counts[cls] = count_data[0]["meta"]["count"] if count_data else 0
                 else:
                     counts[cls] = 0
             except Exception as e:

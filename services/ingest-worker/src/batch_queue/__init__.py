@@ -23,5 +23,5 @@ __all__ = [
     "BatchConfig",
     "TaskType",
     "TaskStatus",
-    "TaskPriority"
+    "TaskPriority",
 ]

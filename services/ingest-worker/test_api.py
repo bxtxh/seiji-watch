@@ -6,7 +6,7 @@ API Test for EPIC 2 implementation
 import asyncio
 import sys
 
-sys.path.append('src')
+sys.path.append("src")
 
 
 async def test_scheduler_api():
@@ -24,8 +24,8 @@ async def test_scheduler_api():
         print(f"✓ Scheduler status: {len(status['scheduled_tasks'])} tasks configured")
 
         # Test getting specific task
-        if status['scheduled_tasks']:
-            task_id = status['scheduled_tasks'][0]['task_id']
+        if status["scheduled_tasks"]:
+            task_id = status["scheduled_tasks"][0]["task_id"]
             scheduler.get_task_status(task_id)
             print(f"✓ Individual task status for {task_id}")
 
@@ -54,7 +54,7 @@ async def test_batch_processor_api():
         task_id = await processor.add_task(
             task_type=TaskType.CUSTOM,
             payload={"test": "data"},
-            priority=TaskPriority.NORMAL
+            priority=TaskPriority.NORMAL,
         )
         print(f"✓ Added task: {task_id}")
 
@@ -66,7 +66,8 @@ async def test_batch_processor_api():
         # Test queue status
         queue_status = processor.get_queue_status()
         print(
-            f"✓ Queue status: {queue_status['total_queued']} queued, {queue_status['active_tasks']} active")
+            f"✓ Queue status: {queue_status['total_queued']} queued, {queue_status['active_tasks']} active"
+        )
 
         return True
     except Exception as e:
@@ -98,7 +99,8 @@ async def test_resilient_scraper_api():
         # Test getting statistics
         stats = scraper.get_statistics()
         print(
-            f"✓ Statistics: {stats['total_requests']} requests, {stats['success_rate_percent']}% success")
+            f"✓ Statistics: {stats['total_requests']} requests, {stats['success_rate_percent']}% success"
+        )
 
         return True
     except Exception as e:
@@ -125,7 +127,9 @@ async def test_pdf_processor_basic():
         test_names = ["田中太郎", "佐藤花子", "鈴木一郎"]
         match, confidence = matcher.find_best_match("田中", test_names)
         if match:
-            print(f"✓ Name matching: '田中' -> '{match}' (confidence: {confidence:.2f})")
+            print(
+                f"✓ Name matching: '田中' -> '{match}' (confidence: {confidence:.2f})"
+            )
 
         # Test statistics
         processor.get_processing_statistics()
@@ -160,6 +164,7 @@ async def main():
         print("🎉 All EPIC 2 API tests passed!")
     else:
         print("⚠️  Some tests failed - check implementations")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

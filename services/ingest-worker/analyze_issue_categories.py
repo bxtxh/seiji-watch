@@ -23,7 +23,7 @@ async def analyze_issue_categories():
     base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     print("🔍 Analyzing IssueCategories table for T129.2 mapping")
@@ -31,7 +31,7 @@ async def analyze_issue_categories():
 
     # Load Bills analysis results
     try:
-        with open("bills_category_analysis_t129.json", encoding='utf-8') as f:
+        with open("bills_category_analysis_t129.json", encoding="utf-8") as f:
             bills_analysis = json.load(f)
         print("✅ Loaded Bills analysis results from T129.1")
     except FileNotFoundError:
@@ -72,7 +72,9 @@ async def analyze_issue_categories():
             if offset:
                 params["offset"] = offset
 
-            async with session.get(categories_url, headers=headers, params=params) as response:
+            async with session.get(
+                categories_url, headers=headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     records = data.get("records", [])
@@ -137,8 +139,10 @@ async def analyze_issue_categories():
                 if bills_category == title_ja:
                     exact_matches.append(record)
                 # Check partial match
-                elif (bills_category.lower() in title_ja.lower() or
-                      title_ja.lower() in bills_category.lower()):
+                elif (
+                    bills_category.lower() in title_ja.lower()
+                    or title_ja.lower() in bills_category.lower()
+                ):
                     partial_matches.append(record)
 
             # Report matches
@@ -152,10 +156,11 @@ async def analyze_issue_categories():
                     "layer": best_match.get("fields", {}).get("Layer", ""),
                     "cap_code": best_match.get("fields", {}).get("CAP_Code", ""),
                     "match_type": "exact",
-                    "bills_count": count
+                    "bills_count": count,
                 }
                 print(
-                    f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}")
+                    f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}"
+                )
 
             elif partial_matches:
                 print(f"   ⚠️  Partial matches found: {len(partial_matches)}")
@@ -173,10 +178,11 @@ async def analyze_issue_categories():
                     "layer": best_match.get("fields", {}).get("Layer", ""),
                     "cap_code": best_match.get("fields", {}).get("CAP_Code", ""),
                     "match_type": "partial",
-                    "bills_count": count
+                    "bills_count": count,
                 }
                 print(
-                    f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}")
+                    f"   → Selected: {best_match.get('fields', {}).get('Title_JA', 'Unknown')}"
+                )
 
             else:
                 print("   ❌ No matches found")
@@ -189,7 +195,7 @@ async def analyze_issue_categories():
                         "layer": "L1",
                         "cap_code": "99",
                         "match_type": "fallback",
-                        "bills_count": count
+                        "bills_count": count,
                     }
                     print("   → Using fallback category for 'その他'")
 
@@ -198,23 +204,26 @@ async def analyze_issue_categories():
         print(f"   Bills categories to map: {len(bills_categories)}")
         print(f"   Successful mappings: {len(bills_to_issue_mapping)}")
         print(
-            f"   Failed mappings: {len(bills_categories) - len(bills_to_issue_mapping)}")
+            f"   Failed mappings: {len(bills_categories) - len(bills_to_issue_mapping)}"
+        )
 
         # Save results
         results = {
             "bills_categories": bills_categories,
             "issue_categories_total": len(all_categories),
             "issue_categories_by_layer": {
-                layer: len(records) for layer,
-                records in layers.items()},
+                layer: len(records) for layer, records in layers.items()
+            },
             "bills_to_issue_mapping": bills_to_issue_mapping,
-            "sample_issue_category": {
-                k: str(v)[
-                    :100] for k,
-                v in sample_record.items()} if sample_record else None}
+            "sample_issue_category": (
+                {k: str(v)[:100] for k, v in sample_record.items()}
+                if sample_record
+                else None
+            ),
+        }
 
         output_file = "bills_to_issue_categories_mapping_t129.json"
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
 
         print(f"\n💾 Results saved to: {output_file}")
@@ -238,7 +247,7 @@ async def create_fallback_mapping(bills_categories):
             "title_en": "Budget and Finance",
             "layer": "L1",
             "cap_code": "1",
-            "match_type": "fallback"
+            "match_type": "fallback",
         },
         "税制": {
             "category_id": "FALLBACK_TAX",
@@ -246,7 +255,7 @@ async def create_fallback_mapping(bills_categories):
             "title_en": "Taxation",
             "layer": "L1",
             "cap_code": "2",
-            "match_type": "fallback"
+            "match_type": "fallback",
         },
         "社会保障": {
             "category_id": "FALLBACK_SOCIAL",
@@ -254,7 +263,7 @@ async def create_fallback_mapping(bills_categories):
             "title_en": "Social Security",
             "layer": "L1",
             "cap_code": "3",
-            "match_type": "fallback"
+            "match_type": "fallback",
         },
         "外交・国際": {
             "category_id": "FALLBACK_FOREIGN",
@@ -262,7 +271,7 @@ async def create_fallback_mapping(bills_categories):
             "title_en": "Foreign Affairs",
             "layer": "L1",
             "cap_code": "19",
-            "match_type": "fallback"
+            "match_type": "fallback",
         },
         "経済・産業": {
             "category_id": "FALLBACK_ECONOMY",
@@ -270,7 +279,7 @@ async def create_fallback_mapping(bills_categories):
             "title_en": "Economy and Industry",
             "layer": "L1",
             "cap_code": "4",
-            "match_type": "fallback"
+            "match_type": "fallback",
         },
         "その他": {
             "category_id": "FALLBACK_OTHER",
@@ -278,8 +287,8 @@ async def create_fallback_mapping(bills_categories):
             "title_en": "Other",
             "layer": "L1",
             "cap_code": "99",
-            "match_type": "fallback"
-        }
+            "match_type": "fallback",
+        },
     }
 
     # Map Bills categories to fallback categories
@@ -291,13 +300,16 @@ async def create_fallback_mapping(bills_categories):
             mapping["bills_count"] = count
             bills_to_issue_mapping[bills_category] = mapping
             print(
-                f"   ✅ Mapped '{bills_category}' ({count} bills) to fallback category")
+                f"   ✅ Mapped '{bills_category}' ({count} bills) to fallback category"
+            )
         else:
             # Use "その他" as fallback
             mapping = fallback_categories["その他"].copy()
             mapping["bills_count"] = count
             bills_to_issue_mapping[bills_category] = mapping
-            print(f"   ⚠️  Mapped '{bills_category}' ({count} bills) to fallback 'その他'")
+            print(
+                f"   ⚠️  Mapped '{bills_category}' ({count} bills) to fallback 'その他'"
+            )
 
     # Save fallback results
     results = {
@@ -306,15 +318,16 @@ async def create_fallback_mapping(bills_categories):
         "issue_categories_by_layer": {"L1": len(fallback_categories)},
         "bills_to_issue_mapping": bills_to_issue_mapping,
         "is_fallback": True,
-        "note": "IssueCategories table not accessible - using fallback mapping"
+        "note": "IssueCategories table not accessible - using fallback mapping",
     }
 
     output_file = "bills_to_issue_categories_mapping_t129.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
     print(f"\n💾 Fallback mapping saved to: {output_file}")
     print("✅ T129.2 Fallback analysis complete!")
+
 
 if __name__ == "__main__":
     asyncio.run(analyze_issue_categories())

@@ -23,12 +23,14 @@ async def get_airtable_client() -> AirtableClient:
     """Get Airtable client instance."""
     return AirtableClient()
 
+
 # Dependency for Issue Extractor
 
 
 async def get_issue_extractor() -> IssueExtractor:
     """Get Issue Extractor instance."""
     return IssueExtractor()
+
 
 # Request/Response models with validation
 
@@ -40,28 +42,29 @@ class IssueCreateRequest(BaseModel):
     related_bills: list[str] | None = None
     issue_tags: list[str] | None = None
 
-    @validator('title')
+    @validator("title")
     def validate_title(self, v):
         if not v or not v.strip():
-            raise ValueError('Title cannot be empty')
+            raise ValueError("Title cannot be empty")
         if len(v) > 200:
-            raise ValueError('Title too long (max 200 characters)')
+            raise ValueError("Title too long (max 200 characters)")
         return InputValidator.sanitize_string(v, 200)
 
-    @validator('description')
+    @validator("description")
     def validate_description(self, v):
         if not v or not v.strip():
-            raise ValueError('Description cannot be empty')
+            raise ValueError("Description cannot be empty")
         if len(v) > 2000:
-            raise ValueError('Description too long (max 2000 characters)')
+            raise ValueError("Description too long (max 2000 characters)")
         return InputValidator.sanitize_string(v, 2000)
 
-    @validator('priority')
+    @validator("priority")
     def validate_priority(self, v):
-        allowed_priorities = ['low', 'medium', 'high', 'urgent']
+        allowed_priorities = ["low", "medium", "high", "urgent"]
         if v not in allowed_priorities:
             raise ValueError(
-                f'Priority must be one of: {", ".join(allowed_priorities)}')
+                f'Priority must be one of: {", ".join(allowed_priorities)}'
+            )
         return v
 
 
@@ -70,18 +73,18 @@ class IssueExtractRequest(BaseModel):
     bill_title: str = ""
     bill_id: str | None = None
 
-    @validator('bill_content')
+    @validator("bill_content")
     def validate_bill_content(self, v):
         if not v or not v.strip():
-            raise ValueError('Bill content cannot be empty')
+            raise ValueError("Bill content cannot be empty")
         if len(v) > 50000:  # 50KB limit for bill content
-            raise ValueError('Bill content too long (max 50000 characters)')
+            raise ValueError("Bill content too long (max 50000 characters)")
         return InputValidator.sanitize_string(v, 50000)
 
-    @validator('bill_title')
+    @validator("bill_title")
     def validate_bill_title(self, v):
         if v and len(v) > 500:
-            raise ValueError('Bill title too long (max 500 characters)')
+            raise ValueError("Bill title too long (max 500 characters)")
         return InputValidator.sanitize_string(v, 500) if v else v
 
 
@@ -91,31 +94,40 @@ class IssueTagCreateRequest(BaseModel):
     color_code: str = "#3B82F6"
     description: str | None = None
 
-    @validator('name')
+    @validator("name")
     def validate_name(self, v):
         if not v or not v.strip():
-            raise ValueError('Tag name cannot be empty')
+            raise ValueError("Tag name cannot be empty")
         if len(v) > 100:
-            raise ValueError('Tag name too long (max 100 characters)')
+            raise ValueError("Tag name too long (max 100 characters)")
         return InputValidator.sanitize_string(v, 100)
 
-    @validator('category')
+    @validator("category")
     def validate_category(self, v):
         allowed_categories = [
-            '予算・決算', '税制', '社会保障', '外交・国際',
-            '経済・産業', '教育・文化', '環境・エネルギー', 'その他'
+            "予算・決算",
+            "税制",
+            "社会保障",
+            "外交・国際",
+            "経済・産業",
+            "教育・文化",
+            "環境・エネルギー",
+            "その他",
         ]
         if v not in allowed_categories:
             raise ValueError(
-                f'Category must be one of: {", ".join(allowed_categories)}')
+                f'Category must be one of: {", ".join(allowed_categories)}'
+            )
         return v
 
-    @validator('color_code')
+    @validator("color_code")
     def validate_color_code(self, v):
         import re
-        if not re.match(r'^#[0-9A-Fa-f]{6}$', v):
-            raise ValueError('Color code must be a valid hex color (e.g., #3B82F6)')
+
+        if not re.match(r"^#[0-9A-Fa-f]{6}$", v):
+            raise ValueError("Color code must be a valid hex color (e.g., #3B82F6)")
         return v
+
 
 # Issue endpoints
 
@@ -125,7 +137,7 @@ async def list_issues(
     category: str | None = Query(None, description="Filter by category"),
     status: str | None = Query(None, description="Filter by status"),
     max_records: int = Query(100, le=1000),
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ):
     """List all issues with optional filtering."""
     try:
@@ -139,8 +151,7 @@ async def list_issues(
         filter_formula = "AND(" + ", ".join(filters) + ")" if filters else None
 
         issues = await airtable.list_issues(
-            filter_formula=filter_formula,
-            max_records=max_records
+            filter_formula=filter_formula, max_records=max_records
         )
 
         return issues
@@ -152,8 +163,7 @@ async def list_issues(
 
 @router.get("/{issue_id}")
 async def get_issue(
-    issue_id: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    issue_id: str, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Get a specific issue by ID."""
     try:
@@ -166,8 +176,7 @@ async def get_issue(
 
 @router.post("/")
 async def create_issue(
-    request: IssueCreateRequest,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    request: IssueCreateRequest, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Create a new issue."""
     try:
@@ -183,7 +192,7 @@ async def create_issue(
 async def update_issue(
     issue_id: str,
     request: IssueCreateRequest,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ):
     """Update an existing issue."""
     try:
@@ -194,6 +203,7 @@ async def update_issue(
         logger.error(f"Failed to update issue {issue_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to update issue")
 
+
 # LLM extraction endpoint
 
 
@@ -201,14 +211,13 @@ async def update_issue(
 async def extract_issues(
     request: IssueExtractRequest,
     airtable: AirtableClient = Depends(get_airtable_client),
-    extractor: IssueExtractor = Depends(get_issue_extractor)
+    extractor: IssueExtractor = Depends(get_issue_extractor),
 ):
     """Extract issues from bill content using LLM."""
     try:
         # Extract issues using LLM
         extracted_issues = await extractor.extract_issues_from_bill(
-            request.bill_content,
-            request.bill_title
+            request.bill_content, request.bill_title
         )
 
         if not extracted_issues:
@@ -224,7 +233,9 @@ async def extract_issues(
             [tag["fields"].get("Name", "") for tag in existing_tags if "fields" in tag]
 
             # Add default tags based on category
-            default_tags = extractor.generate_default_tags(issue.get("category", "その他"))
+            default_tags = extractor.generate_default_tags(
+                issue.get("category", "その他")
+            )
             issue["suggested_tags"].extend(default_tags)
 
             # Remove duplicates
@@ -233,12 +244,13 @@ async def extract_issues(
         return {
             "message": f"Extracted {len(extracted_issues)} issues",
             "issues": extracted_issues,
-            "bill_id": request.bill_id
+            "bill_id": request.bill_id,
         }
 
     except Exception as e:
         logger.error(f"Failed to extract issues: {e}")
         raise HTTPException(status_code=500, detail="Failed to extract issues")
+
 
 # Issue Tags endpoints
 
@@ -246,7 +258,7 @@ async def extract_issues(
 @router.get("/tags/", response_model=list[dict])
 async def list_issue_tags(
     category: str | None = Query(None, description="Filter by category"),
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ):
     """List all issue tags."""
     try:
@@ -261,7 +273,7 @@ async def list_issue_tags(
 @router.post("/tags/")
 async def create_issue_tag(
     request: IssueTagCreateRequest,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ):
     """Create a new issue tag."""
     try:
@@ -275,8 +287,7 @@ async def create_issue_tag(
 
 @router.get("/tags/{tag_id}")
 async def get_issue_tag(
-    tag_id: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    tag_id: str, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Get a specific issue tag by ID."""
     try:
@@ -286,13 +297,13 @@ async def get_issue_tag(
         logger.error(f"Failed to get issue tag {tag_id}: {e}")
         raise HTTPException(status_code=404, detail="Issue tag not found")
 
+
 # Bills with issues
 
 
 @router.get("/bills/{bill_id}/issues")
 async def get_bill_issues(
-    bill_id: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    bill_id: str, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Get all issues related to a specific bill."""
     try:
@@ -302,6 +313,7 @@ async def get_bill_issues(
         logger.error(f"Failed to get issues for bill {bill_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch bill issues")
 
+
 # Issue Categories endpoints
 
 
@@ -310,7 +322,7 @@ async def list_issue_categories(
     layer: str | None = Query(None, description="Filter by layer (L1/L2/L3)"),
     parent_id: str | None = Query(None, description="Filter by parent category"),
     max_records: int = Query(1000, le=1000),
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ):
     """List issue categories with hierarchical filtering."""
     try:
@@ -332,9 +344,7 @@ async def list_issue_categories(
 
 
 @router.get("/categories/tree")
-async def get_category_tree(
-    airtable: AirtableClient = Depends(get_airtable_client)
-):
+async def get_category_tree(airtable: AirtableClient = Depends(get_airtable_client)):
     """Get full category tree structure."""
     try:
         tree = await airtable.get_category_tree()
@@ -346,8 +356,7 @@ async def get_category_tree(
 
 @router.get("/categories/{category_id}")
 async def get_issue_category(
-    category_id: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    category_id: str, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Get a specific issue category by ID."""
     try:
@@ -360,8 +369,7 @@ async def get_issue_category(
 
 @router.get("/categories/{category_id}/children")
 async def get_category_children(
-    category_id: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    category_id: str, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Get child categories for a specific category."""
     try:
@@ -377,7 +385,7 @@ async def search_categories(
     q: str = Query(..., description="Search query"),
     layer: str | None = Query(None, description="Filter by layer"),
     max_records: int = Query(100, le=1000),
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ):
     """Search issue categories by title."""
     try:
@@ -398,8 +406,7 @@ async def search_categories(
             filter_formula = search_formula
 
         categories = await airtable.list_issue_categories(
-            filter_formula=filter_formula,
-            max_records=max_records
+            filter_formula=filter_formula, max_records=max_records
         )
 
         return categories
@@ -411,8 +418,7 @@ async def search_categories(
 
 @router.get("/categories/cap/{cap_code}")
 async def get_category_by_cap_code(
-    cap_code: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    cap_code: str, airtable: AirtableClient = Depends(get_airtable_client)
 ):
     """Get category by CAP code."""
     try:

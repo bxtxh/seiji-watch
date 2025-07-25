@@ -51,7 +51,7 @@ def validate_bills_routes():
             "update_bill_policy_category_relationship",
             "delete_bill_policy_category_relationship",
             "bulk_create_bill_policy_category_relationships",
-            "get_bills_policy_category_statistics"
+            "get_bills_policy_category_statistics",
         ]
 
         print("\n📋 Expected endpoint functions:")
@@ -62,10 +62,7 @@ def validate_bills_routes():
                 print(f"   ❌ {endpoint} - Missing")
 
         # Check for expected request models
-        expected_models = [
-            "PolicyCategoryRelationshipRequest",
-            "BillSearchRequest"
-        ]
+        expected_models = ["PolicyCategoryRelationshipRequest", "BillSearchRequest"]
 
         print("\n📋 Expected request models:")
         for model in expected_models:
@@ -76,9 +73,7 @@ def validate_bills_routes():
 
         # Check for FastAPI router
         router_found = "router = APIRouter" in content
-        print(
-            f"\n🔌 FastAPI Router: {'✅ Found' if router_found else '❌ Not found'}"
-        )
+        print(f"\n🔌 FastAPI Router: {'✅ Found' if router_found else '❌ Not found'}")
 
         # Check for proper imports
         has_fastapi_imports = "from fastapi import" in content
@@ -142,7 +137,7 @@ def validate_airtable_client_extensions():
             "bulk_create_bill_policy_category_relationships",
             "get_bills_by_policy_category",
             "get_policy_categories_by_bill",
-            "list_bills_policy_categories"
+            "list_bills_policy_categories",
         ]
 
         print("📋 Expected Airtable client methods:")
@@ -168,9 +163,7 @@ def validate_main_app_integration():
     print("=" * 50)
 
     # Read the main app file
-    main_app_path = (
-        "/Users/shogen/seiji-watch/services/api-gateway/src/main.py"
-    )
+    main_app_path = "/Users/shogen/seiji-watch/services/api-gateway/src/main.py"
 
     if not os.path.exists(main_app_path):
         print("❌ Main app file not found")
@@ -181,9 +174,7 @@ def validate_main_app_integration():
             content = f.read()
 
         # Check for bills router import and inclusion
-        bills_import = (
-            "from .routes import issues, speeches, bills" in content
-        )
+        bills_import = "from .routes import issues, speeches, bills" in content
         bills_inclusion = "app.include_router(bills.router)" in content
 
         print("📦 Bills router integration:")
@@ -206,9 +197,9 @@ if __name__ == "__main__":
     main_app_ok = validate_main_app_integration()
 
     print("\n📊 Validation Summary:")
-    bills_status = '✅ Valid' if bills_routes_ok else '❌ Invalid'
-    airtable_status = '✅ Valid' if airtable_client_ok else '❌ Invalid'
-    main_status = '✅ Valid' if main_app_ok else '❌ Invalid'
+    bills_status = "✅ Valid" if bills_routes_ok else "❌ Invalid"
+    airtable_status = "✅ Valid" if airtable_client_ok else "❌ Invalid"
+    main_status = "✅ Valid" if main_app_ok else "❌ Invalid"
 
     print(f"   Bills routes structure: {bills_status}")
     print(f"   Airtable client extensions: {airtable_status}")
@@ -220,10 +211,7 @@ if __name__ == "__main__":
             "Bills-PolicyCategory API is ready for T128 completion."
         )
     else:
-        print(
-            "\n❌ Some validations failed. "
-            "Please fix issues before proceeding."
-        )
+        print("\n❌ Some validations failed. " "Please fix issues before proceeding.")
         print("\n🎯 Next steps for T128 completion:")
         print(
             "   1. Start the API server: cd /Users/shogen/seiji-watch/"

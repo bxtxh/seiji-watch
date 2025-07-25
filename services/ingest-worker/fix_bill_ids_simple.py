@@ -17,6 +17,7 @@ import aiohttp
 @dataclass
 class BillRecord:
     """法案レコード構造"""
+
     record_id: str
     bill_id: str | None
     title: str
@@ -38,7 +39,7 @@ class SimpleAirtableClient:
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.session = None
 
@@ -61,25 +62,29 @@ class SimpleAirtableClient:
             if offset:
                 params["offset"] = offset
 
-            async with self.session.get(url, headers=self.headers, params=params) as response:
+            async with self.session.get(
+                url, headers=self.headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     records = data.get("records", [])
 
                     for record in records:
                         fields = record.get("fields", {})
-                        bills.append({
-                            "id": record["id"],
-                            "bill_id": fields.get("bill_id", ""),
-                            "title": fields.get("title", ""),
-                            "submission_date": fields.get("submission_date", ""),
-                            "status": fields.get("status", ""),
-                            "stage": fields.get("stage", ""),
-                            "submitter": fields.get("submitter", ""),
-                            "category": fields.get("category", ""),
-                            "diet_session": fields.get("diet_session", ""),
-                            "house": fields.get("house", "")
-                        })
+                        bills.append(
+                            {
+                                "id": record["id"],
+                                "bill_id": fields.get("bill_id", ""),
+                                "title": fields.get("title", ""),
+                                "submission_date": fields.get("submission_date", ""),
+                                "status": fields.get("status", ""),
+                                "stage": fields.get("stage", ""),
+                                "submitter": fields.get("submitter", ""),
+                                "category": fields.get("category", ""),
+                                "diet_session": fields.get("diet_session", ""),
+                                "house": fields.get("house", ""),
+                            }
+                        )
 
                     offset = data.get("offset")
                     if not offset:
@@ -94,14 +99,7 @@ class SimpleAirtableClient:
         """法案レコードを更新"""
         url = f"{self.base_url}/Bills (法案)"
 
-        data = {
-            "records": [
-                {
-                    "id": record_id,
-                    "fields": fields
-                }
-            ]
-        }
+        data = {"records": [{"id": record_id, "fields": fields}]}
 
         async with self.session.patch(url, headers=self.headers, json=data) as response:
             return response.status == 200
@@ -118,7 +116,7 @@ class BillIDGenerator:
             "衆議院": "H",
             "参議院": "S",
             "両院": "B",
-            "": "G"  # 政府提出法案
+            "": "G",  # 政府提出法案
         }
 
         self.CATEGORY_CODES = {
@@ -127,7 +125,7 @@ class BillIDGenerator:
             "予算関連": "B",
             "条約": "T",
             "承認": "A",
-            "その他": "O"
+            "その他": "O",
         }
 
     def set_existing_ids(self, existing_ids: set):
@@ -239,7 +237,7 @@ async def main():
                     submitter=bill_data["submitter"],
                     category=bill_data["category"],
                     diet_session=bill_data["diet_session"],
-                    house=bill_data["house"]
+                    house=bill_data["house"],
                 )
                 bills.append(bill)
 
@@ -263,8 +261,12 @@ async def main():
 
             # 本番環境での確認
             if os.getenv("AIRTABLE_BASE_ID") == "appQMZFZXAiGmjI0N":
-                confirm = input("本番環境のデータを修正します。続行しますか？ (y/N): ").strip().lower()
-                if confirm != 'y':
+                confirm = (
+                    input("本番環境のデータを修正します。続行しますか？ (y/N): ")
+                    .strip()
+                    .lower()
+                )
+                if confirm != "y":
                     print("修正をキャンセルしました。")
                     return 0
 
@@ -283,7 +285,9 @@ async def main():
                         new_id = generator.generate_bill_id(bill)
 
                         # 更新
-                        success = await client.update_bill(bill.record_id, {"bill_id": new_id})
+                        success = await client.update_bill(
+                            bill.record_id, {"bill_id": new_id}
+                        )
 
                         if success:
                             updated += 1
@@ -310,11 +314,13 @@ async def main():
                 print("\n✅ Step 5: 最終確認")
                 final_data = await client.get_all_bills()
                 final_missing = len(
-                    [b for b in final_data if not b.get("bill_id", "").strip()])
+                    [b for b in final_data if not b.get("bill_id", "").strip()]
+                )
 
                 print(f"  修正後の欠損数: {final_missing}")
                 print(
-                    f"  全体完了率: {((len(final_data)-final_missing)/len(final_data))*100:.1f}%")
+                    f"  全体完了率: {((len(final_data)-final_missing)/len(final_data))*100:.1f}%"
+                )
 
                 if final_missing == 0:
                     print("🎉 全ての法案にBill_IDが設定されました！")

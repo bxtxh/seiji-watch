@@ -17,7 +17,7 @@ import pytest
 from services.airtable_issue_manager import AirtableIssueManager, AirtableIssueRecord
 from services.policy_issue_extractor import DualLevelIssue
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 class TestAirtableIssueRecord:
@@ -30,7 +30,7 @@ class TestAirtableIssueRecord:
             label_lv1="高校生向けの課題を説明する",
             label_lv2="一般読者向けの課題を詳しく説明する",
             confidence=0.85,
-            source_bill_id="bill_001"
+            source_bill_id="bill_001",
         )
 
         assert record.issue_id == "test_issue_001"
@@ -46,7 +46,7 @@ class TestAirtableIssueRecord:
             label_lv1="テスト課題",
             label_lv2="詳細なテスト課題",
             confidence=0.9,
-            source_bill_id="bill_001"
+            source_bill_id="bill_001",
         )
 
         result_dict = record.to_dict()
@@ -80,7 +80,7 @@ class TestAirtableIssueManager:
         return DualLevelIssue(
             label_lv1="介護制度を改善する",
             label_lv2="高齢者介護保険制度の包括的な見直しを実施する",
-            confidence=0.85
+            confidence=0.85,
         )
 
     def test_manager_initialization(self, issue_manager):
@@ -90,17 +90,17 @@ class TestAirtableIssueManager:
         assert issue_manager.batch_delay == 0.3
 
     async def test_create_issue_pair_success(
-            self,
-            issue_manager,
-            sample_dual_issue,
-            mock_airtable_client):
+        self, issue_manager, sample_dual_issue, mock_airtable_client
+    ):
         """Test successful creation of issue pair."""
         # Mock Airtable responses
         lv1_response = {"id": "rec_lv1_123", "fields": {}}
         lv2_response = {"id": "rec_lv2_456", "fields": {}}
 
         mock_airtable_client._rate_limited_request.side_effect = [
-            lv1_response, lv2_response]
+            lv1_response,
+            lv2_response,
+        ]
 
         lv1_id, lv2_id = await issue_manager.create_issue_pair(
             sample_dual_issue, "bill_001", 0.8
@@ -128,25 +128,27 @@ class TestAirtableIssueManager:
         assert lv2_data["Parent_ID"] == "rec_lv1_123"
 
     async def test_create_issue_pair_failure(
-            self,
-            issue_manager,
-            sample_dual_issue,
-            mock_airtable_client):
+        self, issue_manager, sample_dual_issue, mock_airtable_client
+    ):
         """Test handling of issue pair creation failure."""
         mock_airtable_client._rate_limited_request.side_effect = Exception(
-            "Airtable API Error")
+            "Airtable API Error"
+        )
 
         with pytest.raises(Exception, match="Airtable API Error"):
             await issue_manager.create_issue_pair(sample_dual_issue, "bill_001", 0.8)
 
     async def test_create_unclassified_issue_pair(
-            self, issue_manager, mock_airtable_client):
+        self, issue_manager, mock_airtable_client
+    ):
         """Test creation of unclassified issue pair."""
         lv1_response = {"id": "rec_unclass_1", "fields": {}}
         lv2_response = {"id": "rec_unclass_2", "fields": {}}
 
         mock_airtable_client._rate_limited_request.side_effect = [
-            lv1_response, lv2_response]
+            lv1_response,
+            lv2_response,
+        ]
 
         lv1_id, lv2_id = await issue_manager.create_unclassified_issue_pair("bill_001")
 
@@ -170,8 +172,8 @@ class TestAirtableIssueManager:
                 "Status": "approved",
                 "Source_Bill_ID": "bill_001",
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
-            }
+                "Updated_At": datetime.now().isoformat(),
+            },
         }
 
         mock_airtable_client._rate_limited_request.return_value = mock_response
@@ -185,17 +187,20 @@ class TestAirtableIssueManager:
         assert record.status == "approved"
 
     async def test_get_issue_record_not_found(
-            self, issue_manager, mock_airtable_client):
+        self, issue_manager, mock_airtable_client
+    ):
         """Test handling when issue record is not found."""
         mock_airtable_client._rate_limited_request.side_effect = Exception(
-            "Record not found")
+            "Record not found"
+        )
 
         record = await issue_manager.get_issue_record("nonexistent")
 
         assert record is None
 
     async def test_update_issue_status_success(
-            self, issue_manager, mock_airtable_client):
+        self, issue_manager, mock_airtable_client
+    ):
         """Test successful status update."""
         mock_airtable_client._rate_limited_request.return_value = {"id": "rec_123"}
 
@@ -213,10 +218,12 @@ class TestAirtableIssueManager:
         assert "Updated_At" in update_data
 
     async def test_update_issue_status_failure(
-            self, issue_manager, mock_airtable_client):
+        self, issue_manager, mock_airtable_client
+    ):
         """Test handling of status update failure."""
         mock_airtable_client._rate_limited_request.side_effect = Exception(
-            "Update failed")
+            "Update failed"
+        )
 
         success = await issue_manager.update_issue_status("rec_123", "approved")
 
@@ -227,7 +234,7 @@ class TestAirtableIssueManager:
         mock_response = {
             "records": [
                 {"id": "rec_1", "fields": {"Status": "pending"}},
-                {"id": "rec_2", "fields": {"Status": "pending"}}
+                {"id": "rec_2", "fields": {"Status": "pending"}},
             ]
         }
 
@@ -250,7 +257,7 @@ class TestAirtableIssueManager:
             "records": [
                 {"id": "rec_1", "fields": {"Status": "pending"}},
                 {"id": "rec_2", "fields": {"Status": "pending"}},
-                {"id": "rec_3", "fields": {"Status": "pending"}}
+                {"id": "rec_3", "fields": {"Status": "pending"}},
             ]
         }
 
@@ -265,7 +272,7 @@ class TestAirtableIssueManager:
         mock_response = {
             "records": [
                 {"id": "rec_1", "fields": {"Parent_ID": None}},  # Level 1
-                {"id": "rec_2", "fields": {"Parent_ID": None}}   # Level 1
+                {"id": "rec_2", "fields": {"Parent_ID": None}},  # Level 1
             ]
         }
 
@@ -294,8 +301,8 @@ class TestAirtableIssueManager:
                         "Label_Lv1": "親課題1",
                         "Parent_ID": None,
                         "Confidence": 0.8,
-                        "Source_Bill_ID": "bill_001"
-                    }
+                        "Source_Bill_ID": "bill_001",
+                    },
                 },
                 {
                     "id": "rec_child_1",
@@ -304,9 +311,9 @@ class TestAirtableIssueManager:
                         "Label_Lv2": "子課題1",
                         "Parent_ID": "rec_parent_1",
                         "Confidence": 0.7,
-                        "Source_Bill_ID": "bill_001"
-                    }
-                }
+                        "Source_Bill_ID": "bill_001",
+                    },
+                },
             ]
         }
 
@@ -329,7 +336,7 @@ class TestAirtableIssueManager:
         mock_response = {
             "records": [
                 {"id": "rec_1", "fields": {"Source_Bill_ID": "bill_001"}},
-                {"id": "rec_2", "fields": {"Source_Bill_ID": "bill_001"}}
+                {"id": "rec_2", "fields": {"Source_Bill_ID": "bill_001"}},
             ]
         }
 
@@ -364,27 +371,22 @@ class TestAirtableIssueManager:
             assert "structural_change" in update_data["Reviewer_Notes"]
 
     async def test_batch_create_issue_pairs(
-            self,
-            issue_manager,
-            mock_airtable_client,
-            sample_dual_issue):
+        self, issue_manager, mock_airtable_client, sample_dual_issue
+    ):
         """Test batch creation of issue pairs."""
         # Mock responses for batch creation
-        responses = [
-            {"id": f"rec_lv1_{i}"} for i in range(4)
-        ] + [
+        responses = [{"id": f"rec_lv1_{i}"} for i in range(4)] + [
             {"id": f"rec_lv2_{i}"} for i in range(4)
         ]
 
         mock_airtable_client._rate_limited_request.side_effect = responses
 
-        dual_issues = [
-            (sample_dual_issue, "bill_001"),
-            (sample_dual_issue, "bill_002")
-        ]
+        dual_issues = [(sample_dual_issue, "bill_001"), (sample_dual_issue, "bill_002")]
         quality_scores = [0.8, 0.9]
 
-        results = await issue_manager.batch_create_issue_pairs(dual_issues, quality_scores)
+        results = await issue_manager.batch_create_issue_pairs(
+            dual_issues, quality_scores
+        )
 
         assert len(results) == 2
         assert all(result[0] is not None for result in results)  # All should succeed
@@ -401,8 +403,8 @@ class TestAirtableIssueManager:
                         "Parent_ID": None,
                         "Confidence": 0.8,
                         "Quality_Score": 0.7,
-                        "Source_Bill_ID": "bill_001"
-                    }
+                        "Source_Bill_ID": "bill_001",
+                    },
                 },
                 {
                     "id": "rec_2",
@@ -411,9 +413,9 @@ class TestAirtableIssueManager:
                         "Parent_ID": "rec_1",
                         "Confidence": 0.9,
                         "Quality_Score": 0.8,
-                        "Source_Bill_ID": "bill_001"
-                    }
-                }
+                        "Source_Bill_ID": "bill_001",
+                    },
+                },
             ]
         }
 
@@ -435,10 +437,7 @@ class TestAirtableIssueManager:
             "records": [
                 {
                     "id": "rec_1",
-                    "fields": {
-                        "Label_Lv1": "介護制度を改善する",
-                        "Status": "approved"
-                    }
+                    "fields": {"Label_Lv1": "介護制度を改善する", "Status": "approved"},
                 }
             ]
         }
@@ -467,7 +466,8 @@ class TestAirtableIssueManager:
     async def test_health_check_failure(self, issue_manager, mock_airtable_client):
         """Test health check failure."""
         mock_airtable_client._rate_limited_request.side_effect = Exception(
-            "Connection failed")
+            "Connection failed"
+        )
 
         is_healthy = await issue_manager.health_check()
 
@@ -513,7 +513,7 @@ def create_mock_airtable_response(records_data: list):
             {
                 "id": f"rec_{i}",
                 "fields": record_data,
-                "createdTime": datetime.now().isoformat()
+                "createdTime": datetime.now().isoformat(),
             }
             for i, record_data in enumerate(records_data)
         ]
@@ -528,7 +528,7 @@ def create_test_issue_record(**kwargs):
         "label_lv2": "詳細なテスト課題",
         "confidence": 0.8,
         "status": "pending",
-        "source_bill_id": "test_bill_001"
+        "source_bill_id": "test_bill_001",
     }
     defaults.update(kwargs)
     return AirtableIssueRecord(**defaults)

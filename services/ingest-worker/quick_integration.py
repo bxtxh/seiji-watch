@@ -18,9 +18,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -31,10 +31,10 @@ def main():
     env_file = Path(__file__).parent / ".env.local"
     load_env_file(env_file)
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
-    sys.path.insert(0, 'src')
+    sys.path.insert(0, "src")
     from scraper.diet_scraper import DietScraper
 
     scraper = DietScraper(enable_resilience=False)
@@ -52,7 +52,7 @@ def main():
                 "fields": {
                     "Name": bill.title,
                     "Bill_ID": bill.bill_id,
-                    "Diet_Session": "217"
+                    "Diet_Session": "217",
                 }
             }
 

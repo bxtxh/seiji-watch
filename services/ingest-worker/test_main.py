@@ -5,7 +5,7 @@ Test script for EPIC 2 implementation
 
 import sys
 
-sys.path.append('src')
+sys.path.append("src")
 
 
 def test_basic_imports():
@@ -44,15 +44,18 @@ def test_service_initialization():
 
     try:
         from scheduler.scheduler import IngestionScheduler, SchedulerConfig
+
         config = SchedulerConfig(project_id="", location="asia-northeast1")
         scheduler = IngestionScheduler(config)
         print(
-            f"✓ Scheduler initialized with {len(scheduler.scheduled_tasks)} default tasks")
+            f"✓ Scheduler initialized with {len(scheduler.scheduled_tasks)} default tasks"
+        )
     except Exception as e:
         print(f"✗ Scheduler initialization: {e}")
 
     try:
         from scraper.resilience import CacheConfig, RateLimitConfig, ResilientScraper
+
         rate_config = RateLimitConfig()
         cache_config = CacheConfig()
         ResilientScraper(rate_config, cache_config)
@@ -62,6 +65,7 @@ def test_service_initialization():
 
     try:
         from batch_queue.batch_processor import BatchConfig, BatchProcessor
+
         config = BatchConfig(enable_persistence=False)
         BatchProcessor(config)
         print("✓ Batch processor initialized")
@@ -75,6 +79,7 @@ def test_api_endpoints():
 
     try:
         from fastapi import FastAPI
+
         app = FastAPI()
 
         # Test route definition

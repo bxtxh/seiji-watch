@@ -1,6 +1,7 @@
 """
 Vector embedding client for generating and storing embeddings using OpenAI and Weaviate.
 """
+
 import logging
 import os
 from dataclasses import dataclass
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EmbeddingResult:
     """Result of text embedding operation"""
+
     vector: list[float]
     text: str
     model: str
@@ -32,8 +34,7 @@ class VectorClient:
         self,
         openai_api_key: str | None = None,
         weaviate_url: str | None = None,
-        weaviate_api_key: str | None = None
-
+        weaviate_api_key: str | None = None,
     ):
         # OpenAI configuration
         self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
@@ -42,12 +43,13 @@ class VectorClient:
 
         self.openai_headers = {
             "Authorization": f"Bearer {self.openai_api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Weaviate configuration
         self.weaviate_url = weaviate_url or os.getenv(
-            "WEAVIATE_URL", "https://seiji-watch-cluster.weaviate.network")
+            "WEAVIATE_URL", "https://seiji-watch-cluster.weaviate.network"
+        )
         self.weaviate_api_key = weaviate_api_key or os.getenv("WEAVIATE_API_KEY")
 
         # Initialize Weaviate client
@@ -65,15 +67,14 @@ class VectorClient:
                 # Weaviate Cloud authentication
                 auth_config = weaviate.AuthApiKey(api_key=self.weaviate_api_key)
                 self.weaviate_client = weaviate.connect_to_weaviate_cloud(
-                    cluster_url=self.weaviate_url,
-                    auth_credentials=auth_config
+                    cluster_url=self.weaviate_url, auth_credentials=auth_config
                 )
             else:
                 # Local Weaviate instance
                 self.weaviate_client = weaviate.connect_to_local(
-                    host=self.weaviate_url.replace(
-                        "http://", "").replace(
-                        "https://", "")
+                    host=self.weaviate_url.replace("http://", "").replace(
+                        "https://", ""
+                    )
                 )
 
             logger.info("Weaviate client initialized successfully")
@@ -97,33 +98,33 @@ class VectorClient:
                     properties=[
                         weaviate.classes.config.Property(
                             name="bill_number",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="title",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="summary",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="category",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="status",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="diet_session",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="embedding_model",
-                            data_type=weaviate.classes.config.DataType.TEXT
-                        )
-                    ]
+                            data_type=weaviate.classes.config.DataType.TEXT,
+                        ),
+                    ],
                 )
                 logger.info("Created Bills collection in Weaviate")
 
@@ -135,30 +136,29 @@ class VectorClient:
                     vectorizer_config=Configure.Vectorizer.none(),
                     properties=[
                         weaviate.classes.config.Property(
-                            name="text",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            name="text", data_type=weaviate.classes.config.DataType.TEXT
                         ),
                         weaviate.classes.config.Property(
                             name="speaker",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="meeting_id",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="duration",
-                            data_type=weaviate.classes.config.DataType.NUMBER
+                            data_type=weaviate.classes.config.DataType.NUMBER,
                         ),
                         weaviate.classes.config.Property(
                             name="language",
-                            data_type=weaviate.classes.config.DataType.TEXT
+                            data_type=weaviate.classes.config.DataType.TEXT,
                         ),
                         weaviate.classes.config.Property(
                             name="embedding_model",
-                            data_type=weaviate.classes.config.DataType.TEXT
-                        )
-                    ]
+                            data_type=weaviate.classes.config.DataType.TEXT,
+                        ),
+                    ],
                 )
                 logger.info("Created Speeches collection in Weaviate")
 
@@ -181,14 +181,14 @@ class VectorClient:
                 "input": text,
                 "model": self.embedding_model,
                 "dimensions": self.embedding_dimensions,
-                "encoding_format": "float"
+                "encoding_format": "float",
             }
 
             response = requests.post(
                 "https://api.openai.com/v1/embeddings",
                 headers=self.openai_headers,
                 json=data,
-                timeout=30
+                timeout=30,
             )
 
             response.raise_for_status()
@@ -202,7 +202,7 @@ class VectorClient:
                 text=text,
                 model=self.embedding_model,
                 dimensions=len(embedding_data["embedding"]),
-                usage_tokens=usage.get("total_tokens")
+                usage_tokens=usage.get("total_tokens"),
             )
 
         except requests.RequestException as e:
@@ -213,9 +213,8 @@ class VectorClient:
             raise
 
     def store_bill_embedding(
-            self,
-            bill_data: dict,
-            embedding: EmbeddingResult) -> str | None:
+        self, bill_data: dict, embedding: EmbeddingResult
+    ) -> str | None:
         """
         Store bill data and embedding in Weaviate
 
@@ -241,17 +240,17 @@ class VectorClient:
                 "category": bill_data.get("category", ""),
                 "status": bill_data.get("status", ""),
                 "diet_session": bill_data.get("diet_session", ""),
-                "embedding_model": embedding.model
+                "embedding_model": embedding.model,
             }
 
             # Insert with vector
             result = bills_collection.data.insert(
-                properties=properties,
-                vector=embedding.vector
+                properties=properties, vector=embedding.vector
             )
 
             logger.info(
-                f"Stored bill embedding: {bill_data.get('bill_number')} -> {result.uuid}")
+                f"Stored bill embedding: {bill_data.get('bill_number')} -> {result.uuid}"
+            )
             return str(result.uuid)
 
         except Exception as e:
@@ -259,9 +258,8 @@ class VectorClient:
             return None
 
     def store_speech_embedding(
-            self,
-            speech_data: dict,
-            embedding: EmbeddingResult) -> str | None:
+        self, speech_data: dict, embedding: EmbeddingResult
+    ) -> str | None:
         """
         Store speech data and embedding in Weaviate
 
@@ -286,17 +284,17 @@ class VectorClient:
                 "meeting_id": speech_data.get("meeting_id", ""),
                 "duration": speech_data.get("duration", 0.0),
                 "language": speech_data.get("language", "ja"),
-                "embedding_model": embedding.model
+                "embedding_model": embedding.model,
             }
 
             # Insert with vector
             result = speeches_collection.data.insert(
-                properties=properties,
-                vector=embedding.vector
+                properties=properties, vector=embedding.vector
             )
 
             logger.info(
-                f"Stored speech embedding: {speech_data.get('meeting_id')} -> {result.uuid}")
+                f"Stored speech embedding: {speech_data.get('meeting_id')} -> {result.uuid}"
+            )
             return str(result.uuid)
 
         except Exception as e:
@@ -304,10 +302,7 @@ class VectorClient:
             return None
 
     def search_similar_bills(
-        self,
-        query_text: str,
-        limit: int = 10,
-        min_certainty: float = 0.7
+        self, query_text: str, limit: int = 10, min_certainty: float = 0.7
     ) -> list[dict]:
         """
         Search for similar bills using vector similarity
@@ -334,26 +329,29 @@ class VectorClient:
             results = bills_collection.query.near_vector(
                 near_vector=query_embedding.vector,
                 limit=limit,
-                return_metadata=weaviate.classes.query.MetadataQuery(certainty=True)
+                return_metadata=weaviate.classes.query.MetadataQuery(certainty=True),
             )
 
             # Format results
             formatted_results = []
             for obj in results.objects:
-                formatted_results.append({
-                    "uuid": str(obj.uuid),
-                    "bill_number": obj.properties.get("bill_number"),
-                    "title": obj.properties.get("title"),
-                    "summary": obj.properties.get("summary"),
-                    "category": obj.properties.get("category"),
-                    "status": obj.properties.get("status"),
-                    "certainty": obj.metadata.certainty,
-                    "distance": obj.metadata.distance
-                })
+                formatted_results.append(
+                    {
+                        "uuid": str(obj.uuid),
+                        "bill_number": obj.properties.get("bill_number"),
+                        "title": obj.properties.get("title"),
+                        "summary": obj.properties.get("summary"),
+                        "category": obj.properties.get("category"),
+                        "status": obj.properties.get("status"),
+                        "certainty": obj.metadata.certainty,
+                        "distance": obj.metadata.distance,
+                    }
+                )
 
             # Filter by minimum certainty
             filtered_results = [
-                r for r in formatted_results if r["certainty"] >= min_certainty]
+                r for r in formatted_results if r["certainty"] >= min_certainty
+            ]
 
             logger.info(f"Vector search found {len(filtered_results)} similar bills")
             return filtered_results
@@ -368,16 +366,19 @@ class VectorClient:
             return {"bills": 0, "speeches": 0}
 
         try:
-            bills_count = self.weaviate_client.collections.get(
-                "Bills").aggregate.over_all(total_count=True).total_count
+            bills_count = (
+                self.weaviate_client.collections.get("Bills")
+                .aggregate.over_all(total_count=True)
+                .total_count
+            )
 
-            speeches_count = self.weaviate_client.collections.get(
-                "Speeches").aggregate.over_all(total_count=True).total_count
+            speeches_count = (
+                self.weaviate_client.collections.get("Speeches")
+                .aggregate.over_all(total_count=True)
+                .total_count
+            )
 
-            return {
-                "bills": bills_count,
-                "speeches": speeches_count
-            }
+            return {"bills": bills_count, "speeches": speeches_count}
 
         except Exception as e:
             logger.error(f"Failed to get embedding stats: {e}")

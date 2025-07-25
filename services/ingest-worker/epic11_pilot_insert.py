@@ -11,7 +11,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def create_test_bill():
@@ -20,30 +20,27 @@ async def create_test_bill():
     api_key = os.getenv("AIRTABLE_API_KEY")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     # Load sample bill data
-    data_file = '/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json'
-    with open(data_file, encoding='utf-8') as f:
+    data_file = "/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json"
+    with open(data_file, encoding="utf-8") as f:
         data = json.load(f)
 
-    sample_bill = data['production_dataset']['bills'][0]
+    sample_bill = data["production_dataset"]["bills"][0]
     print(f"📋 Sample bill: {sample_bill['title']}")
 
     # Test bill record with structured fields
     test_bill_data = {
         "fields": {
-            "Name": sample_bill['title'],  # Using Name field as primary
-            "Status": sample_bill['stage'],
-            "Bill_ID": sample_bill['bill_id'],
-            "Category": sample_bill['category'],
-            "Stage": sample_bill['stage'],
-            "Submitter": sample_bill['submitter'],
-            "URL": sample_bill['url'],
-            "Collection_Date": sample_bill['collected_at']
+            "Name": sample_bill["title"],  # Using Name field as primary
+            "Status": sample_bill["stage"],
+            "Bill_ID": sample_bill["bill_id"],
+            "Category": sample_bill["category"],
+            "Stage": sample_bill["stage"],
+            "Submitter": sample_bill["submitter"],
+            "URL": sample_bill["url"],
+            "Collection_Date": sample_bill["collected_at"],
         }
     }
 
@@ -52,7 +49,9 @@ async def create_test_bill():
     async with aiohttp.ClientSession() as session:
         try:
             print("\n🚀 Creating test bill record...")
-            async with session.post(f"{base_url}/Bills (法案)", headers=headers, json=test_bill_data) as response:
+            async with session.post(
+                f"{base_url}/Bills (法案)", headers=headers, json=test_bill_data
+            ) as response:
                 if response.status == 200:
                     result = await response.json()
                     print("✅ Test bill created successfully!")
@@ -69,22 +68,27 @@ async def create_test_bill():
                         print("\n🔄 Retrying with basic fields only...")
                         basic_bill_data = {
                             "fields": {
-                                "Name": sample_bill['title'],
-                                "Bill_ID": sample_bill['bill_id'],
-                                "Category": sample_bill['category'],
-                                "Stage": sample_bill['stage'],
-                                "URL": sample_bill['url'],
-                                "Status": sample_bill['stage']
+                                "Name": sample_bill["title"],
+                                "Bill_ID": sample_bill["bill_id"],
+                                "Category": sample_bill["category"],
+                                "Stage": sample_bill["stage"],
+                                "URL": sample_bill["url"],
+                                "Status": sample_bill["stage"],
                             }
                         }
 
-                        async with session.post(f"{base_url}/Bills (法案)", headers=headers, json=basic_bill_data) as retry_response:
+                        async with session.post(
+                            f"{base_url}/Bills (法案)",
+                            headers=headers,
+                            json=basic_bill_data,
+                        ) as retry_response:
                             if retry_response.status == 200:
                                 result = await retry_response.json()
                                 print("✅ Test bill created with basic fields!")
                                 print(f"Record ID: {result['id']}")
                                 print(
-                                    f"Available fields: {list(result['fields'].keys())}")
+                                    f"Available fields: {list(result['fields'].keys())}"
+                                )
                                 return result
                             else:
                                 retry_error = await retry_response.text()
@@ -103,42 +107,44 @@ async def create_test_vote():
     api_key = os.getenv("AIRTABLE_API_KEY")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     # Load sample vote data
-    data_file = '/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json'
-    with open(data_file, encoding='utf-8') as f:
+    data_file = "/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json"
+    with open(data_file, encoding="utf-8") as f:
         data = json.load(f)
 
-    sample_voting_session = data['production_dataset']['voting_sessions'][0]
-    sample_vote_record = sample_voting_session['vote_records'][0]
+    sample_voting_session = data["production_dataset"]["voting_sessions"][0]
+    sample_vote_record = sample_voting_session["vote_records"][0]
 
     print(
-        f"🗳️ Sample vote: {sample_vote_record['member_name']} - {sample_vote_record['vote_result']}")
+        f"🗳️ Sample vote: {sample_vote_record['member_name']} - {sample_vote_record['vote_result']}"
+    )
 
     # Test vote record
     test_vote_data = {
         "fields": {
             "Name": f"{sample_vote_record['member_name']} - {sample_voting_session['bill_title']}",
-            "Member_Name": sample_vote_record['member_name'],
-            "Member_Name_Kana": sample_vote_record['member_name_kana'],
-            "Party_Name": sample_vote_record['party_name'],
-            "Constituency": sample_vote_record['constituency'],
-            "House": sample_vote_record['house'],
-            "Vote_Result": sample_vote_record['vote_result'],
-            "Bill_Title": sample_voting_session['bill_title'],
-            "Vote_Date": sample_voting_session['vote_date'],
-            "Status": sample_vote_record['vote_result']}}
+            "Member_Name": sample_vote_record["member_name"],
+            "Member_Name_Kana": sample_vote_record["member_name_kana"],
+            "Party_Name": sample_vote_record["party_name"],
+            "Constituency": sample_vote_record["constituency"],
+            "House": sample_vote_record["house"],
+            "Vote_Result": sample_vote_record["vote_result"],
+            "Bill_Title": sample_voting_session["bill_title"],
+            "Vote_Date": sample_voting_session["vote_date"],
+            "Status": sample_vote_record["vote_result"],
+        }
+    }
 
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
     async with aiohttp.ClientSession() as session:
         try:
             print("\n🚀 Creating test vote record...")
-            async with session.post(f"{base_url}/Votes (投票)", headers=headers, json=test_vote_data) as response:
+            async with session.post(
+                f"{base_url}/Votes (投票)", headers=headers, json=test_vote_data
+            ) as response:
                 if response.status == 200:
                     result = await response.json()
                     print("✅ Test vote created successfully!")
@@ -162,19 +168,20 @@ async def analyze_data_requirements():
     print("\n📊 EPIC 11 Data Analysis:")
 
     # Load production data
-    data_file = '/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json'
-    with open(data_file, encoding='utf-8') as f:
+    data_file = "/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json"
+    with open(data_file, encoding="utf-8") as f:
         data = json.load(f)
 
-    bills = data['production_dataset']['bills']
-    voting_sessions = data['production_dataset']['voting_sessions']
+    bills = data["production_dataset"]["bills"]
+    voting_sessions = data["production_dataset"]["voting_sessions"]
 
     print(f"📋 Bills to integrate: {len(bills)}")
     print(f"🗳️ Voting sessions: {len(voting_sessions)}")
 
     # Calculate total vote records
-    total_vote_records = sum(len(session.get('vote_records', []))
-                             for session in voting_sessions)
+    total_vote_records = sum(
+        len(session.get("vote_records", [])) for session in voting_sessions
+    )
     print(f"🗳️ Individual vote records: {total_vote_records}")
 
     # Sample bill fields analysis
@@ -185,7 +192,7 @@ async def analyze_data_requirements():
 
     # Sample vote record analysis
     print("\n🗳️ Vote record structure:")
-    sample_vote = voting_sessions[0]['vote_records'][0]
+    sample_vote = voting_sessions[0]["vote_records"][0]
     for key, value in sample_vote.items():
         print(f"  {key}: {type(value).__name__} - {str(value)[:50]}")
 
@@ -211,6 +218,7 @@ async def main():
     else:
         print("\n⚠️ PILOT TEST ISSUES")
         print("🔧 Need to adjust field mappings for full integration")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

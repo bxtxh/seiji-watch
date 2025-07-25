@@ -55,7 +55,7 @@ async def get_llm_service() -> LLMService:
 @router.get("/health")
 async def health_check(
     airtable: AirtableClient = Depends(get_airtable_client),
-    llm: LLMService = Depends(get_llm_service)
+    llm: LLMService = Depends(get_llm_service),
 ):
     """Health check for speech services."""
     airtable_healthy = await airtable.health_check()
@@ -64,14 +64,13 @@ async def health_check(
     return {
         "status": "healthy" if (airtable_healthy and llm_healthy) else "unhealthy",
         "airtable": "healthy" if airtable_healthy else "unhealthy",
-        "llm": "healthy" if llm_healthy else "unhealthy"
+        "llm": "healthy" if llm_healthy else "unhealthy",
     }
 
 
 @router.get("/{speech_id}")
 async def get_speech(
-    speech_id: str,
-    airtable: AirtableClient = Depends(get_airtable_client)
+    speech_id: str, airtable: AirtableClient = Depends(get_airtable_client)
 ) -> SpeechResponse:
     """Get a speech by ID."""
     try:
@@ -83,8 +82,10 @@ async def get_speech(
             speaker_name=fields.get("Speaker_Name"),
             original_text=fields.get("Original_Text", ""),
             summary=fields.get("Summary"),
-            topics=fields.get("Topics", "").split(",") if fields.get("Topics") else None,
-            is_processed=fields.get("Is_Processed", False)
+            topics=(
+                fields.get("Topics", "").split(",") if fields.get("Topics") else None
+            ),
+            is_processed=fields.get("Is_Processed", False),
         )
     except Exception as e:
         logger.error(f"Failed to get speech {speech_id}: {e}")
@@ -95,7 +96,7 @@ async def get_speech(
 async def list_speeches(
     limit: int = Query(default=50, le=100),
     processed_only: bool = Query(default=False),
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ) -> list[SpeechResponse]:
     """List speeches with optional filtering."""
     try:
@@ -104,21 +105,26 @@ async def list_speeches(
             filter_formula = "{Is_Processed} = TRUE()"
 
         speech_records = await airtable.list_speeches(
-            filter_formula=filter_formula,
-            max_records=limit
+            filter_formula=filter_formula, max_records=limit
         )
 
         speeches = []
         for record in speech_records:
             fields = record.get("fields", {})
-            speeches.append(SpeechResponse(
-                id=record["id"],
-                speaker_name=fields.get("Speaker_Name"),
-                original_text=fields.get("Original_Text", ""),
-                summary=fields.get("Summary"),
-                topics=fields.get("Topics", "").split(",") if fields.get("Topics") else None,
-                is_processed=fields.get("Is_Processed", False)
-            ))
+            speeches.append(
+                SpeechResponse(
+                    id=record["id"],
+                    speaker_name=fields.get("Speaker_Name"),
+                    original_text=fields.get("Original_Text", ""),
+                    summary=fields.get("Summary"),
+                    topics=(
+                        fields.get("Topics", "").split(",")
+                        if fields.get("Topics")
+                        else None
+                    ),
+                    is_processed=fields.get("Is_Processed", False),
+                )
+            )
 
         return speeches
     except Exception as e:
@@ -131,7 +137,7 @@ async def generate_speech_summary(
     speech_id: str,
     request: SpeechSummaryRequest,
     airtable: AirtableClient = Depends(get_airtable_client),
-    llm: LLMService = Depends(get_llm_service)
+    llm: LLMService = Depends(get_llm_service),
 ):
     """Generate summary for a speech."""
     try:
@@ -144,7 +150,7 @@ async def generate_speech_summary(
             return {
                 "speech_id": speech_id,
                 "summary": fields["Summary"],
-                "regenerated": False
+                "regenerated": False,
             }
 
         # Generate new summary
@@ -157,21 +163,14 @@ async def generate_speech_summary(
         summary = await llm.generate_speech_summary(original_text, speaker_name)
 
         # Update Airtable record
-        update_data = {
-            "Summary": summary,
-            "Is_Processed": True
-        }
+        update_data = {"Summary": summary, "Is_Processed": True}
         await airtable._rate_limited_request(
             "PATCH",
             f"{airtable.base_url}/Speeches/{speech_id}",
-            json={"fields": update_data}
+            json={"fields": update_data},
         )
 
-        return {
-            "speech_id": speech_id,
-            "summary": summary,
-            "regenerated": True
-        }
+        return {"speech_id": speech_id, "summary": summary, "regenerated": True}
 
     except HTTPException:
         raise
@@ -185,7 +184,7 @@ async def extract_speech_topics(
     speech_id: str,
     request: SpeechTopicsRequest,
     airtable: AirtableClient = Depends(get_airtable_client),
-    llm: LLMService = Depends(get_llm_service)
+    llm: LLMService = Depends(get_llm_service),
 ):
     """Extract topics for a speech."""
     try:
@@ -196,11 +195,7 @@ async def extract_speech_topics(
         # Check if topics already exist and regenerate is not requested
         if fields.get("Topics") and not request.regenerate:
             topics = fields["Topics"].split(",") if fields["Topics"] else []
-            return {
-                "speech_id": speech_id,
-                "topics": topics,
-                "regenerated": False
-            }
+            return {"speech_id": speech_id, "topics": topics, "regenerated": False}
 
         # Extract new topics
         original_text = fields.get("Original_Text", "")
@@ -212,21 +207,14 @@ async def extract_speech_topics(
         topics = await llm.extract_speech_topics(original_text, speaker_name)
 
         # Update Airtable record
-        update_data = {
-            "Topics": ",".join(topics),
-            "Is_Processed": True
-        }
+        update_data = {"Topics": ",".join(topics), "Is_Processed": True}
         await airtable._rate_limited_request(
             "PATCH",
             f"{airtable.base_url}/Speeches/{speech_id}",
-            json={"fields": update_data}
+            json={"fields": update_data},
         )
 
-        return {
-            "speech_id": speech_id,
-            "topics": topics,
-            "regenerated": True
-        }
+        return {"speech_id": speech_id, "topics": topics, "regenerated": True}
 
     except HTTPException:
         raise
@@ -239,7 +227,7 @@ async def extract_speech_topics(
 async def batch_process_speeches(
     request: BatchProcessRequest,
     airtable: AirtableClient = Depends(get_airtable_client),
-    llm: LLMService = Depends(get_llm_service)
+    llm: LLMService = Depends(get_llm_service),
 ):
     """Process multiple speeches in batch."""
     try:
@@ -254,21 +242,31 @@ async def batch_process_speeches(
                 has_summary = bool(fields.get("Summary"))
                 has_topics = bool(fields.get("Topics"))
 
-                skip_summary = has_summary and not request.regenerate and request.generate_summaries
-                skip_topics = has_topics and not request.regenerate and request.extract_topics
+                skip_summary = (
+                    has_summary
+                    and not request.regenerate
+                    and request.generate_summaries
+                )
+                skip_topics = (
+                    has_topics and not request.regenerate and request.extract_topics
+                )
 
                 if skip_summary and skip_topics:
                     continue
 
-                speeches_data.append({
-                    "id": speech_record["id"],
-                    "original_text": fields.get("Original_Text", ""),
-                    "speaker_name": fields.get("Speaker_Name"),
-                    "existing_summary": fields.get("Summary"),
-                    "existing_topics": fields.get("Topics"),
-                    "needs_summary": request.generate_summaries and (not has_summary or request.regenerate),
-                    "needs_topics": request.extract_topics and (not has_topics or request.regenerate)
-                })
+                speeches_data.append(
+                    {
+                        "id": speech_record["id"],
+                        "original_text": fields.get("Original_Text", ""),
+                        "speaker_name": fields.get("Speaker_Name"),
+                        "existing_summary": fields.get("Summary"),
+                        "existing_topics": fields.get("Topics"),
+                        "needs_summary": request.generate_summaries
+                        and (not has_summary or request.regenerate),
+                        "needs_topics": request.extract_topics
+                        and (not has_topics or request.regenerate),
+                    }
+                )
             except Exception as e:
                 logger.warning(f"Failed to get speech {speech_id}: {e}")
                 continue
@@ -277,14 +275,14 @@ async def batch_process_speeches(
             return {
                 "processed_count": 0,
                 "skipped_count": len(request.speech_ids),
-                "message": "All speeches already processed or not found"
+                "message": "All speeches already processed or not found",
             }
 
         # Process speeches with LLM
         processed_speeches = await llm.batch_process_speeches(
             speeches_data,
             generate_summaries=request.generate_summaries,
-            extract_topics=request.extract_topics
+            extract_topics=request.extract_topics,
         )
 
         # Update Airtable records
@@ -303,7 +301,7 @@ async def batch_process_speeches(
                     await airtable._rate_limited_request(
                         "PATCH",
                         f"{airtable.base_url}/Speeches/{speech['id']}",
-                        json={"fields": update_data}
+                        json={"fields": update_data},
                     )
                     updated_count += 1
             except Exception as e:
@@ -312,7 +310,7 @@ async def batch_process_speeches(
         return {
             "processed_count": updated_count,
             "skipped_count": len(request.speech_ids) - len(speeches_data),
-            "total_requested": len(request.speech_ids)
+            "total_requested": len(request.speech_ids),
         }
 
     except Exception as e:
@@ -324,28 +322,33 @@ async def batch_process_speeches(
 async def search_speeches_by_topic(
     topic: str = Query(..., min_length=1),
     limit: int = Query(default=20, le=100),
-    airtable: AirtableClient = Depends(get_airtable_client)
+    airtable: AirtableClient = Depends(get_airtable_client),
 ) -> list[SpeechResponse]:
     """Search speeches by topic."""
     try:
         filter_formula = f"FIND('{topic}', {{Topics}}) > 0"
 
         speech_records = await airtable.list_speeches(
-            filter_formula=filter_formula,
-            max_records=limit
+            filter_formula=filter_formula, max_records=limit
         )
 
         speeches = []
         for record in speech_records:
             fields = record.get("fields", {})
-            speeches.append(SpeechResponse(
-                id=record["id"],
-                speaker_name=fields.get("Speaker_Name"),
-                original_text=fields.get("Original_Text", ""),
-                summary=fields.get("Summary"),
-                topics=fields.get("Topics", "").split(",") if fields.get("Topics") else None,
-                is_processed=fields.get("Is_Processed", False)
-            ))
+            speeches.append(
+                SpeechResponse(
+                    id=record["id"],
+                    speaker_name=fields.get("Speaker_Name"),
+                    original_text=fields.get("Original_Text", ""),
+                    summary=fields.get("Summary"),
+                    topics=(
+                        fields.get("Topics", "").split(",")
+                        if fields.get("Topics")
+                        else None
+                    ),
+                    is_processed=fields.get("Is_Processed", False),
+                )
+            )
 
         return speeches
     except Exception as e:

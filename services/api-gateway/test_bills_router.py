@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from src.routes.bills import router as bills_router
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "shared", "src"))
 
 
 # Set environment variables
@@ -44,18 +44,16 @@ def test_bills_router():
 
     # Test 2: Search bills
     print("\n2. Testing POST /api/bills/search")
-    search_data = {
-        "query": "法案",
-        "max_records": 5
-    }
+    search_data = {"query": "法案", "max_records": 5}
     response = client.post("/api/bills/search", json=search_data)
     print(f"   Status: {response.status_code}")
     if response.status_code == 200:
         data = response.json()
         print(f"   ✅ Search results: {data.get('total_found', 0)} found")
-        if data.get('results'):
+        if data.get("results"):
             print(
-                f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}")
+                f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}"
+            )
     else:
         print(f"   ❌ Error: {response.text}")
 

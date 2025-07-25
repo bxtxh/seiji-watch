@@ -22,6 +22,7 @@ try:
     from google.api_core import retry
     from google.cloud import pubsub_v1, scheduler_v1
     from google.cloud.scheduler_v1 import HttpTarget, Job, PubsubTarget
+
     GOOGLE_CLOUD_AVAILABLE = True
 except ImportError:
     GOOGLE_CLOUD_AVAILABLE = False
@@ -34,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 class TaskType(str, Enum):
     """Enumeration of available scheduled task types"""
+
     SCRAPE_BILLS = "scrape_bills"
     COLLECT_VOTING = "collect_voting"
     BATCH_TRANSCRIBE = "batch_transcribe"
@@ -43,6 +45,7 @@ class TaskType(str, Enum):
 
 class TaskStatus(str, Enum):
     """Enumeration of task execution statuses"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -53,6 +56,7 @@ class TaskStatus(str, Enum):
 @dataclass
 class ScheduledTask:
     """Configuration for a scheduled task"""
+
     task_id: str
     task_type: TaskType
     cron_schedule: str
@@ -69,6 +73,7 @@ class ScheduledTask:
 @dataclass
 class TaskExecution:
     """Record of a task execution"""
+
     execution_id: str
     task_id: str
     task_type: TaskType
@@ -81,14 +86,15 @@ class TaskExecution:
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
         # Convert datetime objects to ISO format strings
-        data['start_time'] = self.start_time.isoformat()
+        data["start_time"] = self.start_time.isoformat()
         if self.end_time:
-            data['end_time'] = self.end_time.isoformat()
+            data["end_time"] = self.end_time.isoformat()
         return data
 
 
 class SchedulerConfig(BaseModel):
     """Configuration for the scheduler service"""
+
     project_id: str
     location: str = "asia-northeast1"
     pubsub_topic: str = "ingest-worker-tasks"
@@ -97,15 +103,17 @@ class SchedulerConfig(BaseModel):
     default_timeout_minutes: int = 30
 
     @classmethod
-    def from_env(cls) -> 'SchedulerConfig':
+    def from_env(cls) -> "SchedulerConfig":
         """Load configuration from environment variables"""
         return cls(
-            project_id=os.environ.get('GOOGLE_CLOUD_PROJECT', ''),
-            location=os.environ.get('GOOGLE_CLOUD_LOCATION', 'asia-northeast1'),
-            pubsub_topic=os.environ.get('PUBSUB_TOPIC', 'ingest-worker-tasks'),
-            scheduler_service_account=os.environ.get('SCHEDULER_SERVICE_ACCOUNT'),
-            max_retry_attempts=int(os.environ.get('MAX_RETRY_ATTEMPTS', '3')),
-            default_timeout_minutes=int(os.environ.get('DEFAULT_TIMEOUT_MINUTES', '30'))
+            project_id=os.environ.get("GOOGLE_CLOUD_PROJECT", ""),
+            location=os.environ.get("GOOGLE_CLOUD_LOCATION", "asia-northeast1"),
+            pubsub_topic=os.environ.get("PUBSUB_TOPIC", "ingest-worker-tasks"),
+            scheduler_service_account=os.environ.get("SCHEDULER_SERVICE_ACCOUNT"),
+            max_retry_attempts=int(os.environ.get("MAX_RETRY_ATTEMPTS", "3")),
+            default_timeout_minutes=int(
+                os.environ.get("DEFAULT_TIMEOUT_MINUTES", "30")
+            ),
         )
 
 
@@ -132,14 +140,16 @@ class IngestionScheduler:
                 self.publisher_client = pubsub_v1.PublisherClient()
                 self.scheduler_client = scheduler_v1.CloudSchedulerClient()
                 logger.info(
-                    f"Initialized Google Cloud clients for project: {self.config.project_id}")
+                    f"Initialized Google Cloud clients for project: {self.config.project_id}"
+                )
             except Exception as e:
                 logger.warning(f"Failed to initialize Google Cloud clients: {e}")
                 logger.warning("Scheduler will operate in local mode only")
         else:
             if not GOOGLE_CLOUD_AVAILABLE:
                 logger.warning(
-                    "Google Cloud libraries not available, running in local mode")
+                    "Google Cloud libraries not available, running in local mode"
+                )
             else:
                 logger.warning("No project ID provided, running in local mode")
 
@@ -149,7 +159,6 @@ class IngestionScheduler:
     def _create_default_tasks(self) -> list[ScheduledTask]:
         """Create default scheduled tasks configuration"""
         return [
-
             # Daily bill scraping at 7 AM JST
             ScheduledTask(
                 task_id="daily_bill_scraping",
@@ -157,9 +166,8 @@ class IngestionScheduler:
                 cron_schedule="0 7 * * *",  # 7 AM JST daily
                 description="Daily scraping of new Diet bills and meetings",
                 timeout_minutes=45,
-                payload={"force_refresh": False}
+                payload={"force_refresh": False},
             ),
-
             # Voting data collection every 6 hours
             ScheduledTask(
                 task_id="periodic_voting_collection",
@@ -167,9 +175,8 @@ class IngestionScheduler:
                 cron_schedule="0 */6 * * *",  # Every 6 hours
                 description="Periodic collection of voting data from Diet website",
                 timeout_minutes=60,
-                payload={"vote_type": "all", "force_refresh": False}
+                payload={"vote_type": "all", "force_refresh": False},
             ),
-
             # Batch transcription processing at 3 AM JST
             ScheduledTask(
                 task_id="batch_transcription",
@@ -177,9 +184,8 @@ class IngestionScheduler:
                 cron_schedule="0 3 * * *",  # 3 AM JST daily
                 description="Batch processing of audio/video transcriptions",
                 timeout_minutes=120,
-                payload={"batch_size": 10, "max_duration_hours": 4}
+                payload={"batch_size": 10, "max_duration_hours": 4},
             ),
-
             # Batch embedding generation at 4 AM JST
             ScheduledTask(
                 task_id="batch_embeddings",
@@ -187,9 +193,8 @@ class IngestionScheduler:
                 cron_schedule="0 4 * * *",  # 4 AM JST daily
                 description="Batch generation of vector embeddings",
                 timeout_minutes=90,
-                payload={"batch_size": 50, "regenerate_existing": False}
+                payload={"batch_size": 50, "regenerate_existing": False},
             ),
-
             # Health check every hour
             ScheduledTask(
                 task_id="health_check",
@@ -197,9 +202,8 @@ class IngestionScheduler:
                 cron_schedule="0 * * * *",  # Every hour
                 description="Health check and status monitoring",
                 timeout_minutes=5,
-                payload={"check_dependencies": True}
-            )
-
+                payload={"check_dependencies": True},
+            ),
         ]
 
     async def setup_cloud_scheduler(self) -> bool:
@@ -223,7 +227,8 @@ class IngestionScheduler:
                     await self._create_scheduler_job(task)
 
             logger.info(
-                f"Successfully set up {len([t for t in self.scheduled_tasks if t.enabled])} Cloud Scheduler jobs")
+                f"Successfully set up {len([t for t in self.scheduled_tasks if t.enabled])} Cloud Scheduler jobs"
+            )
             return True
 
         except Exception as e:
@@ -233,8 +238,7 @@ class IngestionScheduler:
     async def _ensure_pubsub_topic(self) -> None:
         """Ensure the Pub/Sub topic exists"""
         topic_path = self.publisher_client.topic_path(
-            self.config.project_id,
-            self.config.pubsub_topic
+            self.config.project_id, self.config.pubsub_topic
         )
 
         try:
@@ -254,8 +258,7 @@ class IngestionScheduler:
     async def _create_scheduler_job(self, task: ScheduledTask) -> None:
         """Create a Google Cloud Scheduler job for a scheduled task"""
         parent = self.scheduler_client.location_path(
-            self.config.project_id,
-            self.config.location
+            self.config.project_id, self.config.location
         )
 
         job_name = f"{parent}/jobs/{task.task_id}"
@@ -263,14 +266,15 @@ class IngestionScheduler:
         # Create Pub/Sub target
         pubsub_target = PubsubTarget(
             topic_name=self.publisher_client.topic_path(
-                self.config.project_id,
-                self.config.pubsub_topic
+                self.config.project_id, self.config.pubsub_topic
             ),
-            data=json.dumps({
-                "task_id": task.task_id,
-                "task_type": task.task_type.value,
-                "payload": task.payload or {}
-            }).encode('utf-8')
+            data=json.dumps(
+                {
+                    "task_id": task.task_id,
+                    "task_type": task.task_type.value,
+                    "payload": task.payload or {},
+                }
+            ).encode("utf-8"),
         )
 
         # Create job configuration
@@ -282,8 +286,8 @@ class IngestionScheduler:
             time_zone="Asia/Tokyo",
             retry_config=scheduler_v1.RetryConfig(
                 retry_count=task.retry_count,
-                max_retry_duration={"seconds": task.timeout_minutes * 60}
-            )
+                max_retry_duration={"seconds": task.timeout_minutes * 60},
+            ),
         )
 
         try:
@@ -294,10 +298,7 @@ class IngestionScheduler:
         except Exception:
             # Create new job if update fails
             try:
-                self.scheduler_client.create_job(
-                    parent=parent,
-                    job=job
-                )
+                self.scheduler_client.create_job(parent=parent, job=job)
                 logger.info(f"Created scheduler job: {task.task_id}")
 
             except Exception as e:
@@ -327,7 +328,7 @@ class IngestionScheduler:
                 task_id=task_id,
                 task_type=task_type,
                 status=TaskStatus.RUNNING,
-                start_time=datetime.now()
+                start_time=datetime.now(),
             )
 
             self.task_executions[execution.execution_id] = execution
@@ -357,8 +358,9 @@ class IngestionScheduler:
             logger.error(f"Failed to handle Pub/Sub message: {e}")
             return False
 
-    async def _execute_task(self, task_type: TaskType,
-                            payload: dict[str, Any]) -> dict[str, Any]:
+    async def _execute_task(
+        self, task_type: TaskType, payload: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Execute a specific task type with the given payload
 
@@ -398,7 +400,7 @@ class IngestionScheduler:
         return {
             "task_type": "scrape_bills",
             "force_refresh": payload.get("force_refresh", False),
-            "execution_time": datetime.now().isoformat()
+            "execution_time": datetime.now().isoformat(),
         }
 
     async def _execute_collect_voting(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -414,18 +416,19 @@ class IngestionScheduler:
         # Execute the voting data collection task
         await _collect_voting_data_task(
             vote_type=payload.get("vote_type", "all"),
-            force_refresh=payload.get("force_refresh", False)
+            force_refresh=payload.get("force_refresh", False),
         )
 
         return {
             "task_type": "collect_voting",
             "vote_type": payload.get("vote_type", "all"),
             "force_refresh": payload.get("force_refresh", False),
-            "execution_time": datetime.now().isoformat()
+            "execution_time": datetime.now().isoformat(),
         }
 
     async def _execute_batch_transcribe(
-            self, payload: dict[str, Any]) -> dict[str, Any]:
+        self, payload: dict[str, Any]
+    ) -> dict[str, Any]:
         """Execute batch transcription task"""
         logger.info("Executing scheduled batch transcription task")
 
@@ -436,18 +439,20 @@ class IngestionScheduler:
         max_duration_hours = payload.get("max_duration_hours", 4)
 
         logger.info(
-            f"Batch transcription: max {batch_size} items, max {max_duration_hours} hours")
+            f"Batch transcription: max {batch_size} items, max {max_duration_hours} hours"
+        )
 
         return {
             "task_type": "batch_transcribe",
             "batch_size": batch_size,
             "max_duration_hours": max_duration_hours,
             "processed_items": 0,  # TODO: Implement actual processing
-            "execution_time": datetime.now().isoformat()
+            "execution_time": datetime.now().isoformat(),
         }
 
     async def _execute_batch_embeddings(
-            self, payload: dict[str, Any]) -> dict[str, Any]:
+        self, payload: dict[str, Any]
+    ) -> dict[str, Any]:
         """Execute batch embedding generation task"""
         logger.info("Executing scheduled batch embedding generation task")
 
@@ -458,14 +463,15 @@ class IngestionScheduler:
         regenerate_existing = payload.get("regenerate_existing", False)
 
         logger.info(
-            f"Batch embeddings: max {batch_size} items, regenerate: {regenerate_existing}")
+            f"Batch embeddings: max {batch_size} items, regenerate: {regenerate_existing}"
+        )
 
         return {
             "task_type": "batch_embeddings",
             "batch_size": batch_size,
             "regenerate_existing": regenerate_existing,
             "processed_items": 0,  # TODO: Implement actual processing
-            "execution_time": datetime.now().isoformat()
+            "execution_time": datetime.now().isoformat(),
         }
 
     async def _execute_health_check(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -480,7 +486,7 @@ class IngestionScheduler:
             "voting_scraper": voting_scraper is not None,
             "whisper_client": whisper_client is not None,
             "vector_client": vector_client is not None,
-            "check_time": datetime.now().isoformat()
+            "check_time": datetime.now().isoformat(),
         }
 
         # Additional dependency checks if requested
@@ -492,7 +498,7 @@ class IngestionScheduler:
         return {
             "task_type": "health_check",
             "health_status": health_status,
-            "execution_time": datetime.now().isoformat()
+            "execution_time": datetime.now().isoformat(),
         }
 
     async def _check_dependencies(self) -> dict[str, bool]:
@@ -502,9 +508,11 @@ class IngestionScheduler:
         # Check Diet website accessibility
         try:
             import aiohttp
+
             async with aiohttp.ClientSession() as session:
                 async with session.get(
-                        "https://www.sangiin.go.jp/", timeout=10) as response:
+                    "https://www.sangiin.go.jp/", timeout=10
+                ) as response:
                     dependencies["diet_website"] = response.status == 200
         except Exception:
             dependencies["diet_website"] = False
@@ -542,23 +550,26 @@ class IngestionScheduler:
 
             # Get recent executions for this task
             executions = [
-                ex.to_dict() for ex in self.task_executions.values()
+                ex.to_dict()
+                for ex in self.task_executions.values()
                 if ex.task_id == task_id
             ]
             executions.sort(key=lambda x: x["start_time"], reverse=True)
 
             return {
                 "task": task.to_dict(),
-                "recent_executions": executions[:10]  # Last 10 executions
+                "recent_executions": executions[:10],  # Last 10 executions
             }
         else:
             # Return status for all tasks
             return {
                 "scheduled_tasks": [t.to_dict() for t in self.scheduled_tasks],
                 "total_executions": len(self.task_executions),
-                "recent_executions": sorted([
-                    ex.to_dict() for ex in self.task_executions.values()
-                ], key=lambda x: x["start_time"], reverse=True)[:20]
+                "recent_executions": sorted(
+                    [ex.to_dict() for ex in self.task_executions.values()],
+                    key=lambda x: x["start_time"],
+                    reverse=True,
+                )[:20],
             }
 
     def cleanup_old_executions(self, days_to_keep: int = 30) -> int:
@@ -574,7 +585,8 @@ class IngestionScheduler:
         cutoff_date = datetime.now() - timedelta(days=days_to_keep)
 
         old_executions = [
-            exec_id for exec_id, execution in self.task_executions.items()
+            exec_id
+            for exec_id, execution in self.task_executions.items()
             if execution.start_time < cutoff_date
         ]
 

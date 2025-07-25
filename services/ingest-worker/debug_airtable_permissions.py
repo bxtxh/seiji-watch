@@ -19,7 +19,7 @@ async def test_pat_scopes():
     base_url = "https://api.airtable.com/v0"
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     print("🔍 PAT Scope & Metadata Analysis")
@@ -60,7 +60,7 @@ async def test_individual_table_access(tables):
     base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     print("\n🔍 Individual Table Access Test")
@@ -81,11 +81,14 @@ async def test_individual_table_access(tables):
                     if response.status == 200:
                         data = await response.json()
                         record_count = len(data.get("records", []))
-                        print(f"✅ {table_name}: Access granted ({record_count} records)")
+                        print(
+                            f"✅ {table_name}: Access granted ({record_count} records)"
+                        )
                         accessible_tables.append(table_name)
                     elif response.status == 403:
                         print(
-                            f"❌ {table_name}: 403 Forbidden (table-level permission issue)")
+                            f"❌ {table_name}: 403 Forbidden (table-level permission issue)"
+                        )
                         forbidden_tables.append(table_name)
                     else:
                         print(f"❓ {table_name}: {response.status} {response.reason}")
@@ -112,7 +115,7 @@ async def test_write_permissions(accessible_tables):
         base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
         headers = {
             "Authorization": f"Bearer {AIRTABLE_PAT}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         async with aiohttp.ClientSession() as session:
@@ -120,11 +123,15 @@ async def test_write_permissions(accessible_tables):
             test_data = {
                 "fields": {
                     "Name": "TEST_RECORD_EPIC16_DEBUG",
-                    "Notes": "This is a test record for debugging EPIC 16 permissions. Safe to delete."}}
+                    "Notes": "This is a test record for debugging EPIC 16 permissions. Safe to delete.",
+                }
+            }
 
             try:
                 url = f"{base_url}/{test_table}"
-                async with session.post(url, headers=headers, json=test_data) as response:
+                async with session.post(
+                    url, headers=headers, json=test_data
+                ) as response:
                     if response.status == 200:
                         print("✅ PAT has data.records:write scope")
 
@@ -135,14 +142,17 @@ async def test_write_permissions(accessible_tables):
                         if record_id:
                             # Delete the test record
                             delete_url = f"{base_url}/{test_table}/{record_id}"
-                            async with session.delete(delete_url, headers=headers) as delete_response:
+                            async with session.delete(
+                                delete_url, headers=headers
+                            ) as delete_response:
                                 if delete_response.status == 200:
                                     print("🧹 Test record cleaned up successfully")
                     else:
                         print(f"❌ Write test failed: {response.status}")
                         if response.status == 403:
                             print(
-                                "   → PAT lacks data.records:write scope or table write permissions")
+                                "   → PAT lacks data.records:write scope or table write permissions"
+                            )
 
             except Exception as e:
                 print(f"❌ Write test error: {e}")
@@ -167,7 +177,9 @@ async def generate_diagnosis_report(accessible_tables, forbidden_tables):
     if forbidden_tables:
         print("1. **Table-Level Permission Issue Detected**")
         print("   → Base owner needs to update table permissions:")
-        print("   → Go to each forbidden table → Table dropdown → Edit table permissions")
+        print(
+            "   → Go to each forbidden table → Table dropdown → Edit table permissions"
+        )
         print("   → Set 'Who can read records' to 'Editors and up'")
         print("   → Set 'Who can create/delete' to 'Editors and up'")
 
@@ -178,8 +190,12 @@ async def generate_diagnosis_report(accessible_tables, forbidden_tables):
         print("\n3. **For EPIC 16 Implementation**")
         if "Bills (法案)" in accessible_tables:
             print("   ✅ Can proceed with Bills table integration")
-            print("   ⚠️  May need to implement workaround for PolicyCategory relationships")
-            print("   → Consider adding PolicyCategory_ID field to Bills table directly")
+            print(
+                "   ⚠️  May need to implement workaround for PolicyCategory relationships"
+            )
+            print(
+                "   → Consider adding PolicyCategory_ID field to Bills table directly"
+            )
         else:
             print("   ❌ Cannot proceed - Bills table access required")
 
@@ -216,8 +232,11 @@ async def main():
     # Step 4: Generate diagnosis report
     await generate_diagnosis_report(accessible_tables, forbidden_tables)
 
-    print("\n✅ Diagnosis complete. Follow recommended actions to resolve EPIC 16 blockers.")
+    print(
+        "\n✅ Diagnosis complete. Follow recommended actions to resolve EPIC 16 blockers."
+    )
     return 0
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

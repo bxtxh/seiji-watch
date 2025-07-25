@@ -22,6 +22,7 @@ from ..processor.bill_history_recorder import (
 
 class ScheduleFrequency(Enum):
     """Scheduling frequency options"""
+
     EVERY_MINUTE = "every_minute"
     EVERY_5_MINUTES = "every_5_minutes"
     EVERY_15_MINUTES = "every_15_minutes"
@@ -38,6 +39,7 @@ class ScheduleFrequency(Enum):
 @dataclass
 class ScheduleConfig:
     """Configuration for scheduled history recording"""
+
     frequency: ScheduleFrequency
     detection_mode: ChangeDetectionMode = ChangeDetectionMode.INCREMENTAL
     max_execution_time_minutes: int = 30
@@ -59,6 +61,7 @@ class ScheduleConfig:
 @dataclass
 class ScheduleStatus:
     """Status of scheduled history recording"""
+
     is_running: bool = False
     last_execution: datetime | None = None
     next_execution: datetime | None = None
@@ -83,7 +86,7 @@ class HistoryRecordingScheduler:
         self.database_url = database_url
         self.config = config or ScheduleConfig(
             frequency=ScheduleFrequency.EVERY_30_MINUTES,
-            detection_mode=ChangeDetectionMode.INCREMENTAL
+            detection_mode=ChangeDetectionMode.INCREMENTAL,
         )
 
         self.logger = logging.getLogger(__name__)
@@ -148,7 +151,8 @@ class HistoryRecordingScheduler:
         schedule.every().day.at("01:00").do(self._cleanup_old_data)
 
         self.logger.info(
-            f"Scheduled history recording every {self.config.frequency.value}")
+            f"Scheduled history recording every {self.config.frequency.value}"
+        )
 
     def start(self):
         """Start the scheduler"""
@@ -185,7 +189,8 @@ class HistoryRecordingScheduler:
         """Execute history recording task"""
         if self.status.is_running:
             self.logger.warning(
-                "History recording is already running, skipping execution")
+                "History recording is already running, skipping execution"
+            )
             return
 
         start_time = datetime.now()
@@ -221,7 +226,8 @@ class HistoryRecordingScheduler:
             self.logger.info(
                 f"History recording completed successfully: "
                 f"{result.changes_detected} changes detected, "
-                f"{result.history_records_created} records created in {execution_time:.1f}ms")
+                f"{result.history_records_created} records created in {execution_time:.1f}ms"
+            )
 
             # Store detailed execution history
             self._store_execution_history(True, result, execution_time)
@@ -237,8 +243,11 @@ class HistoryRecordingScheduler:
             self._store_execution_history(False, None, 0, str(e))
 
             # Check if we need to alert
-            if (self.config.alert_on_errors and self.status.consecutive_failures >=
-                    self.config.max_consecutive_failures):
+            if (
+                self.config.alert_on_errors
+                and self.status.consecutive_failures
+                >= self.config.max_consecutive_failures
+            ):
                 self._send_failure_alert()
 
         finally:
@@ -261,16 +270,19 @@ class HistoryRecordingScheduler:
 
             self.logger.info(
                 f"Full scan completed: {result.changes_detected} changes detected, "
-                f"{result.history_records_created} records created in {execution_time:.1f}ms")
+                f"{result.history_records_created} records created in {execution_time:.1f}ms"
+            )
 
             # Store full scan history
             self._store_execution_history(
-                True, result, execution_time, execution_type="full_scan")
+                True, result, execution_time, execution_type="full_scan"
+            )
 
         except Exception as e:
             self.logger.error(f"Full scan failed: {e}")
             self._store_execution_history(
-                False, None, 0, str(e), execution_type="full_scan")
+                False, None, 0, str(e), execution_type="full_scan"
+            )
 
     def _execute_with_retry(self, operation) -> HistoryRecordingResult:
         """Execute operation with retry logic"""
@@ -290,7 +302,8 @@ class HistoryRecordingScheduler:
                     time.sleep(self.config.retry_delay_seconds)
                 else:
                     self.logger.error(
-                        f"All {self.config.max_retries + 1} attempts failed")
+                        f"All {self.config.max_retries + 1} attempts failed"
+                    )
 
         # If we get here, all retries failed
         raise last_error
@@ -306,8 +319,9 @@ class HistoryRecordingScheduler:
             # Clean up old execution history
             cutoff_date = datetime.now() - timedelta(days=30)
             self.execution_history = [
-                entry for entry in self.execution_history
-                if entry['timestamp'] > cutoff_date
+                entry
+                for entry in self.execution_history
+                if entry["timestamp"] > cutoff_date
             ]
 
             self.logger.info("Daily cleanup completed")
@@ -322,8 +336,7 @@ class HistoryRecordingScheduler:
         else:
             # Simple moving average
             self.status.average_execution_time_ms = (
-                self.status.average_execution_time_ms * 0.9 +
-                execution_time * 0.1
+                self.status.average_execution_time_ms * 0.9 + execution_time * 0.1
             )
 
     def _store_execution_history(
@@ -332,26 +345,27 @@ class HistoryRecordingScheduler:
         result: HistoryRecordingResult | None,
         execution_time: float,
         error_message: str | None = None,
-        execution_type: str = "regular"
-
+        execution_type: str = "regular",
     ):
         """Store execution history for monitoring"""
         history_entry = {
-            'timestamp': datetime.now(),
-            'success': success,
-            'execution_time_ms': execution_time,
-            'execution_type': execution_type,
-            'error_message': error_message
+            "timestamp": datetime.now(),
+            "success": success,
+            "execution_time_ms": execution_time,
+            "execution_type": execution_type,
+            "error_message": error_message,
         }
 
         if result:
-            history_entry.update({
-                'total_bills_checked': result.total_bills_checked,
-                'changes_detected': result.changes_detected,
-                'history_records_created': result.history_records_created,
-                'changes_by_type': result.changes_by_type,
-                'changes_by_significance': result.changes_by_significance
-            })
+            history_entry.update(
+                {
+                    "total_bills_checked": result.total_bills_checked,
+                    "changes_detected": result.changes_detected,
+                    "history_records_created": result.history_records_created,
+                    "changes_by_type": result.changes_by_type,
+                    "changes_by_significance": result.changes_by_significance,
+                }
+            )
 
         self.execution_history.append(history_entry)
 
@@ -376,40 +390,49 @@ class HistoryRecordingScheduler:
             next_run = min(job.next_run for job in schedule.jobs)
 
         return {
-            'is_running': self.status.is_running,
-            'last_execution': self.status.last_execution.isoformat() if self.status.last_execution else None,
-            'next_execution': next_run.isoformat() if next_run else None,
-            'total_executions': self.status.total_executions,
-            'successful_executions': self.status.successful_executions,
-            'failed_executions': self.status.failed_executions,
-            'consecutive_failures': self.status.consecutive_failures,
-            'success_rate': (
-                self.status.successful_executions /
-                self.status.total_executions if self.status.total_executions > 0 else 0),
-            'average_execution_time_ms': self.status.average_execution_time_ms,
-            'last_execution_time_ms': self.status.last_execution_time_ms,
-            'total_changes_recorded': self.status.total_changes_recorded,
-            'configuration': {
-                'frequency': self.config.frequency.value,
-                'detection_mode': self.config.detection_mode.value,
-                'max_execution_time_minutes': self.config.max_execution_time_minutes,
-                'retry_on_failure': self.config.retry_on_failure,
-                'max_retries': self.config.max_retries,
-                'enable_full_scan_weekly': self.config.enable_full_scan_weekly}}
+            "is_running": self.status.is_running,
+            "last_execution": (
+                self.status.last_execution.isoformat()
+                if self.status.last_execution
+                else None
+            ),
+            "next_execution": next_run.isoformat() if next_run else None,
+            "total_executions": self.status.total_executions,
+            "successful_executions": self.status.successful_executions,
+            "failed_executions": self.status.failed_executions,
+            "consecutive_failures": self.status.consecutive_failures,
+            "success_rate": (
+                self.status.successful_executions / self.status.total_executions
+                if self.status.total_executions > 0
+                else 0
+            ),
+            "average_execution_time_ms": self.status.average_execution_time_ms,
+            "last_execution_time_ms": self.status.last_execution_time_ms,
+            "total_changes_recorded": self.status.total_changes_recorded,
+            "configuration": {
+                "frequency": self.config.frequency.value,
+                "detection_mode": self.config.detection_mode.value,
+                "max_execution_time_minutes": self.config.max_execution_time_minutes,
+                "retry_on_failure": self.config.retry_on_failure,
+                "max_retries": self.config.max_retries,
+                "enable_full_scan_weekly": self.config.enable_full_scan_weekly,
+            },
+        }
 
     def get_recent_results(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent execution results"""
-        recent_history = self.execution_history[-limit:
-                                                ] if self.execution_history else []
+        recent_history = (
+            self.execution_history[-limit:] if self.execution_history else []
+        )
         return [
             {
-                'timestamp': entry['timestamp'].isoformat(),
-                'success': entry['success'],
-                'execution_time_ms': entry['execution_time_ms'],
-                'execution_type': entry.get('execution_type', 'regular'),
-                'changes_detected': entry.get('changes_detected', 0),
-                'history_records_created': entry.get('history_records_created', 0),
-                'error_message': entry.get('error_message')
+                "timestamp": entry["timestamp"].isoformat(),
+                "success": entry["success"],
+                "execution_time_ms": entry["execution_time_ms"],
+                "execution_type": entry.get("execution_type", "regular"),
+                "changes_detected": entry.get("changes_detected", 0),
+                "history_records_created": entry.get("history_records_created", 0),
+                "error_message": entry.get("error_message"),
             }
             for entry in recent_history
         ]
@@ -420,44 +443,45 @@ class HistoryRecordingScheduler:
 
         # Filter recent history
         recent_history = [
-            entry for entry in self.execution_history
-            if entry['timestamp'] > cutoff_date
+            entry
+            for entry in self.execution_history
+            if entry["timestamp"] > cutoff_date
         ]
 
         if not recent_history:
             return {
-                'period_days': days,
-                'total_executions': 0,
-                'successful_executions': 0,
-                'failed_executions': 0,
-                'success_rate': 0.0,
-                'average_execution_time_ms': 0.0,
-                'total_changes_detected': 0,
-                'total_records_created': 0
+                "period_days": days,
+                "total_executions": 0,
+                "successful_executions": 0,
+                "failed_executions": 0,
+                "success_rate": 0.0,
+                "average_execution_time_ms": 0.0,
+                "total_changes_detected": 0,
+                "total_records_created": 0,
             }
 
-        successful = [entry for entry in recent_history if entry['success']]
-        failed = [entry for entry in recent_history if not entry['success']]
+        successful = [entry for entry in recent_history if entry["success"]]
+        failed = [entry for entry in recent_history if not entry["success"]]
 
         return {
-            'period_days': days,
-            'total_executions': len(recent_history),
-            'successful_executions': len(successful),
-            'failed_executions': len(failed),
-            'success_rate': len(successful) / len(recent_history),
-            'average_execution_time_ms': (
-                sum(entry['execution_time_ms'] for entry in successful) / len(successful)
-                if successful else 0
+            "period_days": days,
+            "total_executions": len(recent_history),
+            "successful_executions": len(successful),
+            "failed_executions": len(failed),
+            "success_rate": len(successful) / len(recent_history),
+            "average_execution_time_ms": (
+                sum(entry["execution_time_ms"] for entry in successful)
+                / len(successful)
+                if successful
+                else 0
             ),
-            'total_changes_detected': sum(
-                entry.get('changes_detected', 0) for entry in successful
+            "total_changes_detected": sum(
+                entry.get("changes_detected", 0) for entry in successful
             ),
-            'total_records_created': sum(
-                entry.get('history_records_created', 0) for entry in successful
+            "total_records_created": sum(
+                entry.get("history_records_created", 0) for entry in successful
             ),
-            'most_recent_error': (
-                failed[-1]['error_message'] if failed else None
-            )
+            "most_recent_error": (failed[-1]["error_message"] if failed else None),
         }
 
     def force_execution(self) -> dict[str, Any]:
@@ -475,25 +499,27 @@ class HistoryRecordingScheduler:
 
             # Store forced execution history
             self._store_execution_history(
-                True, result, execution_time, execution_type="manual")
+                True, result, execution_time, execution_type="manual"
+            )
 
             return {
-                'success': True,
-                'execution_time_ms': execution_time,
-                'changes_detected': result.changes_detected,
-                'history_records_created': result.history_records_created,
-                'bills_checked': result.total_bills_checked
+                "success": True,
+                "execution_time_ms": execution_time,
+                "changes_detected": result.changes_detected,
+                "history_records_created": result.history_records_created,
+                "bills_checked": result.total_bills_checked,
             }
 
         except Exception as e:
             execution_time = (datetime.now() - start_time).total_seconds() * 1000
             self._store_execution_history(
-                False, None, execution_time, str(e), execution_type="manual")
+                False, None, execution_time, str(e), execution_type="manual"
+            )
 
             return {
-                'success': False,
-                'execution_time_ms': execution_time,
-                'error_message': str(e)
+                "success": False,
+                "execution_time_ms": execution_time,
+                "error_message": str(e),
             }
 
     def update_config(self, new_config: ScheduleConfig):
@@ -501,7 +527,8 @@ class HistoryRecordingScheduler:
         self.config = new_config
         self._setup_schedule()
         self.logger.info(
-            f"Scheduler configuration updated: {new_config.frequency.value}")
+            f"Scheduler configuration updated: {new_config.frequency.value}"
+        )
 
     def get_change_statistics(self, days: int = 7) -> dict[str, Any]:
         """Get change statistics from the history recorder"""

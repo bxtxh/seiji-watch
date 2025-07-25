@@ -61,12 +61,12 @@ class TestEnhancedDietScraper:
         </html>
         """
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_fetch_enhanced_bill_details(self, mock_get, scraper, mock_html):
         """Test enhanced bill details fetching"""
         # Mock response
         mock_response = Mock()
-        mock_response.content = mock_html.encode('utf-8')
+        mock_response.content = mock_html.encode("utf-8")
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -90,13 +90,18 @@ class TestEnhancedDietScraper:
             <p>本法案は重要な法律改正を行うものである。具体的には、以下の点について定める。第一に、基本理念の明確化。第二に、制度の見直し。第三に、施行体制の整備。</p>
         </div>
         """
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
         # Create mock bill data
         bill_data = EnhancedBillData(
-            bill_id="test-1", title="テスト法案", submission_date=None,
-            status="審議中", stage="審議中", submitter="政府", category="その他",
-            url="http://example.com"
+            bill_id="test-1",
+            title="テスト法案",
+            submission_date=None,
+            status="審議中",
+            stage="審議中",
+            submitter="政府",
+            category="その他",
+            url="http://example.com",
         )
 
         scraper._extract_bill_outline(soup, bill_data)
@@ -116,12 +121,17 @@ class TestEnhancedDietScraper:
             </ul>
         </div>
         """
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
         bill_data = EnhancedBillData(
-            bill_id="test-1", title="テスト法案", submission_date=None,
-            status="審議中", stage="審議中", submitter="政府", category="その他",
-            url="http://example.com"
+            bill_id="test-1",
+            title="テスト法案",
+            submission_date=None,
+            status="審議中",
+            stage="審議中",
+            submitter="政府",
+            category="その他",
+            url="http://example.com",
         )
 
         scraper._extract_key_provisions(soup, bill_data)
@@ -137,12 +147,17 @@ class TestEnhancedDietScraper:
             <p>本法案は、個人情報保護法、行政手続法、電子政府法の一部を改正する。</p>
         </div>
         """
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
 
         bill_data = EnhancedBillData(
-            bill_id="test-1", title="テスト法案", submission_date=None,
-            status="審議中", stage="審議中", submitter="政府", category="その他",
-            url="http://example.com"
+            bill_id="test-1",
+            title="テスト法案",
+            submission_date=None,
+            status="審議中",
+            stage="審議中",
+            submitter="政府",
+            category="その他",
+            url="http://example.com",
         )
 
         scraper._extract_related_laws(soup, bill_data)
@@ -156,8 +171,13 @@ class TestEnhancedDietScraper:
         """Test data quality score calculation"""
         # Complete bill data
         complete_bill = EnhancedBillData(
-            bill_id="complete-1", title="完全な法案", submission_date=datetime.now(),
-            status="審議中", stage="審議中", submitter="政府", category="その他",
+            bill_id="complete-1",
+            title="完全な法案",
+            submission_date=datetime.now(),
+            status="審議中",
+            stage="審議中",
+            submitter="政府",
+            category="その他",
             url="http://example.com",
             bill_outline="詳細な法案概要",
             background_context="提出背景",
@@ -165,7 +185,7 @@ class TestEnhancedDietScraper:
             key_provisions=["第一条", "第二条"],
             related_laws=["関連法1", "関連法2"],
             submitting_members=["議員A", "議員B"],
-            sponsoring_ministry="内閣府"
+            sponsoring_ministry="内閣府",
         )
 
         score = scraper._calculate_data_quality_score(complete_bill)
@@ -173,9 +193,14 @@ class TestEnhancedDietScraper:
 
         # Incomplete bill data
         incomplete_bill = EnhancedBillData(
-            bill_id="incomplete-1", title="不完全な法案", submission_date=None,
-            status="審議中", stage="審議中", submitter="政府", category="その他",
-            url="http://example.com"
+            bill_id="incomplete-1",
+            title="不完全な法案",
+            submission_date=None,
+            status="審議中",
+            stage="審議中",
+            submitter="政府",
+            category="その他",
+            url="http://example.com",
         )
 
         score = scraper._calculate_data_quality_score(incomplete_bill)
@@ -226,8 +251,8 @@ class TestShugiinScraper:
             <tr><th>議案番号</th><th>議案件名</th><th>提出者</th></tr>
         </table>
         """
-        soup = BeautifulSoup(html, 'html.parser')
-        table = soup.find('table')
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
 
         assert scraper._is_bills_table(table) is True
 
@@ -237,8 +262,8 @@ class TestShugiinScraper:
             <tr><th>名前</th><th>年齢</th><th>住所</th></tr>
         </table>
         """
-        soup = BeautifulSoup(html, 'html.parser')
-        table = soup.find('table')
+        soup = BeautifulSoup(html, "html.parser")
+        table = soup.find("table")
 
         assert scraper._is_bills_table(table) is False
 
@@ -252,8 +277,8 @@ class TestShugiinScraper:
             <td>審議中</td>
         </tr>
         """
-        soup = BeautifulSoup(html, 'html.parser')
-        row = soup.find('tr')
+        soup = BeautifulSoup(html, "html.parser")
+        row = soup.find("tr")
 
         bill_data = scraper._parse_bill_row(row, "217")
 
@@ -279,12 +304,12 @@ class TestShugiinScraper:
         assert scraper._determine_category("社会保障制度改革法案") == "社会保障"
         assert scraper._determine_category("未知の法案") == "その他"
 
-    @patch('requests.Session.get')
+    @patch("requests.Session.get")
     def test_fetch_bill_list(self, mock_get, scraper, mock_bill_list_html):
         """Test bill list fetching"""
         # Mock response
         mock_response = Mock()
-        mock_response.content = mock_bill_list_html.encode('utf-8')
+        mock_response.content = mock_bill_list_html.encode("utf-8")
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -305,7 +330,7 @@ class TestBillDataMerger:
         """Create test merger instance"""
         return BillDataMerger(
             conflict_strategy=ConflictResolutionStrategy.MOST_COMPLETE,
-            similarity_threshold=0.7
+            similarity_threshold=0.7,
         )
 
     @pytest.fixture
@@ -324,7 +349,7 @@ class TestBillDataMerger:
             diet_session="204",
             house_of_origin="参議院",
             source_house="参議院",
-            data_quality_score=0.8
+            data_quality_score=0.8,
         )
 
     @pytest.fixture
@@ -343,26 +368,23 @@ class TestBillDataMerger:
             diet_session="204",
             house_of_origin="衆議院",
             source_house="衆議院",
-            data_quality_score=0.7
+            data_quality_score=0.7,
         )
 
     def test_calculate_similarity_score(
-            self,
-            merger,
-            sample_sangiin_bill,
-            sample_shugiin_bill):
+        self, merger, sample_sangiin_bill, sample_shugiin_bill
+    ):
         """Test similarity score calculation"""
         score = merger._calculate_similarity_score(
-            sample_sangiin_bill, sample_shugiin_bill)
+            sample_sangiin_bill, sample_shugiin_bill
+        )
 
         assert score > 0.8  # Should be high similarity
         assert score <= 1.0
 
     def test_find_matching_bills(
-            self,
-            merger,
-            sample_sangiin_bill,
-            sample_shugiin_bill):
+        self, merger, sample_sangiin_bill, sample_shugiin_bill
+    ):
         """Test bill matching"""
         sangiin_bills = [sample_sangiin_bill]
         shugiin_bills = [sample_shugiin_bill]
@@ -380,7 +402,10 @@ class TestBillDataMerger:
         assert result.merged_bill.bill_id == sample_sangiin_bill.bill_id
         assert result.merged_bill.title == sample_sangiin_bill.title
         assert result.merged_bill.source_house == "両院"
-        assert result.merged_bill.supporting_members == sample_shugiin_bill.supporting_members
+        assert (
+            result.merged_bill.supporting_members
+            == sample_shugiin_bill.supporting_members
+        )
         assert result.merge_quality_score > 0.0
 
     def test_resolve_field_conflict(self, merger):
@@ -409,7 +434,7 @@ class TestBillDataMerger:
 
         assert len(results) == 1
         assert results[0].merged_bill.source_house == "両院"
-        assert len(results[0].source_info['sources']) == 2
+        assert len(results[0].source_info["sources"]) == 2
         assert results[0].merge_quality_score > 0.0
 
     def test_get_merge_statistics(self, merger):
@@ -425,14 +450,15 @@ class TestBillDataMerger:
                     stage="審議中",
                     submitter="政府",
                     category="その他",
-                    url="http://example.com"),
+                    url="http://example.com",
+                ),
                 conflicts=[],
                 merge_quality_score=0.9,
                 source_info={
-                    'sources': [
-                        'sangiin',
-                        'shugiin'],
-                    'primary_source': 'sangiin'}),
+                    "sources": ["sangiin", "shugiin"],
+                    "primary_source": "sangiin",
+                },
+            ),
             MergeResult(
                 merged_bill=EnhancedBillData(
                     bill_id="2",
@@ -442,20 +468,21 @@ class TestBillDataMerger:
                     stage="審議中",
                     submitter="政府",
                     category="その他",
-                    url="http://example.com"),
+                    url="http://example.com",
+                ),
                 conflicts=[],
                 merge_quality_score=0.8,
-                source_info={
-                    'sources': ['sangiin'],
-                    'primary_source': 'sangiin'})]
+                source_info={"sources": ["sangiin"], "primary_source": "sangiin"},
+            ),
+        ]
 
         stats = merger.get_merge_statistics(mock_results)
 
-        assert stats['total_bills'] == 2
-        assert stats['both_houses'] == 1
-        assert stats['sangiin_only'] == 1
-        assert stats['shugiin_only'] == 0
-        assert stats['avg_quality_score'] == 0.85
+        assert stats["total_bills"] == 2
+        assert stats["both_houses"] == 1
+        assert stats["sangiin_only"] == 1
+        assert stats["shugiin_only"] == 0
+        assert stats["avg_quality_score"] == 0.85
 
 
 class TestBillDataValidator:
@@ -482,7 +509,7 @@ class TestBillDataValidator:
             diet_session="204",
             house_of_origin="参議院",
             source_house="参議院",
-            data_quality_score=0.8
+            data_quality_score=0.8,
         )
 
     @pytest.fixture
@@ -497,48 +524,57 @@ class TestBillDataValidator:
             submitter="invalid_submitter",  # Invalid submitter
             category="invalid_category",  # Invalid category
             url="http://example.com/bill/1",
-            data_quality_score=1.5  # Out of range
+            data_quality_score=1.5,  # Out of range
         )
 
     def test_validate_required_fields(self, validator, valid_bill, invalid_bill):
         """Test required field validation"""
         # Valid bill
-        result = validator.validate_bill(valid_bill, 'standard')
+        result = validator.validate_bill(valid_bill, "standard")
         required_issues = [
-            issue for issue in result.issues if issue.issue_type == 'missing_required_field']
+            issue
+            for issue in result.issues
+            if issue.issue_type == "missing_required_field"
+        ]
         assert len(required_issues) == 0
 
         # Invalid bill
-        result = validator.validate_bill(invalid_bill, 'standard')
+        result = validator.validate_bill(invalid_bill, "standard")
         required_issues = [
-            issue for issue in result.issues if issue.issue_type == 'missing_required_field']
+            issue
+            for issue in result.issues
+            if issue.issue_type == "missing_required_field"
+        ]
         assert len(required_issues) > 0
 
     def test_validate_field_formats(self, validator, invalid_bill):
         """Test field format validation"""
-        result = validator.validate_bill(invalid_bill, 'standard')
+        result = validator.validate_bill(invalid_bill, "standard")
 
         format_issues = [
-            issue for issue in result.issues if issue.issue_type == 'invalid_format']
+            issue for issue in result.issues if issue.issue_type == "invalid_format"
+        ]
         assert len(format_issues) > 0
 
     def test_validate_data_consistency(self, validator, invalid_bill):
         """Test data consistency validation"""
-        result = validator.validate_bill(invalid_bill, 'standard')
+        result = validator.validate_bill(invalid_bill, "standard")
 
         consistency_issues = [
-            issue for issue in result.issues
-            if issue.issue_type in ['invalid_value', 'out_of_range']
+            issue
+            for issue in result.issues
+            if issue.issue_type in ["invalid_value", "out_of_range"]
         ]
         assert len(consistency_issues) > 0
 
     def test_validate_japanese_content(self, validator, valid_bill):
         """Test Japanese content validation"""
-        result = validator.validate_bill(valid_bill, 'standard')
+        result = validator.validate_bill(valid_bill, "standard")
 
         japanese_issues = [
-            issue for issue in result.issues
-            if issue.issue_type == 'missing_japanese_text'
+            issue
+            for issue in result.issues
+            if issue.issue_type == "missing_japanese_text"
         ]
         # Should have no issues for valid Japanese content
         assert len(japanese_issues) == 0
@@ -546,18 +582,19 @@ class TestBillDataValidator:
     def test_calculate_completeness_score(self, validator, valid_bill, invalid_bill):
         """Test completeness score calculation"""
         # Valid bill should have high completeness
-        valid_score = validator._calculate_completeness_score(valid_bill, 'standard')
+        valid_score = validator._calculate_completeness_score(valid_bill, "standard")
         assert valid_score > 0.7
 
         # Invalid bill should have low completeness
         invalid_score = validator._calculate_completeness_score(
-            invalid_bill, 'standard')
+            invalid_bill, "standard"
+        )
         assert invalid_score < 0.5
 
     def test_validate_bills(self, validator, valid_bill, invalid_bill):
         """Test multiple bills validation"""
         bills = [valid_bill, invalid_bill]
-        results = validator.validate_bills(bills, 'standard')
+        results = validator.validate_bills(bills, "standard")
 
         assert len(results) == 2
         assert results[0].is_valid is True
@@ -566,15 +603,15 @@ class TestBillDataValidator:
     def test_get_validation_summary(self, validator, valid_bill, invalid_bill):
         """Test validation summary"""
         bills = [valid_bill, invalid_bill]
-        results = validator.validate_bills(bills, 'standard')
+        results = validator.validate_bills(bills, "standard")
         summary = validator.get_validation_summary(results)
 
-        assert summary['total_bills'] == 2
-        assert summary['valid_bills'] == 1
-        assert summary['invalid_bills'] == 1
-        assert summary['validation_rate'] == 0.5
-        assert 'avg_quality_score' in summary
-        assert 'common_issues' in summary
+        assert summary["total_bills"] == 2
+        assert summary["valid_bills"] == 1
+        assert summary["invalid_bills"] == 1
+        assert summary["validation_rate"] == 0.5
+        assert "avg_quality_score" in summary
+        assert "common_issues" in summary
 
 
 class TestIntegration:
@@ -591,7 +628,8 @@ class TestIntegration:
     @pytest.fixture
     def merger(self):
         return BillDataMerger(
-            conflict_strategy=ConflictResolutionStrategy.MOST_COMPLETE)
+            conflict_strategy=ConflictResolutionStrategy.MOST_COMPLETE
+        )
 
     @pytest.fixture
     def validator(self):
@@ -612,7 +650,7 @@ class TestIntegration:
             bill_outline="パイプラインテスト用の法案概要",
             diet_session="204",
             house_of_origin="参議院",
-            source_house="参議院"
+            source_house="参議院",
         )
 
         shugiin_bill = ShugiinBillData(
@@ -627,7 +665,7 @@ class TestIntegration:
             supporting_members=["議員A", "議員B"],
             diet_session="204",
             house_of_origin="衆議院",
-            source_house="衆議院"
+            source_house="衆議院",
         )
 
         # Step 1: Merge bills
@@ -647,9 +685,9 @@ class TestIntegration:
         merge_stats = merger.get_merge_statistics(merge_results)
         validation_summary = validator.get_validation_summary(validation_results)
 
-        assert merge_stats['total_bills'] == 1
-        assert merge_stats['both_houses'] == 1
-        assert validation_summary['validation_rate'] == 1.0
+        assert merge_stats["total_bills"] == 1
+        assert merge_stats["both_houses"] == 1
+        assert validation_summary["validation_rate"] == 1.0
 
 
 if __name__ == "__main__":

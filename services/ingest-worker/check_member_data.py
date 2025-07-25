@@ -9,7 +9,7 @@ import os
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def check_member_data():
@@ -18,10 +18,7 @@ async def check_member_data():
     pat = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
@@ -31,7 +28,9 @@ async def check_member_data():
 
         # Get member data
         members_url = f"{base_url}/Members (議員)"
-        async with session.get(members_url, headers=headers, params={"maxRecords": 50}) as response:
+        async with session.get(
+            members_url, headers=headers, params={"maxRecords": 50}
+        ) as response:
             if response.status == 200:
                 data = await response.json()
                 records = data.get("records", [])
@@ -51,9 +50,11 @@ async def check_member_data():
 
                     # Check if this looks like dummy data
                     is_dummy = (
-                        name.startswith("議員") or
-                        name in ["山田太郎", "田中花子", "佐藤次郎", "鈴木三郎", "高橋美咲"] or
-                        name_kana and name_kana.startswith("ぎいん")
+                        name.startswith("議員")
+                        or name
+                        in ["山田太郎", "田中花子", "佐藤次郎", "鈴木三郎", "高橋美咲"]
+                        or name_kana
+                        and name_kana.startswith("ぎいん")
                     )
 
                     status = "🤖 ダミー" if is_dummy else "👤 実データ"
@@ -64,7 +65,8 @@ async def check_member_data():
                         real_count += 1
 
                     print(
-                        f"  {i:2d}. {status} | {name} ({name_kana}) | {house} | {constituency}")
+                        f"  {i:2d}. {status} | {name} ({name_kana}) | {house} | {constituency}"
+                    )
 
                 print("\n📊 データ分析 (サンプル10件):")
                 print(f"  🤖 ダミーデータ: {dummy_count}件")
@@ -78,9 +80,11 @@ async def check_member_data():
                     name_kana = record["fields"].get("Name_Kana", "")
 
                     is_dummy = (
-                        name.startswith("議員") or
-                        name in ["山田太郎", "田中花子", "佐藤次郎", "鈴木三郎", "高橋美咲"] or
-                        name_kana and name_kana.startswith("ぎいん")
+                        name.startswith("議員")
+                        or name
+                        in ["山田太郎", "田中花子", "佐藤次郎", "鈴木三郎", "高橋美咲"]
+                        or name_kana
+                        and name_kana.startswith("ぎいん")
                     )
 
                     if is_dummy:
@@ -90,8 +94,11 @@ async def check_member_data():
 
                 print("📊 全体統計:")
                 print(
-                    f"  🤖 ダミーデータ: {total_dummy}件 ({total_dummy/len(records)*100:.1f}%)")
-                print(f"  👤 実データ: {total_real}件 ({total_real/len(records)*100:.1f}%)")
+                    f"  🤖 ダミーデータ: {total_dummy}件 ({total_dummy/len(records)*100:.1f}%)"
+                )
+                print(
+                    f"  👤 実データ: {total_real}件 ({total_real/len(records)*100:.1f}%)"
+                )
 
                 if total_dummy > total_real:
                     print("\n❌ 問題発見!")
@@ -107,6 +114,7 @@ async def check_member_data():
 
             else:
                 print(f"❌ 議員データ取得失敗: {response.status}")
+
 
 if __name__ == "__main__":
     asyncio.run(check_member_data())

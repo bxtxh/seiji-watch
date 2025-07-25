@@ -21,6 +21,7 @@ import requests
 # Optional dependencies with fallbacks
 try:
     import fitz  # PyMuPDF
+
     PYMUPDF_AVAILABLE = True
 except ImportError:
     PYMUPDF_AVAILABLE = False
@@ -28,6 +29,7 @@ except ImportError:
 
 try:
     from PIL import Image
+
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
@@ -35,6 +37,7 @@ except ImportError:
 
 try:
     import pytesseract
+
     TESSERACT_AVAILABLE = True
 except ImportError:
     TESSERACT_AVAILABLE = False
@@ -43,6 +46,7 @@ except ImportError:
 try:
     import cv2
     import numpy as np
+
     OPENCV_AVAILABLE = True
 except ImportError:
     OPENCV_AVAILABLE = False
@@ -56,6 +60,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PDFVoteRecord:
     """Individual vote record extracted from PDF"""
+
     member_name: str
     member_name_kana: str | None
     party_name: str
@@ -67,6 +72,7 @@ class PDFVoteRecord:
 @dataclass
 class PDFVotingSession:
     """Voting session data extracted from PDF"""
+
     session_id: str
     bill_number: str
     bill_title: str
@@ -108,11 +114,11 @@ class MemberNameMatcher:
 
         # Common suffixes and prefixes
         self.name_patterns = [
-            r"(.+)君$",          # Remove 君 suffix
-            r"(.+)先生$",        # Remove 先生 suffix
-            r"(.+)議員$",        # Remove 議員 suffix
-            r"^○(.+)$",          # Remove ○ prefix
-            r"^●(.+)$",          # Remove ● prefix
+            r"(.+)君$",  # Remove 君 suffix
+            r"(.+)先生$",  # Remove 先生 suffix
+            r"(.+)議員$",  # Remove 議員 suffix
+            r"^○(.+)$",  # Remove ○ prefix
+            r"^●(.+)$",  # Remove ● prefix
         ]
 
     def normalize_name(self, name: str) -> str:
@@ -129,10 +135,7 @@ class MemberNameMatcher:
         return normalized
 
     def find_best_match(
-        self,
-        ocr_name: str,
-        member_list: list[str],
-        threshold: float = 0.7
+        self, ocr_name: str, member_list: list[str], threshold: float = 0.7
     ) -> tuple[str | None, float]:
         """
         Find best matching member name from OCR result
@@ -202,14 +205,14 @@ class PDFProcessor:
     def __init__(self):
         self.name_matcher = MemberNameMatcher()
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
+            }
+        )
 
     async def extract_voting_data_from_pdf(
-        self,
-        pdf_url: str,
-        member_names: list[str] | None = None
+        self, pdf_url: str, member_names: list[str] | None = None
     ) -> PDFVotingSession | None:
         """
         Extract voting data from a PDF URL
@@ -262,10 +265,10 @@ class PDFProcessor:
             response.raise_for_status()
 
             # Verify it's actually a PDF
-            content_type = response.headers.get('content-type', '')
-            if 'pdf' not in content_type.lower():
+            content_type = response.headers.get("content-type", "")
+            if "pdf" not in content_type.lower():
                 # Check if content starts with PDF header
-                if not response.content.startswith(b'%PDF'):
+                if not response.content.startswith(b"%PDF"):
                     logger.warning(f"Content doesn't appear to be PDF: {pdf_url}")
                     return None
 
@@ -295,7 +298,8 @@ class PDFProcessor:
                 if text.strip():
                     extracted_text.append(text)
                     logger.debug(
-                        f"Extracted {len(text)} characters from page {page_num + 1}")
+                        f"Extracted {len(text)} characters from page {page_num + 1}"
+                    )
 
             pdf_document.close()
 
@@ -320,13 +324,14 @@ class PDFProcessor:
             extracted_text = []
 
             for page_num in range(
-                    min(10, len(pdf_document))):  # Limit to first 10 pages
+                min(10, len(pdf_document))
+            ):  # Limit to first 10 pages
                 page = pdf_document[page_num]
 
                 # Convert page to image
                 pix = page.get_pixmap(
-                    matrix=fitz.Matrix(
-                        2, 2))  # 2x scale for better OCR
+                    matrix=fitz.Matrix(2, 2)
+                )  # 2x scale for better OCR
                 img_data = pix.tobytes("png")
 
                 # Process with OCR
@@ -340,14 +345,15 @@ class PDFProcessor:
                     # Run OCR with Japanese language support
                     text = pytesseract.image_to_string(
                         processed_image,
-                        lang='jpn+eng',  # Japanese + English
-                        config='--psm 6'  # Uniform block of text
+                        lang="jpn+eng",  # Japanese + English
+                        config="--psm 6",  # Uniform block of text
                     )
 
                     if text.strip():
                         extracted_text.append(text)
                         logger.debug(
-                            f"OCR extracted {len(text)} characters from page {page_num + 1}")
+                            f"OCR extracted {len(text)} characters from page {page_num + 1}"
+                        )
 
                 except Exception as ocr_e:
                     logger.warning(f"OCR failed for page {page_num + 1}: {ocr_e}")
@@ -395,9 +401,8 @@ class PDFProcessor:
             return image  # Return original if preprocessing fails
 
     def _parse_voting_data(
-            self,
-            text_content: str,
-            pdf_url: str) -> PDFVotingSession | None:
+        self, text_content: str, pdf_url: str
+    ) -> PDFVotingSession | None:
         """Parse voting data from extracted text"""
         try:
             # Extract basic metadata
@@ -415,19 +420,19 @@ class PDFProcessor:
             # Create session object
             session = PDFVotingSession(
                 session_id=f"hr_{bill_info['bill_number']}_{bill_info['vote_date'].strftime('%Y%m%d')}",
-                bill_number=bill_info['bill_number'],
-                bill_title=bill_info['bill_title'],
-                vote_date=bill_info['vote_date'],
-                vote_type=bill_info.get(
-                    'vote_type',
-                    '本会議'),
-                committee_name=bill_info.get('committee_name'),
+                bill_number=bill_info["bill_number"],
+                bill_title=bill_info["bill_title"],
+                vote_date=bill_info["vote_date"],
+                vote_type=bill_info.get("vote_type", "本会議"),
+                committee_name=bill_info.get("committee_name"),
                 pdf_url=pdf_url,
                 total_members=len(vote_records),
-                vote_records=vote_records)
+                vote_records=vote_records,
+            )
 
             logger.info(
-                f"Parsed voting session: {session.bill_number} with {len(vote_records)} votes")
+                f"Parsed voting session: {session.bill_number} with {len(vote_records)} votes"
+            )
             return session
 
         except Exception as e:
@@ -441,30 +446,30 @@ class PDFProcessor:
 
             # Extract bill number (common patterns)
             bill_patterns = [
-                r'(?:法律案|決議案|予算案)\s*第(\d+)号',
-                r'議案第(\d+)号',
-                r'第(\d+)号\s*(?:法律案|決議案)',
+                r"(?:法律案|決議案|予算案)\s*第(\d+)号",
+                r"議案第(\d+)号",
+                r"第(\d+)号\s*(?:法律案|決議案)",
             ]
 
             for pattern in bill_patterns:
                 match = re.search(pattern, text)
                 if match:
-                    info['bill_number'] = f"第{match.group(1)}号"
+                    info["bill_number"] = f"第{match.group(1)}号"
                     break
 
-            if 'bill_number' not in info:
+            if "bill_number" not in info:
                 # Fallback: look for any number pattern
-                match = re.search(r'第(\d+)号', text)
+                match = re.search(r"第(\d+)号", text)
                 if match:
-                    info['bill_number'] = f"第{match.group(1)}号"
+                    info["bill_number"] = f"第{match.group(1)}号"
                 else:
-                    info['bill_number'] = "不明"
+                    info["bill_number"] = "不明"
 
             # Extract bill title (first significant line after bill number)
             title_patterns = [
-                r'(?:法律案|決議案|予算案).*?第\d+号\s*(.+?)(?:\n|採決|表決)',
-                r'(.+?)に関する(?:法律案|決議案)',
-                r'(.+?)について',
+                r"(?:法律案|決議案|予算案).*?第\d+号\s*(.+?)(?:\n|採決|表決)",
+                r"(.+?)に関する(?:法律案|決議案)",
+                r"(.+?)について",
             ]
 
             for pattern in title_patterns:
@@ -472,26 +477,26 @@ class PDFProcessor:
                 if match:
                     title = match.group(1).strip()
                     if len(title) > 5 and len(title) < 100:  # Reasonable title length
-                        info['bill_title'] = title
+                        info["bill_title"] = title
                         break
 
-            if 'bill_title' not in info:
-                info['bill_title'] = "タイトル不明"
+            if "bill_title" not in info:
+                info["bill_title"] = "タイトル不明"
 
             # Extract date
             date_patterns = [
-                r'令和(\d+)年(\d+)月(\d+)日',
-                r'平成(\d+)年(\d+)月(\d+)日',
-                r'(\d{4})年(\d+)月(\d+)日',
+                r"令和(\d+)年(\d+)月(\d+)日",
+                r"平成(\d+)年(\d+)月(\d+)日",
+                r"(\d{4})年(\d+)月(\d+)日",
             ]
 
             for pattern in date_patterns:
                 match = re.search(pattern, text)
                 if match:
-                    if pattern.startswith('令和'):
+                    if pattern.startswith("令和"):
                         # Convert Reiwa to Western year
                         year = int(match.group(1)) + 2018
-                    elif pattern.startswith('平成'):
+                    elif pattern.startswith("平成"):
                         # Convert Heisei to Western year
                         year = int(match.group(1)) + 1988
                     else:
@@ -500,20 +505,20 @@ class PDFProcessor:
                     month = int(match.group(2))
                     day = int(match.group(3))
 
-                    info['vote_date'] = datetime(year, month, day)
+                    info["vote_date"] = datetime(year, month, day)
                     break
 
-            if 'vote_date' not in info:
-                info['vote_date'] = datetime.now()  # Fallback to current date
+            if "vote_date" not in info:
+                info["vote_date"] = datetime.now()  # Fallback to current date
 
             # Extract vote type and committee
-            if '委員会' in text:
-                info['vote_type'] = '委員会'
-                committee_match = re.search(r'(.{2,10}委員会)', text)
+            if "委員会" in text:
+                info["vote_type"] = "委員会"
+                committee_match = re.search(r"(.{2,10}委員会)", text)
                 if committee_match:
-                    info['committee_name'] = committee_match.group(1)
+                    info["committee_name"] = committee_match.group(1)
             else:
-                info['vote_type'] = '本会議'
+                info["vote_type"] = "本会議"
 
             return info
 
@@ -529,11 +534,11 @@ class PDFProcessor:
             # Common vote patterns
             vote_patterns = [
                 # Pattern: Name + Party + Constituency + Vote
-                r'([^\n]{2,15})\s+([^\n]{2,20})\s+([^\n]{2,20})\s+(賛成|反対|欠席|棄権)',
+                r"([^\n]{2,15})\s+([^\n]{2,20})\s+([^\n]{2,20})\s+(賛成|反対|欠席|棄権)",
                 # Pattern: Name (Party/Constituency) Vote
-                r'([^\n]{2,15})\s*\(([^)]+)\)\s+(賛成|反対|欠席|棄権)',
+                r"([^\n]{2,15})\s*\(([^)]+)\)\s+(賛成|反対|欠席|棄権)",
                 # Pattern: More flexible matching
-                r'([^\n]{2,15})\s+([^\n]+?)\s+(賛成|反対|欠席|棄権)',
+                r"([^\n]{2,15})\s+([^\n]+?)\s+(賛成|反対|欠席|棄権)",
             ]
 
             for pattern in vote_patterns:
@@ -546,8 +551,8 @@ class PDFProcessor:
                         elif len(match) == 3:  # Name, Party/Constituency, Vote
                             name, party_constituency, vote = match
                             # Try to split party and constituency
-                            if '/' in party_constituency:
-                                party, constituency = party_constituency.split('/', 1)
+                            if "/" in party_constituency:
+                                party, constituency = party_constituency.split("/", 1)
                             else:
                                 party = party_constituency
                                 constituency = "不明"
@@ -557,12 +562,19 @@ class PDFProcessor:
                         # Clean up extracted data
                         name = name.strip()
                         party = party.strip()
-                        constituency = constituency.strip() if 'constituency' in locals() else "不明"
+                        constituency = (
+                            constituency.strip()
+                            if "constituency" in locals()
+                            else "不明"
+                        )
                         vote = vote.strip()
 
                         # Validate extracted data
-                        if (len(name) >= 2 and len(name) <= 15 and
-                                vote in ['賛成', '反対', '欠席', '棄権']):
+                        if (
+                            len(name) >= 2
+                            and len(name) <= 15
+                            and vote in ["賛成", "反対", "欠席", "棄権"]
+                        ):
 
                             record = PDFVoteRecord(
                                 member_name=name,
@@ -570,13 +582,14 @@ class PDFProcessor:
                                 party_name=party,
                                 constituency=constituency,
                                 vote_result=vote,
-                                confidence_score=0.8  # Medium confidence for PDF extraction
+                                confidence_score=0.8,  # Medium confidence for PDF extraction
                             )
                             vote_records.append(record)
 
                     except Exception as record_e:
                         logger.debug(
-                            f"Failed to parse vote record: {match} - {record_e}")
+                            f"Failed to parse vote record: {match} - {record_e}"
+                        )
                         continue
 
                 # If we found records with this pattern, use them
@@ -599,9 +612,7 @@ class PDFProcessor:
             return []
 
     def _improve_member_matching(
-        self,
-        session: PDFVotingSession,
-        known_member_names: list[str]
+        self, session: PDFVotingSession, known_member_names: list[str]
     ) -> None:
         """Improve member name matching using known member list"""
         try:
@@ -610,8 +621,7 @@ class PDFProcessor:
             for record in session.vote_records:
                 # Try to find better match for member name
                 matched_name, confidence = self.name_matcher.find_best_match(
-                    record.member_name,
-                    known_member_names
+                    record.member_name, known_member_names
                 )
 
                 if matched_name and confidence > record.confidence_score:
@@ -619,7 +629,8 @@ class PDFProcessor:
                     record.member_name = matched_name
                     record.confidence_score = confidence
                     logger.debug(
-                        f"Improved name match: {record.member_name} (confidence: {confidence:.2f})")
+                        f"Improved name match: {record.member_name} (confidence: {confidence:.2f})"
+                    )
 
                 improved_records.append(record)
 
@@ -636,5 +647,5 @@ class PDFProcessor:
             "successful_extractions": 0,
             "ocr_fallbacks": 0,
             "failed_extractions": 0,
-            "average_confidence_score": 0.0
+            "average_confidence_score": 0.0,
         }

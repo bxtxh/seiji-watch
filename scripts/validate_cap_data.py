@@ -11,7 +11,7 @@ from pathlib import Path
 
 def load_csv_data(file_path: Path) -> list[dict]:
     """Load CSV data into list of dictionaries."""
-    with open(file_path, encoding='utf-8') as f:
+    with open(file_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         return list(reader)
 
@@ -22,10 +22,10 @@ def validate_l1_data(l1_data: list[dict]) -> list[str]:
     cap_codes = set()
 
     for row in l1_data:
-        cap_code = row['cap_code']
-        layer = row['layer']
-        title_en = row['title_en']
-        title_ja = row['title_ja']
+        cap_code = row["cap_code"]
+        layer = row["layer"]
+        title_en = row["title_en"]
+        title_ja = row["title_ja"]
 
         # Check required fields
         if not cap_code:
@@ -34,7 +34,7 @@ def validate_l1_data(l1_data: list[dict]) -> list[str]:
             errors.append(f"Missing title_en for cap_code {cap_code}")
         if not title_ja:
             errors.append(f"Missing title_ja for cap_code {cap_code}")
-        if layer != 'L1':
+        if layer != "L1":
             errors.append(f"Invalid layer '{layer}' for L1 data, cap_code {cap_code}")
 
         # Check for duplicates
@@ -51,11 +51,11 @@ def validate_l2_data(l2_data: list[dict], l1_cap_codes: set[str]) -> list[str]:
     cap_codes = set()
 
     for row in l2_data:
-        cap_code = row['cap_code']
-        layer = row['layer']
-        parent_cap_code = row['parent_cap_code']
-        title_en = row['title_en']
-        title_ja = row['title_ja']
+        cap_code = row["cap_code"]
+        layer = row["layer"]
+        parent_cap_code = row["parent_cap_code"]
+        title_en = row["title_en"]
+        title_ja = row["title_ja"]
 
         # Check required fields
         if not cap_code:
@@ -66,13 +66,14 @@ def validate_l2_data(l2_data: list[dict], l1_cap_codes: set[str]) -> list[str]:
             errors.append(f"Missing title_en for cap_code {cap_code}")
         if not title_ja:
             errors.append(f"Missing title_ja for cap_code {cap_code}")
-        if layer != 'L2':
+        if layer != "L2":
             errors.append(f"Invalid layer '{layer}' for L2 data, cap_code {cap_code}")
 
         # Check parent relationship
         if parent_cap_code not in l1_cap_codes:
             errors.append(
-                f"Invalid parent_cap_code '{parent_cap_code}' for cap_code {cap_code}")
+                f"Invalid parent_cap_code '{parent_cap_code}' for cap_code {cap_code}"
+            )
 
         # Check for duplicates
         if cap_code in cap_codes:
@@ -87,23 +88,28 @@ def check_translation_quality(data: list[dict]) -> list[str]:
     warnings = []
 
     for row in data:
-        cap_code = row['cap_code']
-        title_ja = row['title_ja']
+        cap_code = row["cap_code"]
+        title_ja = row["title_ja"]
 
         # Check for common translation issues
         if not title_ja:
             continue
 
         # Check for inconsistent terminology
-        if 'Health' in row.get('title_en',
-                               '') and '保健' not in title_ja and '医療' not in title_ja:
+        if (
+            "Health" in row.get("title_en", "")
+            and "保健" not in title_ja
+            and "医療" not in title_ja
+        ):
             warnings.append(
-                f"Potential translation inconsistency for {cap_code}: {row['title_en']} -> {title_ja}")
+                f"Potential translation inconsistency for {cap_code}: {row['title_en']} -> {title_ja}"
+            )
 
         # Check for overly long translations
         if len(title_ja) > 20:
             warnings.append(
-                f"Long translation for {cap_code}: {title_ja} ({len(title_ja)} chars)")
+                f"Long translation for {cap_code}: {title_ja} ({len(title_ja)} chars)"
+            )
 
     return warnings
 
@@ -135,7 +141,7 @@ def main():
     # Validate L1 data
     print("\n🔍 Validating L1 data...")
     l1_errors = validate_l1_data(l1_data)
-    l1_cap_codes = {row['cap_code'] for row in l1_data}
+    l1_cap_codes = {row["cap_code"] for row in l1_data}
 
     # Validate L2 data
     print("🔍 Validating L2 data...")
@@ -189,11 +195,12 @@ def main():
     # Show parent coverage
     parent_coverage = {}
     for row in l2_data:
-        parent = row['parent_cap_code']
+        parent = row["parent_cap_code"]
         parent_coverage[parent] = parent_coverage.get(parent, 0) + 1
 
     print(
-        f"   L1 categories with L2 children: {len(parent_coverage)}/{len(l1_cap_codes)}")
+        f"   L1 categories with L2 children: {len(parent_coverage)}/{len(l1_cap_codes)}"
+    )
 
     uncovered_l1 = l1_cap_codes - set(parent_coverage.keys())
     if uncovered_l1:

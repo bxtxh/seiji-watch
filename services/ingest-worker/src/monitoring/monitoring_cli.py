@@ -19,7 +19,7 @@ from services.ingest_worker.src.monitoring.monitoring_manager import (
 )
 
 # Add the project root to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
 
 def setup_logging():
@@ -28,17 +28,17 @@ def setup_logging():
 
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('monitoring.log')
-        ]
+            logging.FileHandler("monitoring.log"),
+        ],
     )
 
 
 def get_database_url() -> str:
     """Get database URL from environment or config"""
-    database_url = os.getenv('DATABASE_URL')
+    database_url = os.getenv("DATABASE_URL")
     if not database_url:
         # Default for development
         database_url = "postgresql://localhost:5432/seiji_watch"
@@ -62,21 +62,22 @@ def cmd_dashboard(args):
         print(f"   Last updated: {dashboard_data['updated_at']}")
 
         # Display panels
-        for panel in dashboard_data['panels']:
+        for panel in dashboard_data["panels"]:
             print(f"\n📈 {panel['title']}")
             print(f"   {panel['description']}")
 
             # Display metrics
-            for metric in panel['metrics']:
+            for metric in panel["metrics"]:
                 severity_emoji = {
-                    'success': '✅',
-                    'warning': '⚠️',
-                    'critical': '🚨',
-                    'info': 'ℹ️'
-                }.get(metric['severity'], '📊')
+                    "success": "✅",
+                    "warning": "⚠️",
+                    "critical": "🚨",
+                    "info": "ℹ️",
+                }.get(metric["severity"], "📊")
 
                 print(
-                    f"   {severity_emoji} {metric['name']}: {metric['value']}{metric['unit']}")
+                    f"   {severity_emoji} {metric['name']}: {metric['value']}{metric['unit']}"
+                )
                 print(f"      {metric['description']}")
 
         # Display alerts
@@ -84,11 +85,9 @@ def cmd_dashboard(args):
         if alerts:
             print(f"\n🚨 Active Alerts ({len(alerts)}):")
             for alert in alerts:
-                alert_emoji = {
-                    'critical': '🚨',
-                    'warning': '⚠️',
-                    'info': 'ℹ️'
-                }.get(alert['type'], '📢')
+                alert_emoji = {"critical": "🚨", "warning": "⚠️", "info": "ℹ️"}.get(
+                    alert["type"], "📢"
+                )
 
                 print(f"   {alert_emoji} [{alert['type'].upper()}] {alert['message']}")
                 print(f"      Triggered: {alert['timestamp']}")
@@ -99,7 +98,7 @@ def cmd_dashboard(args):
         if args.export:
             output_file = f"dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(dashboard_data, f, indent=2, ensure_ascii=False, default=str)
 
             print(f"\n📄 Dashboard data exported to: {output_file}")
@@ -135,26 +134,28 @@ def cmd_alerts(args):
         else:
             for alert in alerts:
                 severity_emoji = {
-                    'critical': '🚨',
-                    'high': '🔥',
-                    'medium': '⚠️',
-                    'low': '📢',
-                    'info': 'ℹ️'
-                }.get(alert['severity'], '📢')
+                    "critical": "🚨",
+                    "high": "🔥",
+                    "medium": "⚠️",
+                    "low": "📢",
+                    "info": "ℹ️",
+                }.get(alert["severity"], "📢")
 
                 print(
-                    f"\n{severity_emoji} [{alert['severity'].upper()}] {alert['title']}")
+                    f"\n{severity_emoji} [{alert['severity'].upper()}] {alert['title']}"
+                )
                 print(f"   ID: {alert['alert_id']}")
                 print(f"   Type: {alert['alert_type']}")
                 print(f"   Message: {alert['message']}")
                 print(f"   Triggered: {alert['triggered_at']}")
 
-                if alert.get('resolved_at'):
+                if alert.get("resolved_at"):
                     print(f"   Resolved: {alert['resolved_at']}")
 
-                if alert.get('acknowledged_at'):
+                if alert.get("acknowledged_at"):
                     print(
-                        f"   Acknowledged: {alert['acknowledged_at']} by {alert.get('acknowledged_by', 'unknown')}")
+                        f"   Acknowledged: {alert['acknowledged_at']} by {alert.get('acknowledged_by', 'unknown')}"
+                    )
 
         # Handle alert actions
         if args.acknowledge:
@@ -190,48 +191,50 @@ def cmd_health(args):
         health = manager.get_system_health()
 
         # Display overall health
-        overall_health = health.get('overall_health', 0)
-        health_emoji = '✅' if overall_health > 0.8 else '⚠️' if overall_health > 0.5 else '🚨'
+        overall_health = health.get("overall_health", 0)
+        health_emoji = (
+            "✅" if overall_health > 0.8 else "⚠️" if overall_health > 0.5 else "🚨"
+        )
 
         print(f"\n{health_emoji} Overall System Health: {overall_health:.1%}")
 
         # Display health checks
-        health_checks = health.get('health_checks', {}).get('health_checks', {})
+        health_checks = health.get("health_checks", {}).get("health_checks", {})
         print("\n🔍 Health Checks:")
 
         for check_id, check_data in health_checks.items():
-            last_result = check_data.get('last_result', {})
-            success = last_result.get('success', False)
-            check_emoji = '✅' if success else '❌'
+            last_result = check_data.get("last_result", {})
+            success = last_result.get("success", False)
+            check_emoji = "✅" if success else "❌"
 
             print(f"   {check_emoji} {check_data['name']}")
             print(f"      Status: {'Passing' if success else 'Failing'}")
             print(f"      Interval: {check_data['interval']}s")
 
-            if 'timestamp' in last_result:
+            if "timestamp" in last_result:
                 print(f"      Last check: {last_result['timestamp']}")
 
-            if 'error' in last_result:
+            if "error" in last_result:
                 print(f"      Error: {last_result['error']}")
 
         # Display quality metrics
-        quality_metrics = health.get('quality_metrics', {})
+        quality_metrics = health.get("quality_metrics", {})
         if quality_metrics:
             print("\n📊 Quality Metrics:")
             for metric_name, value in quality_metrics.items():
                 print(f"   • {metric_name}: {value}")
 
         # Display service status
-        service_status = health.get('service_status', {})
+        service_status = health.get("service_status", {})
         if service_status:
             print("\n⚙️  Service Status:")
             print(f"   Running: {service_status.get('is_running', False)}")
 
-            if service_status.get('start_time'):
+            if service_status.get("start_time"):
                 print(f"   Started: {service_status['start_time']}")
 
-            if service_status.get('uptime_seconds'):
-                uptime_hours = service_status['uptime_seconds'] / 3600
+            if service_status.get("uptime_seconds"):
+                uptime_hours = service_status["uptime_seconds"] / 3600
                 print(f"   Uptime: {uptime_hours:.1f} hours")
 
         print("\n✅ Health check completed!")
@@ -256,7 +259,7 @@ def cmd_start(args):
         completeness_threshold=args.completeness_threshold,
         error_rate_threshold=args.error_threshold,
         enable_email_alerts=args.email_alerts,
-        enable_slack_alerts=args.slack_alerts
+        enable_slack_alerts=args.slack_alerts,
     )
 
     try:
@@ -277,6 +280,7 @@ def cmd_start(args):
             print("\n🔄 Running in daemon mode. Press Ctrl+C to stop...")
             try:
                 import time
+
                 while True:
                     time.sleep(60)
             except KeyboardInterrupt:
@@ -317,21 +321,23 @@ def cmd_status(args):
         status = manager.get_service_status()
 
         # Display manager status
-        manager_status = status.get('manager_status', {})
-        is_running = manager_status.get('is_running', False)
-        status_emoji = '✅' if is_running else '❌'
+        manager_status = status.get("manager_status", {})
+        is_running = manager_status.get("is_running", False)
+        status_emoji = "✅" if is_running else "❌"
 
-        print(f"\n{status_emoji} Monitoring Manager: {'Running' if is_running else 'Stopped'}")
+        print(
+            f"\n{status_emoji} Monitoring Manager: {'Running' if is_running else 'Stopped'}"
+        )
 
-        if manager_status.get('start_time'):
+        if manager_status.get("start_time"):
             print(f"   Started: {manager_status['start_time']}")
 
-        if manager_status.get('uptime_seconds'):
-            uptime_hours = manager_status['uptime_seconds'] / 3600
+        if manager_status.get("uptime_seconds"):
+            uptime_hours = manager_status["uptime_seconds"] / 3600
             print(f"   Uptime: {uptime_hours:.1f} hours")
 
         # Display monitoring service status
-        monitoring_status = status.get('monitoring_service_status', {})
+        monitoring_status = status.get("monitoring_service_status", {})
         if monitoring_status:
             print("\n⚙️  Monitoring Service:")
             print(f"   Status: {monitoring_status.get('status', 'unknown')}")
@@ -341,27 +347,31 @@ def cmd_status(args):
             print(f"   Health checks: {monitoring_status.get('health_checks', 0)}")
 
         # Display dashboard status
-        dashboard_status = status.get('dashboard_status', {})
+        dashboard_status = status.get("dashboard_status", {})
         if dashboard_status:
             print("\n📊 Dashboard Service:")
             print(f"   Status: {dashboard_status.get('status', 'unknown')}")
             print(f"   Cache size: {dashboard_status.get('cache_size', 0)}")
 
-            if dashboard_status.get('last_updated'):
+            if dashboard_status.get("last_updated"):
                 print(f"   Last updated: {dashboard_status['last_updated']}")
 
         # Display configuration
-        configuration = status.get('configuration', {})
+        configuration = status.get("configuration", {})
         if configuration:
             print("\n⚙️  Configuration:")
             print(
-                f"   Dashboard refresh: {configuration.get('dashboard_refresh_interval', 'N/A')}s")
+                f"   Dashboard refresh: {configuration.get('dashboard_refresh_interval', 'N/A')}s"
+            )
             print(
-                f"   Alert evaluation: {configuration.get('alert_evaluation_interval', 'N/A')}s")
+                f"   Alert evaluation: {configuration.get('alert_evaluation_interval', 'N/A')}s"
+            )
             print(
-                f"   Health check interval: {configuration.get('health_check_interval', 'N/A')}s")
+                f"   Health check interval: {configuration.get('health_check_interval', 'N/A')}s"
+            )
             print(
-                f"   Quality threshold: {configuration.get('quality_score_threshold', 'N/A')}")
+                f"   Quality threshold: {configuration.get('quality_score_threshold', 'N/A')}"
+            )
             print(f"   Email alerts: {configuration.get('enable_email_alerts', 'N/A')}")
             print(f"   Slack alerts: {configuration.get('enable_slack_alerts', 'N/A')}")
 
@@ -386,20 +396,22 @@ def cmd_performance(args):
         print(f"\n📊 Performance Metrics (last {args.hours} hours)")
 
         # Display migration performance
-        migration_perf = metrics.get('migration_performance', {})
+        migration_perf = metrics.get("migration_performance", {})
         if migration_perf:
             print("\n🔄 Migration Performance:")
             print(f"   Total migrations: {migration_perf.get('total_migrations', 0)}")
             print(
-                f"   Successful migrations: {migration_perf.get('successful_migrations', 0)}")
+                f"   Successful migrations: {migration_perf.get('successful_migrations', 0)}"
+            )
             print(f"   Failed migrations: {migration_perf.get('failed_migrations', 0)}")
             print(f"   Success rate: {migration_perf.get('success_rate', 0):.1%}")
             print(
-                f"   Tasks completed: {migration_perf.get('total_tasks_completed', 0)}")
+                f"   Tasks completed: {migration_perf.get('total_tasks_completed', 0)}"
+            )
             print(f"   Tasks failed: {migration_perf.get('total_tasks_failed', 0)}")
 
         # Display completion performance
-        completion_perf = metrics.get('completion_performance', {})
+        completion_perf = metrics.get("completion_performance", {})
         if completion_perf:
             print("\n✅ Completion Performance:")
             print(f"   Total batches: {completion_perf.get('total_batches', 0)}")
@@ -407,10 +419,11 @@ def cmd_performance(args):
             print(f"   Completed tasks: {completion_perf.get('completed_tasks', 0)}")
             print(f"   Success rate: {completion_perf.get('success_rate', 0):.1%}")
             print(
-                f"   Avg processing time: {completion_perf.get('average_processing_time_ms', 0):.1f}ms")
+                f"   Avg processing time: {completion_perf.get('average_processing_time_ms', 0):.1f}ms"
+            )
 
         # Display processing performance
-        processing_perf = metrics.get('processing_performance', {})
+        processing_perf = metrics.get("processing_performance", {})
         if processing_perf:
             print("\n⚡ Processing Performance:")
             for metric_name, value in processing_perf.items():
@@ -438,23 +451,24 @@ def cmd_audit(args):
         print(f"   Completed: {audit_result['audit_completed_at']}")
 
         # Display quality metrics
-        quality_metrics = audit_result.get('quality_metrics', {})
+        quality_metrics = audit_result.get("quality_metrics", {})
         if quality_metrics:
             print("\n📈 Quality Metrics:")
             for metric_name, metric_data in quality_metrics.items():
                 severity_emoji = {
-                    'success': '✅',
-                    'warning': '⚠️',
-                    'critical': '🚨',
-                    'info': 'ℹ️'
-                }.get(metric_data.get('severity', 'info'), '📊')
+                    "success": "✅",
+                    "warning": "⚠️",
+                    "critical": "🚨",
+                    "info": "ℹ️",
+                }.get(metric_data.get("severity", "info"), "📊")
 
                 print(
-                    f"   {severity_emoji} {metric_name}: {metric_data.get('value', 'N/A')}{metric_data.get('unit', '')}")
+                    f"   {severity_emoji} {metric_name}: {metric_data.get('value', 'N/A')}{metric_data.get('unit', '')}"
+                )
                 print(f"      {metric_data.get('description', 'No description')}")
 
         # Display recommendations
-        recommendations = audit_result.get('recommendations', [])
+        recommendations = audit_result.get("recommendations", [])
         if recommendations:
             print("\n💡 Recommendations:")
             for i, rec in enumerate(recommendations, 1):
@@ -462,9 +476,11 @@ def cmd_audit(args):
 
         # Export audit results if requested
         if args.export:
-            output_file = f"quality_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            output_file = (
+                f"quality_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            )
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(audit_result, f, indent=2, ensure_ascii=False, default=str)
 
             print(f"\n📄 Audit results exported to: {output_file}")
@@ -530,118 +546,108 @@ Examples:
 
   # Clean up old data
   python monitoring_cli.py cleanup --days=30
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Dashboard command
-    dashboard_parser = subparsers.add_parser('dashboard', help='Show dashboard data')
+    dashboard_parser = subparsers.add_parser("dashboard", help="Show dashboard data")
     dashboard_parser.add_argument(
-        '--export',
-        action='store_true',
-        help='Export dashboard data')
+        "--export", action="store_true", help="Export dashboard data"
+    )
     dashboard_parser.set_defaults(func=cmd_dashboard)
 
     # Alerts command
-    alerts_parser = subparsers.add_parser('alerts', help='Show alerts')
+    alerts_parser = subparsers.add_parser("alerts", help="Show alerts")
     alerts_parser.add_argument(
-        '--history',
-        action='store_true',
-        help='Show alert history')
+        "--history", action="store_true", help="Show alert history"
+    )
     alerts_parser.add_argument(
-        '--limit',
-        type=int,
-        default=50,
-        help='Limit number of alerts')
-    alerts_parser.add_argument('--acknowledge', help='Acknowledge alert by ID')
-    alerts_parser.add_argument('--resolve', help='Resolve alert by ID')
+        "--limit", type=int, default=50, help="Limit number of alerts"
+    )
+    alerts_parser.add_argument("--acknowledge", help="Acknowledge alert by ID")
+    alerts_parser.add_argument("--resolve", help="Resolve alert by ID")
     alerts_parser.set_defaults(func=cmd_alerts)
 
     # Health command
-    health_parser = subparsers.add_parser('health', help='Show system health')
+    health_parser = subparsers.add_parser("health", help="Show system health")
     health_parser.set_defaults(func=cmd_health)
 
     # Start command
-    start_parser = subparsers.add_parser('start', help='Start monitoring service')
+    start_parser = subparsers.add_parser("start", help="Start monitoring service")
     start_parser.add_argument(
-        '--daemon',
-        action='store_true',
-        help='Run in daemon mode')
+        "--daemon", action="store_true", help="Run in daemon mode"
+    )
     start_parser.add_argument(
-        '--refresh-interval',
+        "--refresh-interval",
         type=int,
         default=300,
-        help='Dashboard refresh interval (seconds)')
+        help="Dashboard refresh interval (seconds)",
+    )
     start_parser.add_argument(
-        '--alert-interval',
+        "--alert-interval",
         type=int,
         default=300,
-        help='Alert evaluation interval (seconds)')
+        help="Alert evaluation interval (seconds)",
+    )
     start_parser.add_argument(
-        '--health-interval',
+        "--health-interval",
         type=int,
         default=60,
-        help='Health check interval (seconds)')
+        help="Health check interval (seconds)",
+    )
     start_parser.add_argument(
-        '--quality-threshold',
-        type=float,
-        default=0.7,
-        help='Quality score threshold')
+        "--quality-threshold", type=float, default=0.7, help="Quality score threshold"
+    )
     start_parser.add_argument(
-        '--completeness-threshold',
+        "--completeness-threshold",
         type=float,
         default=0.8,
-        help='Completeness threshold')
+        help="Completeness threshold",
+    )
     start_parser.add_argument(
-        '--error-threshold',
-        type=float,
-        default=0.05,
-        help='Error rate threshold')
+        "--error-threshold", type=float, default=0.05, help="Error rate threshold"
+    )
     start_parser.add_argument(
-        '--email-alerts',
-        action='store_true',
-        help='Enable email alerts')
+        "--email-alerts", action="store_true", help="Enable email alerts"
+    )
     start_parser.add_argument(
-        '--slack-alerts',
-        action='store_true',
-        help='Enable Slack alerts')
+        "--slack-alerts", action="store_true", help="Enable Slack alerts"
+    )
     start_parser.set_defaults(func=cmd_start)
 
     # Stop command
-    stop_parser = subparsers.add_parser('stop', help='Stop monitoring service')
+    stop_parser = subparsers.add_parser("stop", help="Stop monitoring service")
     stop_parser.set_defaults(func=cmd_stop)
 
     # Status command
-    status_parser = subparsers.add_parser('status', help='Show service status')
+    status_parser = subparsers.add_parser("status", help="Show service status")
     status_parser.set_defaults(func=cmd_status)
 
     # Performance command
     performance_parser = subparsers.add_parser(
-        'performance', help='Show performance metrics')
+        "performance", help="Show performance metrics"
+    )
     performance_parser.add_argument(
-        '--hours',
-        type=int,
-        default=24,
-        help='Time period in hours')
+        "--hours", type=int, default=24, help="Time period in hours"
+    )
     performance_parser.set_defaults(func=cmd_performance)
 
     # Audit command
-    audit_parser = subparsers.add_parser('audit', help='Run quality audit')
+    audit_parser = subparsers.add_parser("audit", help="Run quality audit")
     audit_parser.add_argument(
-        '--export',
-        action='store_true',
-        help='Export audit results')
+        "--export", action="store_true", help="Export audit results"
+    )
     audit_parser.set_defaults(func=cmd_audit)
 
     # Cleanup command
     cleanup_parser = subparsers.add_parser(
-        'cleanup', help='Clean up old monitoring data')
+        "cleanup", help="Clean up old monitoring data"
+    )
     cleanup_parser.add_argument(
-        '--days',
-        type=int,
-        default=90,
-        help='Data retention days')
+        "--days", type=int, default=90, help="Data retention days"
+    )
     cleanup_parser.set_defaults(func=cmd_cleanup)
 
     # Parse arguments
@@ -665,5 +671,5 @@ Examples:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

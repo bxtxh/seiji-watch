@@ -19,6 +19,7 @@ from ..collectors.ndl_api_client import NDLMeeting, NDLSpeech
 @dataclass
 class MappingResult:
     """Result of data mapping operation"""
+
     success: bool
     mapped_data: Any | None = None
     warnings: list[str] = None
@@ -36,7 +37,13 @@ class SpeakerNormalizer:
 
     # 敬語表現の除去パターン
     HONORIFIC_PATTERNS = [
-        r'君$', r'さん$', r'議員$', r'大臣$', r'長官$', r'副大臣$', r'政務官$'
+        r"君$",
+        r"さん$",
+        r"議員$",
+        r"大臣$",
+        r"長官$",
+        r"副大臣$",
+        r"政務官$",
     ]
 
     # 政党名正規化マッピング
@@ -45,43 +52,35 @@ class SpeakerNormalizer:
         "自由民主党": "自民党",
         "自民": "自民党",
         "自由民主・国民の声": "自民党",
-
         # 立憲民主党系
         "立憲民主党": "立憲民主党",
         "立憲": "立憲民主党",
         "民主党": "立憲民主党",
-
         # 維新系
         "日本維新の会": "維新",
         "維新の会": "維新",
         "維新": "維新",
-
         # 公明党系
         "公明党": "公明党",
         "公明": "公明党",
-
         # 共産党系
         "日本共産党": "共産党",
         "共産党": "共産党",
         "共産": "共産党",
-
         # 国民民主党系
         "国民民主党": "国民民主党",
         "国民": "国民民主党",
-
         # れいわ新選組
         "れいわ新選組": "れいわ新選組",
         "れいわ": "れいわ新選組",
-
         # 社民党
         "社会民主党": "社民党",
         "社民": "社民党",
-
         # 無所属・その他
         "無所属": "無所属",
         "無": "無所属",
         "政府": "政府",
-        "内閣": "政府"
+        "内閣": "政府",
     }
 
     @classmethod
@@ -93,10 +92,10 @@ class SpeakerNormalizer:
         # 敬語表現の除去
         normalized = name
         for pattern in cls.HONORIFIC_PATTERNS:
-            normalized = re.sub(pattern, '', normalized)
+            normalized = re.sub(pattern, "", normalized)
 
         # 全角スペースを半角に統一
-        normalized = re.sub(r'　', ' ', normalized)
+        normalized = re.sub(r"　", " ", normalized)
 
         # 先頭・末尾の空白を除去
         normalized = normalized.strip()
@@ -115,14 +114,15 @@ class SpeakerNormalizer:
         return normalized
 
     @classmethod
-    def extract_speaker_info(cls, speaker_name: str,
-                             speaker_group: str | None) -> dict[str, str | None]:
+    def extract_speaker_info(
+        cls, speaker_name: str, speaker_group: str | None
+    ) -> dict[str, str | None]:
         """発言者情報を抽出・正規化"""
         return {
             "normalized_name": cls.normalize_speaker_name(speaker_name),
             "original_name": speaker_name,
             "normalized_party": cls.normalize_party_name(speaker_group),
-            "original_party": speaker_group
+            "original_party": speaker_group,
         }
 
 
@@ -145,7 +145,7 @@ class NDLDataMapper:
             "発言": "発言",
             "討論": "討論",
             "議事": "議事",
-            "その他": "発言"  # Default fallback
+            "その他": "発言",  # Default fallback
         }
 
     def map_ndl_meeting_to_airtable(self, ndl_meeting: NDLMeeting) -> MappingResult:
@@ -167,35 +167,32 @@ class NDLDataMapper:
                 "committee_name": ndl_meeting.committee_name,
                 "diet_session": str(ndl_meeting.diet_session),
                 "house": ndl_meeting.house,
-                "meeting_date": ndl_meeting.meeting_date.isoformat() if ndl_meeting.meeting_date else None,
+                "meeting_date": (
+                    ndl_meeting.meeting_date.isoformat()
+                    if ndl_meeting.meeting_date
+                    else None
+                ),
                 "transcript_url": ndl_meeting.pdf_url,
                 "is_processed": False,
                 "transcript_processed": True,  # NDL provides processed transcripts
                 "stt_completed": False,  # Not from STT
-                "is_public": True
+                "is_public": True,
             }
 
             # Create Meeting object for validation
             meeting = Meeting(**meeting_data)
 
-            return MappingResult(
-                success=True,
-                mapped_data=meeting,
-                warnings=[]
-            )
+            return MappingResult(success=True, mapped_data=meeting, warnings=[])
 
         except Exception as e:
             self.logger.error(
-                f"Failed to map NDL meeting {ndl_meeting.meeting_id}: {e}")
-            return MappingResult(
-                success=False,
-                errors=[f"Mapping failed: {str(e)}"]
+                f"Failed to map NDL meeting {ndl_meeting.meeting_id}: {e}"
             )
+            return MappingResult(success=False, errors=[f"Mapping failed: {str(e)}"])
 
     def map_ndl_speech_to_airtable(
-            self,
-            ndl_speech: NDLSpeech,
-            meeting_id: str) -> MappingResult:
+        self, ndl_speech: NDLSpeech, meeting_id: str
+    ) -> MappingResult:
         """
         Map NDL Speech to Airtable Speech schema
 
@@ -209,8 +206,7 @@ class NDLDataMapper:
         try:
             # Extract and normalize speaker information
             speaker_info = self.speaker_normalizer.extract_speaker_info(
-                ndl_speech.speaker_name,
-                ndl_speech.speaker_group
+                ndl_speech.speaker_name, ndl_speech.speaker_group
             )
 
             # Map speech data
@@ -220,16 +216,23 @@ class NDLDataMapper:
                 "speaker_name": speaker_info["normalized_name"],
                 "speaker_type": self._determine_speaker_type(speaker_info),
                 "original_text": ndl_speech.speech_content,
-                "cleaned_text": self._clean_speech_text(
-                    ndl_speech.speech_content),
+                "cleaned_text": self._clean_speech_text(ndl_speech.speech_content),
                 "speech_type": self.SPEECH_TYPE_MAPPING.get(
-                    ndl_speech.speech_type,
-                    "発言"),
-                "start_time": ndl_speech.speech_datetime.isoformat() if ndl_speech.speech_datetime else None,
-                "word_count": len(
-                    ndl_speech.speech_content.split()) if ndl_speech.speech_content else 0,
+                    ndl_speech.speech_type, "発言"
+                ),
+                "start_time": (
+                    ndl_speech.speech_datetime.isoformat()
+                    if ndl_speech.speech_datetime
+                    else None
+                ),
+                "word_count": (
+                    len(ndl_speech.speech_content.split())
+                    if ndl_speech.speech_content
+                    else 0
+                ),
                 "is_processed": False,
-                "needs_review": False}
+                "needs_review": False,
+            }
 
             # Create Speech object for validation
             speech = Speech(**speech_data)
@@ -240,21 +243,15 @@ class NDLDataMapper:
             if not speaker_info["normalized_party"]:
                 warnings.append("Political party could not be identified")
 
-            return MappingResult(
-                success=True,
-                mapped_data=speech,
-                warnings=warnings
-            )
+            return MappingResult(success=True, mapped_data=speech, warnings=warnings)
 
         except Exception as e:
             self.logger.error(f"Failed to map NDL speech {ndl_speech.speech_id}: {e}")
-            return MappingResult(
-                success=False,
-                errors=[f"Mapping failed: {str(e)}"]
-            )
+            return MappingResult(success=False, errors=[f"Mapping failed: {str(e)}"])
 
     def extract_members_from_speeches(
-            self, speeches: list[NDLSpeech]) -> list[dict[str, Any]]:
+        self, speeches: list[NDLSpeech]
+    ) -> list[dict[str, Any]]:
         """
         Extract unique member information from speech data
 
@@ -268,8 +265,7 @@ class NDLDataMapper:
 
         for speech in speeches:
             speaker_info = self.speaker_normalizer.extract_speaker_info(
-                speech.speaker_name,
-                speech.speaker_group
+                speech.speaker_name, speech.speaker_group
             )
 
             normalized_name = speaker_info["normalized_name"]
@@ -282,7 +278,7 @@ class NDLDataMapper:
                     "party": speaker_info["normalized_party"],
                     "house": None,  # Will be determined from meeting context
                     "is_active": True,
-                    "speech_count": 0
+                    "speech_count": 0,
                 }
 
             members_dict[normalized_name]["speech_count"] += 1
@@ -290,7 +286,8 @@ class NDLDataMapper:
         return list(members_dict.values())
 
     def extract_parties_from_speeches(
-            self, speeches: list[NDLSpeech]) -> list[dict[str, Any]]:
+        self, speeches: list[NDLSpeech]
+    ) -> list[dict[str, Any]]:
         """
         Extract unique party information from speech data
 
@@ -304,8 +301,7 @@ class NDLDataMapper:
 
         for speech in speeches:
             speaker_info = self.speaker_normalizer.extract_speaker_info(
-                speech.speaker_name,
-                speech.speaker_group
+                speech.speaker_name, speech.speaker_group
             )
 
             party_name = speaker_info["normalized_party"]
@@ -316,7 +312,7 @@ class NDLDataMapper:
                 parties_dict[party_name] = {
                     "name": party_name,
                     "is_active": True,
-                    "member_count": 0
+                    "member_count": 0,
                 }
 
             parties_dict[party_name]["member_count"] += 1
@@ -358,11 +354,11 @@ class NDLDataMapper:
             return ""
 
         # Remove excessive whitespace
-        cleaned = re.sub(r'\s+', ' ', text)
+        cleaned = re.sub(r"\s+", " ", text)
 
         # Remove common artifacts
-        cleaned = re.sub(r'○[^○]*', '', cleaned)  # Remove procedural markers
-        cleaned = re.sub(r'【[^】]*】', '', cleaned)  # Remove bracketed annotations
+        cleaned = re.sub(r"○[^○]*", "", cleaned)  # Remove procedural markers
+        cleaned = re.sub(r"【[^】]*】", "", cleaned)  # Remove bracketed annotations
 
         # Trim
         cleaned = cleaned.strip()
@@ -370,7 +366,8 @@ class NDLDataMapper:
         return cleaned
 
     def batch_map_speeches(
-            self, speeches: list[NDLSpeech], meeting_id: str) -> dict[str, Any]:
+        self, speeches: list[NDLSpeech], meeting_id: str
+    ) -> dict[str, Any]:
         """
         Map multiple speeches in batch with statistics
 
@@ -409,10 +406,10 @@ class NDLDataMapper:
                 "unique_members": len(members),
                 "unique_parties": len(parties),
                 "warnings_count": len(warnings),
-                "errors_count": len(errors)
+                "errors_count": len(errors),
             },
             "warnings": warnings,
-            "errors": errors
+            "errors": errors,
         }
 
 
@@ -428,9 +425,7 @@ async def main():
     async with NDLAPIClient() as client:
         # Get sample meeting
         meetings = await client.search_meetings(
-            start_date=date(2025, 6, 1),
-            end_date=date(2025, 6, 21),
-            max_records=1
+            start_date=date(2025, 6, 1), end_date=date(2025, 6, 21), max_records=1
         )
 
         if meetings:
@@ -450,18 +445,22 @@ async def main():
             if speeches:
                 batch_result = mapper.batch_map_speeches(speeches, "MEETING_ID_123")
                 print(
-                    f"✅ Mapped {batch_result['statistics']['mapped_speeches']} speeches")
+                    f"✅ Mapped {batch_result['statistics']['mapped_speeches']} speeches"
+                )
                 print(
-                    f"Found {batch_result['statistics']['unique_members']} unique members")
+                    f"Found {batch_result['statistics']['unique_members']} unique members"
+                )
                 print(
-                    f"Found {batch_result['statistics']['unique_parties']} unique parties")
+                    f"Found {batch_result['statistics']['unique_parties']} unique parties"
+                )
 
-                if batch_result['warnings']:
+                if batch_result["warnings"]:
                     print(f"⚠️  Warnings: {len(batch_result['warnings'])}")
-                if batch_result['errors']:
+                if batch_result["errors"]:
                     print(f"❌ Errors: {len(batch_result['errors'])}")
 
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

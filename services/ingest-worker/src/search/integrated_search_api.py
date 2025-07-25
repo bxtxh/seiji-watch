@@ -99,11 +99,11 @@ class IntegratedSearchAPI:
 
         # Search configuration
         self.config = {
-            'max_results': 1000,
-            'default_limit': 50,
-            'max_facet_values': 20,
-            'snippet_length': 200,
-            'highlight_fragments': 3,
+            "max_results": 1000,
+            "default_limit": 50,
+            "max_facet_values": 20,
+            "snippet_length": 200,
+            "highlight_fragments": 3,
         }
 
         # Cache for search results (simple in-memory cache)
@@ -128,8 +128,13 @@ class IntegratedSearchAPI:
             # Check cache first
             cache_key = self._generate_cache_key(request)
             if request.enable_caching and cache_key in self._cache:
-                cached_result, timestamp = self._cache[cache_key], self._cache_timestamps[cache_key]
-                if (datetime.now() - timestamp).total_seconds() < request.cache_ttl_seconds:
+                cached_result, timestamp = (
+                    self._cache[cache_key],
+                    self._cache_timestamps[cache_key],
+                )
+                if (
+                    datetime.now() - timestamp
+                ).total_seconds() < request.cache_ttl_seconds:
                     cached_result.query_time_ms = 0.0  # Cached result
                     return cached_result
 
@@ -175,12 +180,12 @@ class IntegratedSearchAPI:
                 search_mode=request.search_mode.value,
                 has_text_search=has_text_search,
                 has_filters=has_filters,
-                debug_info={'error': str(e)}
+                debug_info={"error": str(e)},
             )
 
     def _combined_search(
-            self,
-            request: IntegratedSearchRequest) -> IntegratedSearchResponse:
+        self, request: IntegratedSearchRequest
+    ) -> IntegratedSearchResponse:
         """Perform combined full-text search and filtering"""
 
         # Step 1: Convert filters to search filters for full-text search
@@ -192,11 +197,11 @@ class IntegratedSearchAPI:
             mode=request.search_mode,
             fields=request.search_fields,
             filters=search_filters,
-            limit=min(request.limit, self.config['max_results']),
+            limit=min(request.limit, self.config["max_results"]),
             offset=request.offset,
             sort_by=self._convert_sort_to_search_sort(request.sort),
             use_morphological_analysis=request.use_morphological_analysis,
-            enable_reading_search=request.enable_reading_search
+            enable_reading_search=request.enable_reading_search,
         )
 
         # Step 3: Execute full-text search
@@ -208,12 +213,12 @@ class IntegratedSearchAPI:
 
         for search_result in search_response.results:
             result_dict = {
-                'bill_id': search_result.bill_id,
-                'title': search_result.title,
-                'relevance_score': search_result.relevance_score,
-                'matched_fields': search_result.matched_fields,
-                'snippet': search_result.snippet,
-                'metadata': search_result.metadata
+                "bill_id": search_result.bill_id,
+                "title": search_result.title,
+                "relevance_score": search_result.relevance_score,
+                "matched_fields": search_result.matched_fields,
+                "snippet": search_result.snippet,
+                "metadata": search_result.metadata,
             }
             results.append(result_dict)
 
@@ -241,12 +246,12 @@ class IntegratedSearchAPI:
             highlights=highlights,
             facets=facets,
             statistics=statistics,
-            debug_info=search_response.debug_info
+            debug_info=search_response.debug_info,
         )
 
     def _text_search_only(
-            self,
-            request: IntegratedSearchRequest) -> IntegratedSearchResponse:
+        self, request: IntegratedSearchRequest
+    ) -> IntegratedSearchResponse:
         """Perform full-text search only"""
 
         # Create search query
@@ -254,11 +259,11 @@ class IntegratedSearchAPI:
             query=request.text_query,
             mode=request.search_mode,
             fields=request.search_fields,
-            limit=min(request.limit, self.config['max_results']),
+            limit=min(request.limit, self.config["max_results"]),
             offset=request.offset,
             sort_by=self._convert_sort_to_search_sort(request.sort),
             use_morphological_analysis=request.use_morphological_analysis,
-            enable_reading_search=request.enable_reading_search
+            enable_reading_search=request.enable_reading_search,
         )
 
         # Execute search
@@ -270,12 +275,12 @@ class IntegratedSearchAPI:
 
         for search_result in search_response.results:
             result_dict = {
-                'bill_id': search_result.bill_id,
-                'title': search_result.title,
-                'relevance_score': search_result.relevance_score,
-                'matched_fields': search_result.matched_fields,
-                'snippet': search_result.snippet,
-                'metadata': search_result.metadata
+                "bill_id": search_result.bill_id,
+                "title": search_result.title,
+                "relevance_score": search_result.relevance_score,
+                "matched_fields": search_result.matched_fields,
+                "snippet": search_result.snippet,
+                "metadata": search_result.metadata,
             }
             results.append(result_dict)
 
@@ -285,8 +290,9 @@ class IntegratedSearchAPI:
         # Get metadata
         suggestions = search_response.suggestions if request.include_suggestions else []
         facets = search_response.facets if request.include_facets else {}
-        statistics = self._get_search_statistics(
-            request) if request.include_statistics else {}
+        statistics = (
+            self._get_search_statistics(request) if request.include_statistics else {}
+        )
 
         return IntegratedSearchResponse(
             results=results,
@@ -299,21 +305,21 @@ class IntegratedSearchAPI:
             highlights=highlights,
             facets=facets,
             statistics=statistics,
-            debug_info=search_response.debug_info
+            debug_info=search_response.debug_info,
         )
 
     def _filter_search_only(
-            self,
-            request: IntegratedSearchRequest) -> IntegratedSearchResponse:
+        self, request: IntegratedSearchRequest
+    ) -> IntegratedSearchResponse:
         """Perform filtering only"""
 
         # Create filter query
         filter_query = FilterQuery(
             filters=request.filters,
             sort=request.sort,
-            limit=min(request.limit, self.config['max_results']),
+            limit=min(request.limit, self.config["max_results"]),
             offset=request.offset,
-            include_count=True
+            include_count=True,
         )
 
         # Execute filtering
@@ -324,19 +330,21 @@ class IntegratedSearchAPI:
         for data_dict in filter_result.data:
             # Add basic metadata for consistency
             result_dict = {
-                'bill_id': data_dict.get('bill_id'),
-                'title': data_dict.get('title'),
-                'relevance_score': 1.0,  # No relevance for filter-only
-                'matched_fields': [],
-                'snippet': data_dict.get('bill_outline', data_dict.get('summary', ''))[:self.config['snippet_length']],
-                'metadata': {
-                    'submitter': data_dict.get('submitter'),
-                    'category': data_dict.get('category'),
-                    'status': data_dict.get('status'),
-                    'diet_session': data_dict.get('diet_session'),
-                    'house_of_origin': data_dict.get('house_of_origin'),
-                    'submitted_date': data_dict.get('submitted_date')
-                }
+                "bill_id": data_dict.get("bill_id"),
+                "title": data_dict.get("title"),
+                "relevance_score": 1.0,  # No relevance for filter-only
+                "matched_fields": [],
+                "snippet": data_dict.get("bill_outline", data_dict.get("summary", ""))[
+                    : self.config["snippet_length"]
+                ],
+                "metadata": {
+                    "submitter": data_dict.get("submitter"),
+                    "category": data_dict.get("category"),
+                    "status": data_dict.get("status"),
+                    "diet_session": data_dict.get("diet_session"),
+                    "house_of_origin": data_dict.get("house_of_origin"),
+                    "submitted_date": data_dict.get("submitted_date"),
+                },
             }
             results.append(result_dict)
 
@@ -346,8 +354,9 @@ class IntegratedSearchAPI:
             facets = self._get_filter_facets(request.filters)
 
         # Get statistics if requested
-        statistics = self._get_search_statistics(
-            request) if request.include_statistics else {}
+        statistics = (
+            self._get_search_statistics(request) if request.include_statistics else {}
+        )
 
         return IntegratedSearchResponse(
             results=results,
@@ -361,8 +370,10 @@ class IntegratedSearchAPI:
             facets=facets,
             statistics=statistics,
             debug_info={
-                'sql_query': filter_result.sql_query,
-                'parameters': filter_result.parameters})
+                "sql_query": filter_result.sql_query,
+                "parameters": filter_result.parameters,
+            },
+        )
 
     def _browse_all(self, request: IntegratedSearchRequest) -> IntegratedSearchResponse:
         """Browse all bills with sorting and pagination"""
@@ -370,15 +381,15 @@ class IntegratedSearchAPI:
         # Create filter query with no filters
         filter_query = FilterQuery(
             filters=None,
-            sort=request.sort if request.sort else [
-                SortCriteria(
-                    'submitted_date',
-                    SortOrder.DESC)],
-            limit=min(
-                request.limit,
-                self.config['max_results']),
+            sort=(
+                request.sort
+                if request.sort
+                else [SortCriteria("submitted_date", SortOrder.DESC)]
+            ),
+            limit=min(request.limit, self.config["max_results"]),
             offset=request.offset,
-            include_count=True)
+            include_count=True,
+        )
 
         # Execute query
         filter_result = self.filter_engine.apply_filters(filter_query)
@@ -387,23 +398,22 @@ class IntegratedSearchAPI:
         results = []
         for data_dict in filter_result.data:
             result_dict = {
-                'bill_id': data_dict.get('bill_id'),
-                'title': data_dict.get('title'),
-                'relevance_score': 1.0,
-                'matched_fields': [],
-                'snippet': data_dict.get(
-                    'bill_outline',
-                    data_dict.get(
-                        'summary',
-                        ''))[
-                    :self.config['snippet_length']],
-                'metadata': {
-                    'submitter': data_dict.get('submitter'),
-                    'category': data_dict.get('category'),
-                    'status': data_dict.get('status'),
-                    'diet_session': data_dict.get('diet_session'),
-                    'house_of_origin': data_dict.get('house_of_origin'),
-                    'submitted_date': data_dict.get('submitted_date')}}
+                "bill_id": data_dict.get("bill_id"),
+                "title": data_dict.get("title"),
+                "relevance_score": 1.0,
+                "matched_fields": [],
+                "snippet": data_dict.get("bill_outline", data_dict.get("summary", ""))[
+                    : self.config["snippet_length"]
+                ],
+                "metadata": {
+                    "submitter": data_dict.get("submitter"),
+                    "category": data_dict.get("category"),
+                    "status": data_dict.get("status"),
+                    "diet_session": data_dict.get("diet_session"),
+                    "house_of_origin": data_dict.get("house_of_origin"),
+                    "submitted_date": data_dict.get("submitted_date"),
+                },
+            }
             results.append(result_dict)
 
         # Get facets if requested
@@ -412,8 +422,9 @@ class IntegratedSearchAPI:
             facets = self._get_filter_facets(None)
 
         # Get statistics if requested
-        statistics = self._get_search_statistics(
-            request) if request.include_statistics else {}
+        statistics = (
+            self._get_search_statistics(request) if request.include_statistics else {}
+        )
 
         return IntegratedSearchResponse(
             results=results,
@@ -427,11 +438,14 @@ class IntegratedSearchAPI:
             facets=facets,
             statistics=statistics,
             debug_info={
-                'sql_query': filter_result.sql_query,
-                'parameters': filter_result.parameters})
+                "sql_query": filter_result.sql_query,
+                "parameters": filter_result.parameters,
+            },
+        )
 
     def _convert_filters_to_search_filters(
-            self, filters: FilterGroup | None) -> dict[str, Any]:
+        self, filters: FilterGroup | None
+    ) -> dict[str, Any]:
         """Convert filter group to search filters format"""
         search_filters = {}
 
@@ -442,16 +456,16 @@ class IntegratedSearchAPI:
         for condition in filters.conditions:
             if isinstance(condition, FilterCondition):
                 if condition.operator == FilterOperator.EQUALS:
-                    if condition.field == 'category':
-                        search_filters['category'] = condition.value
-                    elif condition.field == 'status':
-                        search_filters['status'] = condition.value
-                    elif condition.field == 'submitter':
-                        search_filters['submitter'] = condition.value
-                    elif condition.field == 'session':
-                        search_filters['diet_session'] = condition.value
-                    elif condition.field == 'house':
-                        search_filters['house_of_origin'] = condition.value
+                    if condition.field == "category":
+                        search_filters["category"] = condition.value
+                    elif condition.field == "status":
+                        search_filters["status"] = condition.value
+                    elif condition.field == "submitter":
+                        search_filters["submitter"] = condition.value
+                    elif condition.field == "session":
+                        search_filters["diet_session"] = condition.value
+                    elif condition.field == "house":
+                        search_filters["house_of_origin"] = condition.value
 
         return search_filters
 
@@ -463,26 +477,29 @@ class IntegratedSearchAPI:
         # Use the first sort criterion
         first_sort = sort_criteria[0]
 
-        if first_sort.field in ['submitted_date', 'vote_date', 'implementation_date']:
+        if first_sort.field in ["submitted_date", "vote_date", "implementation_date"]:
             return "date"
-        elif first_sort.field == 'title':
+        elif first_sort.field == "title":
             return "title"
         else:
             return "relevance"
 
-    def _get_filter_facets(self, filters: FilterGroup |
-                           None) -> dict[str, dict[str, int]]:
+    def _get_filter_facets(
+        self, filters: FilterGroup | None
+    ) -> dict[str, dict[str, int]]:
         """Get facets for filtering"""
         facets = {}
 
         try:
             # Get facets from filter engine
-            for field in ['category', 'status', 'submitter', 'house']:
+            for field in ["category", "status", "submitter", "house"]:
                 stats = self.filter_engine.get_field_statistics(field)
-                if 'top_values' in stats:
+                if "top_values" in stats:
                     facets[field] = {
-                        item['value']: item['count']
-                        for item in stats['top_values'][:self.config['max_facet_values']]
+                        item["value"]: item["count"]
+                        for item in stats["top_values"][
+                            : self.config["max_facet_values"]
+                        ]
                     }
         except Exception as e:
             self.logger.error(f"Error getting facets: {e}")
@@ -490,25 +507,26 @@ class IntegratedSearchAPI:
         return facets
 
     def _get_search_statistics(
-            self, request: IntegratedSearchRequest) -> dict[str, Any]:
+        self, request: IntegratedSearchRequest
+    ) -> dict[str, Any]:
         """Get search statistics"""
         statistics = {}
 
         try:
             # Get full-text search statistics
             ft_stats = self.full_text_engine.get_search_statistics()
-            statistics['full_text_search'] = ft_stats
+            statistics["full_text_search"] = ft_stats
 
             # Get field statistics for key fields
             field_stats = {}
-            for field in ['category', 'status', 'submitter', 'house']:
+            for field in ["category", "status", "submitter", "house"]:
                 field_stats[field] = self.filter_engine.get_field_statistics(field)
 
-            statistics['field_statistics'] = field_stats
+            statistics["field_statistics"] = field_stats
 
         except Exception as e:
             self.logger.error(f"Error getting search statistics: {e}")
-            statistics['error'] = str(e)
+            statistics["error"] = str(e)
 
         return statistics
 
@@ -516,15 +534,19 @@ class IntegratedSearchAPI:
         """Generate cache key for search request"""
         # Create a hash of the request parameters
         import hashlib
-        request_str = json.dumps({
-            'text_query': request.text_query,
-            'search_mode': request.search_mode.value,
-            'search_fields': [f.value for f in request.search_fields],
-            'filters': self._serialize_filters(request.filters),
-            'sort': [(s.field, s.order.value) for s in request.sort],
-            'limit': request.limit,
-            'offset': request.offset,
-        }, sort_keys=True)
+
+        request_str = json.dumps(
+            {
+                "text_query": request.text_query,
+                "search_mode": request.search_mode.value,
+                "search_fields": [f.value for f in request.search_fields],
+                "filters": self._serialize_filters(request.filters),
+                "sort": [(s.field, s.order.value) for s in request.sort],
+                "limit": request.limit,
+                "offset": request.offset,
+            },
+            sort_keys=True,
+        )
 
         return hashlib.md5(request_str.encode()).hexdigest()
 
@@ -533,21 +555,20 @@ class IntegratedSearchAPI:
         if not filters:
             return None
 
-        serialized = {
-            'operator': filters.operator.value,
-            'conditions': []
-        }
+        serialized = {"operator": filters.operator.value, "conditions": []}
 
         for condition in filters.conditions:
             if isinstance(condition, FilterCondition):
-                serialized['conditions'].append({
-                    'field': condition.field,
-                    'operator': condition.operator.value,
-                    'value': condition.value,
-                    'case_sensitive': condition.case_sensitive
-                })
+                serialized["conditions"].append(
+                    {
+                        "field": condition.field,
+                        "operator": condition.operator.value,
+                        "value": condition.value,
+                        "case_sensitive": condition.case_sensitive,
+                    }
+                )
             elif isinstance(condition, FilterGroup):
-                serialized['conditions'].append(self._serialize_filters(condition))
+                serialized["conditions"].append(self._serialize_filters(condition))
 
         return serialized
 
@@ -559,7 +580,16 @@ class IntegratedSearchAPI:
             # Get suggestions from different sources
 
             # 1. Popular search terms (could be from search logs)
-            popular_terms = ['デジタル', '予算', '税制', '社会保障', '環境', '教育', '医療', '年金']
+            popular_terms = [
+                "デジタル",
+                "予算",
+                "税制",
+                "社会保障",
+                "環境",
+                "教育",
+                "医療",
+                "年金",
+            ]
             matching_popular = [term for term in popular_terms if partial_query in term]
             suggestions.extend(matching_popular)
 
@@ -568,19 +598,19 @@ class IntegratedSearchAPI:
                 filters=FilterGroup(
                     conditions=[
                         FilterCondition(
-                            field='title',
+                            field="title",
                             operator=FilterOperator.CONTAINS,
-                            value=partial_query
+                            value=partial_query,
                         )
                     ]
                 ),
-                sort=[SortCriteria('submitted_date', SortOrder.DESC)],
-                limit=5
+                sort=[SortCriteria("submitted_date", SortOrder.DESC)],
+                limit=5,
             )
 
             filter_result = self.filter_engine.apply_filters(filter_query)
             for result in filter_result.data:
-                title = result.get('title', '')
+                title = result.get("title", "")
                 if title and title not in suggestions:
                     suggestions.append(title)
 
@@ -590,10 +620,8 @@ class IntegratedSearchAPI:
         return suggestions[:limit]
 
     def get_field_suggestions(
-            self,
-            field: str,
-            partial_value: str = "",
-            limit: int = 10) -> list[str]:
+        self, field: str, partial_value: str = "", limit: int = 10
+    ) -> list[str]:
         """Get field value suggestions"""
         return self.filter_engine.get_filter_suggestions(field, partial_value, limit)
 
@@ -622,7 +650,7 @@ class IntegratedSearchAPI:
         # Validate pagination
         if request.limit <= 0:
             errors.append("Limit must be positive")
-        elif request.limit > self.config['max_results']:
+        elif request.limit > self.config["max_results"]:
             errors.append(f"Limit cannot exceed {self.config['max_results']}")
 
         if request.offset < 0:
@@ -639,8 +667,12 @@ class IntegratedSearchAPI:
     def get_cache_statistics(self) -> dict[str, Any]:
         """Get cache statistics"""
         return {
-            'cache_size': len(self._cache),
-            'cache_entries': list(self._cache.keys()),
-            'oldest_entry': min(self._cache_timestamps.values()) if self._cache_timestamps else None,
-            'newest_entry': max(self._cache_timestamps.values()) if self._cache_timestamps else None
+            "cache_size": len(self._cache),
+            "cache_entries": list(self._cache.keys()),
+            "oldest_entry": (
+                min(self._cache_timestamps.values()) if self._cache_timestamps else None
+            ),
+            "newest_entry": (
+                max(self._cache_timestamps.values()) if self._cache_timestamps else None
+            ),
         }

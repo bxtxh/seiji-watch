@@ -24,6 +24,7 @@ from .data_quality_auditor import DataQualityAuditor, QualityIssue, QualityRepor
 
 class MigrationPhase(Enum):
     """Migration phases"""
+
     AUDIT = "audit"
     PLANNING = "planning"
     EXECUTION = "execution"
@@ -33,6 +34,7 @@ class MigrationPhase(Enum):
 
 class MigrationStatus(Enum):
     """Migration status"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -43,6 +45,7 @@ class MigrationStatus(Enum):
 @dataclass
 class MigrationPlan:
     """Data migration plan"""
+
     plan_id: str
     total_bills: int
     total_tasks: int
@@ -61,6 +64,7 @@ class MigrationPlan:
 @dataclass
 class MigrationExecution:
     """Migration execution tracking"""
+
     execution_id: str
     plan_id: str
     status: MigrationStatus
@@ -81,6 +85,7 @@ class MigrationExecution:
 @dataclass
 class MigrationReport:
     """Comprehensive migration report"""
+
     plan_id: str
     execution_id: str
     migration_completed_at: datetime
@@ -111,7 +116,8 @@ class DataMigrationService:
         self.database_url = database_url
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine)
+            autocommit=False, autoflush=False, bind=self.engine
+        )
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -120,12 +126,12 @@ class DataMigrationService:
 
         # Service configuration
         self.config = {
-            'max_concurrent_migrations': 1,
-            'auto_validate_after_completion': True,
-            'backup_before_migration': True,
-            'report_export_format': 'json',
-            'cleanup_old_reports': True,
-            'report_retention_days': 90
+            "max_concurrent_migrations": 1,
+            "auto_validate_after_completion": True,
+            "backup_before_migration": True,
+            "report_export_format": "json",
+            "cleanup_old_reports": True,
+            "report_retention_days": 90,
         }
 
         # Migration history
@@ -134,12 +140,13 @@ class DataMigrationService:
 
         # Create reports directory
         self.reports_dir = os.path.join(
-            os.path.dirname(__file__), '..', '..', 'reports')
+            os.path.dirname(__file__), "..", "..", "reports"
+        )
         os.makedirs(self.reports_dir, exist_ok=True)
 
     def create_migration_plan(
-            self,
-            target_bills: list[str] | None = None) -> MigrationPlan:
+        self, target_bills: list[str] | None = None
+    ) -> MigrationPlan:
         """Create comprehensive migration plan"""
         self.logger.info("Creating migration plan")
 
@@ -151,7 +158,8 @@ class DataMigrationService:
             # Filter issues for target bills if specified
             if target_bills:
                 filtered_issues = [
-                    issue for issue in audit_report.issues
+                    issue
+                    for issue in audit_report.issues
                     if issue.bill_id in target_bills
                 ]
             else:
@@ -160,7 +168,8 @@ class DataMigrationService:
             # Generate completion tasks
             self.logger.info("Generating completion tasks...")
             completion_tasks = self.completion_processor.generate_completion_plan(
-                filtered_issues)
+                filtered_issues
+            )
 
             # Calculate estimates
             total_bills = len(set(issue.bill_id for issue in filtered_issues))
@@ -176,7 +185,7 @@ class DataMigrationService:
                 MigrationPhase.PLANNING,
                 MigrationPhase.EXECUTION,
                 MigrationPhase.VALIDATION,
-                MigrationPhase.COMPLETION
+                MigrationPhase.COMPLETION,
             ]
 
             plan = MigrationPlan(
@@ -187,11 +196,12 @@ class DataMigrationService:
                 priority_breakdown=priority_breakdown,
                 phases=phases,
                 completion_tasks=completion_tasks,
-                quality_issues=filtered_issues
+                quality_issues=filtered_issues,
             )
 
             self.logger.info(
-                f"Migration plan created: {total_tasks} tasks for {total_bills} bills")
+                f"Migration plan created: {total_tasks} tasks for {total_bills} bills"
+            )
             return plan
 
         except Exception as e:
@@ -207,23 +217,23 @@ class DataMigrationService:
             plan_id=plan.plan_id,
             status=MigrationStatus.RUNNING,
             current_phase=MigrationPhase.AUDIT,
-            started_at=datetime.now()
+            started_at=datetime.now(),
         )
 
         try:
             # Phase 1: Audit (already done in planning)
             self.logger.info("Phase 1: Audit completed during planning")
-            execution.phase_results['audit'] = {
-                'quality_issues_found': len(plan.quality_issues),
-                'completion_tasks_generated': len(plan.completion_tasks)
+            execution.phase_results["audit"] = {
+                "quality_issues_found": len(plan.quality_issues),
+                "completion_tasks_generated": len(plan.completion_tasks),
             }
 
             # Phase 2: Planning (already done)
             execution.current_phase = MigrationPhase.PLANNING
             self.logger.info("Phase 2: Planning completed")
-            execution.phase_results['planning'] = {
-                'total_tasks': plan.total_tasks,
-                'estimated_time_hours': plan.estimated_time_hours
+            execution.phase_results["planning"] = {
+                "total_tasks": plan.total_tasks,
+                "estimated_time_hours": plan.estimated_time_hours,
             }
 
             # Phase 3: Execution
@@ -231,23 +241,24 @@ class DataMigrationService:
             self.logger.info("Phase 3: Starting execution")
 
             batch_result = self.completion_processor.execute_completion_plan(
-                plan.completion_tasks)
+                plan.completion_tasks
+            )
 
             execution.tasks_completed = batch_result.completed_tasks
             execution.tasks_failed = batch_result.failed_tasks
-            execution.phase_results['execution'] = {
-                'batch_id': batch_result.batch_id,
-                'success_rate': batch_result.success_rate,
-                'processing_time_ms': batch_result.total_processing_time_ms
+            execution.phase_results["execution"] = {
+                "batch_id": batch_result.batch_id,
+                "success_rate": batch_result.success_rate,
+                "processing_time_ms": batch_result.total_processing_time_ms,
             }
 
             # Phase 4: Validation
             execution.current_phase = MigrationPhase.VALIDATION
             self.logger.info("Phase 4: Starting validation")
 
-            if self.config['auto_validate_after_completion']:
+            if self.config["auto_validate_after_completion"]:
                 validation_result = self._validate_migration_results(plan, batch_result)
-                execution.phase_results['validation'] = validation_result
+                execution.phase_results["validation"] = validation_result
 
             # Phase 5: Completion
             execution.current_phase = MigrationPhase.COMPLETION
@@ -255,14 +266,19 @@ class DataMigrationService:
 
             # Generate migration report
             migration_report = self._generate_migration_report(
-                plan, execution, batch_result)
+                plan, execution, batch_result
+            )
 
             # Save report
             self._save_migration_report(migration_report)
 
-            execution.phase_results['completion'] = {
-                'report_generated': True,
-                'final_quality_score': migration_report.final_quality_report.overall_metrics.overall_quality_score if migration_report.final_quality_report else None
+            execution.phase_results["completion"] = {
+                "report_generated": True,
+                "final_quality_score": (
+                    migration_report.final_quality_report.overall_metrics.overall_quality_score
+                    if migration_report.final_quality_report
+                    else None
+                ),
             }
 
             # Mark as completed
@@ -271,7 +287,8 @@ class DataMigrationService:
             execution.progress_percentage = 100.0
 
             self.logger.info(
-                f"Migration execution completed successfully: {execution.tasks_completed}/{plan.total_tasks} tasks")
+                f"Migration execution completed successfully: {execution.tasks_completed}/{plan.total_tasks} tasks"
+            )
 
             # Store execution history
             self.migration_history.append(execution)
@@ -313,7 +330,8 @@ class DataMigrationService:
         return priority_counts
 
     def _validate_migration_results(
-            self, plan: MigrationPlan, batch_result: BatchCompletionResult) -> dict[str, Any]:
+        self, plan: MigrationPlan, batch_result: BatchCompletionResult
+    ) -> dict[str, Any]:
         """Validate migration results"""
         try:
             self.logger.info("Validating migration results...")
@@ -327,37 +345,40 @@ class DataMigrationService:
 
             # Calculate improvement
             issues_resolved = initial_issues - final_issues
-            improvement_rate = issues_resolved / initial_issues if initial_issues > 0 else 0
+            improvement_rate = (
+                issues_resolved / initial_issues if initial_issues > 0 else 0
+            )
 
             # Validate successful tasks
             successful_tasks = [r for r in batch_result.tasks_results if r.success]
 
             validation_result = {
-                'initial_issues': initial_issues,
-                'final_issues': final_issues,
-                'issues_resolved': issues_resolved,
-                'improvement_rate': improvement_rate,
-                'successful_tasks': len(successful_tasks),
-                'fields_completed': sum(len(r.fields_completed) for r in successful_tasks),
-                'validation_passed': improvement_rate > 0.1  # At least 10% improvement
+                "initial_issues": initial_issues,
+                "final_issues": final_issues,
+                "issues_resolved": issues_resolved,
+                "improvement_rate": improvement_rate,
+                "successful_tasks": len(successful_tasks),
+                "fields_completed": sum(
+                    len(r.fields_completed) for r in successful_tasks
+                ),
+                "validation_passed": improvement_rate > 0.1,  # At least 10% improvement
             }
 
             self.logger.info(
-                f"Validation completed: {improvement_rate:.1%} improvement")
+                f"Validation completed: {improvement_rate:.1%} improvement"
+            )
             return validation_result
 
         except Exception as e:
             self.logger.error(f"Validation failed: {e}")
-            return {
-                'validation_passed': False,
-                'error': str(e)
-            }
+            return {"validation_passed": False, "error": str(e)}
 
     def _generate_migration_report(
-            self,
-            plan: MigrationPlan,
-            execution: MigrationExecution,
-            batch_result: BatchCompletionResult) -> MigrationReport:
+        self,
+        plan: MigrationPlan,
+        execution: MigrationExecution,
+        batch_result: BatchCompletionResult,
+    ) -> MigrationReport:
         """Generate comprehensive migration report"""
         try:
             # Get initial quality report from audit
@@ -365,38 +386,44 @@ class DataMigrationService:
 
             # Calculate final quality if validation was performed
             final_audit = None
-            if 'validation' in execution.phase_results:
+            if "validation" in execution.phase_results:
                 final_audit = self.quality_auditor.conduct_full_audit()
 
             # Calculate quality improvement
             quality_improvement = {}
             if final_audit:
                 quality_improvement = {
-                    'overall_score': final_audit.overall_metrics.overall_quality_score - initial_audit.overall_metrics.overall_quality_score,
-                    'completeness_rate': final_audit.overall_metrics.completeness_rate - initial_audit.overall_metrics.completeness_rate,
-                    'accuracy_rate': final_audit.overall_metrics.accuracy_rate - initial_audit.overall_metrics.accuracy_rate}
+                    "overall_score": final_audit.overall_metrics.overall_quality_score
+                    - initial_audit.overall_metrics.overall_quality_score,
+                    "completeness_rate": final_audit.overall_metrics.completeness_rate
+                    - initial_audit.overall_metrics.completeness_rate,
+                    "accuracy_rate": final_audit.overall_metrics.accuracy_rate
+                    - initial_audit.overall_metrics.accuracy_rate,
+                }
 
             # Calculate completion metrics
-            total_fields_completed = sum(len(r.fields_completed)
-                                         for r in batch_result.tasks_results)
+            total_fields_completed = sum(
+                len(r.fields_completed) for r in batch_result.tasks_results
+            )
             total_bills_improved = len(
-                set(r.bill_id for r in batch_result.tasks_results if r.success))
+                set(r.bill_id for r in batch_result.tasks_results if r.success)
+            )
 
             # Calculate performance metrics
             total_processing_time = batch_result.total_processing_time_ms
 
             phases_timing = {
-                'execution': batch_result.total_processing_time_ms,
-                'validation': execution.phase_results.get(
-                    'validation',
-                    {}).get(
-                    'processing_time_ms',
-                    0),
-                'total': total_processing_time}
+                "execution": batch_result.total_processing_time_ms,
+                "validation": execution.phase_results.get("validation", {}).get(
+                    "processing_time_ms", 0
+                ),
+                "total": total_processing_time,
+            }
 
             # Generate recommendations
             recommendations = self._generate_migration_recommendations(
-                batch_result, quality_improvement)
+                batch_result, quality_improvement
+            )
 
             report = MigrationReport(
                 plan_id=plan.plan_id,
@@ -411,7 +438,7 @@ class DataMigrationService:
                 total_processing_time_ms=total_processing_time,
                 phases_timing=phases_timing,
                 success_rate=batch_result.success_rate,
-                recommendations=recommendations
+                recommendations=recommendations,
             )
 
             return report
@@ -420,27 +447,29 @@ class DataMigrationService:
             self.logger.error(f"Error generating migration report: {e}")
             raise
 
-    def _generate_migration_recommendations(self,
-                                            batch_result: BatchCompletionResult,
-                                            quality_improvement: dict[str,
-                                                                      float]) -> list[str]:
+    def _generate_migration_recommendations(
+        self, batch_result: BatchCompletionResult, quality_improvement: dict[str, float]
+    ) -> list[str]:
         """Generate recommendations based on migration results"""
         recommendations = []
 
         # Success rate recommendations
         if batch_result.success_rate < 0.8:
             recommendations.append(
-                "Consider reviewing failed tasks and implementing retry mechanisms")
+                "Consider reviewing failed tasks and implementing retry mechanisms"
+            )
 
         # Quality improvement recommendations
-        if quality_improvement and quality_improvement.get('overall_score', 0) < 0.1:
+        if quality_improvement and quality_improvement.get("overall_score", 0) < 0.1:
             recommendations.append(
-                "Quality improvement was minimal - consider additional enhancement strategies")
+                "Quality improvement was minimal - consider additional enhancement strategies"
+            )
 
         # Performance recommendations
         if batch_result.total_processing_time_ms > 300000:  # 5 minutes
             recommendations.append(
-                "Consider optimizing batch processing for better performance")
+                "Consider optimizing batch processing for better performance"
+            )
 
         # Field completion recommendations
         failed_fields = {}
@@ -451,7 +480,8 @@ class DataMigrationService:
         if failed_fields:
             most_failed = max(failed_fields.items(), key=lambda x: x[1])
             recommendations.append(
-                f"Field '{most_failed[0]}' failed most frequently - review extraction logic")
+                f"Field '{most_failed[0]}' failed most frequently - review extraction logic"
+            )
 
         return recommendations
 
@@ -464,7 +494,7 @@ class DataMigrationService:
             # Export report
             exported_report = self._export_migration_report(report)
 
-            with open(report_path, 'w', encoding='utf-8') as f:
+            with open(report_path, "w", encoding="utf-8") as f:
                 json.dump(exported_report, f, indent=2, ensure_ascii=False, default=str)
 
             self.logger.info(f"Migration report saved to {report_path}")
@@ -475,41 +505,45 @@ class DataMigrationService:
     def _export_migration_report(self, report: MigrationReport) -> dict[str, Any]:
         """Export migration report to dictionary"""
         return {
-            'plan_id': report.plan_id,
-            'execution_id': report.execution_id,
-            'migration_completed_at': report.migration_completed_at.isoformat(),
-            'summary': {
-                'total_fields_completed': report.total_fields_completed,
-                'total_bills_improved': report.total_bills_improved,
-                'success_rate': report.success_rate,
-                'total_processing_time_ms': report.total_processing_time_ms
+            "plan_id": report.plan_id,
+            "execution_id": report.execution_id,
+            "migration_completed_at": report.migration_completed_at.isoformat(),
+            "summary": {
+                "total_fields_completed": report.total_fields_completed,
+                "total_bills_improved": report.total_bills_improved,
+                "success_rate": report.success_rate,
+                "total_processing_time_ms": report.total_processing_time_ms,
             },
-            'quality_improvement': report.quality_improvement,
-            'initial_quality_metrics': {
-                'overall_quality_score': report.initial_quality_report.overall_metrics.overall_quality_score,
-                'completeness_rate': report.initial_quality_report.overall_metrics.completeness_rate,
-                'accuracy_rate': report.initial_quality_report.overall_metrics.accuracy_rate,
-                'total_issues': len(report.initial_quality_report.issues)
+            "quality_improvement": report.quality_improvement,
+            "initial_quality_metrics": {
+                "overall_quality_score": report.initial_quality_report.overall_metrics.overall_quality_score,
+                "completeness_rate": report.initial_quality_report.overall_metrics.completeness_rate,
+                "accuracy_rate": report.initial_quality_report.overall_metrics.accuracy_rate,
+                "total_issues": len(report.initial_quality_report.issues),
             },
-            'final_quality_metrics': {
-                'overall_quality_score': report.final_quality_report.overall_metrics.overall_quality_score,
-                'completeness_rate': report.final_quality_report.overall_metrics.completeness_rate,
-                'accuracy_rate': report.final_quality_report.overall_metrics.accuracy_rate,
-                'total_issues': len(report.final_quality_report.issues)
-            } if report.final_quality_report else None,
-            'batch_results': [
+            "final_quality_metrics": (
                 {
-                    'batch_id': batch.batch_id,
-                    'total_tasks': batch.total_tasks,
-                    'completed_tasks': batch.completed_tasks,
-                    'failed_tasks': batch.failed_tasks,
-                    'success_rate': batch.success_rate,
-                    'processing_time_ms': batch.total_processing_time_ms
+                    "overall_quality_score": report.final_quality_report.overall_metrics.overall_quality_score,
+                    "completeness_rate": report.final_quality_report.overall_metrics.completeness_rate,
+                    "accuracy_rate": report.final_quality_report.overall_metrics.accuracy_rate,
+                    "total_issues": len(report.final_quality_report.issues),
+                }
+                if report.final_quality_report
+                else None
+            ),
+            "batch_results": [
+                {
+                    "batch_id": batch.batch_id,
+                    "total_tasks": batch.total_tasks,
+                    "completed_tasks": batch.completed_tasks,
+                    "failed_tasks": batch.failed_tasks,
+                    "success_rate": batch.success_rate,
+                    "processing_time_ms": batch.total_processing_time_ms,
                 }
                 for batch in report.batch_results
             ],
-            'phases_timing': report.phases_timing,
-            'recommendations': report.recommendations
+            "phases_timing": report.phases_timing,
+            "recommendations": report.recommendations,
         }
 
     def get_migration_status(self, execution_id: str) -> MigrationExecution | None:
@@ -521,26 +555,27 @@ class DataMigrationService:
 
     def get_migration_history(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get migration history"""
-        recent_executions = self.migration_history[-limit:
-                                                   ] if self.migration_history else []
+        recent_executions = (
+            self.migration_history[-limit:] if self.migration_history else []
+        )
 
         return [
-
             {
-                'execution_id': execution.execution_id,
-                'plan_id': execution.plan_id,
-                'status': execution.status.value,
-                'started_at': execution.started_at.isoformat(),
-                'completed_at': execution.completed_at.isoformat()
-                if execution.completed_at else None,
-                'progress_percentage': execution.progress_percentage,
-                'tasks_completed': execution.tasks_completed,
-                'tasks_failed': execution.tasks_failed,
-                'current_phase': execution.current_phase.value
+                "execution_id": execution.execution_id,
+                "plan_id": execution.plan_id,
+                "status": execution.status.value,
+                "started_at": execution.started_at.isoformat(),
+                "completed_at": (
+                    execution.completed_at.isoformat()
+                    if execution.completed_at
+                    else None
+                ),
+                "progress_percentage": execution.progress_percentage,
+                "tasks_completed": execution.tasks_completed,
+                "tasks_failed": execution.tasks_failed,
+                "current_phase": execution.current_phase.value,
             }
-
             for execution in recent_executions
-
         ]
 
     def get_migration_statistics(self, days: int = 30) -> dict[str, Any]:
@@ -548,36 +583,44 @@ class DataMigrationService:
         cutoff_date = datetime.now() - timedelta(days=days)
 
         recent_executions = [
-            execution for execution in self.migration_history
+            execution
+            for execution in self.migration_history
             if execution.started_at > cutoff_date
         ]
 
         if not recent_executions:
             return {
-                'period_days': days,
-                'total_migrations': 0,
-                'successful_migrations': 0,
-                'failed_migrations': 0,
-                'success_rate': 0.0
+                "period_days": days,
+                "total_migrations": 0,
+                "successful_migrations": 0,
+                "failed_migrations": 0,
+                "success_rate": 0.0,
             }
 
-        successful = len([e for e in recent_executions if e.status ==
-                         MigrationStatus.COMPLETED])
+        successful = len(
+            [e for e in recent_executions if e.status == MigrationStatus.COMPLETED]
+        )
         failed = len(
-            [e for e in recent_executions if e.status == MigrationStatus.FAILED])
+            [e for e in recent_executions if e.status == MigrationStatus.FAILED]
+        )
 
         return {
-            'period_days': days,
-            'total_migrations': len(recent_executions),
-            'successful_migrations': successful,
-            'failed_migrations': failed,
-            'success_rate': successful / len(recent_executions),
-            'total_tasks_completed': sum(e.tasks_completed for e in recent_executions),
-            'total_tasks_failed': sum(e.tasks_failed for e in recent_executions),
-            'average_processing_time_ms': sum(
-                e.phase_results.get('execution', {}).get('processing_time_ms', 0)
-                for e in recent_executions
-            ) / len(recent_executions) if recent_executions else 0
+            "period_days": days,
+            "total_migrations": len(recent_executions),
+            "successful_migrations": successful,
+            "failed_migrations": failed,
+            "success_rate": successful / len(recent_executions),
+            "total_tasks_completed": sum(e.tasks_completed for e in recent_executions),
+            "total_tasks_failed": sum(e.tasks_failed for e in recent_executions),
+            "average_processing_time_ms": (
+                sum(
+                    e.phase_results.get("execution", {}).get("processing_time_ms", 0)
+                    for e in recent_executions
+                )
+                / len(recent_executions)
+                if recent_executions
+                else 0
+            ),
         }
 
     def cleanup_old_reports(self, retention_days: int = 90):
@@ -587,8 +630,9 @@ class DataMigrationService:
 
             # Clean up report files
             for filename in os.listdir(self.reports_dir):
-                if filename.startswith(
-                        'migration_report_') and filename.endswith('.json'):
+                if filename.startswith("migration_report_") and filename.endswith(
+                    ".json"
+                ):
                     filepath = os.path.join(self.reports_dir, filename)
                     file_mtime = datetime.fromtimestamp(os.path.getmtime(filepath))
 
@@ -598,12 +642,14 @@ class DataMigrationService:
 
             # Clean up in-memory history
             self.migration_history = [
-                execution for execution in self.migration_history
+                execution
+                for execution in self.migration_history
                 if execution.started_at > cutoff_date
             ]
 
             self.migration_reports = [
-                report for report in self.migration_reports
+                report
+                for report in self.migration_reports
                 if report.migration_completed_at > cutoff_date
             ]
 
@@ -616,17 +662,20 @@ class DataMigrationService:
         """Export service status report"""
         if format == "json":
             return {
-                'service_info': {
-                    'total_migrations': len(
-                        self.migration_history),
-                    'recent_migrations': len(
+                "service_info": {
+                    "total_migrations": len(self.migration_history),
+                    "recent_migrations": len(
                         [
-                            e for e in self.migration_history if e.started_at > datetime.now() -
-                            timedelta(
-                                days=7)]),
-                    'reports_directory': self.reports_dir},
-                'configuration': self.config,
-                'recent_executions': self.get_migration_history(5),
-                'statistics': self.get_migration_statistics(30)}
+                            e
+                            for e in self.migration_history
+                            if e.started_at > datetime.now() - timedelta(days=7)
+                        ]
+                    ),
+                    "reports_directory": self.reports_dir,
+                },
+                "configuration": self.config,
+                "recent_executions": self.get_migration_history(5),
+                "statistics": self.get_migration_statistics(30),
+            }
         else:
-            return {'error': f'Unsupported format: {format}'}
+            return {"error": f"Unsupported format: {format}"}

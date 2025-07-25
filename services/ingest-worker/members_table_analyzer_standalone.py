@@ -15,7 +15,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class SimpleAirtableClient:
@@ -31,7 +31,7 @@ class SimpleAirtableClient:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     async def fetch_all_members(self) -> list[dict[str, Any]]:
@@ -47,7 +47,9 @@ class SimpleAirtableClient:
                 if offset:
                     params["offset"] = offset
 
-                async with session.get(url, headers=self.headers, params=params) as response:
+                async with session.get(
+                    url, headers=self.headers, params=params
+                ) as response:
                     if response.status != 200:
                         error_text = await response.text()
                         print(f"Error fetching data: {response.status}")
@@ -128,20 +130,25 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
 
     print(f"Total records: {total_records}")
     print(
-        f"Records with ANY Name_Kana: {total_present} ({total_present/total_records*100:.1f}%)")
+        f"Records with ANY Name_Kana: {total_present} ({total_present/total_records*100:.1f}%)"
+    )
     print(
-        f"Records with VALID Name_Kana: {valid_count} ({valid_count/total_records*100:.1f}%)")
+        f"Records with VALID Name_Kana: {valid_count} ({valid_count/total_records*100:.1f}%)"
+    )
     print(
-        f"Records with PLACEHOLDER kana (たなかたろう): {placeholder_count} ({placeholder_count/total_records*100:.1f}%)")
+        f"Records with PLACEHOLDER kana (たなかたろう): {placeholder_count} ({placeholder_count/total_records*100:.1f}%)"
+    )
     print(
-        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)")
+        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)"
+    )
     print()
 
     # Critical finding
     print("🚨 CRITICAL FINDING:")
     total_needing_kana = missing_count + placeholder_count
     print(
-        f"Records needing proper kana: {total_needing_kana}/{total_records} ({total_needing_kana/total_records*100:.1f}%)")
+        f"Records needing proper kana: {total_needing_kana}/{total_records} ({total_needing_kana/total_records*100:.1f}%)"
+    )
     print()
 
     if placeholder_kana:
@@ -231,8 +238,16 @@ def analyze_reality_indicators(records: list[dict[str, Any]]) -> None:
 
     # Check for known real politicians
     known_politicians = [
-        "赤池誠章", "阿達雅志", "青島健太", "青山繁晴", "秋野公造",
-        "麻生太郎", "安倍晋三", "岸田文雄", "菅義偉", "石破茂"
+        "赤池誠章",
+        "阿達雅志",
+        "青島健太",
+        "青山繁晴",
+        "秋野公造",
+        "麻生太郎",
+        "安倍晋三",
+        "岸田文雄",
+        "菅義偉",
+        "石破茂",
     ]
 
     found_real_politicians = []
@@ -263,9 +278,9 @@ def analyze_reality_indicators(records: list[dict[str, Any]]) -> None:
         if not name:
             continue
 
-        has_kanji = any('\u4e00' <= c <= '\u9faf' for c in name)
-        has_hiragana = any('\u3040' <= c <= '\u309f' for c in name)
-        has_katakana = any('\u30a0' <= c <= '\u30ff' for c in name)
+        has_kanji = any("\u4e00" <= c <= "\u9faf" for c in name)
+        has_hiragana = any("\u3040" <= c <= "\u309f" for c in name)
+        has_katakana = any("\u30a0" <= c <= "\u30ff" for c in name)
 
         if has_kanji and (has_hiragana or has_katakana):
             mixed_names += 1
@@ -278,9 +293,11 @@ def analyze_reality_indicators(records: list[dict[str, Any]]) -> None:
 
     total_analyzed = kanji_names + hiragana_names + katakana_names + mixed_names
     print(
-        f"  Kanji only: {kanji_names}/{total_analyzed} ({kanji_names/total_analyzed*100:.1f}%)")
+        f"  Kanji only: {kanji_names}/{total_analyzed} ({kanji_names/total_analyzed*100:.1f}%)"
+    )
     print(
-        f"  Mixed (kanji + kana): {mixed_names}/{total_analyzed} ({mixed_names/total_analyzed*100:.1f}%)")
+        f"  Mixed (kanji + kana): {mixed_names}/{total_analyzed} ({mixed_names/total_analyzed*100:.1f}%)"
+    )
     print(f"  Hiragana only: {hiragana_names}/{total_analyzed}")
     print(f"  Katakana only: {katakana_names}/{total_analyzed}")
     print()
@@ -312,7 +329,8 @@ def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
     print("4. **LLM-Assisted Generation**:")
     print("   - Use GPT-4 or Claude to generate kana readings")
     print(
-        "   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'")
+        "   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'"
+    )
     print("   - Verify against known databases")
     print()
 
@@ -366,10 +384,11 @@ async def main():
 
     # Save raw data for further analysis
     output_file = f"members_analysis_result_{int(__import__('time').time())}.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
 
     print(f"Raw data saved to: {output_file}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

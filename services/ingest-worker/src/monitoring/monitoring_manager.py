@@ -22,6 +22,7 @@ from .monitoring_service import (
 @dataclass
 class MonitoringConfiguration:
     """Central monitoring configuration"""
+
     dashboard_refresh_interval: int = 300  # seconds
     alert_evaluation_interval: int = 300  # seconds
     health_check_interval: int = 60  # seconds
@@ -36,16 +37,16 @@ class MonitoringConfiguration:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'dashboard_refresh_interval': self.dashboard_refresh_interval,
-            'alert_evaluation_interval': self.alert_evaluation_interval,
-            'health_check_interval': self.health_check_interval,
-            'data_retention_days': self.data_retention_days,
-            'enable_email_alerts': self.enable_email_alerts,
-            'enable_slack_alerts': self.enable_slack_alerts,
-            'enable_webhook_alerts': self.enable_webhook_alerts,
-            'quality_score_threshold': self.quality_score_threshold,
-            'completeness_threshold': self.completeness_threshold,
-            'error_rate_threshold': self.error_rate_threshold
+            "dashboard_refresh_interval": self.dashboard_refresh_interval,
+            "alert_evaluation_interval": self.alert_evaluation_interval,
+            "health_check_interval": self.health_check_interval,
+            "data_retention_days": self.data_retention_days,
+            "enable_email_alerts": self.enable_email_alerts,
+            "enable_slack_alerts": self.enable_slack_alerts,
+            "enable_webhook_alerts": self.enable_webhook_alerts,
+            "quality_score_threshold": self.quality_score_threshold,
+            "completeness_threshold": self.completeness_threshold,
+            "error_rate_threshold": self.error_rate_threshold,
         }
 
 
@@ -53,9 +54,8 @@ class MonitoringManager:
     """Central monitoring manager"""
 
     def __init__(
-            self,
-            database_url: str,
-            config: MonitoringConfiguration | None = None):
+        self, database_url: str, config: MonitoringConfiguration | None = None
+    ):
         self.database_url = database_url
         self.config = config or MonitoringConfiguration()
         self.logger = logging.getLogger(__name__)
@@ -63,7 +63,8 @@ class MonitoringManager:
         # Initialize services
         self.dashboard = DataQualityDashboard(database_url)
         self.monitoring_service = MonitoringService(
-            database_url, self._create_monitoring_config())
+            database_url, self._create_monitoring_config()
+        )
         self.migration_service = DataMigrationService(database_url)
 
         # Service state
@@ -73,24 +74,21 @@ class MonitoringManager:
     def _create_monitoring_config(self) -> dict[str, Any]:
         """Create monitoring service configuration"""
         return {
-            'evaluation_interval': self.config.alert_evaluation_interval,
-            'health_check_interval': self.config.health_check_interval,
-            'alert_cooldown': 1800,  # 30 minutes
-            'max_active_alerts': 100,
-            'notification_retry_count': 3,
-            'notification_retry_delay': 60,
-            'email_settings': {
-                'smtp_server': 'localhost',
-                'smtp_port': 587,
-                'smtp_user': '',
-                'smtp_password': '',
-                'from_email': 'monitoring@seiji-watch.com',
-                'to_emails': ['admin@seiji-watch.com']
+            "evaluation_interval": self.config.alert_evaluation_interval,
+            "health_check_interval": self.config.health_check_interval,
+            "alert_cooldown": 1800,  # 30 minutes
+            "max_active_alerts": 100,
+            "notification_retry_count": 3,
+            "notification_retry_delay": 60,
+            "email_settings": {
+                "smtp_server": "localhost",
+                "smtp_port": 587,
+                "smtp_user": "",
+                "smtp_password": "",
+                "from_email": "monitoring@seiji-watch.com",
+                "to_emails": ["admin@seiji-watch.com"],
             },
-            'webhook_settings': {
-                'slack_webhook_url': '',
-                'general_webhook_url': ''
-            }
+            "webhook_settings": {"slack_webhook_url": "", "general_webhook_url": ""},
         }
 
     def start(self):
@@ -150,7 +148,8 @@ class MonitoringManager:
                 condition=f"overall_quality_score < {self.config.quality_score_threshold}",
                 threshold=self.config.quality_score_threshold,
                 evaluation_window=10,
-                notification_channels=self._get_enabled_channels())
+                notification_channels=self._get_enabled_channels(),
+            )
 
             self.monitoring_service.add_alert_rule(quality_rule)
 
@@ -164,7 +163,8 @@ class MonitoringManager:
                 condition=f"data_completeness < {self.config.completeness_threshold}",
                 threshold=self.config.completeness_threshold,
                 evaluation_window=15,
-                notification_channels=self._get_enabled_channels())
+                notification_channels=self._get_enabled_channels(),
+            )
 
             self.monitoring_service.add_alert_rule(completeness_rule)
 
@@ -178,7 +178,8 @@ class MonitoringManager:
                 condition=f"processing_error_rate > {self.config.error_rate_threshold}",
                 threshold=self.config.error_rate_threshold,
                 evaluation_window=5,
-                notification_channels=self._get_enabled_channels())
+                notification_channels=self._get_enabled_channels(),
+            )
 
             self.monitoring_service.add_alert_rule(error_rule)
 
@@ -201,7 +202,8 @@ class MonitoringManager:
         return channels
 
     def get_dashboard_data(
-            self, dashboard_id: str = "main_quality_dashboard") -> dict[str, Any]:
+        self, dashboard_id: str = "main_quality_dashboard"
+    ) -> dict[str, Any]:
         """Get dashboard data"""
         try:
             return self.dashboard.get_dashboard_data(dashboard_id)
@@ -260,63 +262,67 @@ class MonitoringManager:
 
             # Extract key metrics
             quality_metrics = {}
-            for panel in dashboard_data.get('panels', []):
-                if panel['panel_id'] == 'quality_overview':
-                    for metric in panel.get('metrics', []):
-                        quality_metrics[metric['name']] = metric['value']
+            for panel in dashboard_data.get("panels", []):
+                if panel["panel_id"] == "quality_overview":
+                    for metric in panel.get("metrics", []):
+                        quality_metrics[metric["name"]] = metric["value"]
 
             # Calculate overall health score
             overall_health = self._calculate_overall_health(
-                health_status, quality_metrics)
+                health_status, quality_metrics
+            )
 
             return {
-                'overall_health': overall_health,
-                'health_checks': health_status,
-                'monitoring_stats': monitoring_stats.to_dict(),
-                'quality_metrics': quality_metrics,
-                'service_status': {
-                    'is_running': self.is_running,
-                    'start_time': self.start_time.isoformat() if self.start_time else None,
-                    'uptime_seconds': (
-                        datetime.now() -
-                        self.start_time).total_seconds() if self.start_time else 0}}
+                "overall_health": overall_health,
+                "health_checks": health_status,
+                "monitoring_stats": monitoring_stats.to_dict(),
+                "quality_metrics": quality_metrics,
+                "service_status": {
+                    "is_running": self.is_running,
+                    "start_time": (
+                        self.start_time.isoformat() if self.start_time else None
+                    ),
+                    "uptime_seconds": (
+                        (datetime.now() - self.start_time).total_seconds()
+                        if self.start_time
+                        else 0
+                    ),
+                },
+            }
 
         except Exception as e:
             self.logger.error(f"Error getting system health: {e}")
             return {
-                'overall_health': 0.0,
-                'health_checks': {},
-                'monitoring_stats': {},
-                'quality_metrics': {},
-                'service_status': {'is_running': False}
+                "overall_health": 0.0,
+                "health_checks": {},
+                "monitoring_stats": {},
+                "quality_metrics": {},
+                "service_status": {"is_running": False},
             }
 
     def _calculate_overall_health(
-            self, health_status: dict[str, Any], quality_metrics: dict[str, Any]) -> float:
+        self, health_status: dict[str, Any], quality_metrics: dict[str, Any]
+    ) -> float:
         """Calculate overall system health score"""
         try:
             health_score = 0.0
             total_weight = 0.0
 
             # Health checks (30% weight)
-            if health_status.get('overall_health', False):
+            if health_status.get("overall_health", False):
                 health_score += 0.3
             total_weight += 0.3
 
             # Quality metrics (70% weight)
             if quality_metrics:
-                quality_score = quality_metrics.get('Overall Quality Score', 0)
-                completeness = quality_metrics.get('Data Completeness', 0)
-                accuracy = quality_metrics.get('Data Accuracy', 0)
+                quality_score = quality_metrics.get("Overall Quality Score", 0)
+                completeness = quality_metrics.get("Data Completeness", 0)
+                accuracy = quality_metrics.get("Data Accuracy", 0)
 
                 # Weighted average of quality metrics
                 quality_weight = (
-                    quality_score *
-                    0.4 +
-                    completeness *
-                    0.3 +
-                    accuracy *
-                    0.3)
+                    quality_score * 0.4 + completeness * 0.3 + accuracy * 0.3
+                )
                 health_score += quality_weight * 0.7
                 total_weight += 0.7
 
@@ -331,38 +337,42 @@ class MonitoringManager:
         try:
             # Get migration statistics
             migration_stats = self.migration_service.get_migration_statistics(
-                hours // 24)
+                hours // 24
+            )
 
             # Get completion processor statistics
-            completion_stats = self.migration_service.completion_processor.get_completion_statistics(
-                hours // 24)
+            completion_stats = (
+                self.migration_service.completion_processor.get_completion_statistics(
+                    hours // 24
+                )
+            )
 
             # Get dashboard metrics
             dashboard_data = self.dashboard.get_dashboard_data()
 
             # Extract processing metrics
             processing_metrics = {}
-            for panel in dashboard_data.get('panels', []):
-                if panel['panel_id'] == 'processing_metrics':
-                    for metric in panel.get('metrics', []):
-                        processing_metrics[metric['name']] = metric['value']
+            for panel in dashboard_data.get("panels", []):
+                if panel["panel_id"] == "processing_metrics":
+                    for metric in panel.get("metrics", []):
+                        processing_metrics[metric["name"]] = metric["value"]
 
             return {
-                'migration_performance': migration_stats,
-                'completion_performance': completion_stats,
-                'processing_performance': processing_metrics,
-                'period_hours': hours,
-                'generated_at': datetime.now().isoformat()
+                "migration_performance": migration_stats,
+                "completion_performance": completion_stats,
+                "processing_performance": processing_metrics,
+                "period_hours": hours,
+                "generated_at": datetime.now().isoformat(),
             }
 
         except Exception as e:
             self.logger.error(f"Error getting performance metrics: {e}")
             return {
-                'migration_performance': {},
-                'completion_performance': {},
-                'processing_performance': {},
-                'period_hours': hours,
-                'generated_at': datetime.now().isoformat()
+                "migration_performance": {},
+                "completion_performance": {},
+                "processing_performance": {},
+                "period_hours": hours,
+                "generated_at": datetime.now().isoformat(),
             }
 
     def run_quality_audit(self) -> dict[str, Any]:
@@ -378,66 +388,74 @@ class MonitoringManager:
 
             # Extract quality metrics
             quality_metrics = {}
-            for panel in dashboard_data.get('panels', []):
-                if panel['panel_id'] == 'quality_overview':
-                    for metric in panel.get('metrics', []):
-                        quality_metrics[metric['name']] = {
-                            'value': metric['value'],
-                            'unit': metric['unit'],
-                            'severity': metric['severity'],
-                            'description': metric['description']
+            for panel in dashboard_data.get("panels", []):
+                if panel["panel_id"] == "quality_overview":
+                    for metric in panel.get("metrics", []):
+                        quality_metrics[metric["name"]] = {
+                            "value": metric["value"],
+                            "unit": metric["unit"],
+                            "severity": metric["severity"],
+                            "description": metric["description"],
                         }
 
             return {
-                'audit_completed_at': datetime.now().isoformat(),
-                'quality_metrics': quality_metrics,
-                'recommendations': self._generate_audit_recommendations(quality_metrics)
+                "audit_completed_at": datetime.now().isoformat(),
+                "quality_metrics": quality_metrics,
+                "recommendations": self._generate_audit_recommendations(
+                    quality_metrics
+                ),
             }
 
         except Exception as e:
             self.logger.error(f"Error running quality audit: {e}")
             return {
-                'audit_completed_at': datetime.now().isoformat(),
-                'quality_metrics': {},
-                'recommendations': [],
-                'error': str(e)
+                "audit_completed_at": datetime.now().isoformat(),
+                "quality_metrics": {},
+                "recommendations": [],
+                "error": str(e),
             }
 
     def _generate_audit_recommendations(
-            self, quality_metrics: dict[str, Any]) -> list[str]:
+        self, quality_metrics: dict[str, Any]
+    ) -> list[str]:
         """Generate recommendations based on quality metrics"""
         recommendations = []
 
         try:
             # Check overall quality score
-            overall_score = quality_metrics.get(
-                'Overall Quality Score', {}).get(
-                'value', 0)
+            overall_score = quality_metrics.get("Overall Quality Score", {}).get(
+                "value", 0
+            )
             if overall_score < 0.7:
                 recommendations.append(
-                    "Consider running data completion migration to improve overall quality")
+                    "Consider running data completion migration to improve overall quality"
+                )
 
             # Check completeness
-            completeness = quality_metrics.get('Data Completeness', {}).get('value', 0)
+            completeness = quality_metrics.get("Data Completeness", {}).get("value", 0)
             if completeness < 0.8:
                 recommendations.append(
-                    "Run data completion processor to fill missing bill information")
+                    "Run data completion processor to fill missing bill information"
+                )
 
             # Check accuracy
-            accuracy = quality_metrics.get('Data Accuracy', {}).get('value', 0)
+            accuracy = quality_metrics.get("Data Accuracy", {}).get("value", 0)
             if accuracy < 0.9:
                 recommendations.append(
-                    "Review data validation rules and fix accuracy issues")
+                    "Review data validation rules and fix accuracy issues"
+                )
 
             # Check consistency
-            consistency = quality_metrics.get('Data Consistency', {}).get('value', 0)
+            consistency = quality_metrics.get("Data Consistency", {}).get("value", 0)
             if consistency < 0.85:
                 recommendations.append(
-                    "Investigate data consistency issues between sources")
+                    "Investigate data consistency issues between sources"
+                )
 
             if not recommendations:
                 recommendations.append(
-                    "Data quality is good - maintain current monitoring")
+                    "Data quality is good - maintain current monitoring"
+                )
 
         except Exception as e:
             self.logger.error(f"Error generating recommendations: {e}")
@@ -457,7 +475,8 @@ class MonitoringManager:
             if self.is_running:
                 self.monitoring_service.stop_monitoring()
                 self.monitoring_service = MonitoringService(
-                    self.database_url, self._create_monitoring_config())
+                    self.database_url, self._create_monitoring_config()
+                )
                 self.monitoring_service.start_monitoring()
                 self._setup_custom_alert_rules()
 
@@ -472,12 +491,17 @@ class MonitoringManager:
         """Export current configuration"""
         try:
             return {
-                'monitoring_config': self.config.to_dict(),
-                'alert_rules': [
-                    rule.to_dict() for rule in self.monitoring_service.alert_rules.values()],
-                'health_checks': [
-                    check.to_dict() for check in self.monitoring_service.health_checks.values()],
-                'exported_at': datetime.now().isoformat()}
+                "monitoring_config": self.config.to_dict(),
+                "alert_rules": [
+                    rule.to_dict()
+                    for rule in self.monitoring_service.alert_rules.values()
+                ],
+                "health_checks": [
+                    check.to_dict()
+                    for check in self.monitoring_service.health_checks.values()
+                ],
+                "exported_at": datetime.now().isoformat(),
+            }
 
         except Exception as e:
             self.logger.error(f"Error exporting configuration: {e}")
@@ -487,23 +511,29 @@ class MonitoringManager:
         """Get detailed service status"""
         try:
             return {
-                'manager_status': {
-                    'is_running': self.is_running,
-                    'start_time': self.start_time.isoformat() if self.start_time else None,
-                    'uptime_seconds': (
-                        datetime.now() -
-                        self.start_time).total_seconds() if self.start_time else 0},
-                'monitoring_service_status': self.monitoring_service.get_service_status(),
-                'dashboard_status': self.dashboard.get_dashboard_status(),
-                'configuration': self.config.to_dict()}
+                "manager_status": {
+                    "is_running": self.is_running,
+                    "start_time": (
+                        self.start_time.isoformat() if self.start_time else None
+                    ),
+                    "uptime_seconds": (
+                        (datetime.now() - self.start_time).total_seconds()
+                        if self.start_time
+                        else 0
+                    ),
+                },
+                "monitoring_service_status": self.monitoring_service.get_service_status(),
+                "dashboard_status": self.dashboard.get_dashboard_status(),
+                "configuration": self.config.to_dict(),
+            }
 
         except Exception as e:
             self.logger.error(f"Error getting service status: {e}")
             return {
-                'manager_status': {'is_running': False},
-                'monitoring_service_status': {},
-                'dashboard_status': {},
-                'configuration': {}
+                "manager_status": {"is_running": False},
+                "monitoring_service_status": {},
+                "dashboard_status": {},
+                "configuration": {},
             }
 
     def cleanup_old_data(self, retention_days: int | None = None):
@@ -512,7 +542,8 @@ class MonitoringManager:
             retention_days = retention_days or self.config.data_retention_days
 
             self.logger.info(
-                f"Cleaning up monitoring data older than {retention_days} days")
+                f"Cleaning up monitoring data older than {retention_days} days"
+            )
 
             # Clean up migration service data
             self.migration_service.cleanup_old_reports(retention_days)
@@ -523,7 +554,8 @@ class MonitoringManager:
             # Clean up alert history
             cutoff_date = datetime.now() - timedelta(days=retention_days)
             self.monitoring_service.alert_history = [
-                alert for alert in self.monitoring_service.alert_history
+                alert
+                for alert in self.monitoring_service.alert_history
                 if alert.triggered_at > cutoff_date
             ]
 

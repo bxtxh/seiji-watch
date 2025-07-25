@@ -17,9 +17,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -37,8 +37,8 @@ async def test_new_pat_integration():
         print("❌ .env.localが見つかりません")
         return False
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat or not base_id:
         print("❌ 環境変数不足")
@@ -50,7 +50,7 @@ async def test_new_pat_integration():
     try:
         # 1. 法案データ収集
         print("\n📄 法案データ収集")
-        sys.path.insert(0, 'src')
+        sys.path.insert(0, "src")
         from scraper.diet_scraper import DietScraper
 
         scraper = DietScraper(enable_resilience=False)
@@ -86,7 +86,7 @@ async def test_new_pat_integration():
 
                     result = await client.create_bill(bill_data)
                     success_count += 1
-                    record_id = result.get('id', 'Unknown')
+                    record_id = result.get("id", "Unknown")
                     print(f"  {i+1}/3: ✅ {bill.bill_id} → {record_id}")
 
                 except Exception as e:
@@ -102,6 +102,7 @@ async def test_new_pat_integration():
     except Exception as e:
         print(f"❌ テストエラー: {str(e)}")
         import traceback
+
         traceback.print_exc()
 
     return False
@@ -112,7 +113,9 @@ async def main():
     success = await test_new_pat_integration()
     return 0 if success else 1
 
+
 if __name__ == "__main__":
     import asyncio
+
     exit_code = asyncio.run(main())
     sys.exit(exit_code)

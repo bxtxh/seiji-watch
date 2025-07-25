@@ -32,7 +32,8 @@ async def test_bills_endpoints():
                     print(f"✅ Bills list: {len(data)} bills found")
                     if data:
                         print(
-                            f"   Sample bill: {data[0].get('fields', {}).get('Name', 'Unknown')}")
+                            f"   Sample bill: {data[0].get('fields', {}).get('Name', 'Unknown')}"
+                        )
                 else:
                     print(f"❌ Bills list failed: {response.status}")
         except Exception as e:
@@ -41,7 +42,9 @@ async def test_bills_endpoints():
         # Test 2: List bills with filters
         print("\n2. Testing GET /api/bills/?status=進行中")
         try:
-            async with session.get(f"{API_BASE_URL}/api/bills/?status=進行中") as response:
+            async with session.get(
+                f"{API_BASE_URL}/api/bills/?status=進行中"
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     print(f"✅ Filtered bills: {len(data)} bills found")
@@ -54,7 +57,9 @@ async def test_bills_endpoints():
         print("\n3. Testing GET /api/bills/{bill_id}")
         try:
             # Get a real bill ID first
-            async with session.get(f"{API_BASE_URL}/api/bills/?max_records=1") as response:
+            async with session.get(
+                f"{API_BASE_URL}/api/bills/?max_records=1"
+            ) as response:
                 if response.status == 200:
                     bills = await response.json()
                     if bills:
@@ -62,11 +67,14 @@ async def test_bills_endpoints():
                         print(f"   Using real bill ID: {real_bill_id}")
 
                         # Test getting the specific bill
-                        async with session.get(f"{API_BASE_URL}/api/bills/{real_bill_id}") as bill_response:
+                        async with session.get(
+                            f"{API_BASE_URL}/api/bills/{real_bill_id}"
+                        ) as bill_response:
                             if bill_response.status == 200:
                                 bill_data = await bill_response.json()
                                 print(
-                                    f"✅ Bill details: {bill_data.get('fields', {}).get('Name', 'Unknown')}")
+                                    f"✅ Bill details: {bill_data.get('fields', {}).get('Name', 'Unknown')}"
+                                )
                             else:
                                 print(f"❌ Bill details failed: {bill_response.status}")
                     else:
@@ -79,17 +87,17 @@ async def test_bills_endpoints():
         # Test 4: Search bills
         print("\n4. Testing POST /api/bills/search")
         try:
-            search_data = {
-                "query": "法案",
-                "max_records": 5
-            }
-            async with session.post(f"{API_BASE_URL}/api/bills/search", json=search_data) as response:
+            search_data = {"query": "法案", "max_records": 5}
+            async with session.post(
+                f"{API_BASE_URL}/api/bills/search", json=search_data
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     print(f"✅ Bill search: {data.get('total_found', 0)} results found")
-                    if data.get('results'):
+                    if data.get("results"):
                         print(
-                            f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}")
+                            f"   Sample result: {data['results'][0].get('fields', {}).get('Name', 'Unknown')}"
+                        )
                 else:
                     print(f"❌ Bill search failed: {response.status}")
                     print(f"   Response: {await response.text()}")
@@ -100,7 +108,9 @@ async def test_bills_endpoints():
         print("\n5. Testing Bills-PolicyCategory relationship endpoints")
         try:
             # Get real bill and policy category IDs
-            async with session.get(f"{API_BASE_URL}/api/bills/?max_records=1") as bills_response:
+            async with session.get(
+                f"{API_BASE_URL}/api/bills/?max_records=1"
+            ) as bills_response:
                 if bills_response.status == 200:
                     bills = await bills_response.json()
                     if bills:
@@ -108,35 +118,45 @@ async def test_bills_endpoints():
                         print(f"   Using real bill ID: {real_bill_id}")
 
                         # Test getting policy categories for this bill
-                        async with session.get(f"{API_BASE_URL}/api/bills/{real_bill_id}/policy-categories") as rel_response:
+                        async with session.get(
+                            f"{API_BASE_URL}/api/bills/{real_bill_id}/policy-categories"
+                        ) as rel_response:
                             if rel_response.status == 200:
                                 rel_data = await rel_response.json()
                                 print(
-                                    f"✅ Bill policy categories: {rel_data.get('total_count', 0)} relationships found")
+                                    f"✅ Bill policy categories: {rel_data.get('total_count', 0)} relationships found"
+                                )
                             else:
                                 print(
-                                    f"❌ Bill policy categories failed: {rel_response.status}")
+                                    f"❌ Bill policy categories failed: {rel_response.status}"
+                                )
                                 print(f"   Response: {await rel_response.text()}")
                     else:
                         print("⚠️  No bills found to test relationships with")
                 else:
                     print(
-                        f"❌ Could not get bills for relationship testing: {bills_response.status}")
+                        f"❌ Could not get bills for relationship testing: {bills_response.status}"
+                    )
         except Exception as e:
             print(f"❌ Bills-PolicyCategory relationship error: {e}")
 
         # Test 6: Statistics endpoint
         print("\n6. Testing GET /api/bills/statistics/policy-categories")
         try:
-            async with session.get(f"{API_BASE_URL}/api/bills/statistics/policy-categories") as response:
+            async with session.get(
+                f"{API_BASE_URL}/api/bills/statistics/policy-categories"
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     print(
-                        f"✅ Statistics: {data.get('total_relationships', 0)} total relationships")
+                        f"✅ Statistics: {data.get('total_relationships', 0)} total relationships"
+                    )
                     print(
-                        f"   High confidence: {data.get('confidence_distribution', {}).get('high_confidence', 0)}")
+                        f"   High confidence: {data.get('confidence_distribution', {}).get('high_confidence', 0)}"
+                    )
                     print(
-                        f"   Manual entries: {data.get('manual_vs_automatic', {}).get('manual', 0)}")
+                        f"   Manual entries: {data.get('manual_vs_automatic', {}).get('manual', 0)}"
+                    )
                 else:
                     print(f"❌ Statistics failed: {response.status}")
                     print(f"   Response: {await response.text()}")
@@ -152,7 +172,8 @@ async def test_bills_endpoints():
                     print(f"✅ Issue categories: {len(data)} categories found")
                     if data:
                         print(
-                            f"   Sample category: {data[0].get('fields', {}).get('Title_JA', 'Unknown')}")
+                            f"   Sample category: {data[0].get('fields', {}).get('Title_JA', 'Unknown')}"
+                        )
                 else:
                     print(f"❌ Issue categories failed: {response.status}")
         except Exception as e:
@@ -195,7 +216,7 @@ async def test_airtable_connection():
         async with aiohttp.ClientSession() as session:
             headers = {
                 "Authorization": f"Bearer {AIRTABLE_PAT}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
 
             # Test Bills table
@@ -204,7 +225,8 @@ async def test_airtable_connection():
                 if response.status == 200:
                     data = await response.json()
                     print(
-                        f"✅ Bills table: {len(data.get('records', []))} records accessible")
+                        f"✅ Bills table: {len(data.get('records', []))} records accessible"
+                    )
                 else:
                     print(f"❌ Bills table failed: {response.status}")
                     return False
@@ -215,7 +237,8 @@ async def test_airtable_connection():
                 if response.status == 200:
                     data = await response.json()
                     print(
-                        f"✅ IssueCategories table: {len(data.get('records', []))} records accessible")
+                        f"✅ IssueCategories table: {len(data.get('records', []))} records accessible"
+                    )
                 else:
                     print(f"❌ IssueCategories table failed: {response.status}")
                     return False
@@ -248,6 +271,7 @@ async def main():
 
     print("\n✅ Bills API testing complete!")
     return 0
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

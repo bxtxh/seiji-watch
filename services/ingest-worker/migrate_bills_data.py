@@ -11,7 +11,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class BillDataMigrator:
@@ -27,7 +27,7 @@ class BillDataMigrator:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
@@ -35,11 +35,7 @@ class BillDataMigrator:
         self._last_request_time = 0
 
     async def _rate_limited_request(
-        self,
-        session: aiohttp.ClientSession,
-        method: str,
-        url: str, **kwargs
-
+        self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
     ):
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
@@ -49,13 +45,17 @@ class BillDataMigrator:
             if time_since_last < 0.3:
                 await asyncio.sleep(0.3 - time_since_last)
 
-            async with session.request(method, url, headers=self.headers, **kwargs) as response:
+            async with session.request(
+                method, url, headers=self.headers, **kwargs
+            ) as response:
                 self._last_request_time = asyncio.get_event_loop().time()
 
                 if response.status == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
                     await asyncio.sleep(retry_after)
-                    return await self._rate_limited_request(session, method, url, **kwargs)
+                    return await self._rate_limited_request(
+                        session, method, url, **kwargs
+                    )
 
                 response.raise_for_status()
                 return await response.json()
@@ -69,82 +69,82 @@ class BillDataMigrator:
         parsed_data = {}
 
         # Extract Bill ID
-        bill_id_match = re.search(r'法案ID:\s*([^\s🔄]+)', notes_text)
+        bill_id_match = re.search(r"法案ID:\s*([^\s🔄]+)", notes_text)
         if bill_id_match:
             bill_id = bill_id_match.group(1).strip()
-            parsed_data['Bill_ID'] = bill_id
+            parsed_data["Bill_ID"] = bill_id
 
             # Parse Diet Session and Bill Number from Bill_ID (format: 217-1)
-            if '-' in bill_id:
-                parts = bill_id.split('-')
-                parsed_data['Diet_Session'] = parts[0]
-                parsed_data['Bill_Number'] = parts[1]
+            if "-" in bill_id:
+                parts = bill_id.split("-")
+                parsed_data["Diet_Session"] = parts[0]
+                parsed_data["Bill_Number"] = parts[1]
 
         # Extract Status
-        status_match = re.search(r'ステータス:\s*([^\s🔄]+)', notes_text)
+        status_match = re.search(r"ステータス:\s*([^\s🔄]+)", notes_text)
         if status_match:
             status = status_match.group(1).strip()
             # Map to proper status values
             status_mapping = {
-                '議案要旨': '提出',
-                '審議中': '審議中',
-                '可決': '可決',
-                '否決': '否決',
-                '成立': '成立',
-                '廃案': '廃案'
+                "議案要旨": "提出",
+                "審議中": "審議中",
+                "可決": "可決",
+                "否決": "否決",
+                "成立": "成立",
+                "廃案": "廃案",
             }
-            parsed_data['Bill_Status'] = status_mapping.get(status, status)
+            parsed_data["Bill_Status"] = status_mapping.get(status, status)
 
         # Extract Stage
-        stage_match = re.search(r'段階:\s*([^\s👤]+)', notes_text)
+        stage_match = re.search(r"段階:\s*([^\s👤]+)", notes_text)
         if stage_match:
-            parsed_data['Stage'] = stage_match.group(1).strip()
+            parsed_data["Stage"] = stage_match.group(1).strip()
 
         # Extract Submitter
-        submitter_match = re.search(r'提出者:\s*([^\s🏷️]+)', notes_text)
+        submitter_match = re.search(r"提出者:\s*([^\s🏷️]+)", notes_text)
         if submitter_match:
-            parsed_data['Submitter'] = submitter_match.group(1).strip()
+            parsed_data["Submitter"] = submitter_match.group(1).strip()
 
         # Extract Category
-        category_match = re.search(r'カテゴリ:\s*([^\s🔗]+)', notes_text)
+        category_match = re.search(r"カテゴリ:\s*([^\s🔗]+)", notes_text)
         if category_match:
-            parsed_data['Category'] = category_match.group(1).strip()
+            parsed_data["Category"] = category_match.group(1).strip()
 
         # Extract URL
-        url_match = re.search(r'URL:\s*(https?://[^\s📅]+)', notes_text)
+        url_match = re.search(r"URL:\s*(https?://[^\s📅]+)", notes_text)
         if url_match:
-            parsed_data['Bill_URL'] = url_match.group(1).strip()
+            parsed_data["Bill_URL"] = url_match.group(1).strip()
 
         # Extract Collection Date
-        collection_date_match = re.search(r'収集日時:\s*([^\s【]+)', notes_text)
+        collection_date_match = re.search(r"収集日時:\s*([^\s【]+)", notes_text)
         if collection_date_match:
             date_str = collection_date_match.group(1).strip()
             try:
                 # Parse ISO format date
-                parsed_data['Collection_Date'] = date_str
+                parsed_data["Collection_Date"] = date_str
             except Exception:
                 pass
 
         # Extract Data Source
-        if 'データソース: 参議院公式サイト' in notes_text:
-            parsed_data['Data_Source'] = '参議院公式サイト'
+        if "データソース: 参議院公式サイト" in notes_text:
+            parsed_data["Data_Source"] = "参議院公式サイト"
 
         # Extract Process Method
-        if '自動スクレイピング + AI処理' in notes_text:
-            parsed_data['Process_Method'] = 'AI処理'
-        elif '自動スクレイピング' in notes_text:
-            parsed_data['Process_Method'] = '自動スクレイピング'
+        if "自動スクレイピング + AI処理" in notes_text:
+            parsed_data["Process_Method"] = "AI処理"
+        elif "自動スクレイピング" in notes_text:
+            parsed_data["Process_Method"] = "自動スクレイピング"
 
         # Set default values
-        parsed_data['House'] = '参議院'  # Default based on data source
-        parsed_data['Bill_Type'] = '提出法律案'  # Default type
-        parsed_data['Priority'] = 'medium'  # Default priority
-        parsed_data['Quality_Score'] = 0.8  # Default quality score
+        parsed_data["House"] = "参議院"  # Default based on data source
+        parsed_data["Bill_Type"] = "提出法律案"  # Default type
+        parsed_data["Priority"] = "medium"  # Default priority
+        parsed_data["Quality_Score"] = 0.8  # Default quality score
 
         # Set timestamps
         now_iso = datetime.now().isoformat()
-        parsed_data['Created_At'] = now_iso
-        parsed_data['Updated_At'] = now_iso
+        parsed_data["Created_At"] = now_iso
+        parsed_data["Updated_At"] = now_iso
 
         return parsed_data
 
@@ -164,7 +164,7 @@ class BillDataMigrator:
             "bills_processed": 0,
             "bills_migrated": 0,
             "errors": [],
-            "start_time": start_time.isoformat()
+            "start_time": start_time.isoformat(),
         }
 
         try:
@@ -202,20 +202,23 @@ class BillDataMigrator:
 
                         # Add title from Name field
                         if bill_name and bill_name != f"Bill {i}":
-                            parsed_data['Title'] = bill_name
+                            parsed_data["Title"] = bill_name
 
                         # Update record with structured data
                         update_data = {"fields": parsed_data}
                         update_url = f"{bills_url}/{record_id}"
 
-                        await self._rate_limited_request(session, "PATCH", update_url, json=update_data)
+                        await self._rate_limited_request(
+                            session, "PATCH", update_url, json=update_data
+                        )
                         success_count += 1
 
                         if i <= 5 or i % 5 == 0:
-                            bill_id = parsed_data.get('Bill_ID', 'N/A')
-                            status = parsed_data.get('Bill_Status', 'N/A')
+                            bill_id = parsed_data.get("Bill_ID", "N/A")
+                            status = parsed_data.get("Bill_Status", "N/A")
                             print(
-                                f"  ✅ Bill {i:02d}: {bill_name[:30]}... (ID:{bill_id}, Status:{status})")
+                                f"  ✅ Bill {i:02d}: {bill_name[:30]}... (ID:{bill_id}, Status:{status})"
+                            )
 
                     except Exception as e:
                         print(f"  ❌ Bill {i} migration failed: {e}")
@@ -236,7 +239,10 @@ class BillDataMigrator:
                 print(f"📋 処理議案数: {result['bills_processed']}件")
                 print(f"🔄 移行成功: {success_count}件")
                 print(
-                    f"📈 成功率: {(success_count/len(bills)*100):.1f}%" if bills else "0%")
+                    f"📈 成功率: {(success_count/len(bills)*100):.1f}%"
+                    if bills
+                    else "0%"
+                )
 
                 if result["success"]:
                     print("\n🎉 MIGRATION COMPLETE!")
@@ -265,11 +271,12 @@ async def main():
         result = await migrator.migrate_bills_data()
 
         # Save results
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         result_file = f"bills_migration_result_{timestamp}.json"
 
         import json
-        with open(result_file, 'w', encoding='utf-8') as f:
+
+        with open(result_file, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 結果保存: {result_file}")
@@ -279,8 +286,10 @@ async def main():
     except Exception as e:
         print(f"💥 Migration error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

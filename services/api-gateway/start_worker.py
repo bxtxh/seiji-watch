@@ -14,8 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -43,17 +42,17 @@ def main():
             TaskPriority.URGENT,
             TaskPriority.HIGH,
             TaskPriority.NORMAL,
-            TaskPriority.LOW
+            TaskPriority.LOW,
         ]
 
     logger.info(
-        f"Worker {worker_name} will process queues: {[q.value for q in queue_priorities]}")
+        f"Worker {worker_name} will process queues: {[q.value for q in queue_priorities]}"
+    )
 
     # Start worker
     try:
         worker = task_queue.start_worker(
-            queues=queue_priorities,
-            worker_name=worker_name
+            queues=queue_priorities, worker_name=worker_name
         )
 
         logger.info(f"Worker {worker_name} started successfully")

@@ -22,6 +22,7 @@ from typing import Any
 
 try:
     from google.cloud import pubsub_v1
+
     PUBSUB_AVAILABLE = True
 except ImportError:
     PUBSUB_AVAILABLE = False
@@ -29,6 +30,7 @@ except ImportError:
 
 try:
     import redis.asyncio as redis
+
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
@@ -40,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 class TaskPriority(str, Enum):
     """Task priority levels"""
+
     LOW = "low"
     NORMAL = "normal"
     HIGH = "high"
@@ -48,6 +51,7 @@ class TaskPriority(str, Enum):
 
 class TaskStatus(str, Enum):
     """Task execution status"""
+
     PENDING = "pending"
     QUEUED = "queued"
     PROCESSING = "processing"
@@ -59,6 +63,7 @@ class TaskStatus(str, Enum):
 
 class TaskType(str, Enum):
     """Available task types"""
+
     GENERATE_EMBEDDINGS = "generate_embeddings"
     TRANSCRIBE_AUDIO = "transcribe_audio"
     PROCESS_VOTING_DATA = "process_voting_data"
@@ -70,6 +75,7 @@ class TaskType(str, Enum):
 @dataclass
 class BatchTask:
     """Individual task in a batch processing queue"""
+
     task_id: str
     task_type: TaskType
     priority: TaskPriority = TaskPriority.NORMAL
@@ -95,7 +101,9 @@ class BatchTask:
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "retry_count": self.retry_count,
             "max_retries": self.max_retries,
             "timeout_seconds": self.timeout_seconds,
@@ -103,10 +111,11 @@ class BatchTask:
             "result": self.result,
             "error_message": self.error_message,
             "tags": self.tags,
-            "depends_on": self.depends_on}
+            "depends_on": self.depends_on,
+        }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'BatchTask':
+    def from_dict(cls, data: dict[str, Any]) -> "BatchTask":
         """Create task from dictionary representation"""
         task = cls(
             task_id=data["task_id"],
@@ -121,7 +130,7 @@ class BatchTask:
             result=data.get("result"),
             error_message=data.get("error_message"),
             tags=data.get("tags", []),
-            depends_on=data.get("depends_on", [])
+            depends_on=data.get("depends_on", []),
         )
 
         if data.get("started_at"):
@@ -135,6 +144,7 @@ class BatchTask:
 @dataclass
 class BatchConfig:
     """Configuration for batch processing"""
+
     max_concurrent_tasks: int = 5
     max_queue_size: int = 1000
     retry_delay_seconds: int = 60
@@ -194,26 +204,26 @@ class EmbeddingTaskProcessor(TaskProcessor):
                     metadata = metadata_list[i]
                     if "bill_number" in metadata:
                         weaviate_uuid = self.vector_client.store_bill_embedding(
-                            metadata, embedding)
+                            metadata, embedding
+                        )
                     elif "speaker" in metadata:
                         weaviate_uuid = self.vector_client.store_speech_embedding(
-                            metadata, embedding)
+                            metadata, embedding
+                        )
 
-                results.append({
-                    "text_index": i,
-                    "embedding_dimensions": embedding.dimensions,
-                    "model": embedding.model,
-                    "weaviate_uuid": weaviate_uuid,
-                    "success": True
-                })
+                results.append(
+                    {
+                        "text_index": i,
+                        "embedding_dimensions": embedding.dimensions,
+                        "model": embedding.model,
+                        "weaviate_uuid": weaviate_uuid,
+                        "success": True,
+                    }
+                )
 
             except Exception as e:
                 logger.error(f"Failed to process embedding for text {i}: {e}")
-                results.append({
-                    "text_index": i,
-                    "error": str(e),
-                    "success": False
-                })
+                results.append({"text_index": i, "error": str(e), "success": False})
 
         successful = len([r for r in results if r.get("success")])
 
@@ -221,7 +231,7 @@ class EmbeddingTaskProcessor(TaskProcessor):
             "total_texts": len(texts),
             "successful_embeddings": successful,
             "failed_embeddings": len(texts) - successful,
-            "results": results
+            "results": results,
         }
 
 
@@ -255,26 +265,29 @@ class TranscriptionTaskProcessor(TaskProcessor):
                     "success": True,
                     "text": "Transcription placeholder",  # Actual transcription would go here
                     "duration": 0.0,
-                    "language": language
+                    "language": language,
                 }
                 results.append(result)
 
             except Exception as e:
                 logger.error(f"Failed to transcribe audio {i}: {e}")
-                results.append({
-                    "url": audio_url,
-                    "type": "audio",
-                    "index": i,
-                    "error": str(e),
-                    "success": False
-                })
+                results.append(
+                    {
+                        "url": audio_url,
+                        "type": "audio",
+                        "index": i,
+                        "error": str(e),
+                        "success": False,
+                    }
+                )
 
         # Process video URLs
         for i, video_url in enumerate(video_urls):
             try:
                 # Download and transcribe video
-                transcription_result, audio_file = self.whisper_client.download_and_transcribe_video(
-                    video_url)
+                transcription_result, audio_file = (
+                    self.whisper_client.download_and_transcribe_video(video_url)
+                )
 
                 result = {
                     "url": video_url,
@@ -284,19 +297,25 @@ class TranscriptionTaskProcessor(TaskProcessor):
                     "text": transcription_result.text,
                     "duration": transcription_result.duration,
                     "language": transcription_result.language,
-                    "segments_count": len(
-                        transcription_result.segments) if transcription_result.segments else 0}
+                    "segments_count": (
+                        len(transcription_result.segments)
+                        if transcription_result.segments
+                        else 0
+                    ),
+                }
                 results.append(result)
 
             except Exception as e:
                 logger.error(f"Failed to transcribe video {i}: {e}")
-                results.append({
-                    "url": video_url,
-                    "type": "video",
-                    "index": i,
-                    "error": str(e),
-                    "success": False
-                })
+                results.append(
+                    {
+                        "url": video_url,
+                        "type": "video",
+                        "index": i,
+                        "error": str(e),
+                        "success": False,
+                    }
+                )
 
         successful = len([r for r in results if r.get("success")])
 
@@ -304,7 +323,7 @@ class TranscriptionTaskProcessor(TaskProcessor):
             "total_urls": len(audio_urls) + len(video_urls),
             "successful_transcriptions": successful,
             "failed_transcriptions": len(results) - successful,
-            "results": results
+            "results": results,
         }
 
 
@@ -371,7 +390,7 @@ class BatchProcessor:
         timeout_seconds: int = 300,
         tags: list[str] | None = None,
         depends_on: list[str] | None = None,
-        task_id: str | None = None
+        task_id: str | None = None,
     ) -> str:
         """
         Add a new task to the processing queue
@@ -400,7 +419,7 @@ class BatchProcessor:
             max_retries=max_retries,
             timeout_seconds=timeout_seconds,
             tags=tags or [],
-            depends_on=depends_on or []
+            depends_on=depends_on or [],
         )
 
         # Check queue size limit
@@ -417,7 +436,8 @@ class BatchProcessor:
         await self._persist_task(task)
 
         logger.info(
-            f"Added task to queue: {task_id} (type: {task_type}, priority: {priority})")
+            f"Added task to queue: {task_id} (type: {task_type}, priority: {priority})"
+        )
         return task_id
 
     async def _persist_task(self, task: BatchTask):
@@ -439,7 +459,7 @@ class BatchProcessor:
                 cache_dir = Path("/tmp/batch_processor_cache")
                 cache_dir.mkdir(exist_ok=True)
                 task_file = cache_dir / f"{task.task_id}.json"
-                with open(task_file, 'w') as f:
+                with open(task_file, "w") as f:
                     json.dump(task_data, f, indent=2)
 
         except Exception as e:
@@ -475,7 +495,8 @@ class BatchProcessor:
         # Wait for active tasks to complete (with timeout)
         if self.active_tasks:
             logger.info(
-                f"Waiting for {len(self.active_tasks)} active tasks to complete...")
+                f"Waiting for {len(self.active_tasks)} active tasks to complete..."
+            )
             await asyncio.sleep(5)  # Give tasks time to finish
 
     async def _process_batch(self):
@@ -485,10 +506,11 @@ class BatchProcessor:
 
         # Process in priority order
         for priority in [
-                TaskPriority.URGENT,
-                TaskPriority.HIGH,
-                TaskPriority.NORMAL,
-                TaskPriority.LOW]:
+            TaskPriority.URGENT,
+            TaskPriority.HIGH,
+            TaskPriority.NORMAL,
+            TaskPriority.LOW,
+        ]:
             queue = self.task_queues[priority]
 
             while queue and len(tasks_to_process) < self.config.batch_size:
@@ -506,7 +528,7 @@ class BatchProcessor:
         if tasks_to_process:
             await asyncio.gather(
                 *[self._process_single_task(task) for task in tasks_to_process],
-                return_exceptions=True
+                return_exceptions=True,
             )
 
     async def _dependencies_satisfied(self, task: BatchTask) -> bool:
@@ -538,7 +560,8 @@ class BatchProcessor:
                 processor = self.task_processors.get(task.task_type)
                 if not processor:
                     raise ValueError(
-                        f"No processor registered for task type: {task.task_type}")
+                        f"No processor registered for task type: {task.task_type}"
+                    )
 
                 # Update task status
                 task.status = TaskStatus.PROCESSING
@@ -550,8 +573,7 @@ class BatchProcessor:
                 # Process with timeout
                 try:
                     result = await asyncio.wait_for(
-                        processor.process(task),
-                        timeout=task.timeout_seconds
+                        processor.process(task), timeout=task.timeout_seconds
                     )
 
                     # Task completed successfully
@@ -566,7 +588,8 @@ class BatchProcessor:
 
                 except TimeoutError:
                     raise Exception(
-                        f"Task timed out after {task.timeout_seconds} seconds")
+                        f"Task timed out after {task.timeout_seconds} seconds"
+                    )
 
             except Exception as e:
                 # Task failed
@@ -582,7 +605,8 @@ class BatchProcessor:
                     self.task_queues[task.priority].append(task)
 
                     logger.warning(
-                        f"Task failed, retrying ({task.retry_count}/{task.max_retries}): {task.task_id}")
+                        f"Task failed, retrying ({task.retry_count}/{task.max_retries}): {task.task_id}"
+                    )
                     self.stats["tasks_retried"] += 1
 
                 else:
@@ -628,8 +652,7 @@ class BatchProcessor:
     def get_queue_status(self) -> dict[str, Any]:
         """Get overall queue status and statistics"""
         queue_lengths = {
-            priority.value: len(queue)
-            for priority, queue in self.task_queues.items()
+            priority.value: len(queue) for priority, queue in self.task_queues.items()
         }
 
         return {
@@ -643,8 +666,8 @@ class BatchProcessor:
             "configuration": {
                 "max_concurrent_tasks": self.config.max_concurrent_tasks,
                 "max_queue_size": self.config.max_queue_size,
-                "batch_size": self.config.batch_size
-            }
+                "batch_size": self.config.batch_size,
+            },
         }
 
     async def cancel_task(self, task_id: str) -> bool:
@@ -679,7 +702,8 @@ class BatchProcessor:
 
         # Clean completed tasks
         expired_completed = [
-            task_id for task_id, task in self.completed_tasks.items()
+            task_id
+            for task_id, task in self.completed_tasks.items()
             if task.completed_at and task.completed_at < cutoff_time
         ]
 
@@ -689,7 +713,8 @@ class BatchProcessor:
 
         # Clean failed tasks
         expired_failed = [
-            task_id for task_id, task in self.failed_tasks.items()
+            task_id
+            for task_id, task in self.failed_tasks.items()
             if task.completed_at and task.completed_at < cutoff_time
         ]
 

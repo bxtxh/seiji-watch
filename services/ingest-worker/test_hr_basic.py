@@ -36,10 +36,7 @@ async def test_hr_processor_initialization():
     try:
         from scraper.enhanced_hr_scraper import EnhancedHRProcessor
 
-        config = {
-            'max_concurrent_pdfs': 1,
-            'pdf_timeout_seconds': 60
-        }
+        config = {"max_concurrent_pdfs": 1, "pdf_timeout_seconds": 60}
         EnhancedHRProcessor(config=config)
         logger.info("✅ EnhancedHRProcessor initialized successfully")
         return True
@@ -53,7 +50,7 @@ async def test_hr_data_processing():
     try:
         from scraper.enhanced_hr_scraper import EnhancedHRProcessor
 
-        config = {'max_concurrent_pdfs': 1}
+        config = {"max_concurrent_pdfs": 1}
         processor = EnhancedHRProcessor(config=config)
 
         # Test basic HR data processing with minimal parameters
@@ -63,7 +60,7 @@ async def test_hr_data_processing():
         sessions = await processor.process_enhanced_hr_data(
             days_back=1,  # Very limited scope
             session_numbers=[208],  # Recent session
-            max_concurrent=1
+            max_concurrent=1,
         )
 
         logger.info(f"✅ Processed {len(sessions)} voting sessions")
@@ -79,8 +76,11 @@ async def test_hr_data_processing():
         logger.error(f"❌ HR data processing failed: {e}")
         # This is acceptable for this test as we may not have network access
         # The important thing is that the code structure is working
-        return "network" in str(e).lower() or "timeout" in str(
-            e).lower() or "connection" in str(e).lower()
+        return (
+            "network" in str(e).lower()
+            or "timeout" in str(e).lower()
+            or "connection" in str(e).lower()
+        )
 
 
 async def main():
@@ -126,6 +126,7 @@ async def main():
         logger.info("🎉 All tests passed! HR PDF processing system is ready.")
     else:
         logger.info("⚠️  Some tests failed. Check the logs above.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

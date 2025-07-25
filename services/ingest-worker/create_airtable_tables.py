@@ -10,7 +10,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def create_airtable_tables():
@@ -23,10 +23,7 @@ async def create_airtable_tables():
         print("❌ Missing Airtable credentials")
         return False
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     # Table schemas to create
     tables_to_create = [
@@ -40,10 +37,30 @@ async def create_airtable_tables():
                 {"name": "Description", "type": "multilineText"},
                 {"name": "Website_URL", "type": "url"},
                 {"name": "Color_Code", "type": "singleLineText"},
-                {"name": "Is_Active", "type": "checkbox", "options": {"icon": "check", "color": "greenBright"}},
-                {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
-            ]
+                {
+                    "name": "Is_Active",
+                    "type": "checkbox",
+                    "options": {"icon": "check", "color": "greenBright"},
+                },
+                {
+                    "name": "Created_At",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+                {
+                    "name": "Updated_At",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+            ],
         },
         {
             "name": "Meetings (会議)",
@@ -51,57 +68,136 @@ async def create_airtable_tables():
             "fields": [
                 {"name": "Meeting_ID", "type": "singleLineText"},
                 {"name": "Title", "type": "singleLineText"},
-                {"name": "Meeting_Type", "type": "singleSelect", "options": {
-                    "choices": [
-                        {"name": "本会議"},
-                        {"name": "委員会"},
-                        {"name": "分科会"}
-                    ]
-                }},
+                {
+                    "name": "Meeting_Type",
+                    "type": "singleSelect",
+                    "options": {
+                        "choices": [
+                            {"name": "本会議"},
+                            {"name": "委員会"},
+                            {"name": "分科会"},
+                        ]
+                    },
+                },
                 {"name": "Committee_Name", "type": "singleLineText"},
                 {"name": "Diet_Session", "type": "singleLineText"},
-                {"name": "House", "type": "singleSelect", "options": {
-                    "choices": [
-                        {"name": "衆議院"},
-                        {"name": "参議院"}
-                    ]
-                }},
-                {"name": "Session_Number", "type": "number", "options": {"precision": 0}},
-                {"name": "Meeting_Date", "type": "date", "options": {"dateFormat": {"name": "iso"}}},
-                {"name": "Start_Time", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                {"name": "End_Time", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
+                {
+                    "name": "House",
+                    "type": "singleSelect",
+                    "options": {"choices": [{"name": "衆議院"}, {"name": "参議院"}]},
+                },
+                {
+                    "name": "Session_Number",
+                    "type": "number",
+                    "options": {"precision": 0},
+                },
+                {
+                    "name": "Meeting_Date",
+                    "type": "date",
+                    "options": {"dateFormat": {"name": "iso"}},
+                },
+                {
+                    "name": "Start_Time",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+                {
+                    "name": "End_Time",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
                 {"name": "Summary", "type": "multilineText"},
                 {"name": "Video_URL", "type": "url"},
                 {"name": "Audio_URL", "type": "url"},
                 {"name": "Transcript_URL", "type": "url"},
-                {"name": "Participant_Count", "type": "number", "options": {"precision": 0}},
-                {"name": "Is_Public", "type": "checkbox", "options": {"icon": "check", "color": "greenBright"}},
-                {"name": "Is_Processed", "type": "checkbox", "options": {"icon": "check", "color": "blueBright"}},
-                {"name": "Is_Cancelled", "type": "checkbox", "options": {"icon": "check", "color": "redBright"}},
-                {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
-            ]
+                {
+                    "name": "Participant_Count",
+                    "type": "number",
+                    "options": {"precision": 0},
+                },
+                {
+                    "name": "Is_Public",
+                    "type": "checkbox",
+                    "options": {"icon": "check", "color": "greenBright"},
+                },
+                {
+                    "name": "Is_Processed",
+                    "type": "checkbox",
+                    "options": {"icon": "check", "color": "blueBright"},
+                },
+                {
+                    "name": "Is_Cancelled",
+                    "type": "checkbox",
+                    "options": {"icon": "check", "color": "redBright"},
+                },
+                {
+                    "name": "Created_At",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+                {
+                    "name": "Updated_At",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+            ],
         },
         {
             "name": "IssueCategories (課題カテゴリ)",
             "description": "Hierarchical issue categories based on CAP classification",
             "fields": [
                 {"name": "CAP_Code", "type": "singleLineText"},
-                {"name": "Layer", "type": "singleSelect", "options": {
-                    "choices": [
-                        {"name": "L1"},
-                        {"name": "L2"},
-                        {"name": "L3"}
-                    ]
-                }},
+                {
+                    "name": "Layer",
+                    "type": "singleSelect",
+                    "options": {
+                        "choices": [{"name": "L1"}, {"name": "L2"}, {"name": "L3"}]
+                    },
+                },
                 {"name": "Title_JA", "type": "singleLineText"},
                 {"name": "Title_EN", "type": "singleLineText"},
                 {"name": "Summary_150JA", "type": "multilineText"},
-                {"name": "Is_Seed", "type": "checkbox", "options": {"icon": "check", "color": "yellowBright"}},
-                {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
-            ]
-        }
+                {
+                    "name": "Is_Seed",
+                    "type": "checkbox",
+                    "options": {"icon": "check", "color": "yellowBright"},
+                },
+                {
+                    "name": "Created_At",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+                {
+                    "name": "Updated_At",
+                    "type": "dateTime",
+                    "options": {
+                        "dateFormat": {"name": "iso"},
+                        "timeFormat": {"name": "24hour"},
+                        "timeZone": "Asia/Tokyo",
+                    },
+                },
+            ],
+        },
     ]
 
     async with aiohttp.ClientSession() as session:
@@ -120,9 +216,7 @@ async def create_airtable_tables():
                 create_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
 
                 async with session.post(
-                    create_url,
-                    headers=headers,
-                    json=table_schema
+                    create_url, headers=headers, json=table_schema
                 ) as response:
 
                     print(f"  Status: {response.status}")
@@ -132,14 +226,15 @@ async def create_airtable_tables():
                         table_id = result.get("id")
                         print(f"  ✅ SUCCESS: Table created with ID {table_id}")
                         print(
-                            f"  Fields: {len(table_schema['fields'])} fields configured")
+                            f"  Fields: {len(table_schema['fields'])} fields configured"
+                        )
                         success_count += 1
 
                     elif response.status == 422:
                         error_data = await response.json()
-                        error_msg = error_data.get(
-                            "error", {}).get(
-                            "message", "Unknown error")
+                        error_msg = error_data.get("error", {}).get(
+                            "message", "Unknown error"
+                        )
                         if "already exists" in error_msg.lower():
                             print("  ⚠️  Table already exists, skipping...")
                             success_count += 1
@@ -177,11 +272,12 @@ async def create_airtable_tables():
                     "IssueTags (課題タグ)",
                     "Parties (政党)",
                     "Meetings (会議)",
-                    "IssueCategories (課題カテゴリ)"
+                    "IssueCategories (課題カテゴリ)",
                 ]
 
                 missing_tables = [
-                    t for t in required_tables if t not in existing_tables]
+                    t for t in required_tables if t not in existing_tables
+                ]
 
                 print("\n🎯 Table Status Summary:")
                 print(f"  Total required: {len(required_tables)}")
@@ -219,7 +315,9 @@ async def main():
     except Exception as e:
         print(f"💥 Table creation failed: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

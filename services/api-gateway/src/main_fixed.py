@@ -57,8 +57,7 @@ except ImportError:
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -74,14 +73,15 @@ app = FastAPI(
 # Security middleware - CORS with strict settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://seiji-watch.com",
-        "https://www.seiji-watch.com",
-        "http://localhost:3000",  # Development only
-    ] if os.getenv("ENVIRONMENT") != "production" else [
-        "https://seiji-watch.com",
-        "https://www.seiji-watch.com"
-    ],
+    allow_origins=(
+        [
+            "https://seiji-watch.com",
+            "https://www.seiji-watch.com",
+            "http://localhost:3000",  # Development only
+        ]
+        if os.getenv("ENVIRONMENT") != "production"
+        else ["https://seiji-watch.com", "https://www.seiji-watch.com"]
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["*"],
@@ -96,7 +96,7 @@ app.add_middleware(
         "*.seiji-watch.com",
         "localhost",  # Development only
         "127.0.0.1",  # Development only
-    ]
+    ],
 )
 
 # Security headers middleware
@@ -112,7 +112,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = "default-src 'self'"
 
@@ -147,7 +149,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
             method=request.method,
             url=str(request.url),
             user_id=user.get("user_id") if user else None,
-            ip_address=request.client.host if request.client else None
+            ip_address=request.client.host if request.client else None,
         )
 
         # Process request
@@ -159,7 +161,7 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                 method=request.method,
                 endpoint=request.url.path,
                 status_code=response.status_code,
-                duration=time.time() - start_time
+                duration=time.time() - start_time,
             )
 
             return response
@@ -171,8 +173,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                 context={
                     "method": request.method,
                     "url": str(request.url),
-                    "user_id": user.get("user_id") if user else None
-                }
+                    "user_id": user.get("user_id") if user else None,
+                },
             )
 
             # Convert to appropriate HTTP response
@@ -183,8 +185,8 @@ class RequestTrackingMiddleware(BaseHTTPMiddleware):
                     status_code=500,
                     detail={
                         "error": ErrorCode.UNEXPECTED_ERROR.value,
-                        "message": "An unexpected error occurred"
-                    }
+                        "message": "An unexpected error occurred",
+                    },
                 )
 
 
@@ -201,8 +203,8 @@ async def service_error_handler(request: Request, exc: ServiceError):
         content={
             "error": exc.error_code.value,
             "message": exc.message,
-            "details": exc.details
-        }
+            "details": exc.details,
+        },
     )
 
 
@@ -214,9 +216,10 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={
             "error": "HTTP_ERROR",
             "message": exc.detail,
-            "status_code": exc.status_code
-        }
+            "status_code": exc.status_code,
+        },
     )
+
 
 # Import and register routes
 
@@ -239,18 +242,15 @@ async def health_check():
             "status": "healthy" if health_status["overall_healthy"] else "unhealthy",
             "timestamp": health_status["timestamp"],
             "services": health_status["services"],
-            "version": "1.0.0"
+            "version": "1.0.0",
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return JSONResponse(
             status_code=503,
-            content={
-                "status": "unhealthy",
-                "error": str(e),
-                "version": "1.0.0"
-            }
+            content={"status": "unhealthy", "error": str(e), "version": "1.0.0"},
         )
+
 
 # Startup event
 
@@ -280,6 +280,7 @@ async def startup_event():
         logger.error(f"Startup failed: {e}")
         raise
 
+
 # Shutdown event
 
 
@@ -304,6 +305,7 @@ async def shutdown_event():
     except Exception as e:
         logger.error(f"Shutdown error: {e}")
 
+
 # Root endpoint
 
 
@@ -318,18 +320,15 @@ async def root():
             "Dual-level policy issue extraction",
             "Secure authentication with JWT",
             "Rate limiting and security controls",
-            "Comprehensive monitoring and logging"
-        ]
+            "Comprehensive monitoring and logging",
+        ],
     }
+
 
 if __name__ == "__main__":
     import uvicorn
 
     # Development server
     uvicorn.run(
-        "main_fixed:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
+        "main_fixed:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
     )

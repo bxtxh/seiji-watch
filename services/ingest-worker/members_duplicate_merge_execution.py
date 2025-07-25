@@ -12,7 +12,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class MembersDuplicateMerger:
@@ -29,7 +29,7 @@ class MembersDuplicateMerger:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Merge execution results
@@ -39,7 +39,7 @@ class MembersDuplicateMerger:
             "records_deleted": 0,
             "records_updated": 0,
             "errors": 0,
-            "skipped": 0
+            "skipped": 0,
         }
 
     async def get_members_records(self, session: aiohttp.ClientSession) -> list[dict]:
@@ -56,14 +56,14 @@ class MembersDuplicateMerger:
                 async with session.get(
                     f"{self.base_url}/{self.table_name}",
                     headers=self.headers,
-                    params=params
+                    params=params,
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        records = data.get('records', [])
+                        records = data.get("records", [])
                         all_records.extend(records)
 
-                        offset = data.get('offset')
+                        offset = data.get("offset")
                         if not offset:
                             break
 
@@ -79,16 +79,17 @@ class MembersDuplicateMerger:
         return all_records
 
     def identify_simple_merge_candidates(
-            self, records: list[dict]) -> dict[str, list[dict]]:
+        self, records: list[dict]
+    ) -> dict[str, list[dict]]:
         """Identify simple merge candidates (timestamp-only conflicts)"""
         name_groups = {}
 
         # Group by exact name
         for record in records:
-            fields = record.get('fields', {})
-            name = fields.get('Name', '').strip()
+            fields = record.get("fields", {})
+            name = fields.get("Name", "").strip()
 
-            if name and name not in ['議員01', '議員02', '議員03']:  # Skip test data
+            if name and name not in ["議員01", "議員02", "議員03"]:  # Skip test data
                 if name not in name_groups:
                     name_groups[name] = []
                 name_groups[name].append(record)
@@ -99,11 +100,11 @@ class MembersDuplicateMerger:
         for name, group in name_groups.items():
             if len(group) == 2:  # Only handle pairs for safety
                 record1, record2 = group
-                fields1 = record1.get('fields', {})
-                fields2 = record2.get('fields', {})
+                fields1 = record1.get("fields", {})
+                fields2 = record2.get("fields", {})
 
                 # Check if records are identical except for timestamps
-                core_fields = ['Name', 'House', 'Constituency', 'Party', 'Is_Active']
+                core_fields = ["Name", "House", "Constituency", "Party", "Is_Active"]
 
                 conflicts = []
                 for field in core_fields:
@@ -129,17 +130,14 @@ class MembersDuplicateMerger:
 
         # Group by exact name, excluding test data
         for record in records:
-            fields = record.get('fields', {})
-            name = fields.get('Name', '').strip()
+            fields = record.get("fields", {})
+            name = fields.get("Name", "").strip()
 
             # Skip obvious test data
             if name and not any(
-                test in name for test in [
-                    '議員',
-                    'Test',
-                    'test',
-                    '田中太郎',
-                    '佐藤三郎']):
+                test in name
+                for test in ["議員", "Test", "test", "田中太郎", "佐藤三郎"]
+            ):
                 if name not in name_groups:
                     name_groups[name] = []
                 name_groups[name].append(record)
@@ -148,8 +146,13 @@ class MembersDuplicateMerger:
         obvious_duplicates = {}
 
         real_politicians = [
-            '福山哲郎', '杉尾秀哉', '音喜多駿', '今井絵理子',
-            '川田龍平', '浜田昌良', '吉田忠智'
+            "福山哲郎",
+            "杉尾秀哉",
+            "音喜多駿",
+            "今井絵理子",
+            "川田龍平",
+            "浜田昌良",
+            "吉田忠智",
         ]
 
         for name in real_politicians:
@@ -158,16 +161,17 @@ class MembersDuplicateMerger:
 
         return obvious_duplicates
 
-    async def execute_simple_merge(self, session: aiohttp.ClientSession,
-                                   name: str, records: list[dict]) -> bool:
+    async def execute_simple_merge(
+        self, session: aiohttp.ClientSession, name: str, records: list[dict]
+    ) -> bool:
         """Execute simple merge for identical records"""
         if len(records) != 2:
             return False
 
         # Choose the record with more complete data
         record1, record2 = records
-        fields1 = record1.get('fields', {})
-        fields2 = record2.get('fields', {})
+        fields1 = record1.get("fields", {})
+        fields2 = record2.get("fields", {})
 
         # Count filled fields
         filled1 = sum(1 for v in fields1.values() if v and v != "")
@@ -181,13 +185,14 @@ class MembersDuplicateMerger:
             delete_record = record1
 
         print(
-            f"   🔄 Merging {name}: Keeping {keep_record['id']}, deleting {delete_record['id']}")
+            f"   🔄 Merging {name}: Keeping {keep_record['id']}, deleting {delete_record['id']}"
+        )
 
         try:
             # Delete the duplicate record
             async with session.delete(
                 f"{self.base_url}/{self.table_name}/{delete_record['id']}",
-                headers=self.headers
+                headers=self.headers,
             ) as response:
                 if response.status == 200:
                     self.merge_results["records_deleted"] += 1
@@ -203,8 +208,9 @@ class MembersDuplicateMerger:
             self.merge_results["errors"] += 1
             return False
 
-    async def execute_obvious_duplicate_cleanup(self, session: aiohttp.ClientSession,
-                                                name: str, records: list[dict]) -> bool:
+    async def execute_obvious_duplicate_cleanup(
+        self, session: aiohttp.ClientSession, name: str, records: list[dict]
+    ) -> bool:
         """Execute cleanup for obvious politician duplicates"""
         if len(records) < 2:
             return False
@@ -212,46 +218,51 @@ class MembersDuplicateMerger:
         # Sort by quality score and completeness
         scored_records = []
         for record in records:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
 
             # Calculate completeness score
-            essential_fields = ['Name', 'House', 'Constituency', 'Party', 'Is_Active']
+            essential_fields = ["Name", "House", "Constituency", "Party", "Is_Active"]
             filled = sum(1 for field in essential_fields if fields.get(field))
             completeness = filled / len(essential_fields)
 
             # Prefer records with more recent updates
-            updated_at = fields.get('Updated_At', '')
+            updated_at = fields.get("Updated_At", "")
 
-            scored_records.append({
-                'record': record,
-                'completeness': completeness,
-                'updated_at': updated_at,
-                'score': completeness + (0.1 if '2025-07-12T16:' in updated_at else 0)
-            })
+            scored_records.append(
+                {
+                    "record": record,
+                    "completeness": completeness,
+                    "updated_at": updated_at,
+                    "score": completeness
+                    + (0.1 if "2025-07-12T16:" in updated_at else 0),
+                }
+            )
 
         # Sort by score (highest first)
-        scored_records.sort(key=lambda x: x['score'], reverse=True)
+        scored_records.sort(key=lambda x: x["score"], reverse=True)
 
         # Keep the best record, delete others
-        keep_record = scored_records[0]['record']
-        delete_records = [sr['record'] for sr in scored_records[1:]]
+        keep_record = scored_records[0]["record"]
+        delete_records = [sr["record"] for sr in scored_records[1:]]
 
         print(
-            f"   🔄 Cleaning {name}: Keeping {keep_record['id']}, deleting {len(delete_records)} duplicates")
+            f"   🔄 Cleaning {name}: Keeping {keep_record['id']}, deleting {len(delete_records)} duplicates"
+        )
 
         success_count = 0
         for delete_record in delete_records:
             try:
                 async with session.delete(
                     f"{self.base_url}/{self.table_name}/{delete_record['id']}",
-                    headers=self.headers
+                    headers=self.headers,
                 ) as response:
                     if response.status == 200:
                         success_count += 1
                         self.merge_results["records_deleted"] += 1
                     else:
                         print(
-                            f"   ❌ Delete failed for {delete_record['id']}: {response.status}")
+                            f"   ❌ Delete failed for {delete_record['id']}: {response.status}"
+                        )
                         self.merge_results["errors"] += 1
 
             except Exception as e:
@@ -266,18 +277,29 @@ class MembersDuplicateMerger:
 
         return False
 
-    async def remove_test_data_records(self, session: aiohttp.ClientSession,
-                                       records: list[dict]) -> int:
+    async def remove_test_data_records(
+        self, session: aiohttp.ClientSession, records: list[dict]
+    ) -> int:
         """Remove obvious test data records"""
         test_patterns = [
-            '議員01', '議員02', '議員03', '議員04', '議員05',
-            '議員06', '議員07', '議員08', '議員09', '議員10',
-            'Test', 'test', 'テスト'
+            "議員01",
+            "議員02",
+            "議員03",
+            "議員04",
+            "議員05",
+            "議員06",
+            "議員07",
+            "議員08",
+            "議員09",
+            "議員10",
+            "Test",
+            "test",
+            "テスト",
         ]
 
         test_records = []
         for record in records:
-            name = record.get('fields', {}).get('Name', '')
+            name = record.get("fields", {}).get("Name", "")
             if any(pattern in name for pattern in test_patterns):
                 test_records.append(record)
 
@@ -288,7 +310,7 @@ class MembersDuplicateMerger:
             try:
                 async with session.delete(
                     f"{self.base_url}/{self.table_name}/{record['id']}",
-                    headers=self.headers
+                    headers=self.headers,
                 ) as response:
                     if response.status == 200:
                         deleted_count += 1
@@ -343,7 +365,9 @@ class MembersDuplicateMerger:
                 print(f"   📝 {name}: {len(group)} records")
 
             for name, group in obvious_duplicates.items():
-                success = await self.execute_obvious_duplicate_cleanup(session, name, group)
+                success = await self.execute_obvious_duplicate_cleanup(
+                    session, name, group
+                )
                 if success:
                     print(f"   ✅ Merged {name}")
                 else:
@@ -393,14 +417,14 @@ class MembersDuplicateMerger:
             "total_records_removed": total_removed,
             "merge_results": self.merge_results,
             # Rough estimate
-            "estimated_quality_improvement": min(95.0, 89.7 + (total_removed * 0.05))
+            "estimated_quality_improvement": min(95.0, 89.7 + (total_removed * 0.05)),
         }
 
         # Save report
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"members_duplicate_merge_execution_{timestamp}.json"
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(execution_report, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Execution report saved: {filename}")
@@ -418,7 +442,8 @@ class MembersDuplicateMerger:
 
         print(f"⏱️ Execution Time: {report['execution_time_seconds']:.1f} seconds")
         print(
-            f"📊 Records: {report['initial_record_count']} → {report['final_record_count']} (-{report['total_records_removed']})")
+            f"📊 Records: {report['initial_record_count']} → {report['final_record_count']} (-{report['total_records_removed']})"
+        )
 
         results = report["merge_results"]
         print("\n🔧 MERGE RESULTS:")
@@ -436,10 +461,11 @@ class MembersDuplicateMerger:
         print("   Before: 89.7% (B+)")
         print(f"   Estimated After: {estimated_quality:.1f}%")
         print(
-            f"   Target Status: {'✅ ACHIEVED' if target_achieved else '⚠️ IN PROGRESS'}")
+            f"   Target Status: {'✅ ACHIEVED' if target_achieved else '⚠️ IN PROGRESS'}"
+        )
 
         if not target_achieved:
-            remaining_duplicates = 625 - report['total_records_removed']
+            remaining_duplicates = 625 - report["total_records_removed"]
             print("\n📋 NEXT STEPS:")
             print(f"   Remaining duplicates: ~{remaining_duplicates}")
             print("   Recommended: Continue with complex merge processing")
@@ -457,6 +483,7 @@ async def main():
         print("🎯 Target achieved! Members table ready for release.")
     else:
         print("⚠️ Additional merge processing needed to reach 95% target.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

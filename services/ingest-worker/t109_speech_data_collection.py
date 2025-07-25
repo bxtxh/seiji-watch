@@ -19,12 +19,13 @@ from dotenv import load_dotenv
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 @dataclass
 class SpeechData:
     """発言データ構造"""
+
     speaker_name: str
     speech_content: str
     speech_date: str
@@ -55,19 +56,16 @@ class SpeechDataCollector:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self,
-                                    session: aiohttp.ClientSession,
-                                    method: str,
-                                    url: str,
-                                    **kwargs) -> dict[str,
-                                                      Any]:
+    async def _rate_limited_request(
+        self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
+    ) -> dict[str, Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -76,19 +74,24 @@ class SpeechDataCollector:
             if time_since_last < 0.3:
                 await asyncio.sleep(0.3 - time_since_last)
 
-            async with session.request(method, url, headers=self.headers, **kwargs) as response:
+            async with session.request(
+                method, url, headers=self.headers, **kwargs
+            ) as response:
                 self._last_request_time = asyncio.get_event_loop().time()
 
                 if response.status == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
                     await asyncio.sleep(retry_after)
-                    return await self._rate_limited_request(session, method, url, **kwargs)
+                    return await self._rate_limited_request(
+                        session, method, url, **kwargs
+                    )
 
                 response.raise_for_status()
                 return await response.json()
 
     async def get_member_party_mapping(
-            self, session: aiohttp.ClientSession) -> dict[str, str]:
+        self, session: aiohttp.ClientSession
+    ) -> dict[str, str]:
         """議員-政党マッピングを取得"""
         member_party_map = {}
 
@@ -114,7 +117,8 @@ class SpeechDataCollector:
         return member_party_map
 
     async def generate_sample_speeches(
-            self, member_party_map: dict[str, str]) -> list[SpeechData]:
+        self, member_party_map: dict[str, str]
+    ) -> list[SpeechData]:
         """サンプル発言データ生成"""
 
         # 実際の実装では国会会議録検索システムやDiet TVからスクレイピング
@@ -124,31 +128,37 @@ class SpeechDataCollector:
             {
                 "content": "この法案について、国民の皆様の生活にどのような影響があるのか、具体的にお聞かせください。",
                 "category": "一般質疑",
-                "duration": 3
+                "duration": 3,
             },
             {
                 "content": "政府の対応が遅すぎるのではないでしょうか。より迅速な対策が必要だと考えますが、いかがですか。",
                 "category": "一般質疑",
-                "duration": 2
+                "duration": 2,
             },
             {
                 "content": "予算の配分について、優先順位の見直しが必要だと思います。財務大臣のご見解をお聞かせください。",
                 "category": "代表質問",
-                "duration": 5
+                "duration": 5,
             },
             {
                 "content": "この施策により、地方創生にどの程度の効果が期待できるのでしょうか。データに基づいてご説明ください。",
                 "category": "一般質疑",
-                "duration": 4
+                "duration": 4,
             },
             {
                 "content": "国際情勢の変化を踏まえ、我が国の外交政策をどのように調整していくお考えでしょうか。",
                 "category": "代表質問",
-                "duration": 6
-            }
+                "duration": 6,
+            },
         ]
 
-        meeting_types = ["予算委員会", "外交防衛委員会", "厚生労働委員会", "経済産業委員会", "文教科学委員会"]
+        meeting_types = [
+            "予算委員会",
+            "外交防衛委員会",
+            "厚生労働委員会",
+            "経済産業委員会",
+            "文教科学委員会",
+        ]
         houses = ["参議院", "衆議院"]
 
         speeches = []
@@ -157,18 +167,21 @@ class SpeechDataCollector:
         # 100件の発言データ生成
         for i in range(100):
             template = speech_templates[i % len(speech_templates)]
-            speaker = member_names[i %
-                                   len(member_names)] if member_names else f"議員{i+1:02d}"
+            speaker = (
+                member_names[i % len(member_names)]
+                if member_names
+                else f"議員{i+1:02d}"
+            )
             meeting = meeting_types[i % len(meeting_types)]
             house = houses[i % 2]
 
             # 日付生成（過去30日間）
             import random
+
             days_ago = random.randint(1, 30)
-            speech_date = (
-                datetime.now() -
-                timedelta(
-                    days=days_ago)).strftime('%Y-%m-%d')
+            speech_date = (datetime.now() - timedelta(days=days_ago)).strftime(
+                "%Y-%m-%d"
+            )
 
             speech = SpeechData(
                 speaker_name=speaker,
@@ -184,18 +197,19 @@ class SpeechDataCollector:
                 video_url=f"https://webtv.sangiin.go.jp/video/{i+1:04d}",
                 ai_summary=f"AI要約: {template['content'][:50]}...",
                 sentiment=random.choice(["positive", "neutral", "critical"]),
-                topics=[meeting.replace("委員会", ""), "政策議論"]
+                topics=[meeting.replace("委員会", ""), "政策議論"],
             )
             speeches.append(speech)
 
         print(f"✅ 発言データ生成完了: {len(speeches)}件")
         return speeches
 
-    async def create_speeches(self,
-                              session: aiohttp.ClientSession,
-                              speeches: list[SpeechData],
-                              member_party_map: dict[str,
-                                                     str]) -> int:
+    async def create_speeches(
+        self,
+        session: aiohttp.ClientSession,
+        speeches: list[SpeechData],
+        member_party_map: dict[str, str],
+    ) -> int:
         """発言データをAirtableに投入"""
 
         speeches_url = f"{self.base_url}/Speeches (発言)"
@@ -221,22 +235,26 @@ class SpeechDataCollector:
                     "Sentiment": speech.sentiment,
                     "Topics": ", ".join(speech.topics) if speech.topics else None,
                     "Created_At": datetime.now().isoformat(),
-                    "Updated_At": datetime.now().isoformat()
+                    "Updated_At": datetime.now().isoformat(),
                 }
 
                 # None値を除去
-                speech_fields = {k: v for k,
-                                 v in speech_fields.items() if v is not None}
+                speech_fields = {
+                    k: v for k, v in speech_fields.items() if v is not None
+                }
 
                 data = {"fields": speech_fields}
 
-                response = await self._rate_limited_request(session, "POST", speeches_url, json=data)
+                response = await self._rate_limited_request(
+                    session, "POST", speeches_url, json=data
+                )
                 record_id = response["id"]
                 success_count += 1
 
                 if i <= 5 or i % 20 == 0:
                     print(
-                        f"  ✅ 発言{i:03d}: {speech.speaker_name} - {speech.meeting_name} ({record_id})")
+                        f"  ✅ 発言{i:03d}: {speech.speaker_name} - {speech.meeting_name} ({record_id})"
+                    )
 
             except Exception as e:
                 print(f"  ❌ 発言投入失敗: {speech.speaker_name} - {e}")
@@ -259,7 +277,7 @@ class SpeechDataCollector:
             "speeches_collected": 0,
             "speeches_inserted": 0,
             "errors": [],
-            "start_time": start_time.isoformat()
+            "start_time": start_time.isoformat(),
         }
 
         try:
@@ -276,7 +294,9 @@ class SpeechDataCollector:
 
                 # Step 3: 発言データ投入
                 print("\n💾 Step 3: 発言データ投入...")
-                success_count = await self.create_speeches(session, speeches, member_party_map)
+                success_count = await self.create_speeches(
+                    session, speeches, member_party_map
+                )
 
                 # 結果計算
                 end_time = datetime.now()
@@ -321,10 +341,10 @@ async def main():
         result = await collector.execute_speech_collection()
 
         # 結果をJSONファイルに保存
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         result_file = f"t109_speech_collection_result_{timestamp}.json"
 
-        with open(result_file, 'w', encoding='utf-8') as f:
+        with open(result_file, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 結果保存: {result_file}")
@@ -334,8 +354,10 @@ async def main():
     except Exception as e:
         print(f"💥 T109 実行エラー: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

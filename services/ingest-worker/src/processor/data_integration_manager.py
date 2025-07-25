@@ -19,6 +19,7 @@ from .bill_progress_tracker import BillProgressTracker, ProgressTrackingResult
 
 class ProcessingStage(Enum):
     """Data processing stages"""
+
     SCRAPING = "scraping"
     MERGING = "merging"
     VALIDATION = "validation"
@@ -31,6 +32,7 @@ class ProcessingStage(Enum):
 @dataclass
 class ProcessingConfig:
     """Configuration for data processing"""
+
     # Scraping configuration
     enable_sangiin_scraping: bool = True
     enable_shugiin_scraping: bool = True
@@ -38,7 +40,9 @@ class ProcessingConfig:
     max_concurrent_requests: int = 3
 
     # Merging configuration
-    conflict_resolution_strategy: ConflictResolutionStrategy = ConflictResolutionStrategy.MOST_COMPLETE
+    conflict_resolution_strategy: ConflictResolutionStrategy = (
+        ConflictResolutionStrategy.MOST_COMPLETE
+    )
     similarity_threshold: float = 0.8
 
     # Validation configuration
@@ -60,6 +64,7 @@ class ProcessingConfig:
 @dataclass
 class ProcessingResult:
     """Result of data processing operation"""
+
     session_id: str
     processing_stage: ProcessingStage
     start_time: datetime
@@ -93,8 +98,9 @@ class ProcessingResult:
     @property
     def is_successful(self) -> bool:
         """Check if processing was successful"""
-        return self.processing_stage == ProcessingStage.COMPLETED and len(
-            self.errors) == 0
+        return (
+            self.processing_stage == ProcessingStage.COMPLETED and len(self.errors) == 0
+        )
 
     @property
     def has_warnings(self) -> bool:
@@ -110,29 +116,38 @@ class DataIntegrationManager:
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
-        self.sangiin_scraper = EnhancedDietScraper(
-            delay_seconds=config.scraping_delay_seconds,
-            enable_resilience=True
-        ) if config.enable_sangiin_scraping else None
+        self.sangiin_scraper = (
+            EnhancedDietScraper(
+                delay_seconds=config.scraping_delay_seconds, enable_resilience=True
+            )
+            if config.enable_sangiin_scraping
+            else None
+        )
 
-        self.shugiin_scraper = ShugiinScraper(
-            delay_seconds=config.scraping_delay_seconds
-        ) if config.enable_shugiin_scraping else None
+        self.shugiin_scraper = (
+            ShugiinScraper(delay_seconds=config.scraping_delay_seconds)
+            if config.enable_shugiin_scraping
+            else None
+        )
 
         self.data_merger = BillDataMerger(
             conflict_strategy=config.conflict_resolution_strategy,
-            similarity_threshold=config.similarity_threshold
+            similarity_threshold=config.similarity_threshold,
         )
 
         self.data_validator = BillDataValidator(
             strict_mode=config.strict_validation,
-            require_japanese=config.require_japanese
+            require_japanese=config.require_japanese,
         )
 
-        self.progress_tracker = BillProgressTracker(
-            update_interval_hours=config.tracking_update_interval,
-            enable_alerts=config.enable_alerts
-        ) if config.enable_progress_tracking else None
+        self.progress_tracker = (
+            BillProgressTracker(
+                update_interval_hours=config.tracking_update_interval,
+                enable_alerts=config.enable_alerts,
+            )
+            if config.enable_progress_tracking
+            else None
+        )
 
         # Processing state
         self.current_session_id: str | None = None
@@ -141,13 +156,15 @@ class DataIntegrationManager:
     async def process_diet_session(self, session_number: str) -> ProcessingResult:
         """Process a complete diet session"""
 
-        session_id = f"session_{session_number}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        session_id = (
+            f"session_{session_number}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
         self.current_session_id = session_id
 
         result = ProcessingResult(
             session_id=session_id,
             processing_stage=ProcessingStage.SCRAPING,
-            start_time=datetime.now()
+            start_time=datetime.now(),
         )
 
         try:
@@ -155,11 +172,15 @@ class DataIntegrationManager:
 
             # Stage 1: Scraping
             result.processing_stage = ProcessingStage.SCRAPING
-            sangiin_bills, shugiin_bills = await self._scrape_session_data(session_number, result)
+            sangiin_bills, shugiin_bills = await self._scrape_session_data(
+                session_number, result
+            )
 
             # Stage 2: Merging
             result.processing_stage = ProcessingStage.MERGING
-            merge_results = await self._merge_bill_data(sangiin_bills, shugiin_bills, result)
+            merge_results = await self._merge_bill_data(
+                sangiin_bills, shugiin_bills, result
+            )
 
             # Stage 3: Validation
             result.processing_stage = ProcessingStage.VALIDATION
@@ -178,15 +199,19 @@ class DataIntegrationManager:
 
             result.end_time = datetime.now()
             result.processing_time_seconds = (
-                result.end_time - result.start_time).total_seconds()
+                result.end_time - result.start_time
+            ).total_seconds()
 
             if result.total_bills_processed > 0:
-                result.bills_per_second = result.total_bills_processed / result.processing_time_seconds
+                result.bills_per_second = (
+                    result.total_bills_processed / result.processing_time_seconds
+                )
 
             self.processing_results[session_id] = result
 
             self.logger.info(
-                f"Successfully processed {result.total_bills_processed} bills for session {session_number}")
+                f"Successfully processed {result.total_bills_processed} bills for session {session_number}"
+            )
 
             return result
 
@@ -198,10 +223,9 @@ class DataIntegrationManager:
 
             return result
 
-    async def _scrape_session_data(self,
-                                   session_number: str,
-                                   result: ProcessingResult) -> tuple[list[EnhancedBillData],
-                                                                      list[ShugiinBillData]]:
+    async def _scrape_session_data(
+        self, session_number: str, result: ProcessingResult
+    ) -> tuple[list[EnhancedBillData], list[ShugiinBillData]]:
         """Scrape data from both houses"""
 
         sangiin_bills = []
@@ -219,19 +243,25 @@ class DataIntegrationManager:
                 for bill in basic_bills:
                     if bill.url:
                         try:
-                            enhanced_bill = self.sangiin_scraper.fetch_enhanced_bill_details(
-                                bill.url)
+                            enhanced_bill = (
+                                self.sangiin_scraper.fetch_enhanced_bill_details(
+                                    bill.url
+                                )
+                            )
                             enhanced_bill.diet_session = session_number
                             sangiin_bills.append(enhanced_bill)
                         except Exception as e:
                             self.logger.warning(
-                                f"Error fetching details for Sangiin bill {bill.bill_id}: {e}")
+                                f"Error fetching details for Sangiin bill {bill.bill_id}: {e}"
+                            )
                             result.warnings.append(
-                                f"Sangiin bill {bill.bill_id}: {str(e)}")
+                                f"Sangiin bill {bill.bill_id}: {str(e)}"
+                            )
 
                 result.sangiin_bills_count = len(sangiin_bills)
                 self.logger.info(
-                    f"Successfully scraped {len(sangiin_bills)} Sangiin bills")
+                    f"Successfully scraped {len(sangiin_bills)} Sangiin bills"
+                )
 
             except Exception as e:
                 self.logger.error(f"Error scraping Sangiin data: {e}")
@@ -249,19 +279,23 @@ class DataIntegrationManager:
                 for bill in basic_bills:
                     if bill.url:
                         try:
-                            enhanced_bill = self.shugiin_scraper.fetch_enhanced_bill_data(
-                                bill.url)
+                            enhanced_bill = (
+                                self.shugiin_scraper.fetch_enhanced_bill_data(bill.url)
+                            )
                             enhanced_bill.diet_session = session_number
                             shugiin_bills.append(enhanced_bill)
                         except Exception as e:
                             self.logger.warning(
-                                f"Error fetching details for Shugiin bill {bill.bill_id}: {e}")
+                                f"Error fetching details for Shugiin bill {bill.bill_id}: {e}"
+                            )
                             result.warnings.append(
-                                f"Shugiin bill {bill.bill_id}: {str(e)}")
+                                f"Shugiin bill {bill.bill_id}: {str(e)}"
+                            )
 
                 result.shugiin_bills_count = len(shugiin_bills)
                 self.logger.info(
-                    f"Successfully scraped {len(shugiin_bills)} Shugiin bills")
+                    f"Successfully scraped {len(shugiin_bills)} Shugiin bills"
+                )
 
             except Exception as e:
                 self.logger.error(f"Error scraping Shugiin data: {e}")
@@ -269,15 +303,18 @@ class DataIntegrationManager:
 
         return sangiin_bills, shugiin_bills
 
-    async def _merge_bill_data(self,
-                               sangiin_bills: list[EnhancedBillData],
-                               shugiin_bills: list[ShugiinBillData],
-                               result: ProcessingResult) -> list[MergeResult]:
+    async def _merge_bill_data(
+        self,
+        sangiin_bills: list[EnhancedBillData],
+        shugiin_bills: list[ShugiinBillData],
+        result: ProcessingResult,
+    ) -> list[MergeResult]:
         """Merge bill data from both houses"""
 
         try:
             self.logger.info(
-                f"Merging {len(sangiin_bills)} Sangiin bills with {len(shugiin_bills)} Shugiin bills")
+                f"Merging {len(sangiin_bills)} Sangiin bills with {len(shugiin_bills)} Shugiin bills"
+            )
 
             merge_results = self.data_merger.merge_bills(sangiin_bills, shugiin_bills)
 
@@ -286,10 +323,11 @@ class DataIntegrationManager:
 
             # Calculate merge statistics
             merge_stats = self.data_merger.get_merge_statistics(merge_results)
-            result.merge_conflict_rate = merge_stats.get('conflict_rate', 0.0)
+            result.merge_conflict_rate = merge_stats.get("conflict_rate", 0.0)
 
             self.logger.info(
-                f"Successfully merged {len(merge_results)} bills with {merge_stats.get('total_conflicts', 0)} conflicts")
+                f"Successfully merged {len(merge_results)} bills with {merge_stats.get('total_conflicts', 0)} conflicts"
+            )
 
             return merge_results
 
@@ -298,37 +336,42 @@ class DataIntegrationManager:
             result.errors.append(f"Data merging failed: {str(e)}")
             return []
 
-    async def _validate_merged_data(self,
-                                    merge_results: list[MergeResult],
-                                    result: ProcessingResult) -> list[ValidationResult]:
+    async def _validate_merged_data(
+        self, merge_results: list[MergeResult], result: ProcessingResult
+    ) -> list[ValidationResult]:
         """Validate merged bill data"""
 
         try:
             self.logger.info(f"Validating {len(merge_results)} merged bills")
 
             validation_results = self.data_validator.validate_merge_results(
-                merge_results,
-                self.config.validation_level
+                merge_results, self.config.validation_level
             )
 
             result.validation_results = validation_results
             result.valid_bills_count = sum(1 for r in validation_results if r.is_valid)
-            result.validation_success_rate = result.valid_bills_count / \
-                len(validation_results) if validation_results else 0.0
+            result.validation_success_rate = (
+                result.valid_bills_count / len(validation_results)
+                if validation_results
+                else 0.0
+            )
 
             # Calculate average quality score
             quality_scores = [r.quality_score for r in validation_results]
-            result.avg_data_quality_score = sum(
-                quality_scores) / len(quality_scores) if quality_scores else 0.0
+            result.avg_data_quality_score = (
+                sum(quality_scores) / len(quality_scores) if quality_scores else 0.0
+            )
 
             # Add validation warnings
             for validation_result in validation_results:
                 if validation_result.get_critical_issues():
                     result.warnings.append(
-                        f"Bill {validation_result.bill_id} has critical validation issues")
+                        f"Bill {validation_result.bill_id} has critical validation issues"
+                    )
 
             self.logger.info(
-                f"Successfully validated {result.valid_bills_count}/{len(validation_results)} bills")
+                f"Successfully validated {result.valid_bills_count}/{len(validation_results)} bills"
+            )
 
             return validation_results
 
@@ -338,16 +381,17 @@ class DataIntegrationManager:
             return []
 
     async def _track_bill_progress(
-            self,
-            merge_results: list[MergeResult],
-            result: ProcessingResult) -> list[ProgressTrackingResult]:
+        self, merge_results: list[MergeResult], result: ProcessingResult
+    ) -> list[ProgressTrackingResult]:
         """Track bill progress"""
 
         try:
             self.logger.info(f"Tracking progress for {len(merge_results)} bills")
 
             bills_to_track = [mr.merged_bill for mr in merge_results]
-            tracking_results = await self.progress_tracker.track_multiple_bills(bills_to_track)
+            tracking_results = await self.progress_tracker.track_multiple_bills(
+                bills_to_track
+            )
 
             result.tracking_results = tracking_results
 
@@ -355,10 +399,15 @@ class DataIntegrationManager:
             for tracking_result in tracking_results:
                 if tracking_result.alerts:
                     result.warnings.extend(
-                        [f"Bill {tracking_result.bill_id}: {alert}" for alert in tracking_result.alerts])
+                        [
+                            f"Bill {tracking_result.bill_id}: {alert}"
+                            for alert in tracking_result.alerts
+                        ]
+                    )
 
             self.logger.info(
-                f"Successfully tracked progress for {len(tracking_results)} bills")
+                f"Successfully tracked progress for {len(tracking_results)} bills"
+            )
 
             return tracking_results
 
@@ -380,15 +429,18 @@ class DataIntegrationManager:
         self.logger.info(f"  - Merged bills: {result.merged_bills_count}")
         self.logger.info(f"  - Valid bills: {result.valid_bills_count}")
         self.logger.info(
-            f"  - Average quality score: {result.avg_data_quality_score:.2f}")
+            f"  - Average quality score: {result.avg_data_quality_score:.2f}"
+        )
         self.logger.info(f"  - Merge conflict rate: {result.merge_conflict_rate:.2%}")
         self.logger.info(
-            f"  - Validation success rate: {result.validation_success_rate:.2%}")
+            f"  - Validation success rate: {result.validation_success_rate:.2%}"
+        )
         self.logger.info(f"  - Errors: {len(result.errors)}")
         self.logger.info(f"  - Warnings: {len(result.warnings)}")
 
     async def process_multiple_sessions(
-            self, session_numbers: list[str]) -> list[ProcessingResult]:
+        self, session_numbers: list[str]
+    ) -> list[ProcessingResult]:
         """Process multiple diet sessions"""
 
         results = []
@@ -418,22 +470,27 @@ class DataIntegrationManager:
         successful_sessions = sum(1 for r in results if r.is_successful)
 
         return {
-            'total_sessions': len(results),
-            'successful_sessions': successful_sessions,
-            'success_rate': successful_sessions / len(results),
-            'total_bills_processed': total_bills,
-            'total_processing_time': total_time,
-            'average_bills_per_session': total_bills / len(results) if results else 0,
-            'overall_throughput': total_bills / total_time if total_time > 0 else 0,
-            'avg_data_quality': sum(r.avg_data_quality_score for r in results) / len(results),
-            'avg_merge_conflict_rate': sum(r.merge_conflict_rate for r in results) / len(results),
-            'avg_validation_success_rate': sum(r.validation_success_rate for r in results) / len(results),
-            'total_errors': sum(len(r.errors) for r in results),
-            'total_warnings': sum(len(r.warnings) for r in results),
-            'stage_distribution': {
+            "total_sessions": len(results),
+            "successful_sessions": successful_sessions,
+            "success_rate": successful_sessions / len(results),
+            "total_bills_processed": total_bills,
+            "total_processing_time": total_time,
+            "average_bills_per_session": total_bills / len(results) if results else 0,
+            "overall_throughput": total_bills / total_time if total_time > 0 else 0,
+            "avg_data_quality": sum(r.avg_data_quality_score for r in results)
+            / len(results),
+            "avg_merge_conflict_rate": sum(r.merge_conflict_rate for r in results)
+            / len(results),
+            "avg_validation_success_rate": sum(
+                r.validation_success_rate for r in results
+            )
+            / len(results),
+            "total_errors": sum(len(r.errors) for r in results),
+            "total_warnings": sum(len(r.warnings) for r in results),
+            "stage_distribution": {
                 stage.value: sum(1 for r in results if r.processing_stage == stage)
                 for stage in ProcessingStage
-            }
+            },
         }
 
     def get_session_result(self, session_id: str) -> ProcessingResult | None:
@@ -459,44 +516,47 @@ class DataIntegrationManager:
         self.logger.info(f"Cleared {len(to_remove)} old processing results")
 
     def export_processing_results(
-            self, session_ids: list[str] | None = None) -> dict[str, Any]:
+        self, session_ids: list[str] | None = None
+    ) -> dict[str, Any]:
         """Export processing results for analysis"""
 
         if session_ids is None:
             session_ids = list(self.processing_results.keys())
 
         export_data = {
-            'export_timestamp': datetime.now().isoformat(),
-            'config': {
-                'conflict_resolution_strategy': self.config.conflict_resolution_strategy.value,
-                'similarity_threshold': self.config.similarity_threshold,
-                'validation_level': self.config.validation_level,
-                'batch_size': self.config.batch_size,
+            "export_timestamp": datetime.now().isoformat(),
+            "config": {
+                "conflict_resolution_strategy": self.config.conflict_resolution_strategy.value,
+                "similarity_threshold": self.config.similarity_threshold,
+                "validation_level": self.config.validation_level,
+                "batch_size": self.config.batch_size,
             },
-            'sessions': {}}
+            "sessions": {},
+        }
 
         for session_id in session_ids:
             result = self.processing_results.get(session_id)
             if result:
-                export_data['sessions'][session_id] = {
-                    'session_id': result.session_id,
-                    'processing_stage': result.processing_stage.value,
-                    'start_time': result.start_time.isoformat(),
-                    'end_time': result.end_time.isoformat() if result.end_time else None,
-                    'total_bills_processed': result.total_bills_processed,
-                    'sangiin_bills_count': result.sangiin_bills_count,
-                    'shugiin_bills_count': result.shugiin_bills_count,
-                    'merged_bills_count': result.merged_bills_count,
-                    'valid_bills_count': result.valid_bills_count,
-                    'avg_data_quality_score': result.avg_data_quality_score,
-                    'merge_conflict_rate': result.merge_conflict_rate,
-                    'validation_success_rate': result.validation_success_rate,
-                    'processing_time_seconds': result.processing_time_seconds,
-                    'bills_per_second': result.bills_per_second,
-                    'error_count': len(
-                        result.errors),
-                    'warning_count': len(
-                        result.warnings),
-                    'is_successful': result.is_successful}
+                export_data["sessions"][session_id] = {
+                    "session_id": result.session_id,
+                    "processing_stage": result.processing_stage.value,
+                    "start_time": result.start_time.isoformat(),
+                    "end_time": (
+                        result.end_time.isoformat() if result.end_time else None
+                    ),
+                    "total_bills_processed": result.total_bills_processed,
+                    "sangiin_bills_count": result.sangiin_bills_count,
+                    "shugiin_bills_count": result.shugiin_bills_count,
+                    "merged_bills_count": result.merged_bills_count,
+                    "valid_bills_count": result.valid_bills_count,
+                    "avg_data_quality_score": result.avg_data_quality_score,
+                    "merge_conflict_rate": result.merge_conflict_rate,
+                    "validation_success_rate": result.validation_success_rate,
+                    "processing_time_seconds": result.processing_time_seconds,
+                    "bills_per_second": result.bills_per_second,
+                    "error_count": len(result.errors),
+                    "warning_count": len(result.warnings),
+                    "is_successful": result.is_successful,
+                }
 
         return export_data

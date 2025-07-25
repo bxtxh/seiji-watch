@@ -1,6 +1,7 @@
 """
 Speech-to-Text client using OpenAI Whisper API for Japanese transcription.
 """
+
 import logging
 import os
 import tempfile
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TranscriptionResult:
     """Result of speech-to-text transcription"""
+
     text: str
     language: str
     duration: float
@@ -33,25 +35,20 @@ class WhisperClient:
             raise ValueError("OpenAI API key is required")
 
         self.base_url = "https://api.openai.com/v1/audio/transcriptions"
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}"
-        }
+        self.headers = {"Authorization": f"Bearer {self.api_key}"}
 
         # yt-dlp configuration for audio extraction
         self.yt_dlp_opts = {
-            'format': 'bestaudio/best',
-            'extractaudio': True,
-            'audioformat': 'mp3',
-            'outtmpl': '%(title)s.%(ext)s',
-            'quiet': True,
-            'no_warnings': True
+            "format": "bestaudio/best",
+            "extractaudio": True,
+            "audioformat": "mp3",
+            "outtmpl": "%(title)s.%(ext)s",
+            "quiet": True,
+            "no_warnings": True,
         }
 
     def transcribe_audio_file(
-        self,
-        audio_file_path: str,
-        language: str = "ja",
-        model: str = "whisper-1"
+        self, audio_file_path: str, language: str = "ja", model: str = "whisper-1"
     ) -> TranscriptionResult:
         """
         Transcribe audio file using OpenAI Whisper API
@@ -69,13 +66,13 @@ class WhisperClient:
 
         try:
             # Prepare the request
-            with open(audio_file_path, 'rb') as audio_file:
+            with open(audio_file_path, "rb") as audio_file:
                 files = {
-                    'file': audio_file,
-                    'model': (None, model),
-                    'language': (None, language),
-                    'response_format': (None, 'verbose_json'),
-                    'temperature': (None, '0')
+                    "file": audio_file,
+                    "model": (None, model),
+                    "language": (None, language),
+                    "response_format": (None, "verbose_json"),
+                    "temperature": (None, "0"),
                 }
 
                 logger.info(f"Transcribing audio file: {audio_file_path}")
@@ -83,17 +80,17 @@ class WhisperClient:
                     self.base_url,
                     headers=self.headers,
                     files=files,
-                    timeout=300  # 5 minutes timeout for large files
+                    timeout=300,  # 5 minutes timeout for large files
                 )
 
                 response.raise_for_status()
                 result = response.json()
 
                 return TranscriptionResult(
-                    text=result.get('text', ''),
-                    language=result.get('language', language),
-                    duration=result.get('duration', 0.0),
-                    segments=result.get('segments', [])
+                    text=result.get("text", ""),
+                    language=result.get("language", language),
+                    duration=result.get("duration", 0.0),
+                    segments=result.get("segments", []),
                 )
 
         except requests.RequestException as e:
@@ -104,9 +101,7 @@ class WhisperClient:
             raise
 
     def download_and_transcribe_video(
-        self,
-        video_url: str,
-        output_dir: str | None = None
+        self, video_url: str, output_dir: str | None = None
     ) -> tuple[TranscriptionResult, str]:
         """
         Download video from URL and transcribe its audio
@@ -127,7 +122,7 @@ class WhisperClient:
         try:
             # Configure yt-dlp for this download
             yt_opts = self.yt_dlp_opts.copy()
-            yt_opts['outtmpl'] = str(output_path / '%(title)s.%(ext)s')
+            yt_opts["outtmpl"] = str(output_path / "%(title)s.%(ext)s")
 
             # Download and extract audio
             with yt_dlp.YoutubeDL(yt_opts) as ydl:
@@ -138,7 +133,10 @@ class WhisperClient:
                 audio_file = None
                 for file_path in output_path.glob("*"):
                     if file_path.is_file() and file_path.suffix in [
-                            '.mp3', '.wav', '.m4a']:
+                        ".mp3",
+                        ".wav",
+                        ".m4a",
+                    ]:
                         audio_file = str(file_path)
                         break
 
@@ -190,18 +188,16 @@ class WhisperClient:
                     distances[i][j] = distances[i - 1][j - 1]
                 else:
                     distances[i][j] = min(
-                        distances[i - 1][j] + 1,      # deletion
-                        distances[i][j - 1] + 1,      # insertion
-                        distances[i - 1][j - 1] + 1     # substitution
+                        distances[i - 1][j] + 1,  # deletion
+                        distances[i][j - 1] + 1,  # insertion
+                        distances[i - 1][j - 1] + 1,  # substitution
                     )
 
         wer = distances[len(ref_words)][len(hyp_words)] / len(ref_words)
         return min(wer, 1.0)
 
     def validate_transcription_quality(
-        self,
-        transcription: TranscriptionResult,
-        max_wer: float = 0.15
+        self, transcription: TranscriptionResult, max_wer: float = 0.15
     ) -> bool:
         """
         Validate transcription quality based on WER threshold
@@ -251,6 +247,7 @@ if __name__ == "__main__":
     try:
         # Create a dummy client for testing WER calculation only
         import os
+
         os.environ["OPENAI_API_KEY"] = "test_key"  # Temporary for testing
         client = WhisperClient()
 
@@ -271,16 +268,14 @@ if __name__ == "__main__":
         good_result = TranscriptionResult(
             text="これは国会での審議についての議事録です。法案について詳細に議論されました。",
             language="ja",
-            duration=60.0
+            duration=60.0,
         )
         is_valid = client.validate_transcription_quality(good_result)
         logger.info(f"Quality validation (good): {is_valid}")
 
         # Test poor transcription
         poor_result = TranscriptionResult(
-            text="abc abc abc abc abc",
-            language="ja",
-            duration=60.0
+            text="abc abc abc abc abc", language="ja", duration=60.0
         )
         is_valid2 = client.validate_transcription_quality(poor_result)
         logger.info(f"Quality validation (poor): {is_valid2}")
@@ -291,5 +286,8 @@ if __name__ == "__main__":
         logger.error(f"WhisperClient test failed: {e}")
     finally:
         # Clean up test environment variable
-        if "OPENAI_API_KEY" in os.environ and os.environ["OPENAI_API_KEY"] == "test_key":
+        if (
+            "OPENAI_API_KEY" in os.environ
+            and os.environ["OPENAI_API_KEY"] == "test_key"
+        ):
             del os.environ["OPENAI_API_KEY"]

@@ -27,6 +27,7 @@ from .data_quality_dashboard import DataQualityDashboard
 
 class AlertType(Enum):
     """Types of alerts"""
+
     QUALITY_DEGRADATION = "quality_degradation"
     PROCESSING_FAILURE = "processing_failure"
     SYSTEM_ERROR = "system_error"
@@ -37,6 +38,7 @@ class AlertType(Enum):
 
 class AlertSeverity(Enum):
     """Alert severity levels"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -46,6 +48,7 @@ class AlertSeverity(Enum):
 
 class NotificationChannel(Enum):
     """Notification channels"""
+
     EMAIL = "email"
     SLACK = "slack"
     WEBHOOK = "webhook"
@@ -55,6 +58,7 @@ class NotificationChannel(Enum):
 @dataclass
 class AlertRule:
     """Alert rule configuration"""
+
     rule_id: str
     name: str
     description: str
@@ -70,23 +74,24 @@ class AlertRule:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'rule_id': self.rule_id,
-            'name': self.name,
-            'description': self.description,
-            'alert_type': self.alert_type.value,
-            'severity': self.severity.value,
-            'condition': self.condition,
-            'threshold': self.threshold,
-            'evaluation_window': self.evaluation_window,
-            'notification_channels': [ch.value for ch in self.notification_channels],
-            'enabled': self.enabled,
-            'created_at': self.created_at.isoformat()
+            "rule_id": self.rule_id,
+            "name": self.name,
+            "description": self.description,
+            "alert_type": self.alert_type.value,
+            "severity": self.severity.value,
+            "condition": self.condition,
+            "threshold": self.threshold,
+            "evaluation_window": self.evaluation_window,
+            "notification_channels": [ch.value for ch in self.notification_channels],
+            "enabled": self.enabled,
+            "created_at": self.created_at.isoformat(),
         }
 
 
 @dataclass
 class Alert:
     """Alert instance"""
+
     alert_id: str
     rule_id: str
     alert_type: AlertType
@@ -103,23 +108,27 @@ class Alert:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'alert_id': self.alert_id,
-            'rule_id': self.rule_id,
-            'alert_type': self.alert_type.value,
-            'severity': self.severity.value,
-            'title': self.title,
-            'message': self.message,
-            'details': self.details,
-            'triggered_at': self.triggered_at.isoformat(),
-            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
-            'acknowledgment_required': self.acknowledgment_required,
-            'acknowledged_at': self.acknowledged_at.isoformat() if self.acknowledged_at else None,
-            'acknowledged_by': self.acknowledged_by}
+            "alert_id": self.alert_id,
+            "rule_id": self.rule_id,
+            "alert_type": self.alert_type.value,
+            "severity": self.severity.value,
+            "title": self.title,
+            "message": self.message,
+            "details": self.details,
+            "triggered_at": self.triggered_at.isoformat(),
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
+            "acknowledgment_required": self.acknowledgment_required,
+            "acknowledged_at": (
+                self.acknowledged_at.isoformat() if self.acknowledged_at else None
+            ),
+            "acknowledged_by": self.acknowledged_by,
+        }
 
 
 @dataclass
 class HealthCheck:
     """Health check configuration"""
+
     check_id: str
     name: str
     description: str
@@ -131,18 +140,19 @@ class HealthCheck:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'check_id': self.check_id,
-            'name': self.name,
-            'description': self.description,
-            'interval': self.interval,
-            'timeout': self.timeout,
-            'enabled': self.enabled
+            "check_id": self.check_id,
+            "name": self.name,
+            "description": self.description,
+            "interval": self.interval,
+            "timeout": self.timeout,
+            "enabled": self.enabled,
         }
 
 
 @dataclass
 class MonitoringStats:
     """Monitoring system statistics"""
+
     total_alerts: int
     active_alerts: int
     resolved_alerts: int
@@ -156,15 +166,18 @@ class MonitoringStats:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'total_alerts': self.total_alerts,
-            'active_alerts': self.active_alerts,
-            'resolved_alerts': self.resolved_alerts,
-            'alerts_by_severity': self.alerts_by_severity,
-            'alerts_by_type': self.alerts_by_type,
-            'health_checks_passed': self.health_checks_passed,
-            'health_checks_failed': self.health_checks_failed,
-            'uptime_percentage': self.uptime_percentage,
-            'last_alert_time': self.last_alert_time.isoformat() if self.last_alert_time else None}
+            "total_alerts": self.total_alerts,
+            "active_alerts": self.active_alerts,
+            "resolved_alerts": self.resolved_alerts,
+            "alerts_by_severity": self.alerts_by_severity,
+            "alerts_by_type": self.alerts_by_type,
+            "health_checks_passed": self.health_checks_passed,
+            "health_checks_failed": self.health_checks_failed,
+            "uptime_percentage": self.uptime_percentage,
+            "last_alert_time": (
+                self.last_alert_time.isoformat() if self.last_alert_time else None
+            ),
+        }
 
 
 class MonitoringService:
@@ -174,7 +187,8 @@ class MonitoringService:
         self.database_url = database_url
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine)
+            autocommit=False, autoflush=False, bind=self.engine
+        )
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -183,24 +197,24 @@ class MonitoringService:
 
         # Service configuration
         self.config = config or {
-            'evaluation_interval': 300,  # 5 minutes
-            'alert_cooldown': 1800,  # 30 minutes
-            'max_active_alerts': 100,
-            'health_check_interval': 60,  # 1 minute
-            'notification_retry_count': 3,
-            'notification_retry_delay': 60,
-            'email_settings': {
-                'smtp_server': os.getenv('SMTP_SERVER', 'localhost'),
-                'smtp_port': int(os.getenv('SMTP_PORT', '587')),
-                'smtp_user': os.getenv('SMTP_USER', ''),
-                'smtp_password': os.getenv('SMTP_PASSWORD', ''),
-                'from_email': os.getenv('FROM_EMAIL', 'monitoring@seiji-watch.com'),
-                'to_emails': os.getenv('ALERT_EMAILS', '').split(',')
+            "evaluation_interval": 300,  # 5 minutes
+            "alert_cooldown": 1800,  # 30 minutes
+            "max_active_alerts": 100,
+            "health_check_interval": 60,  # 1 minute
+            "notification_retry_count": 3,
+            "notification_retry_delay": 60,
+            "email_settings": {
+                "smtp_server": os.getenv("SMTP_SERVER", "localhost"),
+                "smtp_port": int(os.getenv("SMTP_PORT", "587")),
+                "smtp_user": os.getenv("SMTP_USER", ""),
+                "smtp_password": os.getenv("SMTP_PASSWORD", ""),
+                "from_email": os.getenv("FROM_EMAIL", "monitoring@seiji-watch.com"),
+                "to_emails": os.getenv("ALERT_EMAILS", "").split(","),
             },
-            'webhook_settings': {
-                'slack_webhook_url': os.getenv('SLACK_WEBHOOK_URL', ''),
-                'general_webhook_url': os.getenv('WEBHOOK_URL', '')
-            }
+            "webhook_settings": {
+                "slack_webhook_url": os.getenv("SLACK_WEBHOOK_URL", ""),
+                "general_webhook_url": os.getenv("WEBHOOK_URL", ""),
+            },
         }
 
         # Monitoring state
@@ -234,8 +248,11 @@ class MonitoringService:
                 condition="quality_score < 0.5",
                 threshold=0.5,
                 evaluation_window=10,
-                notification_channels=[NotificationChannel.EMAIL, NotificationChannel.LOG],
-                acknowledgment_required=True
+                notification_channels=[
+                    NotificationChannel.EMAIL,
+                    NotificationChannel.LOG,
+                ],
+                acknowledgment_required=True,
             ),
             AlertRule(
                 rule_id="completeness_low",
@@ -246,7 +263,10 @@ class MonitoringService:
                 condition="completeness_rate < 0.7",
                 threshold=0.7,
                 evaluation_window=15,
-                notification_channels=[NotificationChannel.EMAIL, NotificationChannel.LOG]
+                notification_channels=[
+                    NotificationChannel.EMAIL,
+                    NotificationChannel.LOG,
+                ],
             ),
             AlertRule(
                 rule_id="processing_error_high",
@@ -257,7 +277,10 @@ class MonitoringService:
                 condition="error_rate > 0.1",
                 threshold=0.1,
                 evaluation_window=5,
-                notification_channels=[NotificationChannel.EMAIL, NotificationChannel.LOG]
+                notification_channels=[
+                    NotificationChannel.EMAIL,
+                    NotificationChannel.LOG,
+                ],
             ),
             AlertRule(
                 rule_id="migration_failure",
@@ -268,7 +291,10 @@ class MonitoringService:
                 condition="migration_success_rate < 0.8",
                 threshold=0.8,
                 evaluation_window=30,
-                notification_channels=[NotificationChannel.EMAIL, NotificationChannel.LOG]
+                notification_channels=[
+                    NotificationChannel.EMAIL,
+                    NotificationChannel.LOG,
+                ],
             ),
             AlertRule(
                 rule_id="database_connection_failure",
@@ -279,9 +305,12 @@ class MonitoringService:
                 condition="database_health < 0.5",
                 threshold=0.5,
                 evaluation_window=2,
-                notification_channels=[NotificationChannel.EMAIL, NotificationChannel.LOG],
-                acknowledgment_required=True
-            )
+                notification_channels=[
+                    NotificationChannel.EMAIL,
+                    NotificationChannel.LOG,
+                ],
+                acknowledgment_required=True,
+            ),
         ]
 
         for rule in default_rules:
@@ -290,38 +319,38 @@ class MonitoringService:
     def _initialize_default_health_checks(self):
         """Initialize default health checks"""
         self.health_checks = {
-            'database_connectivity': HealthCheck(
-                check_id='database_connectivity',
-                name='Database Connectivity',
-                description='Check database connection and basic query',
+            "database_connectivity": HealthCheck(
+                check_id="database_connectivity",
+                name="Database Connectivity",
+                description="Check database connection and basic query",
                 check_function=self._check_database_connectivity,
                 interval=60,
-                timeout=10
+                timeout=10,
             ),
-            'data_quality_service': HealthCheck(
-                check_id='data_quality_service',
-                name='Data Quality Service',
-                description='Check data quality auditor service',
+            "data_quality_service": HealthCheck(
+                check_id="data_quality_service",
+                name="Data Quality Service",
+                description="Check data quality auditor service",
                 check_function=self._check_data_quality_service,
                 interval=300,
-                timeout=30
+                timeout=30,
             ),
-            'migration_service': HealthCheck(
-                check_id='migration_service',
-                name='Migration Service',
-                description='Check migration service availability',
+            "migration_service": HealthCheck(
+                check_id="migration_service",
+                name="Migration Service",
+                description="Check migration service availability",
                 check_function=self._check_migration_service,
                 interval=300,
-                timeout=30
+                timeout=30,
             ),
-            'disk_space': HealthCheck(
-                check_id='disk_space',
-                name='Disk Space',
-                description='Check available disk space',
+            "disk_space": HealthCheck(
+                check_id="disk_space",
+                name="Disk Space",
+                description="Check available disk space",
                 check_function=self._check_disk_space,
                 interval=300,
-                timeout=5
-            )
+                timeout=5,
+            ),
         }
 
     def start_monitoring(self):
@@ -363,7 +392,7 @@ class MonitoringService:
                 self._update_alert_cooldowns()
 
                 # Wait for next evaluation
-                self.stop_event.wait(self.config['evaluation_interval'])
+                self.stop_event.wait(self.config["evaluation_interval"])
 
             except Exception as e:
                 self.logger.error(f"Error in monitoring loop: {e}")
@@ -376,7 +405,7 @@ class MonitoringService:
                 self._run_health_checks()
 
                 # Wait for next check
-                self.stop_event.wait(self.config['health_check_interval'])
+                self.stop_event.wait(self.config["health_check_interval"])
 
             except Exception as e:
                 self.logger.error(f"Error in health check loop: {e}")
@@ -413,15 +442,16 @@ class MonitoringService:
             # Extract metrics from panels
             metrics = {}
 
-            for panel in dashboard_data.get('panels', []):
-                for metric in panel.get('metrics', []):
-                    metric_name = metric['name'].lower().replace(' ', '_')
-                    metrics[metric_name] = metric['value']
+            for panel in dashboard_data.get("panels", []):
+                for metric in panel.get("metrics", []):
+                    metric_name = metric["name"].lower().replace(" ", "_")
+                    metrics[metric_name] = metric["value"]
 
             # Add health check results
             for check_id, result in self.health_check_results.items():
-                metrics[f"{check_id}_health"] = 1.0 if result.get(
-                    'success', False) else 0.0
+                metrics[f"{check_id}_health"] = (
+                    1.0 if result.get("success", False) else 0.0
+                )
 
             return metrics
 
@@ -434,16 +464,11 @@ class MonitoringService:
         try:
             # Replace metric names in condition with actual values
             safe_metrics = {
-                k: v for k,
-                v in metrics.items() if isinstance(
-                    v,
-                    int | float)}
+                k: v for k, v in metrics.items() if isinstance(v, int | float)
+            }
 
             # Create safe evaluation environment
-            safe_dict = {
-                "__builtins__": {},
-                **safe_metrics
-            }
+            safe_dict = {"__builtins__": {}, **safe_metrics}
 
             # Evaluate condition
             result = eval(condition, safe_dict)
@@ -474,13 +499,17 @@ class MonitoringService:
                 title=rule.name,
                 message=rule.description,
                 details={
-                    'metrics': metrics,
-                    'condition': rule.condition,
-                    'threshold': rule.threshold},
+                    "metrics": metrics,
+                    "condition": rule.condition,
+                    "threshold": rule.threshold,
+                },
                 triggered_at=datetime.now(),
-                acknowledgment_required=rule.acknowledgment_required if hasattr(
-                    rule,
-                    'acknowledgment_required') else False)
+                acknowledgment_required=(
+                    rule.acknowledgment_required
+                    if hasattr(rule, "acknowledgment_required")
+                    else False
+                ),
+            )
 
             # Store alert
             self.active_alerts[active_alert_key] = alert
@@ -490,8 +519,9 @@ class MonitoringService:
             self._send_notifications(alert, rule.notification_channels)
 
             # Set cooldown
-            cooldown_end = datetime.now(
-            ) + timedelta(seconds=self.config['alert_cooldown'])
+            cooldown_end = datetime.now() + timedelta(
+                seconds=self.config["alert_cooldown"]
+            )
             self.alert_cooldowns[rule.rule_id] = cooldown_end
 
             self.logger.warning(f"Alert triggered: {alert.title} - {alert.message}")
@@ -514,23 +544,25 @@ class MonitoringService:
 
             except Exception as e:
                 self.logger.error(
-                    f"Error sending notification via {channel.value}: {e}")
+                    f"Error sending notification via {channel.value}: {e}"
+                )
 
     def _send_email_notification(self, alert: Alert):
         """Send email notification"""
         try:
-            email_config = self.config['email_settings']
+            email_config = self.config["email_settings"]
 
-            if not email_config['to_emails'] or not email_config['smtp_server']:
+            if not email_config["to_emails"] or not email_config["smtp_server"]:
                 self.logger.debug(
-                    "Email configuration not complete, skipping email notification")
+                    "Email configuration not complete, skipping email notification"
+                )
                 return
 
             # Create message
             msg = MIMEMultipart()
-            msg['From'] = email_config['from_email']
-            msg['To'] = ', '.join(email_config['to_emails'])
-            msg['Subject'] = f"[{alert.severity.value.upper()}] {alert.title}"
+            msg["From"] = email_config["from_email"]
+            msg["To"] = ", ".join(email_config["to_emails"])
+            msg["Subject"] = f"[{alert.severity.value.upper()}] {alert.title}"
 
             # Create body
             body = f"""
@@ -547,20 +579,19 @@ Metrics:
 Dashboard: http://localhost:3000/dashboard/quality
             """
 
-            msg.attach(MIMEText(body, 'plain'))
+            msg.attach(MIMEText(body, "plain"))
 
             # Send email
             server = smtplib.SMTP(
-                email_config['smtp_server'],
-                email_config['smtp_port'])
-            if email_config['smtp_user'] and email_config['smtp_password']:
+                email_config["smtp_server"], email_config["smtp_port"]
+            )
+            if email_config["smtp_user"] and email_config["smtp_password"]:
                 server.starttls()
-                server.login(email_config['smtp_user'], email_config['smtp_password'])
+                server.login(email_config["smtp_user"], email_config["smtp_password"])
 
             server.sendmail(
-                email_config['from_email'],
-                email_config['to_emails'],
-                msg.as_string())
+                email_config["from_email"], email_config["to_emails"], msg.as_string()
+            )
             server.quit()
 
             self.logger.info(f"Email notification sent for alert {alert.alert_id}")
@@ -573,11 +604,12 @@ Dashboard: http://localhost:3000/dashboard/quality
         try:
             import requests
 
-            webhook_url = self.config['webhook_settings']['slack_webhook_url']
+            webhook_url = self.config["webhook_settings"]["slack_webhook_url"]
 
             if not webhook_url:
                 self.logger.debug(
-                    "Slack webhook URL not configured, skipping Slack notification")
+                    "Slack webhook URL not configured, skipping Slack notification"
+                )
                 return
 
             # Create Slack message
@@ -586,7 +618,7 @@ Dashboard: http://localhost:3000/dashboard/quality
                 AlertSeverity.HIGH: "warning",
                 AlertSeverity.MEDIUM: "warning",
                 AlertSeverity.LOW: "good",
-                AlertSeverity.INFO: "good"
+                AlertSeverity.INFO: "good",
             }.get(alert.severity, "warning")
 
             payload = {
@@ -599,21 +631,21 @@ Dashboard: http://localhost:3000/dashboard/quality
                             {
                                 "title": "Alert ID",
                                 "value": alert.alert_id,
-                                "short": True
+                                "short": True,
                             },
                             {
                                 "title": "Type",
                                 "value": alert.alert_type.value,
-                                "short": True
+                                "short": True,
                             },
                             {
                                 "title": "Triggered",
                                 "value": alert.triggered_at.isoformat(),
-                                "short": True
-                            }
+                                "short": True,
+                            },
                         ],
                         "footer": "Seiji Watch Monitoring",
-                        "ts": int(alert.triggered_at.timestamp())
+                        "ts": int(alert.triggered_at.timestamp()),
                     }
                 ]
             }
@@ -631,11 +663,12 @@ Dashboard: http://localhost:3000/dashboard/quality
         try:
             import requests
 
-            webhook_url = self.config['webhook_settings']['general_webhook_url']
+            webhook_url = self.config["webhook_settings"]["general_webhook_url"]
 
             if not webhook_url:
                 self.logger.debug(
-                    "Webhook URL not configured, skipping webhook notification")
+                    "Webhook URL not configured, skipping webhook notification"
+                )
                 return
 
             payload = alert.to_dict()
@@ -655,12 +688,12 @@ Dashboard: http://localhost:3000/dashboard/quality
             AlertSeverity.HIGH: logging.ERROR,
             AlertSeverity.MEDIUM: logging.WARNING,
             AlertSeverity.LOW: logging.INFO,
-            AlertSeverity.INFO: logging.INFO
+            AlertSeverity.INFO: logging.INFO,
         }.get(alert.severity, logging.WARNING)
 
         self.logger.log(
-            log_level,
-            f"ALERT: {alert.title} - {alert.message} [ID: {alert.alert_id}]")
+            log_level, f"ALERT: {alert.title} - {alert.message} [ID: {alert.alert_id}]"
+        )
 
     def _run_health_checks(self):
         """Run all health checks"""
@@ -679,10 +712,10 @@ Dashboard: http://localhost:3000/dashboard/quality
 
                 # Store result
                 self.health_check_results[check_id] = {
-                    'success': success,
-                    'duration': duration,
-                    'timestamp': end_time.isoformat(),
-                    'timeout': duration > check.timeout
+                    "success": success,
+                    "duration": duration,
+                    "timestamp": end_time.isoformat(),
+                    "timeout": duration > check.timeout,
                 }
 
                 if not success:
@@ -692,11 +725,11 @@ Dashboard: http://localhost:3000/dashboard/quality
                 self.logger.error(f"Error running health check {check_id}: {e}")
 
                 self.health_check_results[check_id] = {
-                    'success': False,
-                    'duration': 0,
-                    'timestamp': datetime.now().isoformat(),
-                    'timeout': False,
-                    'error': str(e)
+                    "success": False,
+                    "duration": 0,
+                    "timestamp": datetime.now().isoformat(),
+                    "timeout": False,
+                    "error": str(e),
                 }
 
     def _check_database_connectivity(self) -> bool:
@@ -726,6 +759,7 @@ Dashboard: http://localhost:3000/dashboard/quality
         try:
             # Test migration service functionality
             from ..migration.data_migration_service import DataMigrationService
+
             service = DataMigrationService(self.database_url)
             service.get_migration_statistics(1)
             return True
@@ -759,7 +793,8 @@ Dashboard: http://localhost:3000/dashboard/quality
                 rule = self.alert_rules.get(alert.rule_id)
 
                 if rule and not self._evaluate_condition(
-                        rule.condition, current_metrics):
+                    rule.condition, current_metrics
+                ):
                     # Alert condition is no longer met, resolve it
                     alert.resolved_at = datetime.now()
                     del self.active_alerts[alert_key]
@@ -769,7 +804,8 @@ Dashboard: http://localhost:3000/dashboard/quality
             # Clean up old alert history
             cutoff_time = datetime.now() - timedelta(days=30)
             self.alert_history = [
-                alert for alert in self.alert_history
+                alert
+                for alert in self.alert_history
                 if alert.triggered_at > cutoff_time
             ]
 
@@ -782,7 +818,8 @@ Dashboard: http://localhost:3000/dashboard/quality
 
         # Remove expired cooldowns
         expired_cooldowns = [
-            rule_id for rule_id, cooldown_end in self.alert_cooldowns.items()
+            rule_id
+            for rule_id, cooldown_end in self.alert_cooldowns.items()
             if current_time >= cooldown_end
         ]
 
@@ -797,9 +834,8 @@ Dashboard: http://localhost:3000/dashboard/quality
         """Get alert history"""
         # Sort by triggered time (newest first)
         sorted_history = sorted(
-            self.alert_history,
-            key=lambda x: x.triggered_at,
-            reverse=True)
+            self.alert_history, key=lambda x: x.triggered_at, reverse=True
+        )
         return [alert.to_dict() for alert in sorted_history[:limit]]
 
     def acknowledge_alert(self, alert_id: str, user: str = "system") -> bool:
@@ -867,9 +903,19 @@ Dashboard: http://localhost:3000/dashboard/quality
 
             # Health check statistics
             health_checks_passed = len(
-                [r for r in self.health_check_results.values() if r.get('success', False)])
+                [
+                    r
+                    for r in self.health_check_results.values()
+                    if r.get("success", False)
+                ]
+            )
             health_checks_failed = len(
-                [r for r in self.health_check_results.values() if not r.get('success', False)])
+                [
+                    r
+                    for r in self.health_check_results.values()
+                    if not r.get("success", False)
+                ]
+            )
 
             # Calculate uptime (mock for now)
             uptime_percentage = 99.5
@@ -878,7 +924,8 @@ Dashboard: http://localhost:3000/dashboard/quality
             last_alert_time = None
             if self.alert_history:
                 last_alert_time = max(
-                    alert.triggered_at for alert in self.alert_history)
+                    alert.triggered_at for alert in self.alert_history
+                )
 
             return MonitoringStats(
                 total_alerts=total_alerts,
@@ -889,7 +936,7 @@ Dashboard: http://localhost:3000/dashboard/quality
                 health_checks_passed=health_checks_passed,
                 health_checks_failed=health_checks_failed,
                 uptime_percentage=uptime_percentage,
-                last_alert_time=last_alert_time
+                last_alert_time=last_alert_time,
             )
 
         except Exception as e:
@@ -899,17 +946,17 @@ Dashboard: http://localhost:3000/dashboard/quality
     def get_health_check_status(self) -> dict[str, Any]:
         """Get health check status"""
         return {
-            'health_checks': {
+            "health_checks": {
                 check_id: {
                     **check.to_dict(),
-                    'last_result': self.health_check_results.get(check_id, {})
+                    "last_result": self.health_check_results.get(check_id, {}),
                 }
                 for check_id, check in self.health_checks.items()
             },
-            'overall_health': all(
-                result.get('success', False)
+            "overall_health": all(
+                result.get("success", False)
                 for result in self.health_check_results.values()
-            )
+            ),
         }
 
     def add_alert_rule(self, rule: AlertRule):
@@ -928,11 +975,15 @@ Dashboard: http://localhost:3000/dashboard/quality
     def get_service_status(self) -> dict[str, Any]:
         """Get monitoring service status"""
         return {
-            'status': 'running' if self.monitoring_thread and self.monitoring_thread.is_alive() else 'stopped',
-            'configuration': self.config,
-            'active_rules': len([r for r in self.alert_rules.values() if r.enabled]),
-            'total_rules': len(self.alert_rules),
-            'active_alerts': len(self.active_alerts),
-            'health_checks': len(self.health_checks),
-            'uptime': datetime.now().isoformat()  # Service start time would be tracked in production
+            "status": (
+                "running"
+                if self.monitoring_thread and self.monitoring_thread.is_alive()
+                else "stopped"
+            ),
+            "configuration": self.config,
+            "active_rules": len([r for r in self.alert_rules.values() if r.enabled]),
+            "total_rules": len(self.alert_rules),
+            "active_alerts": len(self.active_alerts),
+            "health_checks": len(self.health_checks),
+            "uptime": datetime.now().isoformat(),  # Service start time would be tracked in production
         }

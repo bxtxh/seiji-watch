@@ -23,11 +23,8 @@ def setup_logging():
     """Setup logging for test"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler('t52_test.log')
-        ]
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(), logging.FileHandler("t52_test.log")],
     )
 
 
@@ -42,14 +39,17 @@ async def test_pipeline_status():
 
     print(f"Pipeline Status: {status['status']}")
     print("\nService Availability:")
-    for service, available in status['services'].items():
+    for service, available in status["services"].items():
         status_icon = "✅" if available else "❌"
-        print(f"  {status_icon} {service}: {'Available' if available else 'Not Available'}")
+        print(
+            f"  {status_icon} {service}: {'Available' if available else 'Not Available'}"
+        )
 
     print("\nTarget Configuration:")
-    target_config = status['target_configuration']
+    target_config = status["target_configuration"]
     print(
-        f"  📅 Date Range: {target_config['start_date']} to {target_config['end_date']}")
+        f"  📅 Date Range: {target_config['start_date']} to {target_config['end_date']}"
+    )
     print(f"  📊 Max Bills: {target_config['max_bills']}")
     print(f"  🗳️  Max Voting Sessions: {target_config['max_voting_sessions']}")
     print(f"  🎤 Max Speeches: {target_config['max_speeches']}")
@@ -57,7 +57,7 @@ async def test_pipeline_status():
     print(f"  🧠 Embeddings Enabled: {target_config['enable_embeddings']}")
 
     print("\nEstimated Costs:")
-    costs = status['estimated_costs']
+    costs = status["estimated_costs"]
     for service, cost in costs.items():
         print(f"  💰 {service}: {cost}")
 
@@ -100,15 +100,16 @@ async def test_dry_run():
         metrics = result.performance_metrics
         print(f"  ⚡ Bills/second: {metrics.get('bills_per_second', 0):.2f}")
         print(
-            f"  ⚡ Voting sessions/second: {metrics.get('voting_sessions_per_second', 0):.2f}")
+            f"  ⚡ Voting sessions/second: {metrics.get('voting_sessions_per_second', 0):.2f}"
+        )
         print(f"  ⚡ Embeddings/second: {metrics.get('embeddings_per_second', 0):.2f}")
         print(f"  📊 Error Rate: {metrics.get('error_rate', 0):.2%}")
 
-        if 'resource_usage' in metrics:
-            resources = metrics['resource_usage']
-            if 'cpu_percent' in resources:
+        if "resource_usage" in metrics:
+            resources = metrics["resource_usage"]
+            if "cpu_percent" in resources:
                 print(f"  💻 CPU Usage: {resources['cpu_percent']:.1f}%")
-            if 'memory_percent' in resources:
+            if "memory_percent" in resources:
                 print(f"  🧠 Memory Usage: {resources['memory_percent']:.1f}%")
 
     return result
@@ -124,8 +125,8 @@ async def test_limited_real_run():
     status = coordinator.get_pipeline_status()
 
     # Check if essential services are available
-    required_services = ['diet_scraper', 'voting_scraper']
-    available_services = [svc for svc in required_services if status['services'][svc]]
+    required_services = ["diet_scraper", "voting_scraper"]
+    available_services = [svc for svc in required_services if status["services"][svc]]
 
     if len(available_services) < len(required_services):
         print("⚠️  Skipping real run - required services not available")
@@ -139,7 +140,7 @@ async def test_limited_real_run():
     # Confirm with user if running interactively
     if sys.stdin.isatty():
         response = input("   Continue? [y/N]: ").strip().lower()
-        if response != 'y':
+        if response != "y":
             print("   ❌ Real run cancelled by user")
             return None
 
@@ -172,23 +173,23 @@ async def test_limited_real_run():
 
     # Save detailed results to file
     results_file = f"t52_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(results_file, 'w', encoding='utf-8') as f:
+    with open(results_file, "w", encoding="utf-8") as f:
         # Convert result to dict for JSON serialization
         result_dict = {
-            'success': result.success,
-            'total_time': result.total_time,
-            'bills_collected': result.bills_collected,
-            'voting_sessions_collected': result.voting_sessions_collected,
-            'speeches_processed': result.speeches_processed,
-            'embeddings_generated': result.embeddings_generated,
-            'transcriptions_completed': result.transcriptions_completed,
-            'errors': result.errors,
-            'performance_metrics': result.performance_metrics,
-            'test_metadata': {
-                'test_date': datetime.now().isoformat(),
-                'test_type': 'limited_real_run',
-                'actual_duration': duration
-            }
+            "success": result.success,
+            "total_time": result.total_time,
+            "bills_collected": result.bills_collected,
+            "voting_sessions_collected": result.voting_sessions_collected,
+            "speeches_processed": result.speeches_processed,
+            "embeddings_generated": result.embeddings_generated,
+            "transcriptions_completed": result.transcriptions_completed,
+            "errors": result.errors,
+            "performance_metrics": result.performance_metrics,
+            "test_metadata": {
+                "test_date": datetime.now().isoformat(),
+                "test_type": "limited_real_run",
+                "actual_duration": duration,
+            },
         }
         json.dump(result_dict, f, indent=2, ensure_ascii=False)
 
@@ -211,12 +212,14 @@ async def test_service_availability():
         scraper_stats = coordinator.diet_scraper.get_scraper_statistics()
         print("  ✅ Diet Scraper: Available")
         print(
-            f"     Traditional scraper delay: {scraper_stats['traditional_scraper']['delay_seconds']}s")
+            f"     Traditional scraper delay: {scraper_stats['traditional_scraper']['delay_seconds']}s"
+        )
         print(
-            f"     Robots.txt parser: {scraper_stats['traditional_scraper']['robots_parser_enabled']}")
-        resilient_status = scraper_stats.get(
-            'resilient_scraper', {}).get(
-            'status', 'unknown')
+            f"     Robots.txt parser: {scraper_stats['traditional_scraper']['robots_parser_enabled']}"
+        )
+        resilient_status = scraper_stats.get("resilient_scraper", {}).get(
+            "status", "unknown"
+        )
         print(f"     Resilient scraper: {resilient_status}")
     except Exception as e:
         print(f"  ❌ Diet Scraper: Error - {e}")
@@ -283,16 +286,20 @@ async def main():
 
         print("✅ Pipeline Status: PASSED")
         print("✅ Service Availability: PASSED")
-        print(f"{'✅' if dry_result.success else '❌'} Dry Run: {'PASSED' if dry_result.success else 'FAILED'}")
+        print(
+            f"{'✅' if dry_result.success else '❌'} Dry Run: {'PASSED' if dry_result.success else 'FAILED'}"
+        )
 
         if real_result:
             print(
-                f"{'✅' if real_result.success else '❌'} Limited Real Run: {'PASSED' if real_result.success else 'FAILED'}")
+                f"{'✅' if real_result.success else '❌'} Limited Real Run: {'PASSED' if real_result.success else 'FAILED'}"
+            )
         else:
             print("⏭️  Limited Real Run: SKIPPED")
 
         print(
-            f"\n📊 Overall T52 Pipeline Status: {'✅ READY' if dry_result.success else '❌ NEEDS ATTENTION'}")
+            f"\n📊 Overall T52 Pipeline Status: {'✅ READY' if dry_result.success else '❌ NEEDS ATTENTION'}"
+        )
 
         if dry_result.success:
             print("\n🚀 T52 pipeline is ready for production execution!")
@@ -304,6 +311,7 @@ async def main():
     except Exception as e:
         print(f"\n❌ Test suite failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 

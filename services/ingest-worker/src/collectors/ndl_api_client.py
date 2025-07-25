@@ -23,6 +23,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 @dataclass
 class NDLMeeting:
     """NDL API Meeting data structure"""
+
     meeting_id: str
     title: str
     meeting_date: date
@@ -36,6 +37,7 @@ class NDLMeeting:
 @dataclass
 class NDLSpeech:
     """NDL API Speech data structure"""
+
     speech_id: str
     meeting_id: str
     speaker_name: str
@@ -61,8 +63,11 @@ class NDLRateLimiter:
             now = time.time()
 
             # Remove old requests outside the window
-            self.requests = [req_time for req_time in self.requests
-                             if now - req_time < self.per_seconds]
+            self.requests = [
+                req_time
+                for req_time in self.requests
+                if now - req_time < self.per_seconds
+            ]
 
             # Wait if we've hit the limit
             if len(self.requests) >= self.max_requests:
@@ -96,7 +101,7 @@ class NDLAPIClient:
             headers={
                 "User-Agent": "Diet-Issue-Tracker/1.0 (Educational Research; +https://github.com/diet-tracker)"
             },
-            timeout=httpx.Timeout(timeout)
+            timeout=httpx.Timeout(timeout),
         )
 
     async def __aenter__(self):
@@ -106,11 +111,11 @@ class NDLAPIClient:
         await self.client.aclose()
 
     @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=60)
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=60)
     )
-    async def _make_request(self, endpoint: str,
-                            params: dict[str, Any]) -> dict[str, Any]:
+    async def _make_request(
+        self, endpoint: str, params: dict[str, Any]
+    ) -> dict[str, Any]:
         """Make rate-limited API request with retry logic"""
         await self.rate_limiter.acquire()
 
@@ -126,7 +131,8 @@ class NDLAPIClient:
 
             data = response.json()
             self.logger.debug(
-                f"NDL API response: {data.get('numberOfRecords', 0)} records")
+                f"NDL API response: {data.get('numberOfRecords', 0)} records"
+            )
             return data
 
         except httpx.HTTPStatusError as e:
@@ -152,7 +158,7 @@ class NDLAPIClient:
         house: str | None = None,
         committee: str | None = None,
         start_record: int = 1,
-        max_records: int = 100
+        max_records: int = 100,
     ) -> list[NDLMeeting]:
         """
         Search for meetings using NDL API
@@ -171,7 +177,7 @@ class NDLAPIClient:
         """
         params = {
             "startRecord": start_record,
-            "maximumRecords": min(max_records, 100)  # API limit
+            "maximumRecords": min(max_records, 100),  # API limit
         }
 
         # Add optional filters
@@ -205,10 +211,7 @@ class NDLAPIClient:
             return []
 
     async def get_speeches(
-        self,
-        meeting_id: str,
-        start_record: int = 1,
-        max_records: int = 100
+        self, meeting_id: str, start_record: int = 1, max_records: int = 100
     ) -> list[NDLSpeech]:
         """
         Get speech records for a specific meeting
@@ -224,7 +227,7 @@ class NDLAPIClient:
         params = {
             "startRecord": start_record,
             "maximumRecords": min(max_records, 100),
-            "meetingId": meeting_id
+            "meetingId": meeting_id,
         }
 
         try:
@@ -233,7 +236,8 @@ class NDLAPIClient:
 
             speech_records = data.get("speechRecord", [])
             self.logger.info(
-                f"Found {len(speech_records)} speeches for meeting {meeting_id}")
+                f"Found {len(speech_records)} speeches for meeting {meeting_id}"
+            )
 
             for record in speech_records:
                 speech = self._parse_speech_record(record)
@@ -262,9 +266,7 @@ class NDLAPIClient:
 
         while True:
             speeches = await self.get_speeches(
-                meeting_id=meeting_id,
-                start_record=start_record,
-                max_records=batch_size
+                meeting_id=meeting_id, start_record=start_record, max_records=batch_size
             )
 
             if not speeches:
@@ -279,7 +281,8 @@ class NDLAPIClient:
             start_record += batch_size
 
         self.logger.info(
-            f"Retrieved {len(all_speeches)} total speeches for meeting {meeting_id}")
+            f"Retrieved {len(all_speeches)} total speeches for meeting {meeting_id}"
+        )
         return all_speeches
 
     def _parse_meeting_record(self, record: dict[str, Any]) -> NDLMeeting | None:
@@ -306,7 +309,7 @@ class NDLAPIClient:
                 house=record.get("nameOfHouse", ""),
                 committee_name=record.get("nameOfMeeting"),
                 meeting_type=record.get("meetingType"),
-                pdf_url=record.get("pdfUrl")
+                pdf_url=record.get("pdfUrl"),
             )
 
         except Exception as e:
@@ -326,7 +329,8 @@ class NDLAPIClient:
             if datetime_str:
                 try:
                     speech_datetime = datetime.fromisoformat(
-                        datetime_str.replace('Z', '+00:00'))
+                        datetime_str.replace("Z", "+00:00")
+                    )
                 except ValueError:
                     self.logger.warning(f"Invalid datetime format: {datetime_str}")
 
@@ -338,7 +342,7 @@ class NDLAPIClient:
                 speech_type=record.get("speechType", "発言"),
                 speech_order=int(record.get("speechOrder", 0)),
                 speech_content=record.get("speech", ""),
-                speech_datetime=speech_datetime
+                speech_datetime=speech_datetime,
             )
 
         except Exception as e:
@@ -350,12 +354,9 @@ class NDLAPIClient:
         return {
             "rate_limiter": {
                 "max_requests_per_second": self.rate_limiter.max_requests,
-                "current_window_requests": len(self.rate_limiter.requests)
+                "current_window_requests": len(self.rate_limiter.requests),
             },
-            "client_config": {
-                "timeout": self.timeout,
-                "base_url": self.BASE_URL
-            }
+            "client_config": {"timeout": self.timeout, "base_url": self.BASE_URL},
         }
 
 
@@ -370,7 +371,7 @@ async def main():
             start_date=date(2025, 6, 1),
             end_date=date(2025, 6, 21),
             diet_session=217,
-            max_records=10
+            max_records=10,
         )
 
         print(f"Found {len(meetings)} meetings")
@@ -380,13 +381,16 @@ async def main():
             first_meeting = meetings[0]
             print(f"Getting speeches for: {first_meeting.title}")
 
-            speeches = await client.get_all_speeches_for_meeting(first_meeting.meeting_id)
+            speeches = await client.get_all_speeches_for_meeting(
+                first_meeting.meeting_id
+            )
             print(f"Found {len(speeches)} speeches")
 
             # Show sample speeches
             for speech in speeches[:3]:
                 print(
-                    f"- {speech.speaker_name} ({speech.speaker_group}): {speech.speech_content[:100]}...")
+                    f"- {speech.speaker_name} ({speech.speaker_group}): {speech.speech_content[:100]}..."
+                )
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 House of Councillors voting data scraper for Diet Issue Tracker.
 Collects member voting records, party affiliations, and vote results.
 """
+
 import logging
 import re
 import time
@@ -17,6 +18,7 @@ from bs4 import BeautifulSoup
 @dataclass
 class VoteRecord:
     """Individual vote record structure"""
+
     member_name: str
     member_name_kana: str | None
     party_name: str
@@ -28,6 +30,7 @@ class VoteRecord:
 @dataclass
 class VotingSession:
     """Voting session metadata"""
+
     bill_number: str
     bill_title: str
     vote_date: datetime
@@ -48,16 +51,24 @@ class VotingScraper:
     BASE_URL = "https://www.sangiin.go.jp"
     # URLs for different voting data sources
     # Note: These URLs may need to be adjusted based on actual Diet website structure
-    PLENARY_VOTES_URL = "https://www.sangiin.go.jp/japanese/joho1/kousei/vote/217/vote.htm"
-    COMMITTEE_VOTES_URL = "https://www.sangiin.go.jp/japanese/joho1/kousei/iinkai/217/iinkai.htm"
+    PLENARY_VOTES_URL = (
+        "https://www.sangiin.go.jp/japanese/joho1/kousei/vote/217/vote.htm"
+    )
+    COMMITTEE_VOTES_URL = (
+        "https://www.sangiin.go.jp/japanese/joho1/kousei/iinkai/217/iinkai.htm"
+    )
     # Alternative: Try main session pages first
-    SESSION_217_URL = "https://www.sangiin.go.jp/japanese/joho1/kousei/gian/217/gian.htm"
+    SESSION_217_URL = (
+        "https://www.sangiin.go.jp/japanese/joho1/kousei/gian/217/gian.htm"
+    )
 
     def __init__(self, delay_seconds: float = 2.0):
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
+            }
+        )
         self.delay_seconds = delay_seconds
         self.logger = logging.getLogger(__name__)
         self._last_request_time = 0
@@ -67,7 +78,7 @@ class VotingScraper:
     def _init_robots_parser(self):
         """Initialize robots.txt parser"""
         try:
-            robots_url = urljoin(self.BASE_URL, '/robots.txt')
+            robots_url = urljoin(self.BASE_URL, "/robots.txt")
             self._robots_parser = RobotFileParser()
             self._robots_parser.set_url(robots_url)
             self._robots_parser.read()
@@ -81,7 +92,7 @@ class VotingScraper:
         if not self._robots_parser:
             return True
 
-        user_agent = self.session.headers.get('User-Agent', '*')
+        user_agent = self.session.headers.get("User-Agent", "*")
         return self._robots_parser.can_fetch(user_agent, url)
 
     def _rate_limit(self):
@@ -121,7 +132,8 @@ class VotingScraper:
             mock_sessions = self._generate_mock_voting_sessions()
             voting_sessions.extend(mock_sessions)
             self.logger.info(
-                f"Generated {len(mock_sessions)} mock voting sessions for development")
+                f"Generated {len(mock_sessions)} mock voting sessions for development"
+            )
         except Exception as e:
             self.logger.error(f"Failed to generate mock voting sessions: {e}")
 
@@ -150,14 +162,31 @@ class VotingScraper:
 
         # Mock parties based on current Diet composition
         parties = [
-            "自由民主党", "立憲民主党", "日本維新の会", "公明党", "国民民主党",
-            "日本共産党", "れいわ新選組", "社会民主党", "NHK党", "参政党"
+            "自由民主党",
+            "立憲民主党",
+            "日本維新の会",
+            "公明党",
+            "国民民主党",
+            "日本共産党",
+            "れいわ新選組",
+            "社会民主党",
+            "NHK党",
+            "参政党",
         ]
 
         # Mock constituencies
         constituencies = [
-            "東京都", "大阪府", "神奈川県", "愛知県", "埼玉県", "千葉県", "兵庫県",
-            "北海道", "福岡県", "静岡県", "比例代表"
+            "東京都",
+            "大阪府",
+            "神奈川県",
+            "愛知県",
+            "埼玉県",
+            "千葉県",
+            "兵庫県",
+            "北海道",
+            "福岡県",
+            "静岡県",
+            "比例代表",
         ]
 
         # Generate 3 mock voting sessions
@@ -194,7 +223,7 @@ class VotingScraper:
                     member_name_kana=f"{member_name}(ヨミ)",
                     party_name=party,
                     constituency=constituency,
-                    vote_result=vote_result
+                    vote_result=vote_result,
                 )
                 vote_records.append(vote_record)
 
@@ -211,7 +240,7 @@ class VotingScraper:
                 no_votes=vote_counts["no"],
                 abstain_votes=vote_counts["abstain"],
                 absent_votes=vote_counts["absent"],
-                vote_records=vote_records
+                vote_records=vote_records,
             )
 
             mock_sessions.append(session)
@@ -222,12 +251,12 @@ class VotingScraper:
         """Fetch voting sessions from plenary meetings"""
         try:
             response = self._make_request(self.PLENARY_VOTES_URL, timeout=30)
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.content, "html.parser")
 
             sessions = []
 
             # Look for voting record tables
-            vote_tables = soup.find_all('table')
+            vote_tables = soup.find_all("table")
             self.logger.info(f"Found {len(vote_tables)} tables on plenary voting page")
 
             for i, table in enumerate(vote_tables):
@@ -252,26 +281,28 @@ class VotingScraper:
         """Fetch voting sessions from committee meetings"""
         try:
             response = self._make_request(self.COMMITTEE_VOTES_URL, timeout=30)
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.content, "html.parser")
 
             sessions = []
 
             # Look for committee links
-            committee_links = soup.find_all('a', href=re.compile(r'iinkai.*\.htm'))
+            committee_links = soup.find_all("a", href=re.compile(r"iinkai.*\.htm"))
             self.logger.info(f"Found {len(committee_links)} committee links")
 
             # Limit to first 5 committees for initial implementation
             for link in committee_links[:5]:
-                committee_url = urljoin(self.BASE_URL, link.get('href'))
+                committee_url = urljoin(self.BASE_URL, link.get("href"))
                 committee_name = link.get_text(strip=True)
 
                 try:
                     committee_sessions = self._fetch_committee_voting_data(
-                        committee_url, committee_name)
+                        committee_url, committee_name
+                    )
                     sessions.extend(committee_sessions)
                 except Exception as e:
                     self.logger.warning(
-                        f"Failed to fetch committee voting data for {committee_name}: {e}")
+                        f"Failed to fetch committee voting data for {committee_name}: {e}"
+                    )
 
             return sessions
 
@@ -280,51 +311,52 @@ class VotingScraper:
             return []
 
     def _fetch_committee_voting_data(
-            self,
-            committee_url: str,
-            committee_name: str) -> list[VotingSession]:
+        self, committee_url: str, committee_name: str
+    ) -> list[VotingSession]:
         """Fetch voting data from specific committee"""
         try:
             response = self._make_request(committee_url, timeout=30)
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.content, "html.parser")
 
             sessions = []
-            vote_tables = soup.find_all('table')
+            vote_tables = soup.find_all("table")
 
             for table in vote_tables:
                 if self._is_voting_table(table):
                     try:
-                        session = self._parse_voting_table(table, "委員会", committee_name)
+                        session = self._parse_voting_table(
+                            table, "委員会", committee_name
+                        )
                         if session:
                             sessions.append(session)
                     except Exception as e:
                         self.logger.warning(
-                            f"Failed to parse committee voting table: {e}")
+                            f"Failed to parse committee voting table: {e}"
+                        )
 
             return sessions
 
         except requests.RequestException as e:
             self.logger.error(
-                f"Error fetching committee voting data from {committee_url}: {e}")
+                f"Error fetching committee voting data from {committee_url}: {e}"
+            )
             return []
 
     def _is_voting_table(self, table) -> bool:
         """Check if table contains voting data"""
         # Look for voting-related headers
-        headers = table.find_all(['th', 'td'])
-        header_text = ' '.join([h.get_text(strip=True) for h in headers[:10]])
+        headers = table.find_all(["th", "td"])
+        header_text = " ".join([h.get_text(strip=True) for h in headers[:10]])
 
-        voting_keywords = ['議員名', '会派', '投票', '賛成', '反対', '欠席', '棄権']
+        voting_keywords = ["議員名", "会派", "投票", "賛成", "反対", "欠席", "棄権"]
         return any(keyword in header_text for keyword in voting_keywords)
 
     def _parse_voting_table(
-            self,
-            table,
-            vote_type: str,
-            committee_name: str | None = None) -> VotingSession | None:
+        self, table, vote_type: str, committee_name: str | None = None
+    ) -> VotingSession | None:
         """Parse individual voting table"""
         try:
-            rows = table.find_all('tr')
+            rows = table.find_all("tr")
             if len(rows) <= 1:
                 return None
 
@@ -339,7 +371,7 @@ class VotingScraper:
             data_rows = self._identify_data_rows(rows)
 
             for row in data_rows:
-                cells = row.find_all(['td', 'th'])
+                cells = row.find_all(["td", "th"])
                 if len(cells) >= 3:  # Minimum: name, party, vote
                     vote_record = self._parse_vote_record(cells)
                     if vote_record:
@@ -370,7 +402,7 @@ class VotingScraper:
                 no_votes=vote_counts["no"],
                 abstain_votes=vote_counts["abstain"],
                 absent_votes=vote_counts["absent"],
-                vote_records=vote_records
+                vote_records=vote_records,
             )
 
         except Exception as e:
@@ -384,11 +416,11 @@ class VotingScraper:
             "bill_number": "Unknown",
             "bill_title": "Unknown",
             "vote_date": datetime.now(),
-            "vote_stage": None
+            "vote_stage": None,
         }
 
         # Check table caption
-        caption = table.find('caption')
+        caption = table.find("caption")
         if caption:
             caption_text = caption.get_text(strip=True)
             bill_info.update(self._parse_bill_info_text(caption_text))
@@ -398,7 +430,7 @@ class VotingScraper:
         current = table.find_previous_sibling()
         count = 0
         while current and count < 5:  # Check up to 5 previous elements
-            if current.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p']:
+            if current.name in ["h1", "h2", "h3", "h4", "h5", "h6", "p"]:
                 prev_elements.append(current.get_text(strip=True))
             current = current.find_previous_sibling()
             count += 1
@@ -414,13 +446,13 @@ class VotingScraper:
         info = {}
 
         # Extract bill number (e.g., "第217-1号")
-        bill_pattern = r'第?(\d+[-ー]\d+)号?'
+        bill_pattern = r"第?(\d+[-ー]\d+)号?"
         bill_match = re.search(bill_pattern, text)
         if bill_match:
             info["bill_number"] = bill_match.group(1)
 
         # Extract date
-        date_pattern = r'(\d{4})年(\d{1,2})月(\d{1,2})日'
+        date_pattern = r"(\d{4})年(\d{1,2})月(\d{1,2})日"
         date_match = re.search(date_pattern, text)
         if date_match:
             year, month, day = map(int, date_match.groups())
@@ -435,7 +467,7 @@ class VotingScraper:
             info["vote_stage"] = "最終"
 
         # Extract bill title (everything before 案)
-        title_pattern = r'([^。]+?案)'
+        title_pattern = r"([^。]+?案)"
         title_match = re.search(title_pattern, text)
         if title_match:
             info["bill_title"] = title_match.group(1)
@@ -447,13 +479,13 @@ class VotingScraper:
         data_rows = []
 
         for row in rows:
-            cells = row.find_all(['td', 'th'])
+            cells = row.find_all(["td", "th"])
             if len(cells) >= 3:
                 # Check if this looks like a data row
                 first_cell_text = cells[0].get_text(strip=True)
 
                 # Skip header rows
-                if first_cell_text in ['議員名', '氏名', '会派', '党派', '投票結果']:
+                if first_cell_text in ["議員名", "氏名", "会派", "党派", "投票結果"]:
                     continue
 
                 # Skip empty rows
@@ -493,8 +525,11 @@ class VotingScraper:
                 vote_cell_idx = 2
 
             # Extract vote result
-            vote_result = cells[vote_cell_idx].get_text(
-                strip=True) if len(cells) > vote_cell_idx else ""
+            vote_result = (
+                cells[vote_cell_idx].get_text(strip=True)
+                if len(cells) > vote_cell_idx
+                else ""
+            )
 
             # Normalize vote result
             vote_result = self._normalize_vote_result(vote_result)
@@ -511,7 +546,7 @@ class VotingScraper:
                 member_name_kana=member_name_kana,
                 party_name=party_name,
                 constituency=constituency,
-                vote_result=vote_result
+                vote_result=vote_result,
             )
 
         except Exception as e:
@@ -546,7 +581,7 @@ class VotingScraper:
             "birth_date": None,
             "first_elected": None,
             "education": None,
-            "previous_occupations": None
+            "previous_occupations": None,
         }
 
 
@@ -565,8 +600,10 @@ if __name__ == "__main__":
         print(f"Date: {session.vote_date.strftime('%Y-%m-%d')}")
         print(f"Type: {session.vote_type}")
         print(
-            f"Results: Yes={session.yes_votes}, No={session.no_votes}, Abstain={session.abstain_votes}, Absent={session.absent_votes}")
+            f"Results: Yes={session.yes_votes}, No={session.no_votes}, Abstain={session.abstain_votes}, Absent={session.absent_votes}"
+        )
         print(f"Total Members: {session.total_votes}")
         print(
-            f"Sample votes: {[f'{v.member_name}({v.party_name})={v.vote_result}' for v in session.vote_records[:3]]}")
+            f"Sample votes: {[f'{v.member_name}({v.party_name})={v.vote_result}' for v in session.vote_records[:3]]}"
+        )
         print()

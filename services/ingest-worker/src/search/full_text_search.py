@@ -17,14 +17,16 @@ from sqlalchemy.orm import Session, sessionmaker
 
 class SearchMode(Enum):
     """Search modes for different use cases"""
-    SIMPLE = "simple"           # Basic keyword search
-    ADVANCED = "advanced"       # Advanced search with operators
-    SEMANTIC = "semantic"       # Semantic search using embeddings
-    EXACT = "exact"            # Exact phrase search
+
+    SIMPLE = "simple"  # Basic keyword search
+    ADVANCED = "advanced"  # Advanced search with operators
+    SEMANTIC = "semantic"  # Semantic search using embeddings
+    EXACT = "exact"  # Exact phrase search
 
 
 class SearchField(Enum):
     """Searchable fields"""
+
     ALL = "all"
     TITLE = "title"
     OUTLINE = "bill_outline"
@@ -39,6 +41,7 @@ class SearchField(Enum):
 @dataclass
 class SearchQuery:
     """Search query configuration"""
+
     query: str
     mode: SearchMode = SearchMode.SIMPLE
     fields: list[SearchField] = field(default_factory=lambda: [SearchField.ALL])
@@ -62,6 +65,7 @@ class SearchQuery:
 @dataclass
 class SearchResult:
     """Search result item"""
+
     bill_id: str
     title: str
     relevance_score: float
@@ -74,6 +78,7 @@ class SearchResult:
 @dataclass
 class SearchResponse:
     """Complete search response"""
+
     results: list[SearchResult]
     total_count: int
     query_time_ms: float
@@ -100,6 +105,7 @@ class JapaneseTextProcessor:
         # Initialize SudachiPy for more advanced Japanese processing
         try:
             from sudachipy import dictionary, tokenizer
+
             self.sudachi = dictionary.Dictionary().create()
             self.sudachi_mode = tokenizer.Tokenizer.SplitMode.C
         except Exception as e:
@@ -117,8 +123,9 @@ class JapaneseTextProcessor:
         if self.sudachi:
             try:
                 sudachi_tokens = self.sudachi.tokenize(text, self.sudachi_mode)
-                tokens.extend([t.surface()
-                              for t in sudachi_tokens if len(t.surface()) > 1])
+                tokens.extend(
+                    [t.surface() for t in sudachi_tokens if len(t.surface()) > 1]
+                )
             except Exception as e:
                 self.logger.debug(f"SudachiPy tokenization failed: {e}")
 
@@ -133,7 +140,7 @@ class JapaneseTextProcessor:
         # Final fallback to character-based splitting
         if not tokens:
             # Simple Japanese text splitting
-            tokens = re.findall(r'[一-龯ひらがなカタカナ]+', text)
+            tokens = re.findall(r"[一-龯ひらがなカタカナ]+", text)
 
         return tokens
 
@@ -144,13 +151,13 @@ class JapaneseTextProcessor:
 
         readings = []
         try:
-            lines = self.mecab_features.parse(text).split('\n')
+            lines = self.mecab_features.parse(text).split("\n")
             for line in lines:
-                if line and line != 'EOS':
-                    parts = line.split('\t')
+                if line and line != "EOS":
+                    parts = line.split("\t")
                     if len(parts) >= 2:
-                        features = parts[1].split(',')
-                        if len(features) >= 8 and features[7] != '*':
+                        features = parts[1].split(",")
+                        if len(features) >= 8 and features[7] != "*":
                             readings.append(features[7])  # Reading field
         except Exception as e:
             self.logger.debug(f"Reading extraction failed: {e}")
@@ -163,23 +170,25 @@ class JapaneseTextProcessor:
             return ""
 
         # Convert full-width to half-width
-        text = text.translate(str.maketrans(
-            'ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ'
-            'ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ'
-            '０１２３４５６７８９',
-            'abcdefghijklmnopqrstuvwxyz'
-            'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            '0123456789'
-        ))
+        text = text.translate(
+            str.maketrans(
+                "ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ"
+                "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+                "０１２３４５６７８９",
+                "abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "0123456789",
+            )
+        )
 
         # Convert katakana to hiragana for better matching
-        text = text.translate(str.maketrans(
-            'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン',
-            'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'
-        ))
+        text = text.translate(
+            str.maketrans(
+                "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン",
+                "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
+            )
+        )
 
         # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"\s+", " ", text).strip()
 
         return text
 
@@ -191,7 +200,8 @@ class FullTextSearchEngine:
         self.database_url = database_url
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine)
+            autocommit=False, autoflush=False, bind=self.engine
+        )
         self.logger = logging.getLogger(__name__)
 
         # Initialize Japanese text processor
@@ -199,23 +209,23 @@ class FullTextSearchEngine:
 
         # Search configuration
         self.search_config = {
-            'default_language': 'japanese',
-            'max_results': 1000,
-            'snippet_length': 200,
-            'highlight_fragments': 3,
-            'fuzzy_distance': 2,
+            "default_language": "japanese",
+            "max_results": 1000,
+            "snippet_length": 200,
+            "highlight_fragments": 3,
+            "fuzzy_distance": 2,
         }
 
         # Field weights for relevance scoring
         self.field_weights = {
-            'title': 3.0,
-            'bill_outline': 2.0,
-            'background_context': 1.5,
-            'expected_effects': 1.5,
-            'key_provisions': 1.8,
-            'summary': 1.3,
-            'submitter': 1.0,
-            'category': 1.2,
+            "title": 3.0,
+            "bill_outline": 2.0,
+            "background_context": 1.5,
+            "expected_effects": 1.5,
+            "key_provisions": 1.8,
+            "summary": 1.3,
+            "submitter": 1.0,
+            "category": 1.2,
         }
 
     def create_search_indexes(self):
@@ -223,7 +233,9 @@ class FullTextSearchEngine:
         try:
             with self.engine.connect() as connection:
                 # Create compound tsvector index for multiple fields
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_fulltext_search
                     ON bills USING GIN((
                         setweight(to_tsvector('japanese', COALESCE(title, '')), 'A') ||
@@ -232,49 +244,83 @@ class FullTextSearchEngine:
                         setweight(to_tsvector('japanese', COALESCE(expected_effects, '')), 'C') ||
                         setweight(to_tsvector('japanese', COALESCE(summary, '')), 'D')
                     ))
-                """))
+                """
+                    )
+                )
 
                 # Create separate indexes for specific fields
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_title_search
                     ON bills USING GIN(to_tsvector('japanese', title))
-                """))
+                """
+                    )
+                )
 
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_outline_search
                     ON bills USING GIN(to_tsvector('japanese', bill_outline))
-                """))
+                """
+                    )
+                )
 
                 # Create trigram index for fuzzy matching
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE EXTENSION IF NOT EXISTS pg_trgm
-                """))
+                """
+                    )
+                )
 
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_title_trigram
                     ON bills USING GIN(title gin_trgm_ops)
-                """))
+                """
+                    )
+                )
 
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_outline_trigram
                     ON bills USING GIN(bill_outline gin_trgm_ops)
-                """))
+                """
+                    )
+                )
 
                 # Create indexes for filtering
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_category_status
                     ON bills (category, status)
-                """))
+                """
+                    )
+                )
 
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_submitter_session
                     ON bills (submitter, diet_session)
-                """))
+                """
+                    )
+                )
 
-                connection.execute(text("""
+                connection.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_bills_dates
                     ON bills (submitted_date, final_vote_date)
-                """))
+                """
+                    )
+                )
 
                 connection.commit()
                 self.logger.info("Created full-text search indexes successfully")
@@ -324,7 +370,7 @@ class FullTextSearchEngine:
                     query_time_ms=query_time_ms,
                     suggestions=suggestions,
                     facets=facets,
-                    debug_info={'sql_query': sql_query, 'params': params}
+                    debug_info={"sql_query": sql_query, "params": params},
                 )
 
         except Exception as e:
@@ -333,7 +379,7 @@ class FullTextSearchEngine:
                 results=[],
                 total_count=0,
                 query_time_ms=(datetime.now() - start_time).total_seconds() * 1000,
-                debug_info={'error': str(e)}
+                debug_info={"error": str(e)},
             )
 
     def _build_search_query(self, query: SearchQuery) -> tuple[str, dict[str, Any]]:
@@ -349,27 +395,30 @@ class FullTextSearchEngine:
             # Simple full-text search
             search_vector = self._build_search_vector(query.fields)
             search_conditions.append(
-                f"{search_vector} @@ plainto_tsquery('japanese', :query)")
-            params['query'] = normalized_query
+                f"{search_vector} @@ plainto_tsquery('japanese', :query)"
+            )
+            params["query"] = normalized_query
 
         elif query.mode == SearchMode.ADVANCED:
             # Advanced search with operators
             search_vector = self._build_search_vector(query.fields)
             processed_query = self._process_advanced_query(normalized_query)
             search_conditions.append(
-                f"{search_vector} @@ to_tsquery('japanese', :query)")
-            params['query'] = processed_query
+                f"{search_vector} @@ to_tsquery('japanese', :query)"
+            )
+            params["query"] = processed_query
 
         elif query.mode == SearchMode.EXACT:
             # Exact phrase search
             if SearchField.ALL in query.fields:
                 exact_conditions = []
                 for field in [
-                    'title',
-                    'bill_outline',
-                    'background_context',
-                    'expected_effects',
-                        'summary']:
+                    "title",
+                    "bill_outline",
+                    "background_context",
+                    "expected_effects",
+                    "summary",
+                ]:
                     exact_conditions.append(f"{field} ILIKE :exact_query")
                 search_conditions.append(f"({' OR '.join(exact_conditions)})")
             else:
@@ -378,34 +427,34 @@ class FullTextSearchEngine:
                     if field != SearchField.ALL:
                         field_conditions.append(f"{field.value} ILIKE :exact_query")
                 search_conditions.append(f"({' OR '.join(field_conditions)})")
-            params['exact_query'] = f'%{normalized_query}%'
+            params["exact_query"] = f"%{normalized_query}%"
 
         # Add filters
         filter_conditions = []
         if query.filters:
             for key, value in query.filters.items():
-                if key == 'category' and value:
+                if key == "category" and value:
                     filter_conditions.append("category = :filter_category")
-                    params['filter_category'] = value
-                elif key == 'status' and value:
+                    params["filter_category"] = value
+                elif key == "status" and value:
                     filter_conditions.append("status = :filter_status")
-                    params['filter_status'] = value
-                elif key == 'submitter' and value:
+                    params["filter_status"] = value
+                elif key == "submitter" and value:
                     filter_conditions.append("submitter = :filter_submitter")
-                    params['filter_submitter'] = value
-                elif key == 'diet_session' and value:
+                    params["filter_submitter"] = value
+                elif key == "diet_session" and value:
                     filter_conditions.append("diet_session = :filter_session")
-                    params['filter_session'] = value
-                elif key == 'house_of_origin' and value:
+                    params["filter_session"] = value
+                elif key == "house_of_origin" and value:
                     filter_conditions.append("house_of_origin = :filter_house")
-                    params['filter_house'] = value
+                    params["filter_house"] = value
 
         # Add date range filter
         if query.date_range:
             start_date, end_date = query.date_range
             filter_conditions.append("submitted_date BETWEEN :start_date AND :end_date")
-            params['start_date'] = start_date
-            params['end_date'] = end_date
+            params["start_date"] = start_date
+            params["end_date"] = end_date
 
         # Combine conditions
         where_conditions = []
@@ -419,7 +468,11 @@ class FullTextSearchEngine:
         # Build ranking/scoring
         if query.mode in [SearchMode.SIMPLE, SearchMode.ADVANCED]:
             search_vector = self._build_search_vector(query.fields)
-            ts_query = "plainto_tsquery('japanese', :query)" if query.mode == SearchMode.SIMPLE else "to_tsquery('japanese', :query)"
+            ts_query = (
+                "plainto_tsquery('japanese', :query)"
+                if query.mode == SearchMode.SIMPLE
+                else "to_tsquery('japanese', :query)"
+            )
             rank_expression = f"ts_rank_cd({search_vector}, {ts_query})"
         else:
             rank_expression = "1.0"
@@ -428,7 +481,9 @@ class FullTextSearchEngine:
         if query.sort_by == "relevance":
             order_by = f"{rank_expression} DESC"
         elif query.sort_by == "date":
-            order_by = f"submitted_date {'DESC' if query.sort_order == 'desc' else 'ASC'}"
+            order_by = (
+                f"submitted_date {'DESC' if query.sort_order == 'desc' else 'ASC'}"
+            )
         elif query.sort_by == "title":
             order_by = f"title {'DESC' if query.sort_order == 'desc' else 'ASC'}"
         else:
@@ -458,8 +513,8 @@ class FullTextSearchEngine:
             LIMIT :limit OFFSET :offset
         """
 
-        params['limit'] = query.limit
-        params['offset'] = query.offset
+        params["limit"] = query.limit
+        params["offset"] = query.offset
 
         return sql_query, params
 
@@ -474,23 +529,26 @@ class FullTextSearchEngine:
         if query.mode == SearchMode.SIMPLE:
             search_vector = self._build_search_vector(query.fields)
             search_conditions.append(
-                f"{search_vector} @@ plainto_tsquery('japanese', :query)")
-            params['query'] = normalized_query
+                f"{search_vector} @@ plainto_tsquery('japanese', :query)"
+            )
+            params["query"] = normalized_query
         elif query.mode == SearchMode.ADVANCED:
             search_vector = self._build_search_vector(query.fields)
             processed_query = self._process_advanced_query(normalized_query)
             search_conditions.append(
-                f"{search_vector} @@ to_tsquery('japanese', :query)")
-            params['query'] = processed_query
+                f"{search_vector} @@ to_tsquery('japanese', :query)"
+            )
+            params["query"] = processed_query
         elif query.mode == SearchMode.EXACT:
             if SearchField.ALL in query.fields:
                 exact_conditions = []
                 for field in [
-                    'title',
-                    'bill_outline',
-                    'background_context',
-                    'expected_effects',
-                        'summary']:
+                    "title",
+                    "bill_outline",
+                    "background_context",
+                    "expected_effects",
+                    "summary",
+                ]:
                     exact_conditions.append(f"{field} ILIKE :exact_query")
                 search_conditions.append(f"({' OR '.join(exact_conditions)})")
             else:
@@ -499,33 +557,33 @@ class FullTextSearchEngine:
                     if field != SearchField.ALL:
                         field_conditions.append(f"{field.value} ILIKE :exact_query")
                 search_conditions.append(f"({' OR '.join(field_conditions)})")
-            params['exact_query'] = f'%{normalized_query}%'
+            params["exact_query"] = f"%{normalized_query}%"
 
         # Add filters (same as search query)
         filter_conditions = []
         if query.filters:
             for key, value in query.filters.items():
-                if key == 'category' and value:
+                if key == "category" and value:
                     filter_conditions.append("category = :filter_category")
-                    params['filter_category'] = value
-                elif key == 'status' and value:
+                    params["filter_category"] = value
+                elif key == "status" and value:
                     filter_conditions.append("status = :filter_status")
-                    params['filter_status'] = value
-                elif key == 'submitter' and value:
+                    params["filter_status"] = value
+                elif key == "submitter" and value:
                     filter_conditions.append("submitter = :filter_submitter")
-                    params['filter_submitter'] = value
-                elif key == 'diet_session' and value:
+                    params["filter_submitter"] = value
+                elif key == "diet_session" and value:
                     filter_conditions.append("diet_session = :filter_session")
-                    params['filter_session'] = value
-                elif key == 'house_of_origin' and value:
+                    params["filter_session"] = value
+                elif key == "house_of_origin" and value:
                     filter_conditions.append("house_of_origin = :filter_house")
-                    params['filter_house'] = value
+                    params["filter_house"] = value
 
         if query.date_range:
             start_date, end_date = query.date_range
             filter_conditions.append("submitted_date BETWEEN :start_date AND :end_date")
-            params['start_date'] = start_date
-            params['end_date'] = end_date
+            params["start_date"] = start_date
+            params["end_date"] = end_date
 
         where_conditions = []
         if search_conditions:
@@ -557,27 +615,36 @@ class FullTextSearchEngine:
             field_vectors = []
             for field in fields:
                 if field != SearchField.ALL:
-                    weight = 'A' if field == SearchField.TITLE else 'B' if field == SearchField.OUTLINE else 'C'
+                    weight = (
+                        "A"
+                        if field == SearchField.TITLE
+                        else "B" if field == SearchField.OUTLINE else "C"
+                    )
                     field_vectors.append(
-                        f"setweight(to_tsvector('japanese', COALESCE({field.value}, '')), '{weight}')")
+                        f"setweight(to_tsvector('japanese', COALESCE({field.value}, '')), '{weight}')"
+                    )
 
-            return f"({' || '.join(field_vectors)})" if field_vectors else "to_tsvector('japanese', '')"
+            return (
+                f"({' || '.join(field_vectors)})"
+                if field_vectors
+                else "to_tsvector('japanese', '')"
+            )
 
     def _process_advanced_query(self, query: str) -> str:
         """Process advanced search query with operators"""
         # Convert simple operators to PostgreSQL tsquery format
-        query = query.replace(' AND ', ' & ')
-        query = query.replace(' OR ', ' | ')
-        query = query.replace(' NOT ', ' !')
+        query = query.replace(" AND ", " & ")
+        query = query.replace(" OR ", " | ")
+        query = query.replace(" NOT ", " !")
 
         # Handle phrase queries
-        query = re.sub(r'"([^"]+)"', r'\1', query)
+        query = re.sub(r'"([^"]+)"', r"\1", query)
 
         # Tokenize Japanese text for better matching
         tokens = self.text_processor.tokenize_japanese(query)
         if tokens:
             # Join tokens with AND operator
-            query = ' & '.join(tokens)
+            query = " & ".join(tokens)
 
         return query
 
@@ -588,12 +655,13 @@ class FullTextSearchEngine:
         query_terms = self.text_processor.tokenize_japanese(query.query)
 
         for field in [
-            'title',
-            'bill_outline',
-            'background_context',
-            'expected_effects',
-                'summary']:
-            field_value = getattr(row, field, '')
+            "title",
+            "bill_outline",
+            "background_context",
+            "expected_effects",
+            "summary",
+        ]:
+            field_value = getattr(row, field, "")
             if field_value and any(term in field_value for term in query_terms):
                 matched_fields.append(field)
 
@@ -605,12 +673,14 @@ class FullTextSearchEngine:
 
         # Prepare metadata
         metadata = {
-            'submitter': row.submitter,
-            'category': row.category,
-            'status': row.status,
-            'diet_session': row.diet_session,
-            'house_of_origin': row.house_of_origin,
-            'submitted_date': row.submitted_date.isoformat() if row.submitted_date else None,
+            "submitter": row.submitter,
+            "category": row.category,
+            "status": row.status,
+            "diet_session": row.diet_session,
+            "house_of_origin": row.house_of_origin,
+            "submitted_date": (
+                row.submitted_date.isoformat() if row.submitted_date else None
+            ),
         }
 
         return SearchResult(
@@ -620,7 +690,7 @@ class FullTextSearchEngine:
             matched_fields=matched_fields,
             snippet=snippet,
             highlights=highlights,
-            metadata=metadata
+            metadata=metadata,
         )
 
     def _generate_snippet(self, row, query: SearchQuery) -> str:
@@ -636,8 +706,8 @@ class FullTextSearchEngine:
             text = row.title
 
         # Truncate to snippet length
-        if len(text) > self.search_config['snippet_length']:
-            text = text[:self.search_config['snippet_length']] + '...'
+        if len(text) > self.search_config["snippet_length"]:
+            text = text[: self.search_config["snippet_length"]] + "..."
 
         return text
 
@@ -646,32 +716,33 @@ class FullTextSearchEngine:
         highlights = []
 
         # Use PostgreSQL's ts_headline results when available
-        if hasattr(row, 'title_highlight') and row.title_highlight:
+        if hasattr(row, "title_highlight") and row.title_highlight:
             highlights.append(row.title_highlight)
 
-        if hasattr(row, 'outline_highlight') and row.outline_highlight:
+        if hasattr(row, "outline_highlight") and row.outline_highlight:
             highlights.append(row.outline_highlight)
 
-        return highlights[:self.search_config['highlight_fragments']]
+        return highlights[: self.search_config["highlight_fragments"]]
 
     def _get_search_suggestions(
-            self,
-            query: SearchQuery,
-            session: Session) -> list[str]:
+        self, query: SearchQuery, session: Session
+    ) -> list[str]:
         """Get search suggestions when no results found"""
         suggestions = []
 
         try:
             # Get similar terms using trigram similarity
-            similar_query = text("""
+            similar_query = text(
+                """
                 SELECT DISTINCT title
                 FROM bills
                 WHERE title % :query
                 ORDER BY similarity(title, :query) DESC
                 LIMIT 5
-            """)
+            """
+            )
 
-            result = session.execute(similar_query, {'query': query.query})
+            result = session.execute(similar_query, {"query": query.query})
             suggestions = [row.title for row in result.fetchall()]
 
         except Exception as e:
@@ -679,51 +750,59 @@ class FullTextSearchEngine:
 
         return suggestions
 
-    def _get_search_facets(self, query: SearchQuery,
-                           session: Session) -> dict[str, dict[str, int]]:
+    def _get_search_facets(
+        self, query: SearchQuery, session: Session
+    ) -> dict[str, dict[str, int]]:
         """Get search facets for filtering"""
         facets = {}
 
         try:
             # Get category facets
-            category_query = text("""
+            category_query = text(
+                """
                 SELECT category, COUNT(*) as count
                 FROM bills
                 WHERE category IS NOT NULL
                 GROUP BY category
                 ORDER BY count DESC
                 LIMIT 10
-            """)
+            """
+            )
 
             result = session.execute(category_query)
-            facets['category'] = {row.category: row.count for row in result.fetchall()}
+            facets["category"] = {row.category: row.count for row in result.fetchall()}
 
             # Get status facets
-            status_query = text("""
+            status_query = text(
+                """
                 SELECT status, COUNT(*) as count
                 FROM bills
                 WHERE status IS NOT NULL
                 GROUP BY status
                 ORDER BY count DESC
                 LIMIT 10
-            """)
+            """
+            )
 
             result = session.execute(status_query)
-            facets['status'] = {row.status: row.count for row in result.fetchall()}
+            facets["status"] = {row.status: row.count for row in result.fetchall()}
 
             # Get submitter facets
-            submitter_query = text("""
+            submitter_query = text(
+                """
                 SELECT submitter, COUNT(*) as count
                 FROM bills
                 WHERE submitter IS NOT NULL
                 GROUP BY submitter
                 ORDER BY count DESC
                 LIMIT 10
-            """)
+            """
+            )
 
             result = session.execute(submitter_query)
-            facets['submitter'] = {
-                row.submitter: row.count for row in result.fetchall()}
+            facets["submitter"] = {
+                row.submitter: row.count for row in result.fetchall()
+            }
 
         except Exception as e:
             self.logger.debug(f"Error getting facets: {e}")
@@ -760,36 +839,50 @@ class FullTextSearchEngine:
             with self.SessionLocal() as session:
                 # Get total bill count
                 total_bills = session.execute(
-                    text("SELECT COUNT(*) FROM bills")).fetchone()[0]
+                    text("SELECT COUNT(*) FROM bills")
+                ).fetchone()[0]
 
                 # Get index sizes
-                index_sizes = session.execute(text("""
+                index_sizes = session.execute(
+                    text(
+                        """
                     SELECT schemaname, tablename, indexname, pg_size_pretty(pg_relation_size(indexrelid)) as size
                     FROM pg_stat_user_indexes
                     WHERE tablename = 'bills'
                     ORDER BY pg_relation_size(indexrelid) DESC
-                """)).fetchall()
+                """
+                    )
+                ).fetchall()
 
                 # Get most recent indexing time
-                last_analyze = session.execute(text("""
+                last_analyze = session.execute(
+                    text(
+                        """
                     SELECT last_analyze, last_autoanalyze
                     FROM pg_stat_user_tables
                     WHERE relname = 'bills'
-                """)).fetchone()
+                """
+                    )
+                ).fetchone()
 
                 return {
-                    'total_bills': total_bills,
-                    'index_sizes': [
-                        {
-                            'name': row.indexname,
-                            'size': row.size
-                        } for row in index_sizes
+                    "total_bills": total_bills,
+                    "index_sizes": [
+                        {"name": row.indexname, "size": row.size} for row in index_sizes
                     ],
-                    'last_analyze': last_analyze.last_analyze.isoformat() if last_analyze and last_analyze.last_analyze else None,
-                    'last_autoanalyze': last_analyze.last_autoanalyze.isoformat() if last_analyze and last_analyze.last_autoanalyze else None,
-                    'search_config': self.search_config
+                    "last_analyze": (
+                        last_analyze.last_analyze.isoformat()
+                        if last_analyze and last_analyze.last_analyze
+                        else None
+                    ),
+                    "last_autoanalyze": (
+                        last_analyze.last_autoanalyze.isoformat()
+                        if last_analyze and last_analyze.last_autoanalyze
+                        else None
+                    ),
+                    "search_config": self.search_config,
                 }
 
         except Exception as e:
             self.logger.error(f"Error getting search statistics: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}

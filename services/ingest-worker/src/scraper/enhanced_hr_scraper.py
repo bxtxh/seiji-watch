@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EnhancedVotingSession:
     """Enhanced voting session with additional metadata"""
+
     base_session: PDFVotingSession
     pdf_metadata: dict[str, Any]
     processing_metadata: dict[str, Any]
@@ -46,25 +47,28 @@ class EnhancedVotingSession:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
         return {
-            'session_id': self.base_session.session_id,
-            'bill_number': self.base_session.bill_number,
-            'bill_title': self.base_session.bill_title,
-            'vote_date': self.base_session.vote_date.isoformat(),
-            'vote_type': self.base_session.vote_type,
-            'committee_name': self.base_session.committee_name,
-            'pdf_url': self.base_session.pdf_url,
-            'total_members': self.base_session.total_members,
-            'vote_summary': self.base_session.vote_summary,
-            'vote_records': [
-                asdict(record) for record in self.base_session.vote_records],
-            'pdf_metadata': self.pdf_metadata,
-            'processing_metadata': self.processing_metadata,
-            'quality_metrics': self.quality_metrics}
+            "session_id": self.base_session.session_id,
+            "bill_number": self.base_session.bill_number,
+            "bill_title": self.base_session.bill_title,
+            "vote_date": self.base_session.vote_date.isoformat(),
+            "vote_type": self.base_session.vote_type,
+            "committee_name": self.base_session.committee_name,
+            "pdf_url": self.base_session.pdf_url,
+            "total_members": self.base_session.total_members,
+            "vote_summary": self.base_session.vote_summary,
+            "vote_records": [
+                asdict(record) for record in self.base_session.vote_records
+            ],
+            "pdf_metadata": self.pdf_metadata,
+            "processing_metadata": self.processing_metadata,
+            "quality_metrics": self.quality_metrics,
+        }
 
 
 @dataclass
 class PDFProcessingResult:
     """Result of PDF processing operation"""
+
     success: bool
     session: EnhancedVotingSession | None
     error_message: str | None
@@ -83,47 +87,34 @@ class EnhancedHRProcessor:
 
         # Processing statistics
         self.stats = {
-            'total_pdfs_processed': 0,
-            'successful_extractions': 0,
-            'failed_extractions': 0,
-            'ocr_fallbacks': 0,
-            'processing_times': [],
-            'quality_scores': []
+            "total_pdfs_processed": 0,
+            "successful_extractions": 0,
+            "failed_extractions": 0,
+            "ocr_fallbacks": 0,
+            "processing_times": [],
+            "quality_scores": [],
         }
 
         # PDF classification patterns
         self.pdf_patterns = {
-            'roll_call_vote': [
-                r'記名投票',
-                r'採決結果',
-                r'表決結果',
-                r'投票結果'
-            ],
-            'committee_vote': [
-                r'委員会.*採決',
-                r'委員会.*表決',
-                r'小委員会.*投票'
-            ],
-            'plenary_vote': [
-                r'本会議.*採決',
-                r'本会議.*表決',
-                r'全体会議.*投票'
-            ]
+            "roll_call_vote": [r"記名投票", r"採決結果", r"表決結果", r"投票結果"],
+            "committee_vote": [r"委員会.*採決", r"委員会.*表決", r"小委員会.*投票"],
+            "plenary_vote": [r"本会議.*採決", r"本会議.*表決", r"全体会議.*投票"],
         }
 
         # Quality assessment criteria
         self.quality_thresholds = {
-            'min_member_count': 50,  # Minimum expected members in a vote
-            'min_text_length': 200,  # Minimum text length for valid extraction
-            'min_confidence_score': 0.6,  # Minimum OCR confidence
-            'max_missing_data_ratio': 0.2  # Maximum ratio of missing member data
+            "min_member_count": 50,  # Minimum expected members in a vote
+            "min_text_length": 200,  # Minimum text length for valid extraction
+            "min_confidence_score": 0.6,  # Minimum OCR confidence
+            "max_missing_data_ratio": 0.2,  # Maximum ratio of missing member data
         }
 
     async def process_enhanced_hr_data(
         self,
         days_back: int = 30,
         session_numbers: list[int] | None = None,
-        max_concurrent: int = 3
+        max_concurrent: int = 3,
     ) -> list[EnhancedVotingSession]:
         """
         Process House of Representatives voting data with enhanced features
@@ -140,7 +131,9 @@ class EnhancedHRProcessor:
 
         try:
             # Phase 1: Discovery and classification
-            pdf_metadata = await self._discover_and_classify_pdfs(days_back, session_numbers)
+            pdf_metadata = await self._discover_and_classify_pdfs(
+                days_back, session_numbers
+            )
 
             if not pdf_metadata:
                 logger.warning("No HR voting PDFs found for processing")
@@ -153,8 +146,7 @@ class EnhancedHRProcessor:
 
             # Phase 3: Process PDFs with enhanced extraction
             enhanced_sessions = await self._process_pdfs_enhanced(
-                prioritized_pdfs,
-                max_concurrent
+                prioritized_pdfs, max_concurrent
             )
 
             # Phase 4: Quality assessment and filtering
@@ -164,7 +156,8 @@ class EnhancedHRProcessor:
             self._update_processing_statistics(enhanced_sessions)
 
             logger.info(
-                f"Enhanced HR processing completed: {len(validated_sessions)} valid sessions")
+                f"Enhanced HR processing completed: {len(validated_sessions)} valid sessions"
+            )
             return validated_sessions
 
         except Exception as e:
@@ -172,9 +165,7 @@ class EnhancedHRProcessor:
             return []
 
     async def _discover_and_classify_pdfs(
-        self,
-        days_back: int,
-        session_numbers: list[int] | None
+        self, days_back: int, session_numbers: list[int] | None
     ) -> list[dict[str, Any]]:
         """Discover and classify HR voting PDFs"""
         pdf_metadata = []
@@ -182,8 +173,7 @@ class EnhancedHRProcessor:
         try:
             # Use base scraper to discover PDF URLs
             discovered_urls = await self.base_scraper._discover_voting_pdf_urls(
-                days_back,
-                session_numbers
+                days_back, session_numbers
             )
 
             # Classify each PDF and extract metadata
@@ -212,9 +202,9 @@ class EnhancedHRProcessor:
 
             # Extract date from URL or filename
             date_patterns = [
-                r'(\d{4})(\d{2})(\d{2})',
-                r'(\d{4})-(\d{2})-(\d{2})',
-                r'令和(\d+)年(\d+)月(\d+)日'
+                r"(\d{4})(\d{2})(\d{2})",
+                r"(\d{4})-(\d{2})-(\d{2})",
+                r"令和(\d+)年(\d+)月(\d+)日",
             ]
 
             extracted_date = None
@@ -222,7 +212,7 @@ class EnhancedHRProcessor:
                 match = re.search(pattern, pdf_url + filename)
                 if match:
                     try:
-                        if pattern.startswith('令和'):
+                        if pattern.startswith("令和"):
                             year = int(match.group(1)) + 2018
                             month = int(match.group(2))
                             day = int(match.group(3))
@@ -243,13 +233,13 @@ class EnhancedHRProcessor:
             priority = self._calculate_pdf_priority(pdf_url, pdf_type, extracted_date)
 
             return {
-                'url': pdf_url,
-                'filename': filename,
-                'estimated_date': extracted_date,
-                'pdf_type': pdf_type,
-                'priority': priority,
-                'size_estimate': None,  # Will be filled during download
-                'processing_attempts': 0
+                "url": pdf_url,
+                "filename": filename,
+                "estimated_date": extracted_date,
+                "pdf_type": pdf_type,
+                "priority": priority,
+                "size_estimate": None,  # Will be filled during download
+                "processing_attempts": 0,
             }
 
         except Exception as e:
@@ -265,13 +255,10 @@ class EnhancedHRProcessor:
                 if re.search(pattern, text_lower):
                     return pdf_type
 
-        return 'unknown'
+        return "unknown"
 
     def _calculate_pdf_priority(
-        self,
-        pdf_url: str,
-        pdf_type: str,
-        estimated_date: datetime | None
+        self, pdf_url: str, pdf_type: str, estimated_date: datetime | None
     ) -> int:
         """Calculate processing priority for PDF (higher = more important)"""
         priority = 0
@@ -286,15 +273,15 @@ class EnhancedHRProcessor:
 
         # PDF type priorities
         type_priorities = {
-            'roll_call_vote': 10,
-            'plenary_vote': 8,
-            'committee_vote': 6,
-            'unknown': 1
+            "roll_call_vote": 10,
+            "plenary_vote": 8,
+            "committee_vote": 6,
+            "unknown": 1,
         }
         priority += type_priorities.get(pdf_type, 0)
 
         # URL patterns that suggest importance
-        important_keywords = ['重要', '予算', '法案', '決議']
+        important_keywords = ["重要", "予算", "法案", "決議"]
         for keyword in important_keywords:
             if keyword in pdf_url:
                 priority += 3
@@ -302,14 +289,13 @@ class EnhancedHRProcessor:
         return priority
 
     def _prioritize_pdfs(
-            self, pdf_metadata: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        self, pdf_metadata: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Sort PDFs by priority for processing"""
-        return sorted(pdf_metadata, key=lambda x: x['priority'], reverse=True)
+        return sorted(pdf_metadata, key=lambda x: x["priority"], reverse=True)
 
     async def _process_pdfs_enhanced(
-        self,
-        pdf_metadata: list[dict[str, Any]],
-        max_concurrent: int
+        self, pdf_metadata: list[dict[str, Any]], max_concurrent: int
     ) -> list[PDFProcessingResult]:
         """Process PDFs with enhanced extraction and error handling"""
 
@@ -323,7 +309,7 @@ class EnhancedHRProcessor:
         # Process all PDFs concurrently
         processing_results = await asyncio.gather(
             *[process_single_pdf(metadata) for metadata in pdf_metadata],
-            return_exceptions=True
+            return_exceptions=True,
         )
 
         # Collect results
@@ -336,12 +322,11 @@ class EnhancedHRProcessor:
         return results
 
     async def _process_pdf_with_fallbacks(
-        self,
-        metadata: dict[str, Any]
+        self, metadata: dict[str, Any]
     ) -> PDFProcessingResult:
         """Process single PDF with multiple fallback strategies"""
 
-        pdf_url = metadata['url']
+        pdf_url = metadata["url"]
         start_time = time.time()
 
         try:
@@ -349,14 +334,13 @@ class EnhancedHRProcessor:
             logger.info(f"Processing PDF (text extraction): {pdf_url}")
 
             session = await self.pdf_processor.extract_voting_data_from_pdf(
-                pdf_url,
-                await self.base_scraper._get_member_names()
+                pdf_url, await self.base_scraper._get_member_names()
             )
 
             if session and self._assess_extraction_quality(session):
                 processing_time = time.time() - start_time
                 enhanced_session = self._create_enhanced_session(
-                    session, metadata, 'text', processing_time
+                    session, metadata, "text", processing_time
                 )
 
                 return PDFProcessingResult(
@@ -364,8 +348,8 @@ class EnhancedHRProcessor:
                     session=enhanced_session,
                     error_message=None,
                     processing_time=processing_time,
-                    extraction_method='text',
-                    confidence_score=0.9
+                    extraction_method="text",
+                    confidence_score=0.9,
                 )
 
             # Strategy 2: OCR with preprocessing
@@ -376,7 +360,7 @@ class EnhancedHRProcessor:
             if session and self._assess_extraction_quality(session):
                 processing_time = time.time() - start_time
                 enhanced_session = self._create_enhanced_session(
-                    session, metadata, 'ocr', processing_time
+                    session, metadata, "ocr", processing_time
                 )
 
                 return PDFProcessingResult(
@@ -384,8 +368,8 @@ class EnhancedHRProcessor:
                     session=enhanced_session,
                     error_message=None,
                     processing_time=processing_time,
-                    extraction_method='ocr',
-                    confidence_score=0.7
+                    extraction_method="ocr",
+                    confidence_score=0.7,
                 )
 
             # Strategy 3: Hybrid approach with manual patterns
@@ -396,7 +380,7 @@ class EnhancedHRProcessor:
             if session:
                 processing_time = time.time() - start_time
                 enhanced_session = self._create_enhanced_session(
-                    session, metadata, 'hybrid', processing_time
+                    session, metadata, "hybrid", processing_time
                 )
 
                 return PDFProcessingResult(
@@ -404,8 +388,8 @@ class EnhancedHRProcessor:
                     session=enhanced_session,
                     error_message=None,
                     processing_time=processing_time,
-                    extraction_method='hybrid',
-                    confidence_score=0.5
+                    extraction_method="hybrid",
+                    confidence_score=0.5,
                 )
 
             # All strategies failed
@@ -415,8 +399,8 @@ class EnhancedHRProcessor:
                 session=None,
                 error_message="All extraction strategies failed",
                 processing_time=processing_time,
-                extraction_method='none',
-                confidence_score=0.0
+                extraction_method="none",
+                confidence_score=0.0,
             )
 
         except Exception as e:
@@ -428,8 +412,8 @@ class EnhancedHRProcessor:
                 session=None,
                 error_message=str(e),
                 processing_time=processing_time,
-                extraction_method='error',
-                confidence_score=0.0
+                extraction_method="error",
+                confidence_score=0.0,
             )
 
     async def _extract_with_enhanced_ocr(self, pdf_url: str) -> PDFVotingSession | None:
@@ -444,9 +428,7 @@ class EnhancedHRProcessor:
         return await self.pdf_processor.extract_voting_data_from_pdf(pdf_url)
 
     async def _extract_with_hybrid_approach(
-        self,
-        pdf_url: str,
-        metadata: dict[str, Any]
+        self, pdf_url: str, metadata: dict[str, Any]
     ) -> PDFVotingSession | None:
         """Hybrid extraction using pattern matching and heuristics"""
 
@@ -470,7 +452,7 @@ class EnhancedHRProcessor:
 
         try:
             # Check minimum member count
-            if len(session.vote_records) < self.quality_thresholds['min_member_count']:
+            if len(session.vote_records) < self.quality_thresholds["min_member_count"]:
                 logger.warning(f"Low member count: {len(session.vote_records)}")
                 return False
 
@@ -482,7 +464,7 @@ class EnhancedHRProcessor:
                 return False
 
             # Check that we have actual votes, not just absences
-            actual_votes = vote_summary.get('賛成', 0) + vote_summary.get('反対', 0)
+            actual_votes = vote_summary.get("賛成", 0) + vote_summary.get("反対", 0)
             if actual_votes < total_votes * 0.5:  # At least 50% should be actual votes
                 logger.warning("Too many non-votes (absences/abstentions)")
                 return False
@@ -494,7 +476,7 @@ class EnhancedHRProcessor:
                     missing_data_count += 1
 
             missing_ratio = missing_data_count / len(session.vote_records)
-            if missing_ratio > self.quality_thresholds['max_missing_data_ratio']:
+            if missing_ratio > self.quality_thresholds["max_missing_data_ratio"]:
                 logger.warning(f"Too much missing data: {missing_ratio:.2%}")
                 return False
 
@@ -509,31 +491,31 @@ class EnhancedHRProcessor:
         base_session: PDFVotingSession,
         pdf_metadata: dict[str, Any],
         extraction_method: str,
-        processing_time: float
+        processing_time: float,
     ) -> EnhancedVotingSession:
         """Create enhanced session with additional metadata"""
 
         # Calculate quality metrics
         quality_metrics = {
-            'completeness_score': self._calculate_completeness_score(base_session),
-            'confidence_score': self._calculate_confidence_score(base_session),
-            'consistency_score': self._calculate_consistency_score(base_session)
+            "completeness_score": self._calculate_completeness_score(base_session),
+            "confidence_score": self._calculate_confidence_score(base_session),
+            "consistency_score": self._calculate_consistency_score(base_session),
         }
 
         # Processing metadata
         processing_metadata = {
-            'extraction_method': extraction_method,
-            'processing_time': processing_time,
-            'processed_at': datetime.now().isoformat(),
-            'pdf_type': pdf_metadata.get('pdf_type', 'unknown'),
-            'priority': pdf_metadata.get('priority', 0)
+            "extraction_method": extraction_method,
+            "processing_time": processing_time,
+            "processed_at": datetime.now().isoformat(),
+            "pdf_type": pdf_metadata.get("pdf_type", "unknown"),
+            "priority": pdf_metadata.get("priority", 0),
         }
 
         return EnhancedVotingSession(
             base_session=base_session,
             pdf_metadata=pdf_metadata,
             processing_metadata=processing_metadata,
-            quality_metrics=quality_metrics
+            quality_metrics=quality_metrics,
         )
 
     def _calculate_completeness_score(self, session: PDFVotingSession) -> float:
@@ -551,7 +533,11 @@ class EnhancedHRProcessor:
                 if record.constituency and len(record.constituency.strip()) > 0:
                     complete_fields += 1
                 if record.vote_result and record.vote_result in [
-                        '賛成', '反対', '欠席', '棄権']:
+                    "賛成",
+                    "反対",
+                    "欠席",
+                    "棄権",
+                ]:
                     complete_fields += 1
 
             return complete_fields / total_fields if total_fields > 0 else 0.0
@@ -566,7 +552,8 @@ class EnhancedHRProcessor:
                 return 0.0
 
             total_confidence = sum(
-                record.confidence_score for record in session.vote_records)
+                record.confidence_score for record in session.vote_records
+            )
             return total_confidence / len(session.vote_records)
 
         except Exception:
@@ -586,13 +573,16 @@ class EnhancedHRProcessor:
 
             # Check for reasonable party distribution
             parties = [
-                record.party_name for record in session.vote_records if record.party_name]
+                record.party_name
+                for record in session.vote_records
+                if record.party_name
+            ]
             unique_parties = set(parties)
 
             # Expect at least 2 parties in a normal vote
             party_diversity = min(
-                len(unique_parties) / 5,
-                1.0)  # Normalize to max 5 parties
+                len(unique_parties) / 5, 1.0
+            )  # Normalize to max 5 parties
 
             return (uniqueness_ratio + party_diversity) / 2
 
@@ -600,8 +590,7 @@ class EnhancedHRProcessor:
             return 0.0
 
     def _validate_and_filter_sessions(
-        self,
-        results: list[PDFProcessingResult]
+        self, results: list[PDFProcessingResult]
     ) -> list[EnhancedVotingSession]:
         """Validate and filter processing results"""
 
@@ -614,9 +603,11 @@ class EnhancedHRProcessor:
             # Apply quality thresholds
             session = result.session
 
-            if (session.quality_metrics['completeness_score'] >= 0.7 and
-                session.quality_metrics['confidence_score'] >= 0.5 and
-                    session.quality_metrics['consistency_score'] >= 0.5):
+            if (
+                session.quality_metrics["completeness_score"] >= 0.7
+                and session.quality_metrics["confidence_score"] >= 0.5
+                and session.quality_metrics["consistency_score"] >= 0.5
+            ):
 
                 valid_sessions.append(session)
                 logger.info(f"Validated session: {session.session_id}")
@@ -629,69 +620,72 @@ class EnhancedHRProcessor:
         """Update processing statistics"""
 
         for result in results:
-            self.stats['total_pdfs_processed'] += 1
+            self.stats["total_pdfs_processed"] += 1
 
             if result.success:
-                self.stats['successful_extractions'] += 1
+                self.stats["successful_extractions"] += 1
             else:
-                self.stats['failed_extractions'] += 1
+                self.stats["failed_extractions"] += 1
 
-            if result.extraction_method == 'ocr':
-                self.stats['ocr_fallbacks'] += 1
+            if result.extraction_method == "ocr":
+                self.stats["ocr_fallbacks"] += 1
 
-            self.stats['processing_times'].append(result.processing_time)
+            self.stats["processing_times"].append(result.processing_time)
 
             if result.session:
                 overall_quality = (
-                    result.session.quality_metrics['completeness_score'] +
-                    result.session.quality_metrics['confidence_score'] +
-                    result.session.quality_metrics['consistency_score']
+                    result.session.quality_metrics["completeness_score"]
+                    + result.session.quality_metrics["confidence_score"]
+                    + result.session.quality_metrics["consistency_score"]
                 ) / 3
-                self.stats['quality_scores'].append(overall_quality)
+                self.stats["quality_scores"].append(overall_quality)
 
     def get_processing_statistics(self) -> dict[str, Any]:
         """Get comprehensive processing statistics"""
 
         stats = dict(self.stats)
 
-        if self.stats['processing_times']:
-            stats['avg_processing_time'] = sum(
-                self.stats['processing_times']) / len(self.stats['processing_times'])
-            stats['max_processing_time'] = max(self.stats['processing_times'])
-            stats['min_processing_time'] = min(self.stats['processing_times'])
+        if self.stats["processing_times"]:
+            stats["avg_processing_time"] = sum(self.stats["processing_times"]) / len(
+                self.stats["processing_times"]
+            )
+            stats["max_processing_time"] = max(self.stats["processing_times"])
+            stats["min_processing_time"] = min(self.stats["processing_times"])
 
-        if self.stats['quality_scores']:
-            stats['avg_quality_score'] = sum(
-                self.stats['quality_scores']) / len(self.stats['quality_scores'])
-            stats['max_quality_score'] = max(self.stats['quality_scores'])
-            stats['min_quality_score'] = min(self.stats['quality_scores'])
+        if self.stats["quality_scores"]:
+            stats["avg_quality_score"] = sum(self.stats["quality_scores"]) / len(
+                self.stats["quality_scores"]
+            )
+            stats["max_quality_score"] = max(self.stats["quality_scores"])
+            stats["min_quality_score"] = min(self.stats["quality_scores"])
 
-        if self.stats['total_pdfs_processed'] > 0:
-            stats['success_rate'] = self.stats['successful_extractions'] / \
-                self.stats['total_pdfs_processed']
-            stats['ocr_fallback_rate'] = self.stats['ocr_fallbacks'] / \
-                self.stats['total_pdfs_processed']
+        if self.stats["total_pdfs_processed"] > 0:
+            stats["success_rate"] = (
+                self.stats["successful_extractions"]
+                / self.stats["total_pdfs_processed"]
+            )
+            stats["ocr_fallback_rate"] = (
+                self.stats["ocr_fallbacks"] / self.stats["total_pdfs_processed"]
+            )
 
         return stats
 
     async def save_processing_results(
-        self,
-        sessions: list[EnhancedVotingSession],
-        output_path: str
+        self, sessions: list[EnhancedVotingSession], output_path: str
     ) -> bool:
         """Save processing results to JSON file"""
 
         try:
             output_data = {
-                'metadata': {
-                    'processed_at': datetime.now().isoformat(),
-                    'total_sessions': len(sessions),
-                    'processing_statistics': self.get_processing_statistics()
+                "metadata": {
+                    "processed_at": datetime.now().isoformat(),
+                    "total_sessions": len(sessions),
+                    "processing_statistics": self.get_processing_statistics(),
                 },
-                'sessions': [session.to_dict() for session in sessions]
+                "sessions": [session.to_dict() for session in sessions],
             }
 
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(output_data, f, ensure_ascii=False, indent=2)
 
             logger.info(f"Saved {len(sessions)} sessions to {output_path}")

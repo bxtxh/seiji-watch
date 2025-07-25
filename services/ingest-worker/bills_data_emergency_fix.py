@@ -14,12 +14,13 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 @dataclass
 class BillRepairResult:
     """Bill repair operation result"""
+
     original_record: dict
     repaired_record: dict
     repairs_applied: list[str]
@@ -40,7 +41,7 @@ class BillsDataEmergencyRepair:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
@@ -55,9 +56,9 @@ class BillsDataEmergencyRepair:
 
         # Bill number patterns
         self.bill_number_patterns = [
-            r"^第\d+号$",           # 第123号
-            r"^\d+号$",             # 123号
-            r"^[HRS]\d+$",          # H123, R123, S123 (年号略記)
+            r"^第\d+号$",  # 第123号
+            r"^\d+号$",  # 123号
+            r"^[HRS]\d+$",  # H123, R123, S123 (年号略記)
             r"^令和\d+年.*第\d+号$",  # 令和6年...第123号
         ]
 
@@ -92,7 +93,7 @@ class BillsDataEmergencyRepair:
             "session_repairs": 0,
             "duplicate_removals": 0,
             "high_confidence_repairs": 0,
-            "manual_review_needed": 0
+            "manual_review_needed": 0,
         }
 
     async def rate_limit_delay(self):
@@ -115,14 +116,16 @@ class BillsDataEmergencyRepair:
                 url = f"{self.base_url}/Bills (法案)"
                 params = {}
                 if offset:
-                    params['offset'] = offset
+                    params["offset"] = offset
 
-                async with session.get(url, headers=self.headers, params=params) as response:
+                async with session.get(
+                    url, headers=self.headers, params=params
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        all_bills.extend(data.get('records', []))
+                        all_bills.extend(data.get("records", []))
 
-                        offset = data.get('offset')
+                        offset = data.get("offset")
                         if not offset:
                             break
                     else:
@@ -151,16 +154,20 @@ class BillsDataEmergencyRepair:
                 was_repaired = True
 
         # Remove extra whitespace
-        repaired_title = re.sub(r'\s+', ' ', repaired_title).strip()
+        repaired_title = re.sub(r"\s+", " ", repaired_title).strip()
 
         # Ensure minimum length
         if len(repaired_title) < 3:
-            repaired_title = f"{repaired_title}に関する法案" if repaired_title else "未定義法案"
+            repaired_title = (
+                f"{repaired_title}に関する法案" if repaired_title else "未定義法案"
+            )
             was_repaired = True
 
         # Ensure it ends appropriately
-        if not any(repaired_title.endswith(suffix)
-                   for suffix in ["法案", "法", "案", "について"]):
+        if not any(
+            repaired_title.endswith(suffix)
+            for suffix in ["法案", "法", "案", "について"]
+        ):
             if "法" in repaired_title:
                 repaired_title += "法案"
             else:
@@ -169,8 +176,9 @@ class BillsDataEmergencyRepair:
 
         return repaired_title, was_repaired
 
-    def repair_bill_number(self, bill_number: str,
-                           record_index: int) -> tuple[str, bool]:
+    def repair_bill_number(
+        self, bill_number: str, record_index: int
+    ) -> tuple[str, bool]:
         """Repair bill number"""
         if not bill_number or not isinstance(bill_number, str):
             # Generate a placeholder bill number
@@ -181,12 +189,13 @@ class BillsDataEmergencyRepair:
         was_repaired = False
 
         # Check if it matches any valid pattern
-        is_valid = any(re.match(pattern, original_number)
-                       for pattern in self.bill_number_patterns)
+        is_valid = any(
+            re.match(pattern, original_number) for pattern in self.bill_number_patterns
+        )
 
         if not is_valid:
             # Try to extract numbers
-            numbers = re.findall(r'\d+', original_number)
+            numbers = re.findall(r"\d+", original_number)
             if numbers:
                 # Use the first number found
                 repaired_number = f"第{numbers[0]}号"
@@ -239,14 +248,15 @@ class BillsDataEmergencyRepair:
             r"令和\d+年.*会期",
         ]
 
-        is_valid = any(re.match(pattern, original_session)
-                       for pattern in session_patterns)
+        is_valid = any(
+            re.match(pattern, original_session) for pattern in session_patterns
+        )
 
         if is_valid:
             return original_session, False
 
         # Try to extract session number
-        numbers = re.findall(r'\d+', original_session)
+        numbers = re.findall(r"\d+", original_session)
         if numbers:
             session_num = int(numbers[0])
             if 1 <= session_num <= 220:  # Reasonable range for Diet sessions
@@ -259,41 +269,43 @@ class BillsDataEmergencyRepair:
 
     def analyze_bill_record(self, record: dict, index: int) -> BillRepairResult:
         """Analyze and repair a single bill record"""
-        fields = record.get('fields', {})
+        fields = record.get("fields", {})
         repaired_fields = fields.copy()
         repairs_applied = []
 
         # Repair Title
-        title = fields.get('Title', '')
+        title = fields.get("Title", "")
         repaired_title, title_repaired = self.repair_title(title)
         if title_repaired:
-            repaired_fields['Title'] = repaired_title
+            repaired_fields["Title"] = repaired_title
             repairs_applied.append(f"Title: '{title}' → '{repaired_title}'")
             self.repair_stats["title_repairs"] += 1
 
         # Repair Bill_Number
-        bill_number = fields.get('Bill_Number', '')
+        bill_number = fields.get("Bill_Number", "")
         repaired_bill_number, number_repaired = self.repair_bill_number(
-            bill_number, index)
+            bill_number, index
+        )
         if number_repaired:
-            repaired_fields['Bill_Number'] = repaired_bill_number
+            repaired_fields["Bill_Number"] = repaired_bill_number
             repairs_applied.append(
-                f"Bill_Number: '{bill_number}' → '{repaired_bill_number}'")
+                f"Bill_Number: '{bill_number}' → '{repaired_bill_number}'"
+            )
             self.repair_stats["bill_number_repairs"] += 1
 
         # Repair Status
-        status = fields.get('Status', '')
+        status = fields.get("Status", "")
         repaired_status, status_repaired = self.repair_status(status)
         if status_repaired:
-            repaired_fields['Status'] = repaired_status
+            repaired_fields["Status"] = repaired_status
             repairs_applied.append(f"Status: '{status}' → '{repaired_status}'")
             self.repair_stats["status_repairs"] += 1
 
         # Repair Session
-        session = fields.get('Session', '')
+        session = fields.get("Session", "")
         repaired_session, session_repaired = self.repair_session(session, index)
         if session_repaired:
-            repaired_fields['Session'] = repaired_session
+            repaired_fields["Session"] = repaired_session
             repairs_applied.append(f"Session: '{session}' → '{repaired_session}'")
             self.repair_stats["session_repairs"] += 1
 
@@ -322,13 +334,13 @@ class BillsDataEmergencyRepair:
         return BillRepairResult(
             original_record=record,
             repaired_record={
-                'id': record['id'],
-                'fields': repaired_fields,
-                'createdTime': record.get('createdTime')
+                "id": record["id"],
+                "fields": repaired_fields,
+                "createdTime": record.get("createdTime"),
             },
             repairs_applied=repairs_applied,
             confidence_level=confidence,
-            needs_manual_review=needs_review
+            needs_manual_review=needs_review,
         )
 
     def detect_duplicates(self, bills: list[dict]) -> list[tuple[str, list[str]]]:
@@ -337,22 +349,22 @@ class BillsDataEmergencyRepair:
         processed_ids = set()
 
         for i, bill1 in enumerate(bills):
-            if bill1['id'] in processed_ids:
+            if bill1["id"] in processed_ids:
                 continue
 
-            fields1 = bill1.get('fields', {})
-            title1 = fields1.get('Title', '').lower().strip()
-            number1 = fields1.get('Bill_Number', '').lower().strip()
+            fields1 = bill1.get("fields", {})
+            title1 = fields1.get("Title", "").lower().strip()
+            number1 = fields1.get("Bill_Number", "").lower().strip()
 
-            duplicate_group = [bill1['id']]
+            duplicate_group = [bill1["id"]]
 
-            for j, bill2 in enumerate(bills[i + 1:], i + 1):
-                if bill2['id'] in processed_ids:
+            for j, bill2 in enumerate(bills[i + 1 :], i + 1):
+                if bill2["id"] in processed_ids:
                     continue
 
-                fields2 = bill2.get('fields', {})
-                title2 = fields2.get('Title', '').lower().strip()
-                number2 = fields2.get('Bill_Number', '').lower().strip()
+                fields2 = bill2.get("fields", {})
+                title2 = fields2.get("Title", "").lower().strip()
+                number2 = fields2.get("Bill_Number", "").lower().strip()
 
                 # Check for duplicates
                 is_duplicate = False
@@ -364,43 +376,42 @@ class BillsDataEmergencyRepair:
                 # Very similar titles (>80% similarity)
                 if title1 and title2:
                     from difflib import SequenceMatcher
+
                     similarity = SequenceMatcher(None, title1, title2).ratio()
                     if similarity > 0.8:
                         is_duplicate = True
 
                 if is_duplicate:
-                    duplicate_group.append(bill2['id'])
-                    processed_ids.add(bill2['id'])
+                    duplicate_group.append(bill2["id"])
+                    processed_ids.add(bill2["id"])
 
             if len(duplicate_group) > 1:
-                duplicates.append((bill1['id'], duplicate_group[1:]))
-                processed_ids.add(bill1['id'])
+                duplicates.append((bill1["id"], duplicate_group[1:]))
+                processed_ids.add(bill1["id"])
 
         return duplicates
 
     async def update_bill_record(
-            self,
-            session: aiohttp.ClientSession,
-            repair_result: BillRepairResult) -> bool:
+        self, session: aiohttp.ClientSession, repair_result: BillRepairResult
+    ) -> bool:
         """Update a bill record in Airtable"""
         try:
             await self.rate_limit_delay()
 
-            update_data = {
-                "fields": repair_result.repaired_record['fields']
-            }
+            update_data = {"fields": repair_result.repaired_record["fields"]}
 
             async with session.patch(
                 f"{self.base_url}/Bills (法案)/{repair_result.repaired_record['id']}",
                 headers=self.headers,
-                json=update_data
+                json=update_data,
             ) as response:
                 if response.status == 200:
                     return True
                 else:
                     error_text = await response.text()
                     print(
-                        f"❌ Failed to update bill {repair_result.repaired_record['id']}: {response.status} - {error_text}")
+                        f"❌ Failed to update bill {repair_result.repaired_record['id']}: {response.status} - {error_text}"
+                    )
                     return False
 
         except Exception as e:
@@ -408,23 +419,22 @@ class BillsDataEmergencyRepair:
             return False
 
     async def delete_duplicate_bill(
-            self,
-            session: aiohttp.ClientSession,
-            bill_id: str) -> bool:
+        self, session: aiohttp.ClientSession, bill_id: str
+    ) -> bool:
         """Delete a duplicate bill record"""
         try:
             await self.rate_limit_delay()
 
             async with session.delete(
-                f"{self.base_url}/Bills (法案)/{bill_id}",
-                headers=self.headers
+                f"{self.base_url}/Bills (法案)/{bill_id}", headers=self.headers
             ) as response:
                 if response.status == 200:
                     return True
                 else:
                     error_text = await response.text()
                     print(
-                        f"❌ Failed to delete duplicate bill {bill_id}: {response.status} - {error_text}")
+                        f"❌ Failed to delete duplicate bill {bill_id}: {response.status} - {error_text}"
+                    )
                     return False
 
         except Exception as e:
@@ -439,10 +449,10 @@ class BillsDataEmergencyRepair:
         backup_data = {
             "backup_date": datetime.now().isoformat(),
             "total_records": len(bills),
-            "records": bills
+            "records": bills,
         }
 
-        with open(backup_filename, 'w', encoding='utf-8') as f:
+        with open(backup_filename, "w", encoding="utf-8") as f:
             json.dump(backup_data, f, indent=2, ensure_ascii=False)
 
         print(f"💾 Bills backup created: {backup_filename}")
@@ -458,16 +468,16 @@ class BillsDataEmergencyRepair:
             "summary": self.repair_stats,
             "repair_results": [
                 {
-                    "record_id": result.repaired_record['id'],
+                    "record_id": result.repaired_record["id"],
                     "repairs_applied": result.repairs_applied,
                     "confidence_level": result.confidence_level,
-                    "needs_manual_review": result.needs_manual_review
+                    "needs_manual_review": result.needs_manual_review,
                 }
                 for result in repair_results
-            ]
+            ],
         }
 
-        with open(report_filename, 'w', encoding='utf-8') as f:
+        with open(report_filename, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2, ensure_ascii=False)
 
         print(f"📊 Bills repair report saved: {report_filename}")
@@ -486,13 +496,19 @@ class BillsDataEmergencyRepair:
         print(f"🏛️ Session Repairs: {self.repair_stats['session_repairs']:,}")
         print(f"🗑️ Duplicate Removals: {self.repair_stats['duplicate_removals']:,}")
         print(
-            f"✅ High Confidence Repairs: {self.repair_stats['high_confidence_repairs']:,}")
+            f"✅ High Confidence Repairs: {self.repair_stats['high_confidence_repairs']:,}"
+        )
         print(f"⚠️ Manual Review Needed: {self.repair_stats['manual_review_needed']:,}")
 
         success_rate = (
-            self.repair_stats['records_repaired'] /
-            self.repair_stats['total_records'] *
-            100) if self.repair_stats['total_records'] > 0 else 0
+            (
+                self.repair_stats["records_repaired"]
+                / self.repair_stats["total_records"]
+                * 100
+            )
+            if self.repair_stats["total_records"] > 0
+            else 0
+        )
         print(f"🎯 Repair Success Rate: {success_rate:.1f}%")
         print("=" * 70)
 
@@ -530,7 +546,7 @@ class BillsDataEmergencyRepair:
 
             for i, bill in enumerate(bills):
                 # Skip deleted duplicates
-                if any(bill['id'] in dup_ids for _, dup_ids in duplicates):
+                if any(bill["id"] in dup_ids for _, dup_ids in duplicates):
                     continue
 
                 repair_result = self.analyze_bill_record(bill, i)
@@ -542,11 +558,13 @@ class BillsDataEmergencyRepair:
                     if success:
                         self.repair_stats["records_repaired"] += 1
                         print(
-                            f"✅ Repaired bill {bill['id']}: {len(repair_result.repairs_applied)} fixes")
+                            f"✅ Repaired bill {bill['id']}: {len(repair_result.repairs_applied)} fixes"
+                        )
 
                         if repair_result.needs_manual_review:
                             print(
-                                f"   ⚠️ Manual review recommended for: {repair_result.repairs_applied}")
+                                f"   ⚠️ Manual review recommended for: {repair_result.repairs_applied}"
+                            )
                     else:
                         print(f"❌ Failed to repair bill {bill['id']}")
 
@@ -572,6 +590,7 @@ async def main():
         print("🔄 Recommendation: Re-run quality analysis to verify improvements")
     else:
         print("❌ Emergency Bills table repair failed or no repairs needed")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

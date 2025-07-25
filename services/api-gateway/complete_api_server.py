@@ -10,8 +10,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ app = FastAPI(
     description="Complete API Gateway for Diet Issue Tracker with Category System",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS middleware - Allow all localhost variants
@@ -33,17 +32,22 @@ app.add_middleware(
         "http://localhost:8080",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        "http://127.0.0.1:8080"
+        "http://127.0.0.1:8080",
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
-        "accept", "accept-language", "authorization",
-        "content-language", "content-type", "x-requested-with",
-        "x-csrf-token", "x-request-id"
+        "accept",
+        "accept-language",
+        "authorization",
+        "content-language",
+        "content-type",
+        "x-requested-with",
+        "x-csrf-token",
+        "x-request-id",
     ],
     expose_headers=["X-Total-Count"],
-    max_age=600
+    max_age=600,
 )
 
 # Root endpoint
@@ -58,7 +62,7 @@ async def root():
         "health": "/health",
         "categories_demo": "/api/issues/categories",
         "ui_demo": "/demo",
-        "ui_ready": True
+        "ui_ready": True,
     }
 
 
@@ -231,6 +235,7 @@ async def demo_page():
 </html>
     """
 
+
 # Health check endpoint
 
 
@@ -243,8 +248,9 @@ async def health_check():
         "version": "1.0.0",
         "timestamp": time.time(),
         "data_loaded": True,
-        "ui_ready": True
+        "ui_ready": True,
     }
+
 
 # === EPIC 7: Issue Category API Endpoints ===
 
@@ -266,8 +272,8 @@ async def get_categories(max_records: int = 100):
                         "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。"
                         "GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。"
                     ),
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_civil_rights",
@@ -280,8 +286,8 @@ async def get_categories(max_records: int = 100):
                         "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。"
                         "憲法的権利の保障と社会的平等の促進を含みます。"
                     ),
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_health",
@@ -294,8 +300,8 @@ async def get_categories(max_records: int = 100):
                         "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。"
                         "国民の健康増進と医療アクセスの確保を目的とします。"
                     ),
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_agriculture",
@@ -308,8 +314,8 @@ async def get_categories(max_records: int = 100):
                         "農業政策、食料安全保障、農村開発に関する政策分野。"
                         "農業生産性の向上と農村地域の活性化を目指します。"
                     ),
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_labor",
@@ -322,8 +328,8 @@ async def get_categories(max_records: int = 100):
                         "労働政策、雇用創出、労働者の権利保護に関する政策分野。"
                         "働き方改革と雇用の安定化を促進します。"
                     ),
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_education",
@@ -336,9 +342,9 @@ async def get_categories(max_records: int = 100):
                         "教育制度、学校政策、教育の質向上に関する政策分野。"
                         "生涯学習社会の実現と教育機会の平等を目指します。"
                     ),
-                    "Is_Seed": True
-                }
-            }
+                    "Is_Seed": True,
+                },
+            },
         ]
         return mock_categories[:max_records]
     except Exception as e:
@@ -362,8 +368,8 @@ async def get_category_tree():
                         "Summary_150JA": (
                             "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野"
                         ),
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_civil_rights",
@@ -375,8 +381,8 @@ async def get_category_tree():
                         "Summary_150JA": (
                             "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野"
                         ),
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_health",
@@ -388,8 +394,8 @@ async def get_category_tree():
                         "Summary_150JA": (
                             "医療制度、公衆衛生、健康保険、医療研究に関する政策分野"
                         ),
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_agriculture",
@@ -401,8 +407,8 @@ async def get_category_tree():
                         "Summary_150JA": (
                             "農業政策、食料安全保障、農村開発に関する政策分野"
                         ),
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_labor",
@@ -414,8 +420,8 @@ async def get_category_tree():
                         "Summary_150JA": (
                             "労働政策、雇用創出、労働者の権利保護に関する政策分野"
                         ),
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_education",
@@ -427,9 +433,9 @@ async def get_category_tree():
                         "Summary_150JA": (
                             "教育制度、学校政策、教育の質向上に関する政策分野"
                         ),
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
             "L2": [
                 {
@@ -440,8 +446,8 @@ async def get_category_tree():
                         "Title_JA": "国内マクロ経済問題",
                         "Title_EN": "General Domestic Macroeconomic Issues",
                         "Parent_Category": ["rec_l1_macroeconomics"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_inflation_prices",
@@ -451,8 +457,8 @@ async def get_category_tree():
                         "Title_JA": "インフレ・物価・デフレ",
                         "Title_EN": "Inflation, Prices, and Deflation",
                         "Parent_Category": ["rec_l1_macroeconomics"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_general_civil_rights",
@@ -462,8 +468,8 @@ async def get_category_tree():
                         "Title_JA": "一般的市民権・自由",
                         "Title_EN": "General Civil Rights and Liberties",
                         "Parent_Category": ["rec_l1_civil_rights"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_minority_issues",
@@ -473,8 +479,8 @@ async def get_category_tree():
                         "Title_JA": "少数者の権利・差別問題",
                         "Title_EN": "Minority Rights and Discrimination Issues",
                         "Parent_Category": ["rec_l1_civil_rights"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_health_care_reform",
@@ -484,11 +490,11 @@ async def get_category_tree():
                         "Title_JA": "医療制度改革",
                         "Title_EN": "Health Care Reform",
                         "Parent_Category": ["rec_l1_health"],
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
-            "L3": []
+            "L3": [],
         }
     except Exception as e:
         logger.error(f"Failed to get category tree: {e}")
@@ -520,8 +526,8 @@ async def get_category_detail(category_id: str):
                     ),
                     "Is_Seed": True,
                     "Related_Bills_Count": 15,
-                    "Child_Categories_Count": 8
-                }
+                    "Child_Categories_Count": 8,
+                },
             },
             "rec_l1_civil_rights": {
                 "id": "rec_l1_civil_rights",
@@ -541,9 +547,9 @@ async def get_category_detail(category_id: str):
                     ),
                     "Is_Seed": True,
                     "Related_Bills_Count": 22,
-                    "Child_Categories_Count": 12
-                }
-            }
+                    "Child_Categories_Count": 12,
+                },
+            },
         }
 
         if category_id in category_details:
@@ -561,8 +567,8 @@ async def get_category_detail(category_id: str):
                     "Description": "これはサンプルカテゴリの説明文です。",
                     "Is_Seed": False,
                     "Related_Bills_Count": 5,
-                    "Child_Categories_Count": 3
-                }
+                    "Child_Categories_Count": 3,
+                },
             }
     except Exception as e:
         logger.error(f"Failed to get category {category_id}: {e}")
@@ -584,8 +590,8 @@ async def get_category_children(category_id: str):
                         "Title_JA": "国内マクロ経済問題",
                         "Title_EN": "General Domestic Macroeconomic Issues",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_inflation_prices",
@@ -595,8 +601,8 @@ async def get_category_children(category_id: str):
                         "Title_JA": "インフレ・物価・デフレ",
                         "Title_EN": "Inflation, Prices, and Deflation",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_fiscal_policy",
@@ -606,9 +612,9 @@ async def get_category_children(category_id: str):
                         "Title_JA": "財政政策",
                         "Title_EN": "Fiscal Policy",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
             "rec_l1_civil_rights": [
                 {
@@ -619,8 +625,8 @@ async def get_category_children(category_id: str):
                         "Title_JA": "一般的市民権・自由",
                         "Title_EN": "General Civil Rights and Liberties",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_minority_issues",
@@ -630,10 +636,10 @@ async def get_category_children(category_id: str):
                         "Title_JA": "少数者の権利・差別問題",
                         "Title_EN": "Minority Rights and Discrimination Issues",
                         "Parent_Category": [category_id],
-                        "Is_Seed": True
-                    }
-                }
-            ]
+                        "Is_Seed": True,
+                    },
+                },
+            ],
         }
 
         return children_map.get(category_id, [])
@@ -651,23 +657,25 @@ async def search_categories(query: str, max_records: int = 50):
             {"id": "rec_l1_macroeconomics", "title": "マクロ経済学", "layer": "L1"},
             {
                 "id": "rec_l1_civil_rights",
-                "title": "市民権・自由・少数者問題", "layer": "L1"
+                "title": "市民権・自由・少数者問題",
+                "layer": "L1",
             },
             {"id": "rec_l1_health", "title": "健康", "layer": "L1"},
             {
                 "id": "rec_l2_general_domestic_macro",
-                "title": "国内マクロ経済問題", "layer": "L2"
+                "title": "国内マクロ経済問題",
+                "layer": "L2",
             },
             {
                 "id": "rec_l2_inflation_prices",
-                "title": "インフレ・物価・デフレ", "layer": "L2"
-            }
+                "title": "インフレ・物価・デフレ",
+                "layer": "L2",
+            },
         ]
 
         # Simple text search
         results = [
-            cat for cat in all_categories
-            if query.lower() in cat["title"].lower()
+            cat for cat in all_categories if query.lower() in cat["title"].lower()
         ]
         return results[:max_records]
     except Exception:
@@ -691,25 +699,30 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                         f"重要な政策が含まれており、経済成長と安定化を目指しています。"
                     ),
                     "Status": (
-                        "審議中" if i % 3 == 0 else
-                        "成立" if i % 3 == 1 else "否決"
+                        "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決"
                     ),
                     "Category": (
-                        "マクロ経済学" if i <= 5 else
-                        "市民権・自由・少数者問題" if i <= 8 else "健康"
+                        "マクロ経済学"
+                        if i <= 5
+                        else "市民権・自由・少数者問題" if i <= 8 else "健康"
                     ),
                     "Category_ID": (
-                        "rec_l1_macroeconomics" if i <= 5 else
-                        "rec_l1_civil_rights" if i <= 8 else "rec_l1_health"
+                        "rec_l1_macroeconomics"
+                        if i <= 5
+                        else "rec_l1_civil_rights" if i <= 8 else "rec_l1_health"
                     ),
                     "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15",
                     "Keywords": (
-                        ["経済政策", "成長戦略", "財政"] if i <= 5 else
-                        ["人権", "平等", "自由"] if i <= 8 else
-                        ["医療", "健康", "保険"]
-                    )
-                }
+                        ["経済政策", "成長戦略", "財政"]
+                        if i <= 5
+                        else (
+                            ["人権", "平等", "自由"]
+                            if i <= 8
+                            else ["医療", "健康", "保険"]
+                        )
+                    ),
+                },
             }
             for i in range(1, min(max_records + 1, 21))
         ]
@@ -717,7 +730,8 @@ async def get_bills(max_records: int = 100, category: str | None = None):
         # Filter by category if specified
         if category:
             mock_bills = [
-                bill for bill in mock_bills
+                bill
+                for bill in mock_bills
                 if category.lower() in bill["fields"].get("Category", "").lower()
                 or category == bill["fields"].get("Category_ID", "")
             ]
@@ -726,6 +740,7 @@ async def get_bills(max_records: int = 100, category: str | None = None):
     except Exception as e:
         logger.error(f"Failed to get bills: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
+
 
 # === Additional API Endpoints ===
 
@@ -739,10 +754,11 @@ async def get_members(limit: int = 50):
                 "id": f"member_{i:03d}",
                 "name": f"議員{i}",
                 "party": (
-                    "自由民主党" if i % 3 == 0 else
-                    "立憲民主党" if i % 3 == 1 else "日本維新の会"
+                    "自由民主党"
+                    if i % 3 == 0
+                    else "立憲民主党" if i % 3 == 1 else "日本維新の会"
                 ),
-                "house": "衆議院" if i % 2 == 0 else "参議院"
+                "house": "衆議院" if i % 2 == 0 else "参議院",
             }
             for i in range(1, min(limit + 1, 51))
         ]
@@ -750,6 +766,7 @@ async def get_members(limit: int = 50):
     except Exception as e:
         logger.error(f"Failed to get members: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch members")
+
 
 # Global exception handler
 
@@ -759,12 +776,13 @@ async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
-        status_code=500,
-        content={"error": "Internal server error", "detail": str(exc)}
+        status_code=500, content={"error": "Internal server error", "detail": str(exc)}
     )
+
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.getenv("PORT", 8001))
     logger.info(f"Starting Complete API Server on port {port}")
 

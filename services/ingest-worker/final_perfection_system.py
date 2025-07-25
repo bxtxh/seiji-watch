@@ -13,24 +13,24 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 # Final authoritative readings for remaining politicians
 FINAL_POLITICIAN_READINGS = {
     # Remaining placeholders - verified politicians
-    "田中太郎": "たなかたろう",    # Keep if genuine politician
+    "田中太郎": "たなかたろう",  # Keep if genuine politician
     "羽生田俊": "はにゅうだたかし",  # Real politician
     "片山虎之助": "かたやまとらのすけ",  # Real politician
     "竹谷とし子": "たけやとしこ",  # Real politician
     "打越さく良": "うちこしさくら",  # Real politician
-    "岡田直樹": "おかだなおき",    # Real politician
+    "岡田直樹": "おかだなおき",  # Real politician
     "塩田博昭": "しおたひろあき",  # Real politician
-    "熊野正士": "くまのまさし",    # Real politician
+    "熊野正士": "くまのまさし",  # Real politician
     "宮島喜文": "みやじまよしふみ",  # Real politician
-    "本田顕子": "ほんだあきこ",    # Real politician
-    "堀井巌": "ほりいいわお",      # Real politician
+    "本田顕子": "ほんだあきこ",  # Real politician
+    "堀井巌": "ほりいいわお",  # Real politician
     "朝日健太郎": "あさひけんたろう",  # Real politician
-    "渡邉美樹": "わたなべみき",    # Real politician
+    "渡邉美樹": "わたなべみき",  # Real politician
     "神谷政幸": "かみやまさゆき",  # Real politician
     "舞立昇治": "まいたてしょうじ",  # Real politician
     "進藤金日子": "しんどうかねひこ",  # Real politician
@@ -38,16 +38,15 @@ FINAL_POLITICIAN_READINGS = {
     "藤川政人": "ふじかわまさひと",  # Real politician
     "今井えり子": "いまいえりこ",  # Real politician
     "渡辺猛之": "わたなべたけゆき",  # Real politician
-    "上野通子": "うえのみちこ",    # Real politician
+    "上野通子": "うえのみちこ",  # Real politician
     "藤田幸久": "ふじたゆきひさ",  # Real politician
     "古川俊治": "ふるかわとしはる",  # Real politician
     "山本博司": "やまもとひろし",  # Real politician
     "魚住裕一郎": "うおずみゆういちろう",  # Real politician
-    "高瀬弘美": "たかせひろみ",    # Real politician
-    "石井苗子": "いしいなえこ",    # Real politician
+    "高瀬弘美": "たかせひろみ",  # Real politician
+    "石井苗子": "いしいなえこ",  # Real politician
     "薬師寺みちよ": "やくしじみちよ",  # Real politician
     "柳ヶ瀬裕文": "やながせひろふみ",  # Real politician
-
     # Additional verified readings
     "田村まみ": "たむらまみ",
     "梅村聡": "うめむらさとし",
@@ -58,7 +57,7 @@ FINAL_POLITICIAN_READINGS = {
     "緒方林太郎": "おがたりんたろう",
     "北神圭朗": "きたがみけいろう",
     "青柳陽一郎": "あおやぎよういちろう",
-    "斎藤嘉隆": "さいとうよしたか"
+    "斎藤嘉隆": "さいとうよしたか",
 }
 
 
@@ -72,7 +71,7 @@ class FinalPerfectionSystem:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         self.perfection_results = {
@@ -83,7 +82,7 @@ class FinalPerfectionSystem:
             "already_perfect": 0,
             "final_quality_rate": 0.0,
             "target_achieved": False,
-            "errors": 0
+            "errors": 0,
         }
 
     async def get_all_members(self, session):
@@ -97,16 +96,14 @@ class FinalPerfectionSystem:
                 params["offset"] = offset
 
             async with session.get(
-                f"{self.base_url}/Members (議員)",
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/Members (議員)", headers=self.headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -124,20 +121,26 @@ class FinalPerfectionSystem:
         name_kana = name_kana.strip()
 
         # Check for placeholder patterns
-        placeholder_patterns = ['たなかたろう', 'さとうはなこ', 'やまだ']
+        placeholder_patterns = ["たなかたろう", "さとうはなこ", "やまだ"]
         for pattern in placeholder_patterns:
             if pattern in name_kana.lower():
                 return "placeholder", f"Contains placeholder pattern: {pattern}"
 
         # Check for impossible short readings
         if len(name) >= 4 and len(name_kana) <= 3:
-            return "too_short", f"Reading too short: {len(name_kana)} chars for {len(name)} kanji"
+            return (
+                "too_short",
+                f"Reading too short: {len(name_kana)} chars for {len(name)} kanji",
+            )
 
         # Check for obvious surname-only cases
         if name in FINAL_POLITICIAN_READINGS:
             expected = FINAL_POLITICIAN_READINGS[name]
             if name_kana != expected:
-                return "needs_correction", f"Should be '{expected}', currently '{name_kana}'"
+                return (
+                    "needs_correction",
+                    f"Should be '{expected}', currently '{name_kana}'",
+                )
 
         return "perfect", "Reading appears complete and correct"
 
@@ -147,29 +150,27 @@ class FinalPerfectionSystem:
 
         for record_info in records_to_fix:
             try:
-                update_data = {
-                    "fields": {
-                        "Name_Kana": record_info['correct_kana']
-                    }
-                }
+                update_data = {"fields": {"Name_Kana": record_info["correct_kana"]}}
 
                 async with session.patch(
                     f"{self.base_url}/Members (議員)/{record_info['id']}",
                     headers=self.headers,
-                    json=update_data
+                    json=update_data,
                 ) as response:
                     if response.status == 200:
                         successful_fixes += 1
-                        self.perfection_results['final_fixes_applied'] += 1
+                        self.perfection_results["final_fixes_applied"] += 1
                         print(
-                            f"   ✅ Fixed: {record_info['name']} → '{record_info['correct_kana']}'")
+                            f"   ✅ Fixed: {record_info['name']} → '{record_info['correct_kana']}'"
+                        )
                     else:
-                        self.perfection_results['errors'] += 1
+                        self.perfection_results["errors"] += 1
                         print(
-                            f"   ❌ Error fixing {record_info['name']}: {response.status}")
+                            f"   ❌ Error fixing {record_info['name']}: {response.status}"
+                        )
 
             except Exception as e:
-                self.perfection_results['errors'] += 1
+                self.perfection_results["errors"] += 1
                 print(f"   ❌ Exception fixing {record_info['name']}: {e}")
 
             # Rate limiting
@@ -193,7 +194,8 @@ class FinalPerfectionSystem:
                 return
 
             print(
-                f"📊 Analyzing {len(all_records)} Members records for final perfection")
+                f"📊 Analyzing {len(all_records)} Members records for final perfection"
+            )
 
             # Analyze each record for remaining issues
             records_to_fix = []
@@ -202,43 +204,47 @@ class FinalPerfectionSystem:
                 "too_short": 0,
                 "needs_correction": 0,
                 "missing": 0,
-                "perfect": 0
+                "perfect": 0,
             }
 
             for record in all_records:
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                name_kana = fields.get('Name_Kana', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                name_kana = fields.get("Name_Kana", "")
 
                 if name:
-                    self.perfection_results['total_analyzed'] += 1
+                    self.perfection_results["total_analyzed"] += 1
 
                     issue_type, reason = self.identify_remaining_issues(name, name_kana)
                     issue_summary[issue_type] += 1
 
-                    if issue_type in ['placeholder', 'needs_correction']:
+                    if issue_type in ["placeholder", "needs_correction"]:
                         # Can be fixed automatically
                         if name in FINAL_POLITICIAN_READINGS:
                             correct_kana = FINAL_POLITICIAN_READINGS[name]
-                            records_to_fix.append({
-                                'id': record['id'],
-                                'name': name,
-                                'current_kana': name_kana,
-                                'correct_kana': correct_kana,
-                                'issue_type': issue_type,
-                                'reason': reason,
-                                'house': fields.get('House', ''),
-                                'constituency': fields.get('Constituency', '')
-                            })
-                    elif issue_type in ['too_short', 'missing']:
+                            records_to_fix.append(
+                                {
+                                    "id": record["id"],
+                                    "name": name,
+                                    "current_kana": name_kana,
+                                    "correct_kana": correct_kana,
+                                    "issue_type": issue_type,
+                                    "reason": reason,
+                                    "house": fields.get("House", ""),
+                                    "constituency": fields.get("Constituency", ""),
+                                }
+                            )
+                    elif issue_type in ["too_short", "missing"]:
                         # Needs manual review
-                        self.perfection_results['manual_review_needed'] += 1
+                        self.perfection_results["manual_review_needed"] += 1
                     else:
                         # Already perfect
-                        self.perfection_results['already_perfect'] += 1
+                        self.perfection_results["already_perfect"] += 1
 
             # Count remaining placeholders
-            self.perfection_results['remaining_placeholders'] = issue_summary['placeholder']
+            self.perfection_results["remaining_placeholders"] = issue_summary[
+                "placeholder"
+            ]
 
             print("\n🔍 FINAL QUALITY ANALYSIS:")
             print(f"   ✅ Perfect readings: {issue_summary['perfect']}")
@@ -248,7 +254,8 @@ class FinalPerfectionSystem:
             print(f"   ❓ Missing: {issue_summary['missing']}")
             print(f"   🎯 Can auto-fix: {len(records_to_fix)}")
             print(
-                f"   📋 Manual review needed: {self.perfection_results['manual_review_needed']}")
+                f"   📋 Manual review needed: {self.perfection_results['manual_review_needed']}"
+            )
 
             if records_to_fix:
                 # Create final backup
@@ -257,11 +264,11 @@ class FinalPerfectionSystem:
                     "backup_date": datetime.now().isoformat(),
                     "perfection_phase": "final",
                     "records_to_fix": len(records_to_fix),
-                    "fixes": records_to_fix
+                    "fixes": records_to_fix,
                 }
 
                 backup_filename = f"final_perfection_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                with open(backup_filename, 'w', encoding='utf-8') as f:
+                with open(backup_filename, "w", encoding="utf-8") as f:
                     json.dump(backup_data, f, indent=2, ensure_ascii=False)
 
                 print(f"✅ Final backup saved: {backup_filename}")
@@ -276,21 +283,26 @@ class FinalPerfectionSystem:
 
                 # Apply final fixes
                 print("\n🚀 Applying final perfection corrections...")
-                fixed_count = await self.apply_final_corrections(session, records_to_fix)
+                fixed_count = await self.apply_final_corrections(
+                    session, records_to_fix
+                )
 
                 print(f"✅ Applied {fixed_count} final corrections")
             else:
                 print("\n🎉 No automatic fixes needed!")
 
             # Calculate final quality metrics
-            total_good = (self.perfection_results['already_perfect'] +
-                          self.perfection_results['final_fixes_applied'])
+            total_good = (
+                self.perfection_results["already_perfect"]
+                + self.perfection_results["final_fixes_applied"]
+            )
 
-            if self.perfection_results['total_analyzed'] > 0:
+            if self.perfection_results["total_analyzed"] > 0:
                 final_quality = (
-                    total_good / self.perfection_results['total_analyzed']) * 100
-                self.perfection_results['final_quality_rate'] = final_quality
-                self.perfection_results['target_achieved'] = final_quality >= 99.0
+                    total_good / self.perfection_results["total_analyzed"]
+                ) * 100
+                self.perfection_results["final_quality_rate"] = final_quality
+                self.perfection_results["target_achieved"] = final_quality >= 99.0
 
         # Print final perfection summary
         self.print_perfection_summary()
@@ -315,35 +327,39 @@ class FinalPerfectionSystem:
         print("\n🎯 FINAL QUALITY ACHIEVEMENT:")
         print(f"   Final quality rate: {results['final_quality_rate']:.1f}%")
         print(
-            f"   Target (99%): {'✅ ACHIEVED' if results['target_achieved'] else '❌ NOT ACHIEVED'}")
+            f"   Target (99%): {'✅ ACHIEVED' if results['target_achieved'] else '❌ NOT ACHIEVED'}"
+        )
 
-        if results['target_achieved']:
+        if results["target_achieved"]:
             print("\n🏆 SUCCESS! 99%+ NAME_KANA QUALITY ACHIEVED!")
             print("✅ Database ready for national political transparency platform")
             print("🎉 Zero-defect standard met for critical political data")
-        elif results['final_quality_rate'] >= 98:
+        elif results["final_quality_rate"] >= 98:
             print("\n🎯 EXCELLENT! Very close to 99% target")
             print(
-                f"📋 Manual review recommended for remaining {results['manual_review_needed']} cases")
-        elif results['final_quality_rate'] >= 95:
+                f"📋 Manual review recommended for remaining {results['manual_review_needed']} cases"
+            )
+        elif results["final_quality_rate"] >= 95:
             print("\n👍 VERY GOOD! High quality achieved")
             print("📋 Additional manual review needed for perfection")
         else:
             print("\n⚠️ Additional systematic improvements needed")
 
         # Recommendations
-        if results['manual_review_needed'] > 0:
+        if results["manual_review_needed"] > 0:
             print("\n📋 MANUAL REVIEW RECOMMENDATIONS:")
             print(
-                f"   1. Review {results['manual_review_needed']} cases requiring manual verification")
+                f"   1. Review {results['manual_review_needed']} cases requiring manual verification"
+            )
             print("   2. Cross-reference with official Diet member directories")
             print("   3. Verify readings with politician official websites")
             print("   4. Implement dual-entry verification for unknowns")
 
-        if results['remaining_placeholders'] > 0:
+        if results["remaining_placeholders"] > 0:
             print("\n🔄 REMAINING PLACEHOLDERS:")
             print(
-                f"   {results['remaining_placeholders']} placeholder patterns still exist")
+                f"   {results['remaining_placeholders']} placeholder patterns still exist"
+            )
             print("   These may be legitimate names or require research")
 
 
@@ -355,21 +371,35 @@ async def main():
     print("\n✅ Final perfection system completed!")
 
     # Save final perfection report
-    report_filename = f"final_perfection_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(report_filename, 'w', encoding='utf-8') as f:
-        json.dump({
-            "completion_date": datetime.now().isoformat(),
-            "perfection_results": results,
-            "achievement_status": "99% TARGET ACHIEVED" if results['target_achieved'] else f"HIGH QUALITY: {results['final_quality_rate']:.1f}%"
-        }, f, indent=2, ensure_ascii=False)
+    report_filename = (
+        f"final_perfection_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    )
+    with open(report_filename, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "completion_date": datetime.now().isoformat(),
+                "perfection_results": results,
+                "achievement_status": (
+                    "99% TARGET ACHIEVED"
+                    if results["target_achieved"]
+                    else f"HIGH QUALITY: {results['final_quality_rate']:.1f}%"
+                ),
+            },
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     print(f"💾 Final perfection report saved: {report_filename}")
 
-    if results['target_achieved']:
+    if results["target_achieved"]:
         print("\n🎉 MISSION ACCOMPLISHED!")
-        print("National political database ready for zero-defect production deployment!")
+        print(
+            "National political database ready for zero-defect production deployment!"
+        )
     else:
         print("\n📋 Next steps: Manual review and verification of remaining cases")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -20,17 +20,17 @@ AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
 CATEGORY_MAPPING = {
     # Bills enum category → IssueCategories CAP code mapping
     "予算・決算": "1.1",  # Budget, Fiscal Policy
-    "税制": "1.2",        # Tax Policy
-    "社会保障": "13.1",   # Social Security, Healthcare
+    "税制": "1.2",  # Tax Policy
+    "社会保障": "13.1",  # Social Security, Healthcare
     "外交・国際": "19.1",  # International Relations
     "経済・産業": "15.1",  # Economic Policy, Industry
     "教育・文化": "2.1",  # Education, Culture
     "環境・エネルギー": "7.1",  # Environment, Energy
-    "農林水産": "4.1",    # Agriculture, Food
+    "農林水産": "4.1",  # Agriculture, Food
     "司法・法務": "12.1",  # Justice, Legal Affairs
-    "防衛": "16.1",       # Defense
-    "その他": "20.1",     # Others
-    "憲法・統治": "11.1"  # Constitution, Governance
+    "防衛": "16.1",  # Defense
+    "その他": "20.1",  # Others
+    "憲法・統治": "11.1",  # Constitution, Governance
 }
 
 
@@ -46,7 +46,7 @@ async def analyze_bills_categories():
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     async with aiohttp.ClientSession() as session:
@@ -89,31 +89,36 @@ async def analyze_bills_categories():
                 category = fields.get("Category", "その他")
 
                 category_counts[category] += 1
-                bills_by_category[category].append({
-                    "id": bill.get("id"),
-                    "name": fields.get("Name", "Unknown"),
-                    "bill_number": fields.get("Bill_Number", "Unknown"),
-                    "status": fields.get("Bill_Status", "Unknown"),
-                    "stage": fields.get("Stage", "Unknown")
-                })
+                bills_by_category[category].append(
+                    {
+                        "id": bill.get("id"),
+                        "name": fields.get("Name", "Unknown"),
+                        "bill_number": fields.get("Bill_Number", "Unknown"),
+                        "status": fields.get("Bill_Status", "Unknown"),
+                        "stage": fields.get("Stage", "Unknown"),
+                    }
+                )
 
             print("\n📊 Category Distribution:")
             total_bills = len(all_bills)
             for category, count in sorted(category_counts.items()):
                 percentage = (count / total_bills) * 100
                 cap_code = CATEGORY_MAPPING.get(category, "Unknown")
-                print(f"   {category}: {count} bills ({percentage:.1f}%) → CAP {cap_code}")
+                print(
+                    f"   {category}: {count} bills ({percentage:.1f}%) → CAP {cap_code}"
+                )
 
             # Show unmapped categories
             unmapped_categories = [
-                cat for cat in category_counts.keys() if cat not in CATEGORY_MAPPING]
+                cat for cat in category_counts.keys() if cat not in CATEGORY_MAPPING
+            ]
             if unmapped_categories:
                 print(f"\n⚠️  Unmapped categories: {', '.join(unmapped_categories)}")
 
             return {
                 "total_bills": total_bills,
                 "category_counts": dict(category_counts),
-                "bills_by_category": dict(bills_by_category)
+                "bills_by_category": dict(bills_by_category),
             }
 
         except Exception as e:
@@ -129,7 +134,7 @@ async def fetch_issue_categories():
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     async with aiohttp.ClientSession() as session:
@@ -150,7 +155,9 @@ async def fetch_issue_categories():
                 print(f"📋 Total IssueCategories found: {len(categories)}")
 
                 if not categories:
-                    print("⚠️  No IssueCategories found. Need to populate this table first.")
+                    print(
+                        "⚠️  No IssueCategories found. Need to populate this table first."
+                    )
                     return False
 
                 # Organize by CAP code for mapping
@@ -166,7 +173,7 @@ async def fetch_issue_categories():
                             "id": category.get("id"),
                             "title_ja": title_ja,
                             "layer": layer,
-                            "record": category
+                            "record": category,
                         }
 
                 print("\n📊 Available PolicyCategories by CAP Code:")
@@ -180,9 +187,9 @@ async def fetch_issue_categories():
             return False
 
 
-async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
-                                                     cap_mapping: dict[str, Any]
-                                                     ):
+async def create_bills_policy_category_relationships(
+    bills_data: dict[str, Any], cap_mapping: dict[str, Any]
+):
     """Create Bills-PolicyCategory relationships based on mapping."""
 
     print("\n🔄 Creating Bills-PolicyCategory Relationships")
@@ -190,11 +197,13 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     # Check if Bills_PolicyCategories table exists
-    bills_policy_categories_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Bills_PolicyCategories"
+    bills_policy_categories_url = (
+        f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Bills_PolicyCategories"
+    )
 
     relationships_to_create = []
     successful_mappings = 0
@@ -204,13 +213,18 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
 
         # First, test if the table exists
         try:
-            async with session.get(bills_policy_categories_url, headers=headers) as response:
+            async with session.get(
+                bills_policy_categories_url, headers=headers
+            ) as response:
                 if response.status == 404:
-                    print("❌ Bills_PolicyCategories table not found. Need to create it first.")
+                    print(
+                        "❌ Bills_PolicyCategories table not found. Need to create it first."
+                    )
                     return False
                 elif response.status != 200:
                     print(
-                        f"❌ Error accessing Bills_PolicyCategories table: {response.status}")
+                        f"❌ Error accessing Bills_PolicyCategories table: {response.status}"
+                    )
                     return False
 
                 print("✅ Bills_PolicyCategories table found and accessible")
@@ -234,7 +248,8 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
 
             policy_category = cap_mapping[cap_code]
             print(
-                f"\n📎 Mapping {category} → {policy_category['title_ja']} ({cap_code})")
+                f"\n📎 Mapping {category} → {policy_category['title_ja']} ({cap_code})"
+            )
 
             # Create relationships for all bills in this category
             for bill in bills_list:
@@ -245,7 +260,7 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
                     "Is_Manual": False,
                     "Source": "enum_migration",
                     "Notes": f"Migrated from Bills.Category enum value: {category}",
-                    "Created_At": datetime.now().isoformat()
+                    "Created_At": datetime.now().isoformat(),
                 }
 
                 relationships_to_create.append(relationship_data)
@@ -265,7 +280,7 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
         error_count = 0
 
         for i in range(0, len(relationships_to_create), 10):
-            batch = relationships_to_create[i:i + 10]
+            batch = relationships_to_create[i : i + 10]
 
             # Prepare batch data
             records_data = []
@@ -278,7 +293,7 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
                         "Is_Manual": rel["Is_Manual"],
                         "Source": rel["Source"],
                         "Notes": rel["Notes"],
-                        "Created_At": rel["Created_At"]
+                        "Created_At": rel["Created_At"],
                     }
                 }
                 records_data.append(record_data)
@@ -286,13 +301,16 @@ async def create_bills_policy_category_relationships(bills_data: dict[str, Any],
             batch_data = {"records": records_data}
 
             try:
-                async with session.post(bills_policy_categories_url, headers=headers, json=batch_data) as response:
+                async with session.post(
+                    bills_policy_categories_url, headers=headers, json=batch_data
+                ) as response:
                     if response.status == 200:
                         response_data = await response.json()
                         batch_created = len(response_data.get("records", []))
                         created_count += batch_created
                         print(
-                            f"✅ Batch {i//10 + 1}: Created {batch_created} relationships")
+                            f"✅ Batch {i//10 + 1}: Created {batch_created} relationships"
+                        )
                     else:
                         error_text = await response.text()
                         print(f"❌ Batch {i//10 + 1} failed: {response.status}")
@@ -321,14 +339,18 @@ async def verify_migration():
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     async with aiohttp.ClientSession() as session:
-        bills_policy_categories_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Bills_PolicyCategories"
+        bills_policy_categories_url = (
+            f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/Bills_PolicyCategories"
+        )
 
         try:
-            async with session.get(bills_policy_categories_url, headers=headers) as response:
+            async with session.get(
+                bills_policy_categories_url, headers=headers
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     relationships = data.get("records", [])
@@ -367,7 +389,8 @@ async def verify_migration():
                         source = fields.get("Source", "Unknown")
 
                         print(
-                            f"   {i+1}. Bill {bill_id} → PolicyCategory {policy_cat_id} (conf: {confidence}, source: {source})")
+                            f"   {i+1}. Bill {bill_id} → PolicyCategory {policy_cat_id} (conf: {confidence}, source: {source})"
+                        )
 
                     return True
 
@@ -401,7 +424,9 @@ async def main():
         return 1
 
     # Step 3: Create Bills-PolicyCategory relationships
-    migration_success = await create_bills_policy_category_relationships(bills_data, cap_mapping)
+    migration_success = await create_bills_policy_category_relationships(
+        bills_data, cap_mapping
+    )
     if not migration_success:
         return 1
 
@@ -414,6 +439,7 @@ async def main():
     print("🔧 Next steps: Run T130 to update frontend integration")
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

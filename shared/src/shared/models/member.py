@@ -1,6 +1,5 @@
 """Models for Diet members and political parties."""
 
-
 from pydantic import Field
 
 from .base import BaseRecord
@@ -42,9 +41,7 @@ class Member(BaseRecord):
     # Career information
     first_elected: str | None = Field(None, description="Year first elected")
     terms_served: int | None = Field(None, description="Number of terms served")
-    previous_occupations: str | None = Field(
-        None, description="Previous occupations"
-    )
+    previous_occupations: str | None = Field(None, description="Previous occupations")
     education: str | None = Field(None, description="Educational background")
 
     # Contact and web presence

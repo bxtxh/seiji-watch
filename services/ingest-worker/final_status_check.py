@@ -17,9 +17,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -38,13 +38,13 @@ def get_all_records(pat, base_id):
             break
 
         data = response.json()
-        records = data.get('records', [])
+        records = data.get("records", [])
         all_records.extend(records)
 
-        offset = data.get('offset')
+        offset = data.get("offset")
         if not offset:
             break
-        params['offset'] = offset
+        params["offset"] = offset
 
     return all_records
 
@@ -56,8 +56,8 @@ def main():
     env_file = Path(__file__).parent / ".env.local"
     load_env_file(env_file)
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     # 全レコード取得
     all_records = get_all_records(pat, base_id)
@@ -69,16 +69,16 @@ def main():
     diet_session_217 = 0
 
     for record in all_records:
-        fields = record.get('fields', {})
-        bill_id = fields.get('Bill_ID', '')
-        session = fields.get('Diet_Session', '')
+        fields = record.get("fields", {})
+        bill_id = fields.get("Bill_ID", "")
+        session = fields.get("Diet_Session", "")
 
         if bill_id:
             with_bill_id += 1
         else:
             without_bill_id += 1
 
-        if session == '217':
+        if session == "217":
             diet_session_217 += 1
 
     print("📋 分析結果:")
@@ -87,7 +87,7 @@ def main():
     print(f"  🏛️ 第217回国会: {diet_session_217}")
 
     # 法案データ収集
-    sys.path.insert(0, 'src')
+    sys.path.insert(0, "src")
     from scraper.diet_scraper import DietScraper
 
     scraper = DietScraper(enable_resilience=False)

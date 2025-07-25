@@ -16,13 +16,19 @@ def test_complete_integration_fields():
 
     # ファイル読み込み
     file_path = Path(__file__).parent / "complete_integration.py"
-    with open(file_path, encoding='utf-8') as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     # テスト項目
     tests = [
-        ("Notesフィールド使用なし", '"Notes":' not in content and "'Notes':" not in content),
-        ("Bill_Status使用確認", '"Bill_Status":' in content or "'Bill_Status':" in content),
+        (
+            "Notesフィールド使用なし",
+            '"Notes":' not in content and "'Notes':" not in content,
+        ),
+        (
+            "Bill_Status使用確認",
+            '"Bill_Status":' in content or "'Bill_Status':" in content,
+        ),
         ("Category使用確認", '"Category":' in content or "'Category':" in content),
         ("Submitter使用確認", '"Submitter":' in content or "'Submitter':" in content),
     ]
@@ -45,7 +51,7 @@ def test_epic11_files_fields():
         "epic11_batch_integration.py",
         "epic11_minimal_integration.py",
         "epic11_optimized_integration.py",
-        "epic11_pilot_insert.py"
+        "epic11_pilot_insert.py",
     ]
 
     all_passed = True
@@ -58,15 +64,29 @@ def test_epic11_files_fields():
             print(f"  ⚠️  ファイル不存在: {filename}")
             continue
 
-        with open(file_path, encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # 各ファイルのテスト
         tests = [
-            ("Notesフィールド使用なし", '"Notes":' not in content and "'Notes':" not in content),
-            ("構造化フィールド使用確認", any(field in content for field in [
-                'Bill_Status', 'Category', 'Submitter', 'Bill_URL', 'Stage', 'Bill_Number'
-            ])),
+            (
+                "Notesフィールド使用なし",
+                '"Notes":' not in content and "'Notes':" not in content,
+            ),
+            (
+                "構造化フィールド使用確認",
+                any(
+                    field in content
+                    for field in [
+                        "Bill_Status",
+                        "Category",
+                        "Submitter",
+                        "Bill_URL",
+                        "Stage",
+                        "Bill_Number",
+                    ]
+                ),
+            ),
         ]
 
         file_passed = True
@@ -91,7 +111,7 @@ def test_api_gateway_fields():
     api_files = [
         "../api-gateway/src/main.py",
         "../api-gateway/test_real_data_api.py",
-        "../api-gateway/simple_airtable_test_api.py"
+        "../api-gateway/simple_airtable_test_api.py",
     ]
 
     all_passed = True
@@ -105,14 +125,17 @@ def test_api_gateway_fields():
             print(f"  ⚠️  ファイル不存在: {relative_path}")
             continue
 
-        with open(file_path, encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # 検索機能のテスト
         tests = [
             ("Notesフィールド検索なし", "SEARCH('{query}', {Notes})" not in content),
-            ("構造化フィールド検索確認", "SEARCH('{query}', {Bill_Status})" in content or
-             "SEARCH('{query}', {Category})" in content),
+            (
+                "構造化フィールド検索確認",
+                "SEARCH('{query}', {Bill_Status})" in content
+                or "SEARCH('{query}', {Category})" in content,
+            ),
         ]
 
         file_passed = True
@@ -136,31 +159,31 @@ def test_sample_data_generation():
 
     # サンプル法案データ
     sample_bill = {
-        'title': 'テスト法案',
-        'bill_id': 'TEST-001',
-        'status': '議案要旨',
-        'category': 'テスト分類',
-        'submitter': '議員',
-        'url': 'https://example.com/test'
+        "title": "テスト法案",
+        "bill_id": "TEST-001",
+        "status": "議案要旨",
+        "category": "テスト分類",
+        "submitter": "議員",
+        "url": "https://example.com/test",
     }
 
     # 構造化フィールド生成のテスト（complete_integration.py方式）
     fields = {
-        "Name": sample_bill['title'],
-        "Bill_ID": sample_bill['bill_id'],
+        "Name": sample_bill["title"],
+        "Bill_ID": sample_bill["bill_id"],
         "Diet_Session": "217",
-        "Bill_Status": sample_bill['status'],
-        "Category": sample_bill['category'],
-        "Submitter": sample_bill['submitter']
+        "Bill_Status": sample_bill["status"],
+        "Category": sample_bill["category"],
+        "Submitter": sample_bill["submitter"],
     }
 
     tests = [
-        ("Nameフィールド設定", fields.get('Name') == 'テスト法案'),
-        ("Bill_IDフィールド設定", fields.get('Bill_ID') == 'TEST-001'),
-        ("Bill_Statusフィールド設定", fields.get('Bill_Status') == '議案要旨'),
-        ("Categoryフィールド設定", fields.get('Category') == 'テスト分類'),
-        ("Submitterフィールド設定", fields.get('Submitter') == '議員'),
-        ("Notesフィールドなし", 'Notes' not in fields),
+        ("Nameフィールド設定", fields.get("Name") == "テスト法案"),
+        ("Bill_IDフィールド設定", fields.get("Bill_ID") == "TEST-001"),
+        ("Bill_Statusフィールド設定", fields.get("Bill_Status") == "議案要旨"),
+        ("Categoryフィールド設定", fields.get("Category") == "テスト分類"),
+        ("Submitterフィールド設定", fields.get("Submitter") == "議員"),
+        ("Notesフィールドなし", "Notes" not in fields),
     ]
 
     print("  生成されたフィールド:")

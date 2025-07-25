@@ -12,14 +12,12 @@ from typing import Any
 import requests
 
 
-def get_airtable_records(base_id: str, table_name: str,
-                         pat: str) -> list[dict[str, Any]]:
+def get_airtable_records(
+    base_id: str, table_name: str, pat: str
+) -> list[dict[str, Any]]:
     """Fetch all records from Airtable table."""
     url = f"https://api.airtable.com/v0/{base_id}/{table_name}"
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     all_records = []
     offset = None
@@ -51,14 +49,14 @@ def analyze_member_names(records: list[dict[str, Any]]) -> dict[str, Any]:
 
     # Pattern to match names with trailing numbers
     # This will match Japanese names followed by one or more digits
-    trailing_number_pattern = re.compile(r'^(.+?)(\d+)$')
+    trailing_number_pattern = re.compile(r"^(.+?)(\d+)$")
 
     results = {
         "total_records": len(records),
         "records_with_trailing_numbers": [],
         "clean_records": [],
         "pattern_analysis": defaultdict(int),
-        "number_distribution": defaultdict(int)
+        "number_distribution": defaultdict(int),
     }
 
     for record in records:
@@ -74,24 +72,24 @@ def analyze_member_names(records: list[dict[str, Any]]) -> dict[str, Any]:
             base_name = match.group(1)
             number = match.group(2)
 
-            results["records_with_trailing_numbers"].append({
-                "record_id": record["id"],
-                "full_name": name,
-                "base_name": base_name,
-                "trailing_number": number,
-                "fields": fields
-            })
+            results["records_with_trailing_numbers"].append(
+                {
+                    "record_id": record["id"],
+                    "full_name": name,
+                    "base_name": base_name,
+                    "trailing_number": number,
+                    "fields": fields,
+                }
+            )
 
             # Track patterns
             results["pattern_analysis"][f"ends_with_{number}"] += 1
             results["number_distribution"][number] += 1
 
         else:
-            results["clean_records"].append({
-                "record_id": record["id"],
-                "name": name,
-                "fields": fields
-            })
+            results["clean_records"].append(
+                {"record_id": record["id"], "name": name, "fields": fields}
+            )
 
     return results
 
@@ -105,38 +103,42 @@ def print_analysis_report(analysis: dict[str, Any]):
 
     print(f"\nTOTAL RECORDS: {analysis['total_records']}")
     print(
-        f"RECORDS WITH TRAILING NUMBERS: {len(analysis['records_with_trailing_numbers'])}")
+        f"RECORDS WITH TRAILING NUMBERS: {len(analysis['records_with_trailing_numbers'])}"
+    )
     print(f"CLEAN RECORDS: {len(analysis['clean_records'])}")
 
-    if analysis['records_with_trailing_numbers']:
+    if analysis["records_with_trailing_numbers"]:
         print(
-            f"\nPERCENTAGE AFFECTED: {len(analysis['records_with_trailing_numbers']) / analysis['total_records'] * 100:.1f}%")
+            f"\nPERCENTAGE AFFECTED: {len(analysis['records_with_trailing_numbers']) / analysis['total_records'] * 100:.1f}%"
+        )
 
         print("\n" + "=" * 40)
         print("EXAMPLES OF PROBLEMATIC NAMES")
         print("=" * 40)
 
         # Show first 10 examples
-        for i, record in enumerate(analysis['records_with_trailing_numbers'][:10]):
+        for i, record in enumerate(analysis["records_with_trailing_numbers"][:10]):
             print(
-                f"{i+1:2d}. '{record['full_name']}' -> '{record['base_name']}' (number: {record['trailing_number']})")
+                f"{i+1:2d}. '{record['full_name']}' -> '{record['base_name']}' (number: {record['trailing_number']})"
+            )
 
-        if len(analysis['records_with_trailing_numbers']) > 10:
+        if len(analysis["records_with_trailing_numbers"]) > 10:
             print(
-                f"    ... and {len(analysis['records_with_trailing_numbers']) - 10} more")
+                f"    ... and {len(analysis['records_with_trailing_numbers']) - 10} more"
+            )
 
         print("\n" + "=" * 40)
         print("NUMBER DISTRIBUTION")
         print("=" * 40)
 
-        for number, count in sorted(analysis['number_distribution'].items()):
+        for number, count in sorted(analysis["number_distribution"].items()):
             print(f"Number '{number}': {count} occurrences")
 
         print("\n" + "=" * 40)
         print("PATTERN ANALYSIS")
         print("=" * 40)
 
-        for pattern, count in sorted(analysis['pattern_analysis'].items()):
+        for pattern, count in sorted(analysis["pattern_analysis"].items()):
             print(f"{pattern}: {count} records")
 
         print("\n" + "=" * 40)
@@ -145,8 +147,8 @@ def print_analysis_report(analysis: dict[str, Any]):
 
         # Group by base name to identify potential duplicates
         base_name_groups = defaultdict(list)
-        for record in analysis['records_with_trailing_numbers']:
-            base_name_groups[record['base_name']].append(record)
+        for record in analysis["records_with_trailing_numbers"]:
+            base_name_groups[record["base_name"]].append(record)
 
         print(f"\nUNIQUE BASE NAMES: {len(base_name_groups)}")
 
@@ -168,7 +170,7 @@ def print_analysis_report(analysis: dict[str, Any]):
     print("CLEANUP RECOMMENDATIONS")
     print("=" * 40)
 
-    if analysis['records_with_trailing_numbers']:
+    if analysis["records_with_trailing_numbers"]:
         print("RECOMMENDED ACTIONS:")
         print("1. Review examples above to confirm pattern")
         print("2. Create backup of current data")
@@ -177,7 +179,9 @@ def print_analysis_report(analysis: dict[str, Any]):
         print("5. Verify no legitimate numbers are removed")
 
         print("\nSUGGESTED CLEANUP QUERY:")
-        print("UPDATE records SET Name = REGEX_REPLACE(Name, r'(\\d+)$', '') WHERE Name REGEXP '\\d+$'")
+        print(
+            "UPDATE records SET Name = REGEX_REPLACE(Name, r'(\\d+)$', '') WHERE Name REGEXP '\\d+$'"
+        )
 
     else:
         print("✅ No cleanup needed - all names are clean!")
@@ -217,7 +221,7 @@ def main():
 
     # Save detailed results to file
     output_file = f"member_name_analysis_{analysis['total_records']}_records.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(analysis, f, ensure_ascii=False, indent=2)
 
     print(f"\n📁 Detailed results saved to: {output_file}")

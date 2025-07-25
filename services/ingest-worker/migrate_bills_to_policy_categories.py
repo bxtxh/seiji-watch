@@ -18,7 +18,7 @@ class BillsPolicyCategoryMigrator:
         self.base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
         self.headers = {
             "Authorization": f"Bearer {AIRTABLE_PAT}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
         self.session = None
         self.mapping_data = None
@@ -35,7 +35,9 @@ class BillsPolicyCategoryMigrator:
     async def load_mapping_data(self):
         """Load the mapping data from T129.2 analysis."""
         try:
-            with open("bills_to_issue_categories_mapping_t129.json", encoding='utf-8') as f:
+            with open(
+                "bills_to_issue_categories_mapping_t129.json", encoding="utf-8"
+            ) as f:
                 self.mapping_data = json.load(f)
             print("✅ Loaded Bills-to-IssueCategories mapping data")
             return True
@@ -56,7 +58,9 @@ class BillsPolicyCategoryMigrator:
             if offset:
                 params["offset"] = offset
 
-            async with self.session.get(bills_url, headers=self.headers, params=params) as response:
+            async with self.session.get(
+                bills_url, headers=self.headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     records = data.get("records", [])
@@ -96,7 +100,9 @@ class BillsPolicyCategoryMigrator:
 
     async def create_policy_category_relationships(self, dry_run=True):
         """Create Bills-PolicyCategory relationships."""
-        print(f"\n🔗 Creating Bills-PolicyCategory relationships (dry_run={dry_run})...")
+        print(
+            f"\n🔗 Creating Bills-PolicyCategory relationships (dry_run={dry_run})..."
+        )
 
         if not self.mapping_data or not self.bills_data:
             print("❌ Missing required data")
@@ -131,7 +137,7 @@ class BillsPolicyCategoryMigrator:
                     "Source": "T129_migration",
                     "Created_At": datetime.now().isoformat(),
                     "Updated_At": datetime.now().isoformat(),
-                    "Notes": f"Migrated from Bills.Category '{bill_category}' to PolicyCategory '{policy_mapping.get('title_ja', 'Unknown')}'"
+                    "Notes": f"Migrated from Bills.Category '{bill_category}' to PolicyCategory '{policy_mapping.get('title_ja', 'Unknown')}'",
                 }
             }
 
@@ -148,7 +154,8 @@ class BillsPolicyCategoryMigrator:
         for i, rel in enumerate(relationships_to_create[:3]):
             fields = rel["fields"]
             print(
-                f"     {i+1}. Bill: {fields['Bill_ID']} → PolicyCategory: {fields['PolicyCategory_ID']}")
+                f"     {i+1}. Bill: {fields['Bill_ID']} → PolicyCategory: {fields['PolicyCategory_ID']}"
+            )
             print(f"        Notes: {fields['Notes']}")
 
         if dry_run:
@@ -162,19 +169,22 @@ class BillsPolicyCategoryMigrator:
 
         # Process in batches of 10 (Airtable limit)
         for i in range(0, len(relationships_to_create), 10):
-            batch = relationships_to_create[i:i + 10]
+            batch = relationships_to_create[i : i + 10]
 
             batch_data = {"records": batch}
 
             try:
                 url = f"{self.base_url}/Bills_PolicyCategories"
-                async with self.session.post(url, headers=self.headers, json=batch_data) as response:
+                async with self.session.post(
+                    url, headers=self.headers, json=batch_data
+                ) as response:
                     if response.status == 200:
                         response_data = await response.json()
                         created_records = response_data.get("records", [])
                         created_count += len(created_records)
                         print(
-                            f"   ✅ Batch {i//10 + 1}: Created {len(created_records)} relationships")
+                            f"   ✅ Batch {i//10 + 1}: Created {len(created_records)} relationships"
+                        )
                     else:
                         error_data = await response.json()
                         print(f"   ❌ Batch {i//10 + 1} failed: {response.status}")
@@ -192,7 +202,8 @@ class BillsPolicyCategoryMigrator:
         print(f"   Created: {created_count} relationships")
         print(f"   Failed: {failed_count} relationships")
         print(
-            f"   Success rate: {(created_count / (created_count + failed_count)) * 100:.1f}%")
+            f"   Success rate: {(created_count / (created_count + failed_count)) * 100:.1f}%"
+        )
 
         return created_count > 0
 
@@ -210,7 +221,9 @@ class BillsPolicyCategoryMigrator:
             if offset:
                 params["offset"] = offset
 
-            async with self.session.get(relationships_url, headers=self.headers, params=params) as response:
+            async with self.session.get(
+                relationships_url, headers=self.headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     records = data.get("records", [])
@@ -254,13 +267,17 @@ class BillsPolicyCategoryMigrator:
         # Check if T129 migration was successful
         t129_count = source_counts.get("T129_migration", 0)
         expected_count = len(
-            [b for b in self.bills_data if b.get("fields", {}).get("Category")])
+            [b for b in self.bills_data if b.get("fields", {}).get("Category")]
+        )
 
         print("\n🎯 T129 Migration verification:")
         print(f"   Expected relationships: {expected_count}")
         print(f"   T129 relationships created: {t129_count}")
         print(
-            f"   Success rate: {(t129_count / expected_count) * 100:.1f}%" if expected_count > 0 else "N/A")
+            f"   Success rate: {(t129_count / expected_count) * 100:.1f}%"
+            if expected_count > 0
+            else "N/A"
+        )
 
         return t129_count > 0
 
@@ -291,7 +308,8 @@ class BillsPolicyCategoryMigrator:
                 return False
 
         print(
-            f"\n✅ T129.3 Migration {'simulation' if dry_run else 'execution'} completed successfully!")
+            f"\n✅ T129.3 Migration {'simulation' if dry_run else 'execution'} completed successfully!"
+        )
 
         if dry_run:
             print("\n🎯 To run actual migration:")
@@ -309,6 +327,7 @@ async def main():
 
     # Check command line arguments
     import sys
+
     dry_run = "--execute" not in sys.argv
 
     if dry_run:
@@ -319,6 +338,7 @@ async def main():
     async with BillsPolicyCategoryMigrator() as migrator:
         success = await migrator.run_migration(dry_run=dry_run)
         return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

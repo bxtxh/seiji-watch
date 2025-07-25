@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 class HealthStatus(Enum):
     """Health check status levels."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -30,6 +31,7 @@ class HealthStatus(Enum):
 
 class AlertSeverity(Enum):
     """Alert severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -39,6 +41,7 @@ class AlertSeverity(Enum):
 
 class MetricType(Enum):
     """Types of metrics."""
+
     COUNTER = "counter"
     GAUGE = "gauge"
     HISTOGRAM = "histogram"
@@ -48,6 +51,7 @@ class MetricType(Enum):
 @dataclass
 class HealthCheckResult:
     """Result of a health check."""
+
     component_name: str
     status: HealthStatus
     response_time_ms: float
@@ -58,18 +62,19 @@ class HealthCheckResult:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-            'component_name': self.component_name,
-            'status': self.status.value,
-            'response_time_ms': self.response_time_ms,
-            'timestamp': self.timestamp.isoformat(),
-            'details': self.details,
-            'error_message': self.error_message
+            "component_name": self.component_name,
+            "status": self.status.value,
+            "response_time_ms": self.response_time_ms,
+            "timestamp": self.timestamp.isoformat(),
+            "details": self.details,
+            "error_message": self.error_message,
         }
 
 
 @dataclass
 class MetricPoint:
     """A single metric data point."""
+
     name: str
     value: int | float
     metric_type: MetricType
@@ -79,17 +84,18 @@ class MetricPoint:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-            'name': self.name,
-            'value': self.value,
-            'type': self.metric_type.value,
-            'timestamp': self.timestamp.isoformat(),
-            'tags': self.tags
+            "name": self.name,
+            "value": self.value,
+            "type": self.metric_type.value,
+            "timestamp": self.timestamp.isoformat(),
+            "tags": self.tags,
         }
 
 
 @dataclass
 class Alert:
     """System alert."""
+
     id: str
     title: str
     description: str
@@ -103,21 +109,22 @@ class Alert:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
-            'id': self.id,
-            'title': self.title,
-            'description': self.description,
-            'severity': self.severity.value,
-            'component': self.component,
-            'triggered_at': self.triggered_at.isoformat(),
-            'resolved_at': self.resolved_at.isoformat() if self.resolved_at else None,
-            'status': self.status,
-            'metadata': self.metadata
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "severity": self.severity.value,
+            "component": self.component,
+            "triggered_at": self.triggered_at.isoformat(),
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
+            "status": self.status,
+            "metadata": self.metadata,
         }
 
 
 @dataclass
 class SLAMetric:
     """SLA monitoring metric."""
+
     name: str
     target_value: float
     current_value: float
@@ -157,7 +164,7 @@ class HealthChecker:
                     component_name=name,
                     status=HealthStatus.UNKNOWN,
                     response_time_ms=0,
-                    error_message="Health check not found"
+                    error_message="Health check not found",
                 )
 
             # Execute health check
@@ -167,7 +174,7 @@ class HealthChecker:
             result = HealthCheckResult(
                 component_name=name,
                 status=HealthStatus.HEALTHY if is_healthy else HealthStatus.UNHEALTHY,
-                response_time_ms=response_time
+                response_time_ms=response_time,
             )
 
         except Exception as e:
@@ -176,7 +183,7 @@ class HealthChecker:
                 component_name=name,
                 status=HealthStatus.UNHEALTHY,
                 response_time_ms=response_time,
-                error_message=str(e)
+                error_message=str(e),
             )
 
         self.check_results[name] = result
@@ -201,7 +208,7 @@ class HealthChecker:
                     component_name=name,
                     status=HealthStatus.UNHEALTHY,
                     response_time_ms=0,
-                    error_message=str(e)
+                    error_message=str(e),
                 )
 
         return results
@@ -237,18 +244,13 @@ class MetricsCollector:
         name: str,
         value: int | float,
         metric_type: MetricType,
-        tags: dict[str, str] = None
+        tags: dict[str, str] = None,
     ):
         """Record a metric value."""
         if tags is None:
             tags = {}
 
-        point = MetricPoint(
-            name=name,
-            value=value,
-            metric_type=metric_type,
-            tags=tags
-        )
+        point = MetricPoint(name=name, value=value, metric_type=metric_type, tags=tags)
 
         if name not in self.metrics:
             self.metrics[name] = []
@@ -271,8 +273,9 @@ class MetricsCollector:
         """Record a timing metric."""
         self.record_metric(name, duration_ms, MetricType.TIMER, tags)
 
-    def record_histogram(self, name: str, value: int |
-                         float, tags: dict[str, str] = None):
+    def record_histogram(
+        self, name: str, value: int | float, tags: dict[str, str] = None
+    ):
         """Record a histogram metric."""
         self.record_metric(name, value, MetricType.HISTOGRAM, tags)
 
@@ -293,7 +296,7 @@ class MetricsCollector:
             self.set_gauge("system.memory.used_bytes", memory.used)
 
             # Disk metrics
-            disk = psutil.disk_usage('/')
+            disk = psutil.disk_usage("/")
             self.set_gauge("system.disk.usage_percent", (disk.used / disk.total) * 100)
             self.set_gauge("system.disk.free_bytes", disk.free)
 
@@ -302,8 +305,8 @@ class MetricsCollector:
                 network = psutil.net_io_counters()
                 self.increment_counter("system.network.bytes_sent", network.bytes_sent)
                 self.increment_counter(
-                    "system.network.bytes_received",
-                    network.bytes_recv)
+                    "system.network.bytes_received", network.bytes_recv
+                )
             except Exception:
                 pass  # Network stats not available on all systems
 
@@ -317,8 +320,7 @@ class MetricsCollector:
 
         cutoff_time = datetime.now() - timedelta(minutes=period_minutes)
         recent_points = [
-            point for point in self.metrics[name]
-            if point.timestamp > cutoff_time
+            point for point in self.metrics[name] if point.timestamp > cutoff_time
         ]
 
         if not recent_points:
@@ -327,12 +329,12 @@ class MetricsCollector:
         values = [point.value for point in recent_points]
 
         return {
-            'count': len(values),
-            'min': min(values),
-            'max': max(values),
-            'average': sum(values) / len(values),
-            'latest': values[-1] if values else None,
-            'period_minutes': period_minutes
+            "count": len(values),
+            "min": min(values),
+            "max": max(values),
+            "average": sum(values) / len(values),
+            "latest": values[-1] if values else None,
+            "period_minutes": period_minutes,
         }
 
     def get_all_metrics(self, period_minutes: int = 60) -> dict[str, Any]:
@@ -350,8 +352,7 @@ class MetricsCollector:
 
         for metric_name, points in self.metrics.items():
             self.metrics[metric_name] = [
-                point for point in points
-                if point.timestamp > cutoff_time
+                point for point in points if point.timestamp > cutoff_time
             ]
 
         self.last_cleanup = datetime.now()
@@ -386,7 +387,8 @@ class AlertManager:
 
         self.alerts[alert.id] = alert
         logger.warning(
-            f"Alert triggered: {alert.title} (severity: {alert.severity.value})")
+            f"Alert triggered: {alert.title} (severity: {alert.severity.value})"
+        )
 
         # Send notifications
         for handler in self.notification_handlers:
@@ -402,7 +404,7 @@ class AlertManager:
             if alert.status == "active":
                 alert.status = "resolved"
                 alert.resolved_at = datetime.now()
-                alert.metadata['resolved_by'] = resolved_by
+                alert.metadata["resolved_by"] = resolved_by
 
                 logger.info(f"Alert resolved: {alert.title}")
 
@@ -412,13 +414,14 @@ class AlertManager:
                         await handler(alert)
                     except Exception as e:
                         logger.error(
-                            f"Failed to send alert resolution notification: {e}")
+                            f"Failed to send alert resolution notification: {e}"
+                        )
 
     async def evaluate_alert_rules(
         self,
         health_results: dict[str, HealthCheckResult],
         metrics: dict[str, Any],
-        sla_metrics: list[SLAMetric]
+        sla_metrics: list[SLAMetric],
     ):
         """Evaluate all alert rules."""
 
@@ -451,11 +454,13 @@ class AlertManager:
             by_component[component] = by_component.get(component, 0) + 1
 
         return {
-            'total_alerts': len(all_alerts),
-            'active_alerts': len(active_alerts),
-            'alerts_by_severity': by_severity,
-            'alerts_by_component': by_component,
-            'oldest_active_alert': min([a.triggered_at for a in active_alerts]) if active_alerts else None
+            "total_alerts": len(all_alerts),
+            "active_alerts": len(active_alerts),
+            "alerts_by_severity": by_severity,
+            "alerts_by_component": by_component,
+            "oldest_active_alert": (
+                min([a.triggered_at for a in active_alerts]) if active_alerts else None
+            ),
         }
 
 
@@ -471,34 +476,34 @@ class SLAMonitor:
     def _setup_default_slas(self):
         """Setup default SLA metrics."""
         default_slas = {
-            'api_response_time_p95': SLAMetric(
-                name='api_response_time_p95',
+            "api_response_time_p95": SLAMetric(
+                name="api_response_time_p95",
                 target_value=500.0,  # 500ms
                 current_value=0.0,
-                threshold_type='max',
-                measurement_period='1h'
+                threshold_type="max",
+                measurement_period="1h",
             ),
-            'system_uptime': SLAMetric(
-                name='system_uptime',
+            "system_uptime": SLAMetric(
+                name="system_uptime",
                 target_value=99.9,  # 99.9%
                 current_value=100.0,
-                threshold_type='min',
-                measurement_period='24h'
+                threshold_type="min",
+                measurement_period="24h",
             ),
-            'error_rate': SLAMetric(
-                name='error_rate',
+            "error_rate": SLAMetric(
+                name="error_rate",
                 target_value=1.0,  # 1%
                 current_value=0.0,
-                threshold_type='max',
-                measurement_period='1h'
+                threshold_type="max",
+                measurement_period="1h",
             ),
-            'issue_extraction_success_rate': SLAMetric(
-                name='issue_extraction_success_rate',
+            "issue_extraction_success_rate": SLAMetric(
+                name="issue_extraction_success_rate",
                 target_value=95.0,  # 95%
                 current_value=100.0,
-                threshold_type='min',
-                measurement_period='24h'
-            )
+                threshold_type="min",
+                measurement_period="24h",
+            ),
         }
 
         self.sla_metrics.update(default_slas)
@@ -526,18 +531,18 @@ class SLAMonitor:
         sla_details = {}
         for name, sla in self.sla_metrics.items():
             sla_details[name] = {
-                'target': sla.target_value,
-                'current': sla.current_value,
-                'status': sla.status.value,
-                'violating': sla.is_violation(),
-                'last_updated': sla.last_updated.isoformat()
+                "target": sla.target_value,
+                "current": sla.current_value,
+                "status": sla.status.value,
+                "violating": sla.is_violation(),
+                "last_updated": sla.last_updated.isoformat(),
             }
 
         return {
-            'overall_status': 'healthy' if len(violations) == 0 else 'violation',
-            'total_slas': len(self.sla_metrics),
-            'violations': len(violations),
-            'sla_details': sla_details
+            "overall_status": "healthy" if len(violations) == 0 else "violation",
+            "total_slas": len(self.sla_metrics),
+            "violations": len(violations),
+            "sla_details": sla_details,
         }
 
 
@@ -568,14 +573,15 @@ class MonitoringAlertingSystem:
             try:
                 cpu_percent = psutil.cpu_percent()
                 memory_percent = psutil.virtual_memory().percent
-                disk_percent = psutil.disk_usage('/').percent
+                disk_percent = psutil.disk_usage("/").percent
 
                 return cpu_percent < 90 and memory_percent < 90 and disk_percent < 90
             except Exception:
                 return False
 
         self.health_checker.register_check(
-            "error_recovery_system", error_recovery_health)
+            "error_recovery_system", error_recovery_health
+        )
         self.health_checker.register_check("system_resources", system_resources_health)
 
     def _setup_default_alert_rules(self):
@@ -585,8 +591,8 @@ class MonitoringAlertingSystem:
             alerts = []
 
             # Check for high error rates
-            error_rate_metric = metrics.get('error_rate', {})
-            if error_rate_metric.get('latest', 0) > 5.0:  # 5% error rate
+            error_rate_metric = metrics.get("error_rate", {})
+            if error_rate_metric.get("latest", 0) > 5.0:  # 5% error rate
                 alerts.append(
                     Alert(
                         id="high_error_rate",
@@ -594,8 +600,9 @@ class MonitoringAlertingSystem:
                         description=f"Error rate is {error_rate_metric['latest']:.1f}%, exceeding 5% threshold",
                         severity=AlertSeverity.HIGH,
                         component="system",
-                        metadata={
-                            'error_rate': error_rate_metric['latest']}))
+                        metadata={"error_rate": error_rate_metric["latest"]},
+                    )
+                )
 
             return alerts
 
@@ -611,8 +618,9 @@ class MonitoringAlertingSystem:
                             description=f"Health check failed: {result.error_message or 'Unknown error'}",
                             severity=AlertSeverity.CRITICAL,
                             component=component_name,
-                            metadata={
-                                'response_time_ms': result.response_time_ms}))
+                            metadata={"response_time_ms": result.response_time_ms},
+                        )
+                    )
 
             return alerts
 
@@ -629,9 +637,12 @@ class MonitoringAlertingSystem:
                             severity=AlertSeverity.HIGH,
                             component="sla",
                             metadata={
-                                'sla_name': sla.name,
-                                'current': sla.current_value,
-                                'target': sla.target_value}))
+                                "sla_name": sla.name,
+                                "current": sla.current_value,
+                                "target": sla.target_value,
+                            },
+                        )
+                    )
 
             return alerts
 
@@ -659,7 +670,9 @@ class MonitoringAlertingSystem:
 
             # Evaluate alert rules
             sla_metrics = list(self.sla_monitor.sla_metrics.values())
-            await self.alert_manager.evaluate_alert_rules(health_results, current_metrics, sla_metrics)
+            await self.alert_manager.evaluate_alert_rules(
+                health_results, current_metrics, sla_metrics
+            )
 
             self.last_full_check = datetime.now()
 
@@ -670,22 +683,27 @@ class MonitoringAlertingSystem:
         """Update SLA metrics based on current system state."""
 
         # Calculate system uptime based on health checks
-        healthy_components = sum(1 for result in health_results.values()
-                                 if result.status == HealthStatus.HEALTHY)
+        healthy_components = sum(
+            1
+            for result in health_results.values()
+            if result.status == HealthStatus.HEALTHY
+        )
         total_components = len(health_results)
         uptime_percentage = (
-            healthy_components /
-            total_components *
-            100) if total_components > 0 else 100
+            (healthy_components / total_components * 100)
+            if total_components > 0
+            else 100
+        )
 
-        self.sla_monitor.update_sla_metric('system_uptime', uptime_percentage)
+        self.sla_monitor.update_sla_metric("system_uptime", uptime_percentage)
 
         # Update API response time from metrics
-        api_metrics = self.metrics_collector.get_metric_summary('api_response_time', 60)
+        api_metrics = self.metrics_collector.get_metric_summary("api_response_time", 60)
         if api_metrics:
             # Use max as P95 approximation (simplified)
             self.sla_monitor.update_sla_metric(
-                'api_response_time_p95', api_metrics.get('max', 0))
+                "api_response_time_p95", api_metrics.get("max", 0)
+            )
 
     async def get_dashboard_data(self) -> dict[str, Any]:
         """Get comprehensive dashboard data."""
@@ -708,24 +726,26 @@ class MonitoringAlertingSystem:
         error_recovery_status = error_recovery_system.get_system_status()
 
         return {
-            'overall_health': overall_health.value,
-            'timestamp': datetime.now().isoformat(),
-            'health_checks': {
-                name: result.to_dict() for name,
-                result in health_results.items()},
-            'metrics': current_metrics,
-            'alerts': {
-                'active_count': len(active_alerts),
-                'active_alerts': [
-                    alert.to_dict() for alert in active_alerts],
-                'statistics': alert_stats},
-            'sla': sla_status,
-            'error_recovery': error_recovery_status,
-            'system_info': {
-                'platform': platform.platform(),
-                'python_version': platform.python_version(),
-                'monitoring_enabled': self.monitoring_enabled,
-                'last_full_check': self.last_full_check.isoformat()}}
+            "overall_health": overall_health.value,
+            "timestamp": datetime.now().isoformat(),
+            "health_checks": {
+                name: result.to_dict() for name, result in health_results.items()
+            },
+            "metrics": current_metrics,
+            "alerts": {
+                "active_count": len(active_alerts),
+                "active_alerts": [alert.to_dict() for alert in active_alerts],
+                "statistics": alert_stats,
+            },
+            "sla": sla_status,
+            "error_recovery": error_recovery_status,
+            "system_info": {
+                "platform": platform.platform(),
+                "python_version": platform.python_version(),
+                "monitoring_enabled": self.monitoring_enabled,
+                "last_full_check": self.last_full_check.isoformat(),
+            },
+        }
 
     async def health_check(self) -> bool:
         """Health check for the monitoring system itself."""
@@ -741,9 +761,9 @@ class MonitoringAlertingSystem:
 
             # Basic health criteria
             monitoring_healthy = (
-                len(test_results) > 0 and  # Health checks are running
-                len(active_alerts) < 10 and  # Not too many alerts
-                len(recent_metrics) > 0  # Metrics being collected
+                len(test_results) > 0  # Health checks are running
+                and len(active_alerts) < 10  # Not too many alerts
+                and len(recent_metrics) > 0  # Metrics being collected
             )
 
             return monitoring_healthy

@@ -13,7 +13,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class PrecisionKanaDetector:
@@ -26,29 +26,82 @@ class PrecisionKanaDetector:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Common Japanese surnames for perfect-match detection
         self.common_surnames = {
-            'たなか': '田中', 'さとう': '佐藤', 'すずき': '鈴木', 'たかはし': '高橋',
-            'いとう': '伊藤', 'わたなべ': '渡辺', 'やまもと': '山本', 'なかむら': '中村',
-            'こばやし': '小林', 'かとう': '加藤', 'よしだ': '吉田', 'やまだ': '山田',
-            'ささき': '佐々木', 'やまぐち': '山口', 'まつもと': '松本', 'いのうえ': '井上',
-            'きむら': '木村', 'はやし': '林', 'さいとう': '斎藤', 'しみず': '清水',
-            'やまざき': '山崎', 'もり': '森', 'あべ': '阿部', 'いけだ': '池田',
-            'はしもと': '橋本', 'やました': '山下', 'いしかわ': '石川', 'なかじま': '中島',
-            'まえだ': '前田', 'ふじた': '藤田', 'ごとう': '後藤', 'おかだ': '岡田',
-            'はせがわ': '長谷川', 'むらかみ': '村上', 'こんどう': '近藤', 'いしだ': '石田',
-            'にしむら': '西村', 'まつだ': '松田', 'はらだ': '原田', 'わだ': '和田',
-            'ふくだ': '福田', 'おおた': '太田', 'うえだ': '上田', 'もりた': '森田',
-            'たむら': '田村', 'たけだ': '武田', 'むらた': '村田', 'にった': '新田',
-            'おがわ': '小川', 'なかがわ': '中川', 'あおき': '青木', 'きのした': '木下',
-            'おおしま': '大島', 'しまだ': '島田', 'ふじわら': '藤原', 'みうら': '三浦',
-            'まるやま': '丸山', 'かねこ': '金子', 'やすだ': '安田', 'ほんだ': '本田',
-            'たにぐち': '谷口', 'みやざき': '宮崎', 'おおの': '大野', 'なかの': '中野',
-            'おの': '小野', 'のぐち': '野口', 'のだ': '野田', 'おおつか': '大塚',
-            'こまつ': '小松', 'まつお': '松尾', 'みやもと': '宮本'
+            "たなか": "田中",
+            "さとう": "佐藤",
+            "すずき": "鈴木",
+            "たかはし": "高橋",
+            "いとう": "伊藤",
+            "わたなべ": "渡辺",
+            "やまもと": "山本",
+            "なかむら": "中村",
+            "こばやし": "小林",
+            "かとう": "加藤",
+            "よしだ": "吉田",
+            "やまだ": "山田",
+            "ささき": "佐々木",
+            "やまぐち": "山口",
+            "まつもと": "松本",
+            "いのうえ": "井上",
+            "きむら": "木村",
+            "はやし": "林",
+            "さいとう": "斎藤",
+            "しみず": "清水",
+            "やまざき": "山崎",
+            "もり": "森",
+            "あべ": "阿部",
+            "いけだ": "池田",
+            "はしもと": "橋本",
+            "やました": "山下",
+            "いしかわ": "石川",
+            "なかじま": "中島",
+            "まえだ": "前田",
+            "ふじた": "藤田",
+            "ごとう": "後藤",
+            "おかだ": "岡田",
+            "はせがわ": "長谷川",
+            "むらかみ": "村上",
+            "こんどう": "近藤",
+            "いしだ": "石田",
+            "にしむら": "西村",
+            "まつだ": "松田",
+            "はらだ": "原田",
+            "わだ": "和田",
+            "ふくだ": "福田",
+            "おおた": "太田",
+            "うえだ": "上田",
+            "もりた": "森田",
+            "たむら": "田村",
+            "たけだ": "武田",
+            "むらた": "村田",
+            "にった": "新田",
+            "おがわ": "小川",
+            "なかがわ": "中川",
+            "あおき": "青木",
+            "きのした": "木下",
+            "おおしま": "大島",
+            "しまだ": "島田",
+            "ふじわら": "藤原",
+            "みうら": "三浦",
+            "まるやま": "丸山",
+            "かねこ": "金子",
+            "やすだ": "安田",
+            "ほんだ": "本田",
+            "たにぐち": "谷口",
+            "みやざき": "宮崎",
+            "おおの": "大野",
+            "なかの": "中野",
+            "おの": "小野",
+            "のぐち": "野口",
+            "のだ": "野田",
+            "おおつか": "大塚",
+            "こまつ": "小松",
+            "まつお": "松尾",
+            "みやもと": "宮本",
         }
 
         self.detection_results = {
@@ -59,7 +112,7 @@ class PrecisionKanaDetector:
             "fuzzy_length_flags": [],
             "combined_high_confidence": [],
             "already_complete": [],
-            "critical_issues": []
+            "critical_issues": [],
         }
 
     async def get_all_members(self, session):
@@ -73,16 +126,14 @@ class PrecisionKanaDetector:
                 params["offset"] = offset
 
             async with session.get(
-                f"{self.base_url}/Members (議員)",
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/Members (議員)", headers=self.headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -101,8 +152,8 @@ class PrecisionKanaDetector:
 
         # Convert katakana to hiragana (basic conversion)
         katakana_to_hiragana = str.maketrans(
-            'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンー',
-            'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんー'
+            "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンー",
+            "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんー",
         )
         normalized = normalized.translate(katakana_to_hiragana)
 
@@ -151,9 +202,20 @@ class PrecisionKanaDetector:
 
         # Common surname endings that suggest this is surname-only
         surname_only_patterns = [
-            'たなか', 'さとう', 'やまだ', 'すずき', 'たかはし',
-            'おかだ', 'まつもと', 'なかがわ', 'わたなべ', 'たかはし',
-            'おおた', 'はやし', 'やまぐち', 'いとう'
+            "たなか",
+            "さとう",
+            "やまだ",
+            "すずき",
+            "たかはし",
+            "おかだ",
+            "まつもと",
+            "なかがわ",
+            "わたなべ",
+            "たかはし",
+            "おおた",
+            "はやし",
+            "やまぐち",
+            "いとう",
         ]
 
         # If the entire kana matches a common surname pattern exactly
@@ -162,7 +224,10 @@ class PrecisionKanaDetector:
 
         # Additional check: very short kana (≤4 chars) for names with 3+ kanji
         if len(normalized) <= 4 and len(normalized) > 0:
-            return True, f"Morpheme analysis: {len(normalized)} chars too short for full name"
+            return (
+                True,
+                f"Morpheme analysis: {len(normalized)} chars too short for full name",
+            )
 
         return False, "Morpheme count OK"
 
@@ -243,31 +308,33 @@ class PrecisionKanaDetector:
                 return
 
             print(
-                f"📊 Analyzing {len(all_records)} Members records with precision rules")
+                f"📊 Analyzing {len(all_records)} Members records with precision rules"
+            )
 
             # Apply precision detection to each record
             for record in all_records:
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                name_kana = fields.get('Name_Kana', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                name_kana = fields.get("Name_Kana", "")
 
                 if name:
                     self.detection_results["total_analyzed"] += 1
 
                     flags, confidence, score = self.comprehensive_detection(
-                        name, name_kana)
+                        name, name_kana
+                    )
 
                     record_info = {
-                        'id': record['id'],
-                        'name': name,
-                        'current_kana': name_kana,
-                        'house': fields.get('House', ''),
-                        'constituency': fields.get('Constituency', ''),
-                        'flags': flags,
-                        'confidence': confidence,
-                        'score': score,
-                        'kanji_length': len(name),
-                        'kana_length': len(self.normalize_kana(name_kana))
+                        "id": record["id"],
+                        "name": name,
+                        "current_kana": name_kana,
+                        "house": fields.get("House", ""),
+                        "constituency": fields.get("Constituency", ""),
+                        "flags": flags,
+                        "confidence": confidence,
+                        "score": score,
+                        "kanji_length": len(name),
+                        "kana_length": len(self.normalize_kana(name_kana)),
                     }
 
                     # Categorize by confidence level
@@ -275,12 +342,14 @@ class PrecisionKanaDetector:
                         self.detection_results["critical_issues"].append(record_info)
                     elif confidence == "HIGH":
                         self.detection_results["combined_high_confidence"].append(
-                            record_info)
+                            record_info
+                        )
                     elif confidence == "MEDIUM":
                         self.detection_results["fuzzy_length_flags"].append(record_info)
                     elif confidence == "LOW":
                         self.detection_results["morpheme_count_flags"].append(
-                            record_info)
+                            record_info
+                        )
                     else:
                         self.detection_results["already_complete"].append(record_info)
 
@@ -303,45 +372,50 @@ class PrecisionKanaDetector:
         print("📊 DETECTION SUMMARY:")
         print(f"   Total analyzed: {results['total_analyzed']}")
         print(f"   🚨 CRITICAL issues: {len(results['critical_issues'])}")
-        print(
-            f"   ⚠️ HIGH confidence flags: {len(results['combined_high_confidence'])}")
+        print(f"   ⚠️ HIGH confidence flags: {len(results['combined_high_confidence'])}")
         print(f"   📝 MEDIUM confidence: {len(results['fuzzy_length_flags'])}")
         print(f"   💡 LOW confidence: {len(results['morpheme_count_flags'])}")
         print(f"   ✅ Complete readings: {len(results['already_complete'])}")
 
-        total_flagged = (len(results['critical_issues']) +
-                         len(results['combined_high_confidence']) +
-                         len(results['fuzzy_length_flags']) +
-                         len(results['morpheme_count_flags']))
+        total_flagged = (
+            len(results["critical_issues"])
+            + len(results["combined_high_confidence"])
+            + len(results["fuzzy_length_flags"])
+            + len(results["morpheme_count_flags"])
+        )
 
         print(f"   🎯 Total requiring fixes: {total_flagged}")
 
         # Show critical issues
-        if results['critical_issues']:
+        if results["critical_issues"]:
             print("\n🚨 CRITICAL ISSUES (Definite surname-only):")
-            for i, item in enumerate(results['critical_issues'][:10], 1):
+            for i, item in enumerate(results["critical_issues"][:10], 1):
                 print(f"   {i:2d}. {item['name']} → '{item['current_kana']}'")
                 print(f"       Flags: {'; '.join(item['flags'])}")
                 print(
-                    f"       Confidence: {item['confidence']} (Score: {item['score']})")
+                    f"       Confidence: {item['confidence']} (Score: {item['score']})"
+                )
                 print(f"       ({item['house']}, {item['constituency']})")
 
         # Show high confidence issues
-        if results['combined_high_confidence']:
+        if results["combined_high_confidence"]:
             print("\n⚠️ HIGH CONFIDENCE ISSUES (Very likely surname-only):")
-            for i, item in enumerate(results['combined_high_confidence'][:10], 1):
+            for i, item in enumerate(results["combined_high_confidence"][:10], 1):
                 print(f"   {i:2d}. {item['name']} → '{item['current_kana']}'")
                 print(f"       Flags: {'; '.join(item['flags'])}")
                 print(
-                    f"       Confidence: {item['confidence']} (Score: {item['score']})")
+                    f"       Confidence: {item['confidence']} (Score: {item['score']})"
+                )
 
         # Calculate precision metrics
-        if results['total_analyzed'] > 0:
-            critical_rate = (len(results['critical_issues']) /
-                             results['total_analyzed']) * 100
-            flagged_rate = (total_flagged / results['total_analyzed']) * 100
-            complete_rate = (len(results['already_complete']
-                                 ) / results['total_analyzed']) * 100
+        if results["total_analyzed"] > 0:
+            critical_rate = (
+                len(results["critical_issues"]) / results["total_analyzed"]
+            ) * 100
+            flagged_rate = (total_flagged / results["total_analyzed"]) * 100
+            complete_rate = (
+                len(results["already_complete"]) / results["total_analyzed"]
+            ) * 100
 
             print("\n📈 PRECISION METRICS:")
             print(f"   Critical issues rate: {critical_rate:.1f}%")
@@ -370,29 +444,33 @@ class PrecisionKanaDetector:
                     "A: Length-ratio rule (kana_len < kanji_len × 1.3)",
                     "B: Perfect surname match detection",
                     "C: Morpheme count analysis",
-                    "D: Fuzzy length guard (ratio < 1.8)"
+                    "D: Fuzzy length guard (ratio < 1.8)",
                 ],
                 "confidence_levels": {
                     "CRITICAL": "Score ≥6 or flags ≥3 - Definite surname-only",
                     "HIGH": "Score ≥4 or flags ≥2 - Very likely surname-only",
                     "MEDIUM": "Score ≥2 - Possibly incomplete",
                     "LOW": "Score ≥1 - Manual review recommended",
-                    "COMPLETE": "No flags - Reading appears complete"
-                }
+                    "COMPLETE": "No flags - Reading appears complete",
+                },
             },
             "summary": {
                 "total_analyzed": self.detection_results["total_analyzed"],
                 "critical_issues": len(self.detection_results["critical_issues"]),
-                "high_confidence": len(self.detection_results["combined_high_confidence"]),
-                "total_flagged": (len(self.detection_results["critical_issues"]) +
-                                  len(self.detection_results["combined_high_confidence"]) +
-                                  len(self.detection_results["fuzzy_length_flags"]) +
-                                  len(self.detection_results["morpheme_count_flags"])),
-                "complete_readings": len(self.detection_results["already_complete"])
-            }
+                "high_confidence": len(
+                    self.detection_results["combined_high_confidence"]
+                ),
+                "total_flagged": (
+                    len(self.detection_results["critical_issues"])
+                    + len(self.detection_results["combined_high_confidence"])
+                    + len(self.detection_results["fuzzy_length_flags"])
+                    + len(self.detection_results["morpheme_count_flags"])
+                ),
+                "complete_readings": len(self.detection_results["already_complete"]),
+            },
         }
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(detection_data, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Precision detection report saved: {filename}")
@@ -405,24 +483,33 @@ async def main():
 
     print("\n✅ Precision Name_Kana detection completed!")
 
-    total_flagged = (len(results["critical_issues"]) +
-                     len(results["combined_high_confidence"]) +
-                     len(results["fuzzy_length_flags"]) +
-                     len(results["morpheme_count_flags"]))
+    total_flagged = (
+        len(results["critical_issues"])
+        + len(results["combined_high_confidence"])
+        + len(results["fuzzy_length_flags"])
+        + len(results["morpheme_count_flags"])
+    )
 
     if total_flagged > 0:
         print("\n📋 NEXT STEPS FOR ZERO-DEFECT QUALITY:")
         print(
-            f"   1. 🚨 Fix {len(results['critical_issues'])} CRITICAL surname-only issues")
+            f"   1. 🚨 Fix {len(results['critical_issues'])} CRITICAL surname-only issues"
+        )
         print(
-            f"   2. ⚠️ Fix {len(results['combined_high_confidence'])} HIGH confidence issues")
+            f"   2. ⚠️ Fix {len(results['combined_high_confidence'])} HIGH confidence issues"
+        )
         print(
-            f"   3. 📝 Review {len(results['fuzzy_length_flags'])} MEDIUM confidence cases")
+            f"   3. 📝 Review {len(results['fuzzy_length_flags'])} MEDIUM confidence cases"
+        )
         print(
-            f"   4. 💡 Manual review {len(results['morpheme_count_flags'])} LOW confidence cases")
-        print("\n🎯 Target: Achieve 100% complete full-name readings for national political database")
+            f"   4. 💡 Manual review {len(results['morpheme_count_flags'])} LOW confidence cases"
+        )
+        print(
+            "\n🎯 Target: Achieve 100% complete full-name readings for national political database"
+        )
     else:
         print("🎉 All Name_Kana readings passed precision detection!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

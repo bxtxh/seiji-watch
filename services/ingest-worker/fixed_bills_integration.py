@@ -22,9 +22,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -38,7 +38,7 @@ class AirtableClient:
         self.base_url = f"https://api.airtable.com/v0/{base_id}"
         self.headers = {
             "Authorization": f"Bearer {pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def get_table_schema(self, table_name):
@@ -49,8 +49,8 @@ class AirtableClient:
 
         if response.status_code == 200:
             data = response.json()
-            for table in data.get('tables', []):
-                if table.get('name') == table_name:
+            for table in data.get("tables", []):
+                if table.get("name") == table_name:
                     return table
         return None
 
@@ -72,10 +72,7 @@ def bill_to_airtable_fields_minimal(bill_data):
     """最小限フィールドで法案データ変換"""
 
     # 基本フィールドのみ（確実に存在するもの）
-    fields = {
-        "Bill_Number": bill_data["bill_id"],
-        "Title": bill_data["title"]
-    }
+    fields = {"Bill_Number": bill_data["bill_id"], "Title": bill_data["title"]}
 
     # オプションフィールド（存在すれば追加）
     if bill_data.get("status"):
@@ -86,7 +83,7 @@ def bill_to_airtable_fields_minimal(bill_data):
             "採決待ち": "pending_vote",
             "成立": "passed",
             "否決": "rejected",
-            "": "backlog"
+            "": "backlog",
         }
         fields["Status"] = status_mapping.get(bill_data["status"], "backlog")
 
@@ -98,7 +95,7 @@ def bill_to_airtable_fields_minimal(bill_data):
             "外交・国際": "foreign_affairs",
             "予算・決算": "budget",
             "経済・産業": "economy",
-            "その他": "other"
+            "その他": "other",
         }
         fields["Category"] = category_mapping.get(bill_data["category"], "other")
 
@@ -126,8 +123,8 @@ async def main():
         print("❌ .env.localが見つかりません")
         return 1
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat or not base_id:
         print("❌ 環境変数不足")
@@ -139,7 +136,7 @@ async def main():
     try:
         # 1. 法案データ収集
         print("\n📄 Step 1: 法案データ収集")
-        sys.path.insert(0, 'src')
+        sys.path.insert(0, "src")
         from scraper.diet_scraper import DietScraper
 
         scraper = DietScraper(enable_resilience=False)
@@ -155,12 +152,12 @@ async def main():
         table_schema = client.get_table_schema("Bills (法案)")
 
         if table_schema:
-            fields = table_schema.get('fields', [])
+            fields = table_schema.get("fields", [])
             print(f"✅ スキーマ取得成功: {len(fields)}フィールド")
             print("📋 利用可能フィールド:")
             for field in fields[:10]:  # 最初の10フィールド表示
-                field_name = field.get('name', 'Unknown')
-                field_type = field.get('type', 'Unknown')
+                field_name = field.get("name", "Unknown")
+                field_type = field.get("type", "Unknown")
                 print(f"  - {field_name} ({field_type})")
         else:
             print("⚠️ スキーマ取得失敗、最小フィールドで継続")
@@ -175,12 +172,12 @@ async def main():
             try:
                 # BillDataオブジェクトを辞書に変換
                 bill_dict = {
-                    'bill_id': bill.bill_id,
-                    'title': bill.title,
-                    'status': bill.status,
-                    'category': bill.category,
-                    'url': bill.url,
-                    'summary': bill.summary,
+                    "bill_id": bill.bill_id,
+                    "title": bill.title,
+                    "status": bill.status,
+                    "category": bill.category,
+                    "url": bill.url,
+                    "summary": bill.summary,
                 }
 
                 # 最小フィールドでAirtable形式に変換
@@ -191,7 +188,7 @@ async def main():
 
                 if result:
                     success_count += 1
-                    record_id = result.get('id', 'Unknown')
+                    record_id = result.get("id", "Unknown")
                     print(f"  {i+1}/5: ✅ {bill.bill_id} → {record_id}")
                 else:
                     failed_count += 1
@@ -221,8 +218,10 @@ async def main():
     except Exception as e:
         print(f"❌ 実行エラー: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

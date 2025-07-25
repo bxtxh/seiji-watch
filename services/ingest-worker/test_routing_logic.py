@@ -13,6 +13,7 @@ from typing import Any
 
 class DataSource(Enum):
     """Data source types for ingestion"""
+
     NDL_API = "ndl_api"
     WHISPER_STT = "whisper_stt"
     UNKNOWN = "unknown"
@@ -21,6 +22,7 @@ class DataSource(Enum):
 @dataclass
 class RoutingDecision:
     """Result of routing decision"""
+
     data_source: DataSource
     meeting_date: date | None
     rationale: str
@@ -32,6 +34,7 @@ class RoutingDecision:
 @dataclass
 class IngestionRequest:
     """Request for data ingestion"""
+
     meeting_date: date | None = None
     meeting_id: str | None = None
     diet_session: int | None = None
@@ -51,7 +54,7 @@ class SimpleHybridRouter:
         self.routing_stats = {
             "ndl_api_requests": 0,
             "whisper_stt_requests": 0,
-            "manual_overrides": 0
+            "manual_overrides": 0,
         }
 
     def make_routing_decision(self, request: IngestionRequest) -> RoutingDecision:
@@ -72,7 +75,7 @@ class SimpleHybridRouter:
                 rationale=f"Manual override to {request.force_source.value}",
                 confidence=1.0,
                 manual_override=True,
-                fallback_available=True
+                fallback_available=True,
             )
 
         # Date-based routing
@@ -80,7 +83,9 @@ class SimpleHybridRouter:
             if request.meeting_date <= self.CUTOFF_DATE:
                 # Historical data - use NDL API
                 rationale = f"Historical meeting ({request.meeting_date}) ≤ cutoff ({self.CUTOFF_DATE})"
-                confidence = 1.0 if request.meeting_date >= self.SESSION_217_START else 0.8
+                confidence = (
+                    1.0 if request.meeting_date >= self.SESSION_217_START else 0.8
+                )
 
                 self.routing_stats["ndl_api_requests"] += 1
                 return RoutingDecision(
@@ -88,12 +93,14 @@ class SimpleHybridRouter:
                     meeting_date=request.meeting_date,
                     rationale=rationale,
                     confidence=confidence,
-                    fallback_available=False
+                    fallback_available=False,
                 )
             else:
                 # Recent data - use Whisper STT
                 rationale = f"Recent meeting ({request.meeting_date}) > cutoff ({self.CUTOFF_DATE})"
-                confidence = 1.0 if request.meeting_date >= self.SESSION_218_START else 0.9
+                confidence = (
+                    1.0 if request.meeting_date >= self.SESSION_218_START else 0.9
+                )
 
                 self.routing_stats["whisper_stt_requests"] += 1
                 return RoutingDecision(
@@ -101,7 +108,7 @@ class SimpleHybridRouter:
                     meeting_date=request.meeting_date,
                     rationale=rationale,
                     confidence=confidence,
-                    fallback_available=True
+                    fallback_available=True,
                 )
 
         # Diet session-based routing
@@ -113,7 +120,7 @@ class SimpleHybridRouter:
                     meeting_date=None,
                     rationale=f"Historical session ({request.diet_session}) ≤ 217",
                     confidence=0.9,
-                    fallback_available=False
+                    fallback_available=False,
                 )
             else:
                 self.routing_stats["whisper_stt_requests"] += 1
@@ -122,7 +129,7 @@ class SimpleHybridRouter:
                     meeting_date=None,
                     rationale=f"Recent session ({request.diet_session}) > 217",
                     confidence=0.9,
-                    fallback_available=True
+                    fallback_available=True,
                 )
 
         # Default to current pipeline
@@ -132,21 +139,29 @@ class SimpleHybridRouter:
             meeting_date=None,
             rationale="Unknown date/session - defaulting to Whisper STT",
             confidence=0.5,
-            fallback_available=True
+            fallback_available=True,
         )
 
     def get_statistics(self) -> dict[str, Any]:
         """Get routing statistics"""
-        total = (self.routing_stats["ndl_api_requests"] +
-                 self.routing_stats["whisper_stt_requests"])
+        total = (
+            self.routing_stats["ndl_api_requests"]
+            + self.routing_stats["whisper_stt_requests"]
+        )
 
         return {
             "total_requests": total,
             "ndl_api_requests": self.routing_stats["ndl_api_requests"],
             "whisper_stt_requests": self.routing_stats["whisper_stt_requests"],
             "manual_overrides": self.routing_stats["manual_overrides"],
-            "ndl_api_percentage": (self.routing_stats["ndl_api_requests"] / max(total, 1)) * 100,
-            "whisper_stt_percentage": (self.routing_stats["whisper_stt_requests"] / max(total, 1)) * 100
+            "ndl_api_percentage": (
+                self.routing_stats["ndl_api_requests"] / max(total, 1)
+            )
+            * 100,
+            "whisper_stt_percentage": (
+                self.routing_stats["whisper_stt_requests"] / max(total, 1)
+            )
+            * 100,
         }
 
 
@@ -163,12 +178,10 @@ def test_routing_decisions():
         (date(2025, 3, 15), DataSource.NDL_API, "Historical meeting in 第217回国会"),
         (date(2025, 6, 21), DataSource.NDL_API, "Last day of 第217回国会"),
         (date(2025, 1, 24), DataSource.NDL_API, "First day of 第217回国会"),
-
         # Recent dates - should route to Whisper STT
         (date(2025, 6, 22), DataSource.WHISPER_STT, "First day of 第218回国会"),
         (date(2025, 7, 15), DataSource.WHISPER_STT, "Recent meeting"),
         (date(2025, 12, 1), DataSource.WHISPER_STT, "Future meeting"),
-
         # Edge cases
         (date(2024, 12, 1), DataSource.NDL_API, "Pre-session date"),
     ]
@@ -186,7 +199,8 @@ def test_routing_decisions():
 
         print(f"{status} {test_date}: {description}")
         print(
-            f"   Expected: {expected_source.value}, Got: {decision.data_source.value}")
+            f"   Expected: {expected_source.value}, Got: {decision.data_source.value}"
+        )
         print(f"   Rationale: {decision.rationale}")
         print(f"   Confidence: {decision.confidence:.2f}")
         print()
@@ -205,7 +219,7 @@ def test_manual_overrides():
     # Test overriding historical date to use Whisper STT
     request = IngestionRequest(
         meeting_date=date(2025, 3, 15),  # Historical date
-        force_source=DataSource.WHISPER_STT  # Override to Whisper
+        force_source=DataSource.WHISPER_STT,  # Override to Whisper
     )
 
     decision = router.make_routing_decision(request)
@@ -216,13 +230,14 @@ def test_manual_overrides():
     print(f"  Got: {decision.data_source.value}")
     print(f"  Manual Override: {decision.manual_override}")
 
-    success1 = (decision.data_source == DataSource.WHISPER_STT and
-                decision.manual_override)
+    success1 = (
+        decision.data_source == DataSource.WHISPER_STT and decision.manual_override
+    )
 
     # Test overriding recent date to use NDL API
     request2 = IngestionRequest(
         meeting_date=date(2025, 7, 15),  # Recent date
-        force_source=DataSource.NDL_API  # Override to NDL API
+        force_source=DataSource.NDL_API,  # Override to NDL API
     )
 
     decision2 = router.make_routing_decision(request2)
@@ -233,12 +248,13 @@ def test_manual_overrides():
     print(f"  Got: {decision2.data_source.value}")
     print(f"  Manual Override: {decision2.manual_override}")
 
-    success2 = (decision2.data_source == DataSource.NDL_API and
-                decision2.manual_override)
+    success2 = decision2.data_source == DataSource.NDL_API and decision2.manual_override
 
     overall_success = success1 and success2
     status = "✅" if overall_success else "❌"
-    print(f"\n{status} Manual override tests: {'PASSED' if overall_success else 'FAILED'}")
+    print(
+        f"\n{status} Manual override tests: {'PASSED' if overall_success else 'FAILED'}"
+    )
 
     return overall_success
 
@@ -288,13 +304,10 @@ def test_statistics_tracking():
         IngestionRequest(meeting_date=date(2025, 3, 15)),  # NDL API
         IngestionRequest(meeting_date=date(2025, 7, 15)),  # Whisper STT
         IngestionRequest(meeting_date=date(2025, 6, 21)),  # NDL API
-        IngestionRequest(meeting_date=date(2025, 7, 1)),   # Whisper STT
+        IngestionRequest(meeting_date=date(2025, 7, 1)),  # Whisper STT
         IngestionRequest(
-            meeting_date=date(
-                2025,
-                5,
-                1),
-            force_source=DataSource.WHISPER_STT),
+            meeting_date=date(2025, 5, 1), force_source=DataSource.WHISPER_STT
+        ),
         # Override
     ]
 
@@ -306,7 +319,8 @@ def test_statistics_tracking():
     print(f"Total Requests: {stats['total_requests']}")
     print(f"NDL API: {stats['ndl_api_requests']} ({stats['ndl_api_percentage']:.1f}%)")
     print(
-        f"Whisper STT: {stats['whisper_stt_requests']} ({stats['whisper_stt_percentage']:.1f}%)")
+        f"Whisper STT: {stats['whisper_stt_requests']} ({stats['whisper_stt_percentage']:.1f}%)"
+    )
     print(f"Manual Overrides: {stats['manual_overrides']}")
 
     # Verify counts
@@ -316,9 +330,11 @@ def test_statistics_tracking():
     expected_whisper = 3  # 2 recent dates + 1 override (historical forced to Whisper)
     expected_overrides = 1
 
-    success = (stats['ndl_api_requests'] == expected_ndl and
-               stats['whisper_stt_requests'] == expected_whisper and
-               stats['manual_overrides'] == expected_overrides)
+    success = (
+        stats["ndl_api_requests"] == expected_ndl
+        and stats["whisper_stt_requests"] == expected_whisper
+        and stats["manual_overrides"] == expected_overrides
+    )
 
     status = "✅" if success else "❌"
     print(f"\n{status} Statistics tracking: {'PASSED' if success else 'FAILED'}")
@@ -359,7 +375,9 @@ def test_cost_analysis():
     success = savings_percentage >= target_savings
 
     status = "✅" if success else "❌"
-    print(f"\n{status} Cost target: {savings_percentage:.1f}% ≥ {target_savings}% {'ACHIEVED' if success else 'MISSED'}")
+    print(
+        f"\n{status} Cost target: {savings_percentage:.1f}% ≥ {target_savings}% {'ACHIEVED' if success else 'MISSED'}"
+    )
 
     return success
 

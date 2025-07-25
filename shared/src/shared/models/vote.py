@@ -10,11 +10,11 @@ from .base import BaseRecord
 class VoteResult(enum.Enum):
     """Possible voting results for a member."""
 
-    YES = "yes"           # 賛成
-    NO = "no"             # 反対
-    ABSTAIN = "abstain"   # 棄権
-    ABSENT = "absent"     # 欠席
-    PRESENT = "present"   # 出席（表決せず）
+    YES = "yes"  # 賛成
+    NO = "no"  # 反対
+    ABSTAIN = "abstain"  # 棄権
+    ABSENT = "absent"  # 欠席
+    PRESENT = "present"  # 出席（表決せず）
 
 
 class Vote(BaseRecord):
@@ -67,6 +67,6 @@ class Vote(BaseRecord):
             "no": "反対",
             "abstain": "棄権",
             "absent": "欠席",
-            "present": "出席"
+            "present": "出席",
         }
         return translations.get(self.vote_result, self.vote_result)

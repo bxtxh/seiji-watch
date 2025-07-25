@@ -1,6 +1,7 @@
 """
 Data normalization pipeline for converting scraped data to structured records.
 """
+
 import asyncio
 import logging
 import sys
@@ -70,7 +71,7 @@ class DataProcessor:
         self,
         transcription: TranscriptionResult,
         meeting_id: str | None = None,
-        speaker: str | None = None
+        speaker: str | None = None,
     ) -> str | None:
         """
         Process and store transcription data in Airtable
@@ -92,7 +93,7 @@ class DataProcessor:
                 "speaker": speaker or "Unknown",
                 "meeting_id": meeting_id,
                 "transcription_date": datetime.now().isoformat(),
-                "quality_passed": self._validate_transcription_quality(transcription)
+                "quality_passed": self._validate_transcription_quality(transcription),
             }
 
             # Store in Airtable (assuming speeches table exists)
@@ -140,7 +141,8 @@ class DataProcessor:
             except Exception as e:
                 failed += 1
                 logger.error(
-                    f"Batch processing error for bill {bill_data.bill_id}: {e}")
+                    f"Batch processing error for bill {bill_data.bill_id}: {e}"
+                )
 
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
@@ -150,7 +152,7 @@ class DataProcessor:
             "successful": successful,
             "failed": failed,
             "duration_seconds": duration,
-            "bills_per_second": len(bills_data) / duration if duration > 0 else 0
+            "bills_per_second": len(bills_data) / duration if duration > 0 else 0,
         }
 
         logger.info(f"Batch processing completed: {stats}")
@@ -166,7 +168,7 @@ class DataProcessor:
             "社会保障": BillCategory.SOCIAL_SECURITY,
             "外交・国際": BillCategory.FOREIGN_AFFAIRS,
             "経済・産業": BillCategory.ECONOMY,
-            "その他": BillCategory.OTHER
+            "その他": BillCategory.OTHER,
         }
 
         # Map stage to BillStatus enum
@@ -174,7 +176,7 @@ class DataProcessor:
             "成立": BillStatus.PASSED,
             "採決待ち": BillStatus.PENDING_VOTE,
             "審議中": BillStatus.UNDER_REVIEW,
-            "Backlog": BillStatus.BACKLOG
+            "Backlog": BillStatus.BACKLOG,
         }
 
         # Extract diet session from bill ID (format: "217-1")
@@ -189,19 +191,21 @@ class DataProcessor:
             status=status_mapping.get(bill_data.stage, BillStatus.BACKLOG),
             category=category_mapping.get(bill_data.category, BillCategory.OTHER),
             diet_url=bill_data.url,
-            submitted_date=bill_data.submission_date.strftime(
-                "%Y-%m-%d") if bill_data.submission_date else None,
+            submitted_date=(
+                bill_data.submission_date.strftime("%Y-%m-%d")
+                if bill_data.submission_date
+                else None
+            ),
             submitter_type=bill_data.submitter,
             diet_session=diet_session,
-            house_of_origin="参議院"  # Since we're scraping from Senate website
+            house_of_origin="参議院",  # Since we're scraping from Senate website
         )
 
     async def _find_existing_bill(self, bill_number: str) -> dict | None:
         """Find existing bill by bill number"""
         try:
             bills = await self.airtable_client.list_bills(
-                filter_formula=f"{{Bill_Number}} = '{bill_number}'",
-                max_records=1
+                filter_formula=f"{{Bill_Number}} = '{bill_number}'", max_records=1
             )
             return bills[0] if bills else None
         except Exception as e:
@@ -221,7 +225,8 @@ class DataProcessor:
         return result["id"]
 
     def _validate_transcription_quality(
-            self, transcription: TranscriptionResult) -> bool:
+        self, transcription: TranscriptionResult
+    ) -> bool:
         """Validate transcription meets quality standards"""
         # Basic quality checks
         if not transcription.text or len(transcription.text.strip()) < 10:
@@ -244,7 +249,7 @@ class DataProcessor:
             "bills_processed": self.processed_bills,
             "transcriptions_processed": self.processed_transcriptions,
             "errors_count": len(self.errors),
-            "errors": self.errors[-10:]  # Last 10 errors
+            "errors": self.errors[-10:],  # Last 10 errors
         }
 
     def reset_stats(self):
@@ -274,7 +279,7 @@ async def test_data_processor():
             submitter="政府",
             category="その他",
             url="https://example.com/test",
-            summary="これはテスト用の法案です"
+            summary="これはテスト用の法案です",
         )
 
         logger.info(f"Sample bill created: {sample_bill.bill_id} - {sample_bill.title}")
@@ -285,7 +290,7 @@ async def test_data_processor():
         good_transcription = TranscriptionResult(
             text="これは国会での審議についての議事録です。法案について詳細に議論されました。",
             language="ja",
-            duration=60.0
+            duration=60.0,
         )
 
         # Create a minimal processor for testing validation logic

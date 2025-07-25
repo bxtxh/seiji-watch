@@ -11,7 +11,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class Epic11QuickTest:
@@ -23,7 +23,7 @@ class Epic11QuickTest:
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def transform_bill_minimal(self, bill: dict) -> dict:
@@ -46,8 +46,8 @@ class Epic11QuickTest:
 
         return {
             "fields": {
-                "Name": bill['title'][:100],  # Airtable Name field length limit
-                "Notes": notes
+                "Name": bill["title"][:100],  # Airtable Name field length limit
+                "Notes": notes,
                 # No Status field to avoid permission issues
             }
         }
@@ -58,11 +58,11 @@ class Epic11QuickTest:
         print("🧪 Testing with 5 bills...")
 
         # Load sample data
-        data_file = '/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json'
-        with open(data_file, encoding='utf-8') as f:
+        data_file = "/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json"
+        with open(data_file, encoding="utf-8") as f:
             data = json.load(f)
 
-        bills = data['production_dataset']['bills'][:5]  # Just first 5 bills
+        bills = data["production_dataset"]["bills"][:5]  # Just first 5 bills
         print(f"📋 Processing {len(bills)} bills...")
 
         success_count = 0
@@ -76,7 +76,7 @@ class Epic11QuickTest:
                     async with session.post(
                         f"{self.base_url}/Bills (法案)",
                         headers=self.headers,
-                        json=test_bill
+                        json=test_bill,
                     ) as response:
 
                         if response.status == 200:
@@ -87,7 +87,8 @@ class Epic11QuickTest:
                             failed_count += 1
                             error = await response.text()
                             print(
-                                f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
+                                f"  ❌ Failed: {bill['title'][:40]}... - {response.status}"
+                            )
                             print(f"     Error: {error[:150]}")
 
                     # Rate limiting
@@ -98,7 +99,8 @@ class Epic11QuickTest:
                     print(f"  ❌ Exception: {bill['title'][:40]}... - {str(e)[:100]}")
 
         print(
-            f"\n📊 Quick test results: ✅ {success_count} success, ❌ {failed_count} failed")
+            f"\n📊 Quick test results: ✅ {success_count} success, ❌ {failed_count} failed"
+        )
 
         if success_count >= 3:
             print("🎉 Quick test PASSED! Ready for full integration.")
@@ -129,6 +131,7 @@ async def main():
     except Exception as e:
         print(f"💥 Quick test failed with exception: {e}")
         raise
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -23,20 +23,18 @@ class MemberService:
         # Official Diet member roster URLs
         self.member_urls = {
             "house_of_representatives": "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/kaiha_m.htm",
-            "house_of_councillors": "https://www.sangiin.go.jp/japanese/joho1/kousei/giin/212/giin.htm"}
+            "house_of_councillors": "https://www.sangiin.go.jp/japanese/joho1/kousei/giin/212/giin.htm",
+        }
 
     async def collect_member_profiles(self, house: str = "both") -> dict[str, Any]:
         """Collect comprehensive member profiles from official sources."""
-        results = {
-            "collected": 0,
-            "updated": 0,
-            "errors": [],
-            "new_members": []
-        }
+        results = {"collected": 0, "updated": 0, "errors": [], "new_members": []}
 
         try:
             if house in ["both", "house_of_representatives"]:
-                hr_results = await self._collect_house_members("house_of_representatives")
+                hr_results = await self._collect_house_members(
+                    "house_of_representatives"
+                )
                 results["collected"] += hr_results["collected"]
                 results["updated"] += hr_results["updated"]
                 results["errors"].extend(hr_results["errors"])
@@ -57,12 +55,7 @@ class MemberService:
 
     async def _collect_house_members(self, house: str) -> dict[str, Any]:
         """Collect member data from specific house."""
-        results = {
-            "collected": 0,
-            "updated": 0,
-            "errors": [],
-            "new_members": []
-        }
+        results = {"collected": 0, "updated": 0, "errors": [], "new_members": []}
 
         try:
             # Simulate member data collection (in real implementation, scrape from official sites)
@@ -73,15 +66,13 @@ class MemberService:
                 try:
                     # Check if member already exists
                     existing_member = await self.airtable.find_member_by_name(
-                        member_data["name"],
-                        member_data.get("party_name")
+                        member_data["name"], member_data.get("party_name")
                     )
 
                     if existing_member:
                         # Update existing member
                         await self.airtable.update_member(
-                            existing_member["id"],
-                            member_data
+                            existing_member["id"], member_data
                         )
                         results["updated"] += 1
                     else:
@@ -91,14 +82,18 @@ class MemberService:
                         results["collected"] += 1
 
                     # Invalidate cache for this member
-                    member_id = existing_member["id"] if existing_member else new_member["id"]
+                    member_id = (
+                        existing_member["id"] if existing_member else new_member["id"]
+                    )
                     await self.member_cache.invalidate_member(member_id)
 
                 except Exception as e:
                     logger.error(
-                        f"Failed to process member {member_data.get('name', 'Unknown')}: {e}")
+                        f"Failed to process member {member_data.get('name', 'Unknown')}: {e}"
+                    )
                     results["errors"].append(
-                        f"Member {member_data.get('name', 'Unknown')}: {str(e)}")
+                        f"Member {member_data.get('name', 'Unknown')}: {str(e)}"
+                    )
 
         except Exception as e:
             logger.error(f"House {house} member collection failed: {e}")
@@ -109,37 +104,46 @@ class MemberService:
     async def _get_mock_member_data(self, house: str) -> list[dict[str, Any]]:
         """Mock member data for demonstration (replace with actual scraping)."""
         # In real implementation, this would scrape from official Diet websites
-        mock_data = [{"name": "田中太郎",
-                      "name_kana": "たなか　たろう",
-                      "house": house,
-                      "constituency": "東京都第1区" if house == "house_of_representatives" else "東京都",
-                      "party_name": "自由民主党",
-                      "birth_date": "1970-01-01",
-                      "first_elected": "2009-08-30",
-                      "terms_served": 5,
-                      "education": "東京大学法学部",
-                      "previous_occupations": ["弁護士",
-                                               "会社員"],
-                      "website_url": "https://example.com/tanaka",
-                      "status": "active"},
-                     {"name": "佐藤花子",
-                      "name_kana": "さとう　はなこ",
-                      "house": house,
-                      "constituency": "大阪府第2区" if house == "house_of_representatives" else "大阪府",
-                      "party_name": "立憲民主党",
-                      "birth_date": "1975-03-15",
-                      "first_elected": "2017-10-22",
-                      "terms_served": 2,
-                      "education": "京都大学経済学部",
-                      "previous_occupations": ["記者",
-                                               "市議会議員"],
-                      "website_url": "https://example.com/sato",
-                      "status": "active"}]
+        mock_data = [
+            {
+                "name": "田中太郎",
+                "name_kana": "たなか　たろう",
+                "house": house,
+                "constituency": (
+                    "東京都第1区" if house == "house_of_representatives" else "東京都"
+                ),
+                "party_name": "自由民主党",
+                "birth_date": "1970-01-01",
+                "first_elected": "2009-08-30",
+                "terms_served": 5,
+                "education": "東京大学法学部",
+                "previous_occupations": ["弁護士", "会社員"],
+                "website_url": "https://example.com/tanaka",
+                "status": "active",
+            },
+            {
+                "name": "佐藤花子",
+                "name_kana": "さとう　はなこ",
+                "house": house,
+                "constituency": (
+                    "大阪府第2区" if house == "house_of_representatives" else "大阪府"
+                ),
+                "party_name": "立憲民主党",
+                "birth_date": "1975-03-15",
+                "first_elected": "2017-10-22",
+                "terms_served": 2,
+                "education": "京都大学経済学部",
+                "previous_occupations": ["記者", "市議会議員"],
+                "website_url": "https://example.com/sato",
+                "status": "active",
+            },
+        ]
 
         return mock_data
 
     async def get_member_with_cache(
-            self, member_id: str, force_refresh: bool = False) -> dict[str, Any] | None:
+        self, member_id: str, force_refresh: bool = False
+    ) -> dict[str, Any] | None:
         """Get member data with intelligent caching."""
         cache_key = f"member:{member_id}"
 
@@ -177,8 +181,9 @@ class MemberService:
         except Exception as e:
             logger.error(f"Background refresh failed for member {member_id}: {e}")
 
-    async def get_members_list(self, filters: dict[str, Any] | None = None,
-                               force_refresh: bool = False) -> list[dict[str, Any]]:
+    async def get_members_list(
+        self, filters: dict[str, Any] | None = None, force_refresh: bool = False
+    ) -> list[dict[str, Any]]:
         """Get members list with caching and filtering."""
         filter_key = self._build_filter_key(filters or {})
 
@@ -194,8 +199,7 @@ class MemberService:
         try:
             # Fetch from Airtable
             members = await self.airtable.list_members(
-                filter_formula=filter_formula,
-                max_records=1000  # Adjust based on needs
+                filter_formula=filter_formula, max_records=1000  # Adjust based on needs
             )
 
             # Process and enrich member data
@@ -294,7 +298,8 @@ class MemberService:
         return "AND(" + ", ".join(filter_parts) + ")"
 
     async def search_members(
-            self, query: str, filters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        self, query: str, filters: dict[str, Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Search members by name or other criteria."""
         # Build search filter
         search_filters = filters or {}
@@ -316,7 +321,7 @@ class MemberService:
                 fields.get("Name_Kana", ""),
                 fields.get("Name_EN", ""),
                 fields.get("Constituency", ""),
-                fields.get("Previous_Occupations", "")
+                fields.get("Previous_Occupations", ""),
             ]
 
             if any(query_lower in str(field).lower() for field in searchable_fields):
@@ -349,7 +354,7 @@ class MemberService:
             "party_alignment_rate": 0.0,
             "committee_participation": 0,
             "bills_sponsored": 0,
-            "calculated_at": datetime.now().isoformat()
+            "calculated_at": datetime.now().isoformat(),
         }
 
     async def warmup_member_cache(self) -> dict[str, Any]:
@@ -357,8 +362,7 @@ class MemberService:
         try:
             # Fetch all active members
             members = await self.airtable.list_members(
-                filter_formula="{Is_Active} = TRUE",
-                max_records=1000
+                filter_formula="{Is_Active} = TRUE", max_records=1000
             )
 
             # Enrich all members
@@ -373,7 +377,7 @@ class MemberService:
             return {
                 "success": success,
                 "cached_members": len(enriched_members),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
         except Exception as e:
@@ -381,7 +385,7 @@ class MemberService:
             return {
                 "success": False,
                 "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     async def get_cache_health(self) -> dict[str, Any]:
@@ -392,5 +396,5 @@ class MemberService:
         return {
             "redis_healthy": redis_health,
             "cache_stats": cache_stats,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }

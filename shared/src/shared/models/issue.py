@@ -1,6 +1,5 @@
 """Models for policy issues and issue tags."""
 
-
 from pydantic import Field
 
 from .base import BaseRecord
@@ -69,9 +68,7 @@ class Issue(BaseRecord):
     issue_tags: list[str] | None = Field(
         None, description="List of related IssueTag record IDs"
     )
-    category_id: str | None = Field(
-        None, description="Related IssueCategory record ID"
-    )
+    category_id: str | None = Field(None, description="Related IssueCategory record ID")
 
     # Metadata
     extraction_confidence: float | None = Field(

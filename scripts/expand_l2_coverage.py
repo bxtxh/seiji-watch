@@ -28,7 +28,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Privacy Rights",
         "title_ja": "プライバシー権",
     },
-
     # Agriculture (4)
     {
         "cap_code": "400",
@@ -48,7 +47,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Food Safety",
         "title_ja": "食品安全",
     },
-
     # Labor and Employment (5)
     {
         "cap_code": "500",
@@ -68,7 +66,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Employment Training",
         "title_ja": "雇用訓練",
     },
-
     # Education (6)
     {
         "cap_code": "600",
@@ -88,7 +85,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Vocational Education",
         "title_ja": "職業教育",
     },
-
     # Environment (7)
     {
         "cap_code": "700",
@@ -108,7 +104,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Climate Change",
         "title_ja": "気候変動",
     },
-
     # Energy (8)
     {
         "cap_code": "800",
@@ -128,7 +123,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Nuclear Energy",
         "title_ja": "原子力エネルギー",
     },
-
     # Transportation (10)
     {
         "cap_code": "1000",
@@ -148,7 +142,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Public Transportation",
         "title_ja": "公共交通",
     },
-
     # Law and Crime (12)
     {
         "cap_code": "1200",
@@ -168,7 +161,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Judicial System",
         "title_ja": "司法制度",
     },
-
     # Community Development (14)
     {
         "cap_code": "1400",
@@ -188,7 +180,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Housing Policy",
         "title_ja": "住宅政策",
     },
-
     # Banking and Finance (15)
     {
         "cap_code": "1500",
@@ -208,7 +199,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Insurance",
         "title_ja": "保険",
     },
-
     # Space Science and Technology (17)
     {
         "cap_code": "1700",
@@ -228,7 +218,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Information Technology",
         "title_ja": "情報技術",
     },
-
     # Foreign Trade (18)
     {
         "cap_code": "1800",
@@ -248,7 +237,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Import and Export",
         "title_ja": "輸出入",
     },
-
     # Government Operations (20)
     {
         "cap_code": "2000",
@@ -268,7 +256,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Government Procurement",
         "title_ja": "政府調達",
     },
-
     # Public Lands and Water (21)
     {
         "cap_code": "2100",
@@ -288,7 +275,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "National Parks",
         "title_ja": "国立公園",
     },
-
     # Culture and Arts (23)
     {
         "cap_code": "2300",
@@ -308,7 +294,6 @@ ADDITIONAL_L2_CATEGORIES = [
         "title_en": "Cultural Heritage",
         "title_ja": "文化遺産",
     },
-
     # Other (99)
     {
         "cap_code": "9900",
@@ -329,35 +314,41 @@ def main():
     # Load existing L2 data
     existing_l2 = []
     if l2_file.exists():
-        with open(l2_file, encoding='utf-8') as f:
+        with open(l2_file, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             existing_l2 = list(reader)
 
-    existing_cap_codes = {row['cap_code'] for row in existing_l2}
+    existing_cap_codes = {row["cap_code"] for row in existing_l2}
 
     # Add new categories (avoiding duplicates)
     new_categories = []
     for category in ADDITIONAL_L2_CATEGORIES:
-        if category['cap_code'] not in existing_cap_codes:
-            new_categories.append({
-                "cap_code": category['cap_code'],
-                "layer": "L2",
-                "parent_cap_code": category['parent_cap_code'],
-                "title_en": category['title_en'],
-                "title_ja": category['title_ja']
-            })
+        if category["cap_code"] not in existing_cap_codes:
+            new_categories.append(
+                {
+                    "cap_code": category["cap_code"],
+                    "layer": "L2",
+                    "parent_cap_code": category["parent_cap_code"],
+                    "title_en": category["title_en"],
+                    "title_ja": category["title_ja"],
+                }
+            )
 
     # Combine existing and new categories
     all_l2_categories = existing_l2 + new_categories
 
     # Sort by cap_code for consistent ordering
-    all_l2_categories.sort(key=lambda x: int(x['cap_code']))
+    all_l2_categories.sort(key=lambda x: int(x["cap_code"]))
 
     # Write updated L2 file
-    with open(l2_file, 'w', encoding='utf-8', newline='') as f:
+    with open(l2_file, "w", encoding="utf-8", newline="") as f:
         if all_l2_categories:
             fieldnames = [
-                'cap_code', 'layer', 'parent_cap_code', 'title_en', 'title_ja'
+                "cap_code",
+                "layer",
+                "parent_cap_code",
+                "title_en",
+                "title_ja",
             ]
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
@@ -371,13 +362,11 @@ def main():
     # Show coverage by parent
     parent_coverage = {}
     for category in all_l2_categories:
-        parent = category['parent_cap_code']
+        parent = category["parent_cap_code"]
         parent_coverage[parent] = parent_coverage.get(parent, 0) + 1
 
     print("\n📊 Coverage by L1 category:")
-    for parent, count in sorted(
-        parent_coverage.items(), key=lambda x: int(x[0])
-    ):
+    for parent, count in sorted(parent_coverage.items(), key=lambda x: int(x[0])):
         print(f"   L1-{parent}: {count} sub-topics")
 
 

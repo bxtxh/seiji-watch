@@ -16,10 +16,10 @@ from dotenv import load_dotenv
 from shared.clients.airtable import AirtableClient
 
 # Add the shared directory to the path
-sys.path.append('/Users/shogen/seiji-watch/shared/src')
+sys.path.append("/Users/shogen/seiji-watch/shared/src")
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def fetch_all_members(client: AirtableClient) -> list[dict[str, Any]]:
@@ -90,9 +90,11 @@ def analyze_name_kana_completeness(records: list[dict[str, Any]]) -> None:
 
     print(f"Total records: {total_records}")
     print(
-        f"Records with Name_Kana: {present_count} ({present_count/total_records*100:.1f}%)")
+        f"Records with Name_Kana: {present_count} ({present_count/total_records*100:.1f}%)"
+    )
     print(
-        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)")
+        f"Records missing Name_Kana: {missing_count} ({missing_count/total_records*100:.1f}%)"
+    )
     print()
 
     if missing_kana:
@@ -189,7 +191,8 @@ def suggest_kana_strategy(records: list[dict[str, Any]]) -> None:
     print("4. **LLM-Assisted Generation**:")
     print("   - Use GPT-4 or Claude to generate kana readings")
     print(
-        "   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'")
+        "   - Prompt: 'Provide the hiragana reading for this Japanese politician name: [name]'"
+    )
     print("   - Verify against known databases")
     print()
 
@@ -238,10 +241,11 @@ async def main():
 
     # Save raw data for further analysis
     output_file = f"members_analysis_result_{int(__import__('time').time())}.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
 
     print(f"Raw data saved to: {output_file}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -22,15 +22,17 @@ from ..scraper.enhanced_diet_scraper import EnhancedBillData
 
 class ProgressTrackingStatus(Enum):
     """Progress tracking status"""
-    ACTIVE = "active"           # 現在追跡中
-    COMPLETED = "completed"     # 追跡完了（成立・否決・廃案）
-    SUSPENDED = "suspended"     # 一時停止
-    ERROR = "error"             # エラー発生
+
+    ACTIVE = "active"  # 現在追跡中
+    COMPLETED = "completed"  # 追跡完了（成立・否決・廃案）
+    SUSPENDED = "suspended"  # 一時停止
+    ERROR = "error"  # エラー発生
 
 
 @dataclass
 class BillProgressSnapshot:
     """Bill progress snapshot at a specific point in time"""
+
     bill_id: str
     snapshot_date: datetime
     current_stage: str
@@ -48,6 +50,7 @@ class BillProgressSnapshot:
 @dataclass
 class ProgressTrackingResult:
     """Result of progress tracking operation"""
+
     bill_id: str
     tracking_status: ProgressTrackingStatus
     current_snapshot: BillProgressSnapshot
@@ -60,11 +63,7 @@ class ProgressTrackingResult:
 class BillProgressTracker:
     """Advanced bill progress tracking system"""
 
-    def __init__(
-        self,
-        update_interval_hours: int = 24,
-        enable_alerts: bool = True
-    ):
+    def __init__(self, update_interval_hours: int = 24, enable_alerts: bool = True):
         self.update_interval_hours = update_interval_hours
         self.enable_alerts = enable_alerts
         self.logger = logging.getLogger(__name__)
@@ -90,55 +89,76 @@ class BillProgressTracker:
                 BillProcessStage.PLENARY_DEBATE,
                 BillProcessStage.PLENARY_VOTE,
                 BillProcessStage.INTER_HOUSE_SENT,
-            ]
+            ],
         }
 
         # Committee patterns for different houses
         self.committee_patterns = {
             "参議院": [
-                r'内閣委員会', r'総務委員会', r'法務委員会', r'外交防衛委員会',
-                r'財政金融委員会', r'文教科学委員会', r'厚生労働委員会',
-                r'農林水産委員会', r'経済産業委員会', r'国土交通委員会',
-                r'環境委員会', r'国家基本政策委員会', r'予算委員会',
-                r'決算委員会', r'行政監視委員会', r'議院運営委員会',
+                r"内閣委員会",
+                r"総務委員会",
+                r"法務委員会",
+                r"外交防衛委員会",
+                r"財政金融委員会",
+                r"文教科学委員会",
+                r"厚生労働委員会",
+                r"農林水産委員会",
+                r"経済産業委員会",
+                r"国土交通委員会",
+                r"環境委員会",
+                r"国家基本政策委員会",
+                r"予算委員会",
+                r"決算委員会",
+                r"行政監視委員会",
+                r"議院運営委員会",
             ],
             "衆議院": [
-                r'内閣委員会', r'総務委員会', r'法務委員会', r'外務委員会',
-                r'財務金融委員会', r'文部科学委員会', r'厚生労働委員会',
-                r'農林水産委員会', r'経済産業委員会', r'国土交通委員会',
-                r'環境委員会', r'安全保障委員会', r'予算委員会',
-                r'決算行政監視委員会', r'議院運営委員会',
-            ]
+                r"内閣委員会",
+                r"総務委員会",
+                r"法務委員会",
+                r"外務委員会",
+                r"財務金融委員会",
+                r"文部科学委員会",
+                r"厚生労働委員会",
+                r"農林水産委員会",
+                r"経済産業委員会",
+                r"国土交通委員会",
+                r"環境委員会",
+                r"安全保障委員会",
+                r"予算委員会",
+                r"決算行政監視委員会",
+                r"議院運営委員会",
+            ],
         }
 
         # Action detection patterns
         self.action_patterns = {
-            BillProcessActionType.SUBMISSION: [r'提出', r'上程'],
-            BillProcessActionType.COMMITTEE_REFERRAL: [r'付託', r'委員会付託'],
-            BillProcessActionType.COMMITTEE_DISCUSSION: [r'委員会審議', r'質疑'],
-            BillProcessActionType.COMMITTEE_VOTING: [r'委員会採決', r'委員会議決'],
-            BillProcessActionType.PLENARY_DISCUSSION: [r'本会議討論', r'本会議審議'],
-            BillProcessActionType.PLENARY_VOTING: [r'本会議採決', r'本会議議決'],
-            BillProcessActionType.AMENDMENT: [r'修正', r'修正案'],
-            BillProcessActionType.ENACTMENT: [r'成立', r'可決成立'],
-            BillProcessActionType.REJECTION: [r'否決', r'不採択'],
-            BillProcessActionType.WITHDRAWAL: [r'撤回', r'取り下げ'],
-            BillProcessActionType.CONTINUATION: [r'継続審議', r'継続'],
+            BillProcessActionType.SUBMISSION: [r"提出", r"上程"],
+            BillProcessActionType.COMMITTEE_REFERRAL: [r"付託", r"委員会付託"],
+            BillProcessActionType.COMMITTEE_DISCUSSION: [r"委員会審議", r"質疑"],
+            BillProcessActionType.COMMITTEE_VOTING: [r"委員会採決", r"委員会議決"],
+            BillProcessActionType.PLENARY_DISCUSSION: [r"本会議討論", r"本会議審議"],
+            BillProcessActionType.PLENARY_VOTING: [r"本会議採決", r"本会議議決"],
+            BillProcessActionType.AMENDMENT: [r"修正", r"修正案"],
+            BillProcessActionType.ENACTMENT: [r"成立", r"可決成立"],
+            BillProcessActionType.REJECTION: [r"否決", r"不採択"],
+            BillProcessActionType.WITHDRAWAL: [r"撤回", r"取り下げ"],
+            BillProcessActionType.CONTINUATION: [r"継続審議", r"継続"],
         }
 
         # Result patterns
         self.result_patterns = {
-            BillProcessResult.APPROVED: [r'可決', r'承認', r'採択'],
-            BillProcessResult.REJECTED: [r'否決', r'不承認', r'不採択'],
-            BillProcessResult.AMENDED: [r'修正可決', r'修正承認'],
-            BillProcessResult.CONTINUED: [r'継続審議', r'継続'],
-            BillProcessResult.WITHDRAWN: [r'撤回', r'取り下げ'],
-            BillProcessResult.POSTPONED: [r'延期', r'保留'],
+            BillProcessResult.APPROVED: [r"可決", r"承認", r"採択"],
+            BillProcessResult.REJECTED: [r"否決", r"不承認", r"不採択"],
+            BillProcessResult.AMENDED: [r"修正可決", r"修正承認"],
+            BillProcessResult.CONTINUED: [r"継続審議", r"継続"],
+            BillProcessResult.WITHDRAWN: [r"撤回", r"取り下げ"],
+            BillProcessResult.POSTPONED: [r"延期", r"保留"],
         }
 
     def track_bill_progress(
-            self,
-            bill_data: EnhancedBillData) -> ProgressTrackingResult:
+        self, bill_data: EnhancedBillData
+    ) -> ProgressTrackingResult:
         """Track progress for a single bill"""
         try:
             # Create current snapshot
@@ -155,7 +175,8 @@ class BillProgressTracker:
 
             # Generate alerts
             alerts = self._generate_alerts(
-                bill_data, current_snapshot, stage_transitions)
+                bill_data, current_snapshot, stage_transitions
+            )
 
             return ProgressTrackingResult(
                 bill_id=bill_data.bill_id,
@@ -164,12 +185,13 @@ class BillProgressTracker:
                 progress_history=progress_history,
                 stage_transitions=stage_transitions,
                 alerts=alerts,
-                last_updated=datetime.now()
+                last_updated=datetime.now(),
             )
 
         except Exception as e:
             self.logger.error(
-                f"Error tracking progress for bill {bill_data.bill_id}: {e}")
+                f"Error tracking progress for bill {bill_data.bill_id}: {e}"
+            )
             return ProgressTrackingResult(
                 bill_id=bill_data.bill_id,
                 tracking_status=ProgressTrackingStatus.ERROR,
@@ -179,13 +201,14 @@ class BillProgressTracker:
                     current_stage="error",
                     current_house="unknown",
                     confidence_score=0.0,
-                    data_source="error"
+                    data_source="error",
                 ),
-                alerts=[f"Error tracking progress: {str(e)}"]
+                alerts=[f"Error tracking progress: {str(e)}"],
             )
 
     def _create_progress_snapshot(
-            self, bill_data: EnhancedBillData) -> BillProgressSnapshot:
+        self, bill_data: EnhancedBillData
+    ) -> BillProgressSnapshot:
         """Create a progress snapshot from bill data"""
 
         # Determine current stage
@@ -199,7 +222,8 @@ class BillProgressTracker:
 
         # Predict next expected action
         next_expected_action = self._predict_next_action(
-            current_stage, bill_data.house_of_origin)
+            current_stage, bill_data.house_of_origin
+        )
 
         # Calculate confidence score
         confidence_score = self._calculate_confidence_score(bill_data)
@@ -216,26 +240,28 @@ class BillProgressTracker:
             amendments=bill_data.amendments,
             next_expected_action=next_expected_action,
             confidence_score=confidence_score,
-            data_source=bill_data.source_house or "unknown"
+            data_source=bill_data.source_house or "unknown",
         )
 
     def _determine_tracking_status(
-            self, bill_data: EnhancedBillData) -> ProgressTrackingStatus:
+        self, bill_data: EnhancedBillData
+    ) -> ProgressTrackingStatus:
         """Determine the tracking status for a bill"""
 
-        if bill_data.status in ['成立', '可決成立', 'passed']:
+        if bill_data.status in ["成立", "可決成立", "passed"]:
             return ProgressTrackingStatus.COMPLETED
-        elif bill_data.status in ['否決', '不採択', 'rejected']:
+        elif bill_data.status in ["否決", "不採択", "rejected"]:
             return ProgressTrackingStatus.COMPLETED
-        elif bill_data.status in ['廃案', '撤回', 'withdrawn', 'expired']:
+        elif bill_data.status in ["廃案", "撤回", "withdrawn", "expired"]:
             return ProgressTrackingStatus.COMPLETED
-        elif bill_data.status in ['継続審議', 'continued']:
+        elif bill_data.status in ["継続審議", "continued"]:
             return ProgressTrackingStatus.SUSPENDED
         else:
             return ProgressTrackingStatus.ACTIVE
 
     def _generate_progress_history(
-            self, bill_data: EnhancedBillData) -> list[BillProcessHistory]:
+        self, bill_data: EnhancedBillData
+    ) -> list[BillProcessHistory]:
         """Generate progress history from bill data"""
         history = []
 
@@ -250,8 +276,8 @@ class BillProgressTracker:
                     action_date=bill_data.submitted_date,
                     action_type=BillProcessActionType.SUBMISSION,
                     result=BillProcessResult.NOTED,
-                    details={'submitter': bill_data.submitter},
-                    notes=f"提出者: {bill_data.submitter}"
+                    details={"submitter": bill_data.submitter},
+                    notes=f"提出者: {bill_data.submitter}",
                 )
             )
 
@@ -267,8 +293,8 @@ class BillProgressTracker:
                     action_date=bill_data.committee_referral_date,
                     action_type=BillProcessActionType.COMMITTEE_REFERRAL,
                     result=BillProcessResult.REFERRED,
-                    details={'committee': committee},
-                    notes=f"委員会: {committee}"
+                    details={"committee": committee},
+                    notes=f"委員会: {committee}",
                 )
             )
 
@@ -283,8 +309,8 @@ class BillProgressTracker:
                     action_date=bill_data.committee_report_date,
                     action_type=BillProcessActionType.COMMITTEE_REPORT,
                     result=BillProcessResult.APPROVED,
-                    details={'report_date': bill_data.committee_report_date},
-                    notes="委員会報告"
+                    details={"report_date": bill_data.committee_report_date},
+                    notes="委員会報告",
                 )
             )
 
@@ -300,8 +326,8 @@ class BillProgressTracker:
                     action_date=bill_data.final_vote_date,
                     action_type=BillProcessActionType.PLENARY_VOTING,
                     result=vote_result,
-                    details={'voting_results': bill_data.voting_results},
-                    notes=f"最終議決: {bill_data.status}"
+                    details={"voting_results": bill_data.voting_results},
+                    notes=f"最終議決: {bill_data.status}",
                 )
             )
 
@@ -319,14 +345,15 @@ class BillProgressTracker:
                             action_type=BillProcessActionType.AMENDMENT,
                             result=BillProcessResult.AMENDED,
                             details=amendment,
-                            notes=amendment.get('description', '修正')
+                            notes=amendment.get("description", "修正"),
                         )
                     )
 
         return sorted(history, key=lambda x: x.action_date)
 
     def _analyze_stage_transitions(
-            self, progress_history: list[BillProcessHistory]) -> list[dict[str, Any]]:
+        self, progress_history: list[BillProcessHistory]
+    ) -> list[dict[str, Any]]:
         """Analyze stage transitions from progress history"""
         transitions = []
 
@@ -336,23 +363,27 @@ class BillProgressTracker:
 
             if current.stage != next_item.stage:
                 duration = (next_item.action_date - current.action_date).days
-                transitions.append({
-                    'from_stage': current.stage,
-                    'to_stage': next_item.stage,
-                    'transition_date': next_item.action_date,
-                    'duration_days': duration,
-                    'house': next_item.house,
-                    'committee': next_item.committee,
-                    'action_type': next_item.action_type,
-                    'result': next_item.result
-                })
+                transitions.append(
+                    {
+                        "from_stage": current.stage,
+                        "to_stage": next_item.stage,
+                        "transition_date": next_item.action_date,
+                        "duration_days": duration,
+                        "house": next_item.house,
+                        "committee": next_item.committee,
+                        "action_type": next_item.action_type,
+                        "result": next_item.result,
+                    }
+                )
 
         return transitions
 
-    def _generate_alerts(self,
-                         bill_data: EnhancedBillData,
-                         snapshot: BillProgressSnapshot,
-                         transitions: list[dict[str, Any]]) -> list[str]:
+    def _generate_alerts(
+        self,
+        bill_data: EnhancedBillData,
+        snapshot: BillProgressSnapshot,
+        transitions: list[dict[str, Any]],
+    ) -> list[str]:
         """Generate alerts based on bill progress"""
         alerts = []
 
@@ -367,9 +398,10 @@ class BillProgressTracker:
 
         # Check for unusual delays
         for transition in transitions:
-            if transition['duration_days'] > 60:
+            if transition["duration_days"] > 60:
                 alerts.append(
-                    f"{transition['from_stage']}から{transition['to_stage']}への移行が{transition['duration_days']}日かかりました")
+                    f"{transition['from_stage']}から{transition['to_stage']}への移行が{transition['duration_days']}日かかりました"
+                )
 
         # Check for low confidence
         if snapshot.confidence_score < 0.5:
@@ -387,19 +419,19 @@ class BillProgressTracker:
     def _map_status_to_stage(self, status: str) -> str:
         """Map bill status to progress stage"""
         status_mappings = {
-            '提出': BillProcessStage.SUBMITTED,
-            '受理': BillProcessStage.RECEIVED,
-            '委員会付託': BillProcessStage.COMMITTEE_REFERRED,
-            '委員会審議': BillProcessStage.COMMITTEE_REVIEW,
-            '委員会採決': BillProcessStage.COMMITTEE_VOTE,
-            '本会議': BillProcessStage.PLENARY_DEBATE,
-            '採決': BillProcessStage.PLENARY_VOTE,
-            '可決': BillProcessStage.PLENARY_PASSED,
-            '否決': BillProcessStage.REJECTED,
-            '成立': BillProcessStage.ENACTED,
-            '廃案': BillProcessStage.EXPIRED,
-            '撤回': BillProcessStage.WITHDRAWN,
-            '継続': BillProcessStage.CONTINUED,
+            "提出": BillProcessStage.SUBMITTED,
+            "受理": BillProcessStage.RECEIVED,
+            "委員会付託": BillProcessStage.COMMITTEE_REFERRED,
+            "委員会審議": BillProcessStage.COMMITTEE_REVIEW,
+            "委員会採決": BillProcessStage.COMMITTEE_VOTE,
+            "本会議": BillProcessStage.PLENARY_DEBATE,
+            "採決": BillProcessStage.PLENARY_VOTE,
+            "可決": BillProcessStage.PLENARY_PASSED,
+            "否決": BillProcessStage.REJECTED,
+            "成立": BillProcessStage.ENACTED,
+            "廃案": BillProcessStage.EXPIRED,
+            "撤回": BillProcessStage.WITHDRAWN,
+            "継続": BillProcessStage.CONTINUED,
         }
 
         for key, value in status_mappings.items():
@@ -414,15 +446,18 @@ class BillProgressTracker:
         # Check committee assignments
         if bill_data.committee_assignments:
             if isinstance(bill_data.committee_assignments, dict):
-                committees = bill_data.committee_assignments.get('committees', [])
+                committees = bill_data.committee_assignments.get("committees", [])
                 if committees:
-                    return committees[0] if isinstance(
-                        committees, list) else str(committees)
+                    return (
+                        committees[0]
+                        if isinstance(committees, list)
+                        else str(committees)
+                    )
 
         # Check bill outline for committee mentions
         if bill_data.bill_outline:
-            for house in ['参議院', '衆議院']:
-                if house in (bill_data.house_of_origin or ''):
+            for house in ["参議院", "衆議院"]:
+                if house in (bill_data.house_of_origin or ""):
                     for pattern in self.committee_patterns.get(house, []):
                         if re.search(pattern, bill_data.bill_outline):
                             return re.search(pattern, bill_data.bill_outline).group(0)
@@ -430,13 +465,14 @@ class BillProgressTracker:
         return None
 
     def _extract_last_action(
-            self, bill_data: EnhancedBillData) -> tuple[str | None, datetime | None]:
+        self, bill_data: EnhancedBillData
+    ) -> tuple[str | None, datetime | None]:
         """Extract last action and date from bill data"""
 
         # Check voting results
         if bill_data.voting_results:
             for key, value in bill_data.voting_results.items():
-                if any(pattern in str(value) for pattern in ['可決', '否決', '採決']):
+                if any(pattern in str(value) for pattern in ["可決", "否決", "採決"]):
                     return str(value), bill_data.final_vote_date
 
         # Check amendments
@@ -444,16 +480,21 @@ class BillProgressTracker:
             latest_amendment = bill_data.amendments[-1]
             if isinstance(latest_amendment, dict):
                 return latest_amendment.get(
-                    'description', '修正'), latest_amendment.get('date')
+                    "description", "修正"
+                ), latest_amendment.get("date")
 
         # Fall back to status
-        return bill_data.status, bill_data.final_vote_date or bill_data.committee_report_date
+        return (
+            bill_data.status,
+            bill_data.final_vote_date or bill_data.committee_report_date,
+        )
 
     def _predict_next_action(self, current_stage: str, house: str) -> str | None:
         """Predict next expected action based on current stage"""
 
         stage_progression = self.stage_progressions.get(
-            house, self.stage_progressions['参議院'])
+            house, self.stage_progressions["参議院"]
+        )
 
         try:
             current_index = stage_progression.index(current_stage)
@@ -462,15 +503,15 @@ class BillProgressTracker:
 
                 # Map stage to action
                 action_mappings = {
-                    BillProcessStage.COMMITTEE_REFERRED: '委員会付託',
-                    BillProcessStage.COMMITTEE_REVIEW: '委員会審議',
-                    BillProcessStage.COMMITTEE_VOTE: '委員会採決',
-                    BillProcessStage.PLENARY_DEBATE: '本会議討論',
-                    BillProcessStage.PLENARY_VOTE: '本会議採決',
-                    BillProcessStage.INTER_HOUSE_SENT: '他院送付',
+                    BillProcessStage.COMMITTEE_REFERRED: "委員会付託",
+                    BillProcessStage.COMMITTEE_REVIEW: "委員会審議",
+                    BillProcessStage.COMMITTEE_VOTE: "委員会採決",
+                    BillProcessStage.PLENARY_DEBATE: "本会議討論",
+                    BillProcessStage.PLENARY_VOTE: "本会議採決",
+                    BillProcessStage.INTER_HOUSE_SENT: "他院送付",
                 }
 
-                return action_mappings.get(next_stage, '次の段階')
+                return action_mappings.get(next_stage, "次の段階")
         except ValueError:
             pass
 
@@ -483,8 +524,12 @@ class BillProgressTracker:
 
         # Data completeness (40%)
         completeness_fields = [
-            'bill_outline', 'status', 'stage', 'house_of_origin',
-            'committee_assignments', 'voting_results'
+            "bill_outline",
+            "status",
+            "stage",
+            "house_of_origin",
+            "committee_assignments",
+            "voting_results",
         ]
 
         complete_count = 0
@@ -520,8 +565,9 @@ class BillProgressTracker:
         consistency_score = 1.0  # Base score
         if bill_data.status and bill_data.stage:
             # Check if status and stage are consistent
-            if ('可決' in bill_data.status and '否決' in bill_data.stage) or \
-               ('否決' in bill_data.status and '可決' in bill_data.stage):
+            if ("可決" in bill_data.status and "否決" in bill_data.stage) or (
+                "否決" in bill_data.status and "可決" in bill_data.stage
+            ):
                 consistency_score = 0.5
 
         score += consistency_score * 0.1
@@ -531,17 +577,18 @@ class BillProgressTracker:
 
     def _determine_vote_result(self, status: str) -> str:
         """Determine vote result from status"""
-        if '可決' in status:
+        if "可決" in status:
             return BillProcessResult.APPROVED
-        elif '否決' in status:
+        elif "否決" in status:
             return BillProcessResult.REJECTED
-        elif '修正' in status:
+        elif "修正" in status:
             return BillProcessResult.AMENDED
         else:
             return BillProcessResult.NOTED
 
     async def track_multiple_bills(
-            self, bills: list[EnhancedBillData]) -> list[ProgressTrackingResult]:
+        self, bills: list[EnhancedBillData]
+    ) -> list[ProgressTrackingResult]:
         """Track progress for multiple bills asynchronously"""
         results = []
 
@@ -560,7 +607,8 @@ class BillProgressTracker:
         return results
 
     def get_progress_summary(
-            self, tracking_results: list[ProgressTrackingResult]) -> dict[str, Any]:
+        self, tracking_results: list[ProgressTrackingResult]
+    ) -> dict[str, Any]:
         """Get summary statistics for progress tracking results"""
 
         if not tracking_results:
@@ -586,21 +634,25 @@ class BillProgressTracker:
 
         # Confidence analysis
         confidence_scores = [
-            result.current_snapshot.confidence_score for result in tracking_results]
-        avg_confidence = sum(confidence_scores) / \
-            len(confidence_scores) if confidence_scores else 0.0
+            result.current_snapshot.confidence_score for result in tracking_results
+        ]
+        avg_confidence = (
+            sum(confidence_scores) / len(confidence_scores)
+            if confidence_scores
+            else 0.0
+        )
 
         return {
-            'total_bills': total_bills,
-            'status_distribution': status_counts,
-            'stage_distribution': stage_counts,
-            'total_alerts': total_alerts,
-            'bills_with_alerts': bills_with_alerts,
-            'alert_rate': bills_with_alerts / total_bills if total_bills > 0 else 0.0,
-            'avg_confidence_score': round(avg_confidence, 2),
-            'confidence_distribution': {
-                'high': sum(1 for s in confidence_scores if s >= 0.8),
-                'medium': sum(1 for s in confidence_scores if 0.5 <= s < 0.8),
-                'low': sum(1 for s in confidence_scores if s < 0.5),
-            }
+            "total_bills": total_bills,
+            "status_distribution": status_counts,
+            "stage_distribution": stage_counts,
+            "total_alerts": total_alerts,
+            "bills_with_alerts": bills_with_alerts,
+            "alert_rate": bills_with_alerts / total_bills if total_bills > 0 else 0.0,
+            "avg_confidence_score": round(avg_confidence, 2),
+            "confidence_distribution": {
+                "high": sum(1 for s in confidence_scores if s >= 0.8),
+                "medium": sum(1 for s in confidence_scores if 0.5 <= s < 0.8),
+                "low": sum(1 for s in confidence_scores if s < 0.5),
+            },
         }

@@ -31,8 +31,8 @@ class MockAirtableClient:
                     "Title_JA": "社会保障・医療",
                     "Title_EN": "Social Welfare & Healthcare",
                     "Description": "社会保障制度、医療制度、年金制度に関する政策分野",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "cat_002",
@@ -42,8 +42,8 @@ class MockAirtableClient:
                     "Title_JA": "経済・産業政策",
                     "Title_EN": "Economic & Industrial Policy",
                     "Description": "経済政策、産業振興、規制緩和に関する政策分野",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "cat_003",
@@ -53,8 +53,8 @@ class MockAirtableClient:
                     "Title_JA": "外交・国際関係",
                     "Title_EN": "Foreign Affairs & International Relations",
                     "Description": "外交政策、国際協力、通商政策に関する政策分野",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "cat_101",
@@ -65,8 +65,8 @@ class MockAirtableClient:
                     "Title_EN": "Health Insurance Reform",
                     "Parent_Category": ["cat_001"],
                     "Description": "健康保険制度の改革に関する具体的な政策項目",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "cat_102",
@@ -77,8 +77,8 @@ class MockAirtableClient:
                     "Title_EN": "Elderly Care Services",
                     "Parent_Category": ["cat_001"],
                     "Description": "高齢者介護サービスの拡充に関する政策項目",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "cat_201",
@@ -89,8 +89,8 @@ class MockAirtableClient:
                     "Title_EN": "SME Support",
                     "Parent_Category": ["cat_002"],
                     "Description": "中小企業の経営支援、融資制度に関する政策項目",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "cat_301",
@@ -101,18 +101,15 @@ class MockAirtableClient:
                     "Title_EN": "Asia-Pacific Strategy",
                     "Parent_Category": ["cat_003"],
                     "Description": "アジア太平洋地域における外交戦略",
-                    "Is_Seed": True
-                }
-            }
+                    "Is_Seed": True,
+                },
+            },
         ]
 
     async def get_issue_categories(self, max_records: int = 100) -> dict[str, Any]:
         """Get all issue categories."""
         filtered_categories = self.categories[:max_records]
-        return {
-            "records": filtered_categories,
-            "offset": None
-        }
+        return {"records": filtered_categories, "offset": None}
 
     async def get_category_tree(self) -> dict[str, Any]:
         """Get category tree structure."""
@@ -123,10 +120,13 @@ class MockAirtableClient:
             if cat["fields"]["Layer"] == "L1":
                 # Find children
                 children = [
-                    child for child in self.categories
-                    if (child["fields"]["Layer"] == "L2" and
-                        "Parent_Category" in child["fields"] and
-                        cat["id"] in child["fields"]["Parent_Category"])
+                    child
+                    for child in self.categories
+                    if (
+                        child["fields"]["Layer"] == "L2"
+                        and "Parent_Category" in child["fields"]
+                        and cat["id"] in child["fields"]["Parent_Category"]
+                    )
                 ]
 
                 l1_cat = {
@@ -141,17 +141,21 @@ class MockAirtableClient:
                             "title_ja": child["fields"]["Title_JA"],
                             "title_en": child["fields"].get("Title_EN"),
                             "cap_code": child["fields"]["CAP_Code"],
-                            "description": child["fields"].get("Description")
+                            "description": child["fields"].get("Description"),
                         }
                         for child in children
-                    ]
+                    ],
                 }
                 l1_categories.append(l1_cat)
 
         return {
             "tree": l1_categories,
-            "total_l1": len([c for c in self.categories if c["fields"]["Layer"] == "L1"]),
-            "total_l2": len([c for c in self.categories if c["fields"]["Layer"] == "L2"])
+            "total_l1": len(
+                [c for c in self.categories if c["fields"]["Layer"] == "L1"]
+            ),
+            "total_l2": len(
+                [c for c in self.categories if c["fields"]["Layer"] == "L2"]
+            ),
         }
 
     async def get_issue_category(self, category_id: str) -> dict[str, Any] | None:
@@ -164,19 +168,20 @@ class MockAirtableClient:
     async def get_category_children(self, category_id: str) -> dict[str, Any]:
         """Get child categories."""
         children = [
-            cat for cat in self.categories
-            if (cat["fields"]["Layer"] == "L2" and
-                "Parent_Category" in cat["fields"] and
-                category_id in cat["fields"]["Parent_Category"])
+            cat
+            for cat in self.categories
+            if (
+                cat["fields"]["Layer"] == "L2"
+                and "Parent_Category" in cat["fields"]
+                and category_id in cat["fields"]["Parent_Category"]
+            )
         ]
 
-        return {
-            "records": children,
-            "parent_id": category_id
-        }
+        return {"records": children, "parent_id": category_id}
 
     async def search_categories(
-            self, query: str, max_records: int = 50) -> dict[str, Any]:
+        self, query: str, max_records: int = 50
+    ) -> dict[str, Any]:
         """Search categories by title."""
         matching_categories = []
 
@@ -184,8 +189,7 @@ class MockAirtableClient:
             title_ja = cat["fields"]["Title_JA"].lower()
             title_en = cat["fields"].get("Title_EN", "").lower()
 
-            if (query.lower() in title_ja or
-                    query.lower() in title_en):
+            if query.lower() in title_ja or query.lower() in title_en:
                 matching_categories.append(cat)
 
                 if len(matching_categories) >= max_records:
@@ -194,7 +198,7 @@ class MockAirtableClient:
         return {
             "records": matching_categories,
             "query": query,
-            "total_matches": len(matching_categories)
+            "total_matches": len(matching_categories),
         }
 
 
@@ -204,7 +208,7 @@ app = FastAPI(
     description="Simple API Gateway for testing Issue Category functionality",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS middleware
@@ -213,14 +217,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
-        "http://localhost:8080"],
+        "http://localhost:8080",
+    ],
     allow_credentials=False,
-    allow_methods=[
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
         "accept",
         "accept-language",
@@ -229,9 +229,11 @@ app.add_middleware(
         "content-type",
         "x-requested-with",
         "x-csrf-token",
-        "x-request-id"],
+        "x-request-id",
+    ],
     expose_headers=["X-Total-Count"],
-    max_age=600)
+    max_age=600,
+)
 
 # Initialize mock client
 airtable_client = MockAirtableClient()
@@ -246,8 +248,9 @@ async def health_check():
         "status": "healthy",
         "service": "api-gateway-category-test",
         "version": "1.0.0",
-        "categories_loaded": len(airtable_client.categories)
+        "categories_loaded": len(airtable_client.categories),
     }
+
 
 # Root endpoint
 
@@ -259,8 +262,9 @@ async def root():
         "message": "Diet Issue Tracker API Gateway - Category Test Server",
         "docs": "/docs",
         "health": "/health",
-        "features": ["issue_categories", "category_tree", "category_search"]
+        "features": ["issue_categories", "category_tree", "category_search"],
     }
+
 
 # Issue Category API endpoints
 
@@ -272,8 +276,9 @@ async def get_categories(max_records: int = 100):
         categories = await airtable_client.get_issue_categories(max_records=max_records)
         return categories
     except Exception as e:
-        raise HTTPException(status_code=500,
-                            detail=f"Failed to fetch categories: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch categories: {str(e)}"
+        )
 
 
 @app.get("/api/issues/categories/tree")
@@ -284,8 +289,8 @@ async def get_category_tree():
         return tree
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch category tree: {str(e)}")
+            status_code=500, detail=f"Failed to fetch category tree: {str(e)}"
+        )
 
 
 @app.get("/api/issues/categories/{category_id}")
@@ -299,8 +304,9 @@ async def get_category_detail(category_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500,
-                            detail=f"Failed to fetch category: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch category: {str(e)}"
+        )
 
 
 @app.get("/api/issues/categories/{category_id}/children")
@@ -311,19 +317,23 @@ async def get_category_children(category_id: str):
         return children
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch category children: {str(e)}")
+            status_code=500, detail=f"Failed to fetch category children: {str(e)}"
+        )
 
 
 @app.get("/api/issues/categories/search")
 async def search_categories(query: str, max_records: int = 50):
     """Search categories by title."""
     try:
-        results = await airtable_client.search_categories(query, max_records=max_records)
+        results = await airtable_client.search_categories(
+            query, max_records=max_records
+        )
         return results
     except Exception as e:
-        raise HTTPException(status_code=500,
-                            detail=f"Failed to search categories: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to search categories: {str(e)}"
+        )
+
 
 # Mock bills endpoint for category testing
 
@@ -340,12 +350,14 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"サンプル法案{i} - 社会保障制度改革",
                     "Summary": f"これは法案{i}の要約です。社会保障制度の重要な改革に関する内容が含まれています。",
-                    "Status": "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決",
+                    "Status": (
+                        "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決"
+                    ),
                     "Category": "社会保障・医療",
                     "Category_ID": "cat_001",
                     "Diet_Session": "第213回国会",
-                    "Submitted_Date": "2024-01-15"
-                }
+                    "Submitted_Date": "2024-01-15",
+                },
             }
             for i in range(1, 6)
         ] + [
@@ -359,8 +371,8 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Category": "経済・産業政策",
                     "Category_ID": "cat_002",
                     "Diet_Session": "第213回国会",
-                    "Submitted_Date": "2024-02-01"
-                }
+                    "Submitted_Date": "2024-02-01",
+                },
             }
             for i in range(1, 4)
         ]
@@ -368,9 +380,10 @@ async def get_bills(max_records: int = 100, category: str | None = None):
         # Filter by category if specified
         if category:
             mock_bills = [
-                bill for bill in mock_bills
-                if category in bill["fields"].get("Category", "") or
-                category == bill["fields"].get("Category_ID", "")
+                bill
+                for bill in mock_bills
+                if category in bill["fields"].get("Category", "")
+                or category == bill["fields"].get("Category_ID", "")
             ]
 
         # Limit results
@@ -380,6 +393,7 @@ async def get_bills(max_records: int = 100, category: str | None = None):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch bills: {str(e)}")
 
+
 # Global exception handler
 
 
@@ -387,9 +401,9 @@ async def get_bills(max_records: int = 100, category: str | None = None):
 async def global_exception_handler(request, exc):
     """Global exception handler."""
     return JSONResponse(
-        status_code=500,
-        content={"error": f"Internal server error: {str(exc)}"}
+        status_code=500, content={"error": f"Internal server error: {str(exc)}"}
     )
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8080))

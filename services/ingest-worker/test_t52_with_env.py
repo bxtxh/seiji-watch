@@ -17,10 +17,10 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
                 # Remove quotes if present
-                value = value.strip('"\'')
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -28,18 +28,18 @@ def load_env_file(env_file_path):
 def check_api_keys():
     """Check if all required API keys are set"""
     required_keys = {
-        'OPENAI_API_KEY': 'sk-',
-        'AIRTABLE_API_KEY': 'pat',
-        'AIRTABLE_BASE_ID': 'app',
-        'WEAVIATE_URL': 'https://',
-        'WEAVIATE_API_KEY': ''
+        "OPENAI_API_KEY": "sk-",
+        "AIRTABLE_API_KEY": "pat",
+        "AIRTABLE_BASE_ID": "app",
+        "WEAVIATE_URL": "https://",
+        "WEAVIATE_API_KEY": "",
     }
 
     print("=== API Key Configuration Check ===")
     all_set = True
 
     for key, prefix in required_keys.items():
-        value = os.getenv(key, '')
+        value = os.getenv(key, "")
         if prefix and not value.startswith(prefix):
             print(f"❌ {key}: Missing or invalid")
             all_set = False
@@ -60,23 +60,24 @@ async def test_external_services():
     # Test OpenAI
     try:
         import openai
-        openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+        openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         # Simple test - just check if client initializes
         print("✅ OpenAI: Client initialized")
     except Exception as e:
         print(f"❌ OpenAI: {e}")
 
     # Test Airtable (simple check)
-    airtable_key = os.getenv('AIRTABLE_API_KEY')
-    airtable_base = os.getenv('AIRTABLE_BASE_ID')
+    airtable_key = os.getenv("AIRTABLE_API_KEY")
+    airtable_base = os.getenv("AIRTABLE_BASE_ID")
     if airtable_key and airtable_base:
         print("✅ Airtable: Configuration present")
     else:
         print("❌ Airtable: Missing configuration")
 
     # Test Weaviate (simple check)
-    weaviate_url = os.getenv('WEAVIATE_URL')
-    weaviate_key = os.getenv('WEAVIATE_API_KEY')
+    weaviate_url = os.getenv("WEAVIATE_URL")
+    weaviate_key = os.getenv("WEAVIATE_API_KEY")
     if weaviate_url and weaviate_key:
         print("✅ Weaviate: Configuration present")
     else:
@@ -93,6 +94,7 @@ async def run_t52_limited_test():
     try:
         # Test basic imports first
         from scraper.diet_scraper import DietScraper
+
         print("✅ DietScraper import successful")
 
         # Initialize with conservative settings
@@ -122,6 +124,7 @@ async def run_t52_limited_test():
     except Exception as e:
         print(f"❌ Test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False, 0
 
@@ -166,7 +169,9 @@ async def main():
 
     return 0 if success else 1
 
+
 if __name__ == "__main__":
     import asyncio
+
     exit_code = asyncio.run(main())
     sys.exit(exit_code)

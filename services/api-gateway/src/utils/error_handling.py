@@ -47,7 +47,7 @@ class ServiceError(Exception):
         message: str,
         error_code: ErrorCode,
         details: dict[str, Any] | None = None,
-        status_code: int = 500
+        status_code: int = 500,
     ):
         self.message = message
         self.error_code = error_code
@@ -64,7 +64,7 @@ class ValidationError(ServiceError):
             message=message,
             error_code=ErrorCode.VALIDATION_FAILED,
             details={"field": field, **(details or {})},
-            status_code=422
+            status_code=422,
         )
 
 
@@ -72,11 +72,7 @@ class AuthenticationError(ServiceError):
     """Authentication-specific error."""
 
     def __init__(self, message: str, error_code: ErrorCode = ErrorCode.INVALID_TOKEN):
-        super().__init__(
-            message=message,
-            error_code=error_code,
-            status_code=401
-        )
+        super().__init__(message=message, error_code=error_code, status_code=401)
 
 
 class AuthorizationError(ServiceError):
@@ -87,7 +83,7 @@ class AuthorizationError(ServiceError):
             message=message,
             error_code=ErrorCode.INSUFFICIENT_PERMISSIONS,
             details={"required_permission": required_permission},
-            status_code=403
+            status_code=403,
         )
 
 
@@ -95,16 +91,17 @@ class ExternalServiceError(ServiceError):
     """External service communication error."""
 
     def __init__(
-            self,
-            service_name: str,
-            message: str,
-            error_code: ErrorCode,
-            response_code: int = None):
+        self,
+        service_name: str,
+        message: str,
+        error_code: ErrorCode,
+        response_code: int = None,
+    ):
         super().__init__(
             message=f"{service_name}: {message}",
             error_code=error_code,
             details={"service": service_name, "response_code": response_code},
-            status_code=503
+            status_code=503,
         )
 
 
@@ -116,7 +113,7 @@ class RateLimitError(ServiceError):
             message=message,
             error_code=ErrorCode.RATE_LIMIT_EXCEEDED,
             details={"retry_after": retry_after},
-            status_code=429
+            status_code=429,
         )
 
 
@@ -129,8 +126,8 @@ def handle_service_error(error: ServiceError) -> HTTPException:
         extra={
             "error_code": error.error_code.value,
             "details": error.details,
-            "status_code": error.status_code
-        }
+            "status_code": error.status_code,
+        },
     )
 
     # Create response
@@ -139,8 +136,8 @@ def handle_service_error(error: ServiceError) -> HTTPException:
         detail={
             "error": error.error_code.value,
             "message": error.message,
-            "details": error.details
-        }
+            "details": error.details,
+        },
     )
 
 
@@ -154,9 +151,9 @@ def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
         extra={
             "error_id": error_id,
             "operation": operation,
-            "error_type": type(error).__name__
+            "error_type": type(error).__name__,
         },
-        exc_info=True
+        exc_info=True,
     )
 
     return HTTPException(
@@ -164,9 +161,10 @@ def handle_unexpected_error(error: Exception, operation: str) -> HTTPException:
         detail={
             "error": ErrorCode.UNEXPECTED_ERROR.value,
             "message": f"An unexpected error occurred during {operation}",
-            "error_id": error_id
-        }
+            "error_id": error_id,
+        },
     )
+
 
 # Context managers for error handling
 
@@ -191,11 +189,13 @@ class ErrorContext:
         # Convert unexpected errors
         raise handle_unexpected_error(exc_val, self.operation)
 
+
 # Decorator for error handling
 
 
 def handle_errors(operation: str):
     """Decorator to handle errors in API endpoints."""
+
     def decorator(func):
         async def wrapper(*args, **kwargs):
             try:
@@ -204,8 +204,11 @@ def handle_errors(operation: str):
                 raise handle_service_error(e)
             except Exception as e:
                 raise handle_unexpected_error(e, operation)
+
         return wrapper
+
     return decorator
+
 
 # Validation helpers
 
@@ -217,16 +220,15 @@ def validate_record_id(record_id: str, field_name: str = "record_id") -> str:
     if not isinstance(record_id, str):
         raise ValidationError(f"{field_name} must be a string", field_name)
 
-    if not re.match(r'^rec[a-zA-Z0-9]{14}$', record_id):
+    if not re.match(r"^rec[a-zA-Z0-9]{14}$", record_id):
         raise ValidationError(f"Invalid {field_name} format", field_name)
 
     return record_id
 
 
 def validate_pagination(
-        offset: int = 0,
-        limit: int = 50,
-        max_limit: int = 1000) -> tuple:
+    offset: int = 0, limit: int = 50, max_limit: int = 1000
+) -> tuple:
     """Validate pagination parameters."""
     if offset < 0:
         raise ValidationError("Offset must be non-negative", "offset")
@@ -250,5 +252,5 @@ def validate_enum_value(value: str, enum_class: Enum, field_name: str) -> str:
         raise ValidationError(
             f"{field_name} must be one of: {', '.join(valid_values)}",
             field_name,
-            {"valid_values": valid_values}
+            {"valid_values": valid_values},
         )

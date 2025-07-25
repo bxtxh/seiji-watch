@@ -7,8 +7,8 @@ import os
 import sys
 
 # Add project root and shared package to Python path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-shared_src = os.path.join(project_root, 'shared', 'src')
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+shared_src = os.path.join(project_root, "shared", "src")
 
 sys.path.insert(0, project_root)
 sys.path.insert(0, shared_src)

@@ -17,13 +17,15 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 logger = logging.getLogger(__name__)
 
 # JWT Configuration with production security check
-JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
-JWT_ALGORITHM = 'HS256'
-JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '24'))
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
 
 # Production security check
-if os.getenv(
-        'ENVIRONMENT') == 'production' and JWT_SECRET_KEY == 'your-secret-key-change-in-production':
+if (
+    os.getenv("ENVIRONMENT") == "production"
+    and JWT_SECRET_KEY == "your-secret-key-change-in-production"
+):
     raise RuntimeError("JWT_SECRET_KEY must be set in production environment")
 
 # Security scheme
@@ -32,21 +34,22 @@ security = HTTPBearer()
 
 class AuthenticationError(Exception):
     """Custom authentication error."""
+
     pass
 
 
 def create_access_token(user_id: str, email: str, scopes: list = None) -> str:
     """Create a JWT access token."""
     if scopes is None:
-        scopes = ['read']
+        scopes = ["read"]
 
     payload = {
-        'user_id': user_id,
-        'email': email,
-        'scopes': scopes,
-        'exp': datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
-        'iat': datetime.utcnow(),
-        'type': 'access_token'
+        "user_id": user_id,
+        "email": email,
+        "scopes": scopes,
+        "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
+        "iat": datetime.utcnow(),
+        "type": "access_token",
     }
 
     token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
@@ -59,11 +62,11 @@ def verify_token(token: str) -> dict:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
 
         # Check token type
-        if payload.get('type') != 'access_token':
+        if payload.get("type") != "access_token":
             raise AuthenticationError("Invalid token type")
 
         # Check expiration
-        exp = payload.get('exp')
+        exp = payload.get("exp")
         if exp and datetime.fromtimestamp(exp) < datetime.utcnow():
             raise AuthenticationError("Token has expired")
 
@@ -76,14 +79,15 @@ def verify_token(token: str) -> dict:
 
 
 async def get_current_user(
-        credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
     """Get current authenticated user from JWT token."""
     try:
         payload = verify_token(credentials.credentials)
         return {
-            'user_id': payload.get('user_id'),
-            'email': payload.get('email'),
-            'scopes': payload.get('scopes', [])
+            "user_id": payload.get("user_id"),
+            "email": payload.get("email"),
+            "scopes": payload.get("scopes", []),
         }
     except AuthenticationError as e:
         raise HTTPException(
@@ -95,20 +99,21 @@ async def get_current_user(
 
 async def get_current_user_optional(
     credentials: HTTPAuthorizationCredentials | None = Depends(
-        HTTPBearer(
-            auto_error=False))) -> dict | None:
+        HTTPBearer(auto_error=False)
+    ),
+) -> dict | None:
     """Get current user if token is provided, otherwise return None."""
     if not credentials:
         # In testing environment, allow API_BEARER_TOKEN as fallback
-        if os.getenv('ENVIRONMENT') == 'testing':
-            api_token = os.getenv('API_BEARER_TOKEN')
+        if os.getenv("ENVIRONMENT") == "testing":
+            api_token = os.getenv("API_BEARER_TOKEN")
             if api_token:
                 try:
                     # Create a mock credentials object
                     from fastapi.security import HTTPAuthorizationCredentials
+
                     mock_credentials = HTTPAuthorizationCredentials(
-                        scheme="Bearer",
-                        credentials=api_token
+                        scheme="Bearer", credentials=api_token
                     )
                     return await get_current_user(mock_credentials)
                 except Exception:
@@ -123,64 +128,64 @@ async def get_current_user_optional(
 
 def require_scopes(*required_scopes: str):
     """Decorator to require specific scopes."""
+
     def decorator(user: dict = Depends(get_current_user)):
-        user_scopes = user.get('scopes', [])
+        user_scopes = user.get("scopes", [])
 
         for scope in required_scopes:
             if scope not in user_scopes:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Insufficient permissions. Required scope: {scope}"
+                    detail=f"Insufficient permissions. Required scope: {scope}",
                 )
         return user
 
     return decorator
+
 
 # Common scope requirements
 
 
 async def require_read_access(user: dict = Depends(get_current_user)) -> dict:
     """Require read access."""
-    user_scopes = user.get('scopes', [])
-    if 'read' not in user_scopes and 'admin' not in user_scopes:
+    user_scopes = user.get("scopes", [])
+    if "read" not in user_scopes and "admin" not in user_scopes:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Read access required"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Read access required"
         )
     return user
 
 
 async def require_write_access(user: dict = Depends(get_current_user)) -> dict:
     """Require write access."""
-    user_scopes = user.get('scopes', [])
-    if 'write' not in user_scopes and 'admin' not in user_scopes:
+    user_scopes = user.get("scopes", [])
+    if "write" not in user_scopes and "admin" not in user_scopes:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Write access required"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Write access required"
         )
     return user
 
 
 async def require_admin_access(user: dict = Depends(get_current_user)) -> dict:
     """Require admin access."""
-    user_scopes = user.get('scopes', [])
-    if 'admin' not in user_scopes:
+    user_scopes = user.get("scopes", [])
+    if "admin" not in user_scopes:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
         )
     return user
 
+
 # API Key authentication for internal services
 API_KEYS = {
-    os.getenv('INTERNAL_API_KEY', 'internal-service-key'): 'internal_service',
-    os.getenv('WEBHOOK_API_KEY', 'webhook-service-key'): 'webhook_service'
+    os.getenv("INTERNAL_API_KEY", "internal-service-key"): "internal_service",
+    os.getenv("WEBHOOK_API_KEY", "webhook-service-key"): "webhook_service",
 }
 
 
 async def verify_api_key(api_key: str = Depends(HTTPBearer())) -> str:
     """Verify API key for internal service communication."""
-    key = api_key.credentials if hasattr(api_key, 'credentials') else api_key
+    key = api_key.credentials if hasattr(api_key, "credentials") else api_key
 
     if key not in API_KEYS:
         raise HTTPException(
@@ -191,6 +196,7 @@ async def verify_api_key(api_key: str = Depends(HTTPBearer())) -> str:
 
     return API_KEYS[key]
 
+
 # Rate limiting decorator
 
 # Simple in-memory rate limiter (use Redis in production)
@@ -199,21 +205,23 @@ request_counts = defaultdict(list)
 
 def rate_limit(max_requests: int, window_seconds: int):
     """Rate limiting decorator."""
+
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             # Get user identifier
-            user = kwargs.get('current_user') or kwargs.get('user')
+            user = kwargs.get("current_user") or kwargs.get("user")
             if user:
-                user_id = user.get('user_id', 'anonymous')
+                user_id = user.get("user_id", "anonymous")
             else:
-                user_id = 'anonymous'
+                user_id = "anonymous"
 
             current_time = time.time()
 
             # Clean old requests
             request_counts[user_id] = [
-                req_time for req_time in request_counts[user_id]
+                req_time
+                for req_time in request_counts[user_id]
                 if current_time - req_time < window_seconds
             ]
 
@@ -221,12 +229,14 @@ def rate_limit(max_requests: int, window_seconds: int):
             if len(request_counts[user_id]) >= max_requests:
                 raise HTTPException(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    detail="Rate limit exceeded"
+                    detail="Rate limit exceeded",
                 )
 
             # Record request
             request_counts[user_id].append(current_time)
 
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator

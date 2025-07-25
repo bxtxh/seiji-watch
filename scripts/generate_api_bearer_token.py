@@ -10,33 +10,26 @@ try:
     import datetime
 
     import jwt
+
     JWT_AVAILABLE = True
 except ImportError:
     JWT_AVAILABLE = False
-    print(
-        "⚠️  PyJWT library not available. Install with: pip install PyJWT"
-    )
+    print("⚠️  PyJWT library not available. Install with: pip install PyJWT")
 
 # 本番用: GitHub Secretsに登録するJWT_SECRET_KEY
-PRODUCTION_SECRET_KEY = (
-    "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
-)
+PRODUCTION_SECRET_KEY = "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
 
 # テスト用: CI/CDで使用する統一されたJWT_SECRET_KEY
 TEST_SECRET_KEY = "test-jwt-secret-unified-for-ci-cd"
 
 # 使用する秘密鍵を選択（環境変数から取得、フォールバックはテスト用）
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', TEST_SECRET_KEY)
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", TEST_SECRET_KEY)
 
 
-def generate_ci_bearer_token(
-    secret_key: str, hours: int = 24
-) -> str:
+def generate_ci_bearer_token(secret_key: str, hours: int = 24) -> str:
     """Generate a bearer token for CI/CD use."""
     if not JWT_AVAILABLE:
-        raise ImportError(
-            "PyJWT library is required. Install with: pip install PyJWT"
-        )
+        raise ImportError("PyJWT library is required. Install with: pip install PyJWT")
 
     # サーバー側が期待するペイロード形式
     # (auth.pyのcreate_access_token()と同じ)
@@ -48,7 +41,7 @@ def generate_ci_bearer_token(
             datetime.datetime.utcnow() + datetime.timedelta(hours=hours)
         ),  # 必須: 有効期限
         "iat": datetime.datetime.utcnow(),  # 必須: 発行時刻
-        "type": "access_token"  # 必須: トークンタイプ（固定値）
+        "type": "access_token",  # 必須: トークンタイプ（固定値）
     }
 
     # JWTトークンを生成
@@ -61,13 +54,13 @@ def generate_multiple_tokens(secret_key: str) -> dict:
     tokens = {}
 
     # 1時間有効なトークン
-    tokens['1hour'] = generate_ci_bearer_token(secret_key, hours=1)
+    tokens["1hour"] = generate_ci_bearer_token(secret_key, hours=1)
 
     # 24時間有効なトークン
-    tokens['24hours'] = generate_ci_bearer_token(secret_key, hours=24)
+    tokens["24hours"] = generate_ci_bearer_token(secret_key, hours=24)
 
     # 7日間有効なトークン
-    tokens['7days'] = generate_ci_bearer_token(secret_key, hours=24 * 7)
+    tokens["7days"] = generate_ci_bearer_token(secret_key, hours=24 * 7)
 
     return tokens
 
@@ -84,10 +77,8 @@ def decode_and_verify_token(token: str, secret_key: str) -> dict:
         print("✅ Token verification successful")
 
         # Check server requirements
-        required_fields = ['user_id', 'email', 'scopes', 'exp', 'iat', 'type']
-        missing_fields = [
-            field for field in required_fields if field not in verified
-        ]
+        required_fields = ["user_id", "email", "scopes", "exp", "iat", "type"]
+        missing_fields = [field for field in required_fields if field not in verified]
 
         if missing_fields:
             print(f"❌ Missing required fields: {missing_fields}")
@@ -95,13 +86,13 @@ def decode_and_verify_token(token: str, secret_key: str) -> dict:
             print("✅ All required fields present")
 
         # Check token type
-        if verified.get('type') != 'access_token':
+        if verified.get("type") != "access_token":
             print(f"❌ Invalid token type: {verified.get('type')}")
         else:
             print("✅ Valid token type: access_token")
 
         # Check expiration
-        exp = verified.get('exp')
+        exp = verified.get("exp")
         if exp:
             exp_time = datetime.datetime.fromtimestamp(exp)
             now = datetime.datetime.utcnow()
@@ -152,7 +143,7 @@ if __name__ == "__main__":
         # Verify the generated token
         print("\n🔍 Token Verification:")
         print("-" * 40)
-        decode_and_verify_token(tokens['24hours'], SECRET_KEY)
+        decode_and_verify_token(tokens["24hours"], SECRET_KEY)
 
         print("\n🧪 Test your token:")
         print(f"   curl -H \"Authorization: Bearer {tokens['24hours'][:50]}...\" \\")
@@ -176,6 +167,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Error generating tokens: {e}")
         import traceback
+
         traceback.print_exc()
 
     print("\n🔒 Security Reminders:")

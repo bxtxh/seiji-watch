@@ -12,6 +12,7 @@ from dataclasses import dataclass
 @dataclass
 class BillRecord:
     """法案レコード構造"""
+
     record_id: str
     bill_id: str | None
     title: str
@@ -35,7 +36,7 @@ class BillIDGenerator:
             "衆議院": "H",
             "参議院": "S",
             "両院": "B",
-            "": "G"  # 政府提出法案
+            "": "G",  # 政府提出法案
         }
 
         self.CATEGORY_CODES = {
@@ -44,7 +45,7 @@ class BillIDGenerator:
             "予算関連": "B",
             "条約": "T",
             "承認": "A",
-            "その他": "O"
+            "その他": "O",
         }
 
     def set_existing_ids(self, existing_ids: set):
@@ -127,7 +128,6 @@ class BillIDGenerator:
 def create_test_data() -> list[BillRecord]:
     """テスト用のサンプルデータを作成"""
     return [
-
         # 既存IDがある法案
         BillRecord(
             "rec1",
@@ -139,7 +139,8 @@ def create_test_data() -> list[BillRecord]:
             "内閣",
             "デジタル",
             "217",
-            "衆議院"),
+            "衆議院",
+        ),
         BillRecord(
             "rec2",
             "SM001",
@@ -150,8 +151,8 @@ def create_test_data() -> list[BillRecord]:
             "田中議員",
             "制度",
             "217",
-            "参議院"),
-
+            "参議院",
+        ),
         # Bill_IDが欠損している法案
         BillRecord(
             "rec3",
@@ -163,7 +164,8 @@ def create_test_data() -> list[BillRecord]:
             "内閣",
             "予算",
             "217",
-            "衆議院"),
+            "衆議院",
+        ),
         BillRecord(
             "rec4",
             None,
@@ -174,7 +176,8 @@ def create_test_data() -> list[BillRecord]:
             "山田議員",
             "地方",
             "217",
-            "参議院"),
+            "参議院",
+        ),
         BillRecord(
             "rec5",
             "  ",
@@ -185,7 +188,8 @@ def create_test_data() -> list[BillRecord]:
             "内閣",
             "環境",
             "217",
-            ""),
+            "",
+        ),
         BillRecord(
             "rec6",
             "",
@@ -196,7 +200,8 @@ def create_test_data() -> list[BillRecord]:
             "外務大臣",
             "条約",
             "217",
-            "両院"),
+            "両院",
+        ),
         BillRecord(
             "rec7",
             "",
@@ -207,7 +212,8 @@ def create_test_data() -> list[BillRecord]:
             "内閣",
             "承認",
             "217",
-            "衆議院"),
+            "衆議院",
+        ),
         BillRecord(
             "rec8",
             "",
@@ -218,7 +224,8 @@ def create_test_data() -> list[BillRecord]:
             "佐藤議員",
             "その他",
             "217",
-            "参議院"),
+            "参議院",
+        ),
         BillRecord(
             "rec9",
             "",
@@ -229,7 +236,8 @@ def create_test_data() -> list[BillRecord]:
             "内閣",
             "制度",
             "217",
-            ""),
+            "",
+        ),
         BillRecord(
             "rec10",
             "",
@@ -240,8 +248,8 @@ def create_test_data() -> list[BillRecord]:
             "無所属議員",
             "制度",
             "217",
-            "衆議院"),
-
+            "衆議院",
+        ),
     ]
 
 
@@ -315,7 +323,7 @@ def test_bill_id_generation():
     # フォーマットチェック
     format_violations = []
     for id in generated_ids:
-        if not re.match(r'^[HSBG][CMBTAO][0-9]{3}$', id):
+        if not re.match(r"^[HSBG][CMBTAO][0-9]{3}$", id):
             format_violations.append(id)
 
     if format_violations:
@@ -337,15 +345,63 @@ def test_specific_cases():
     # テストケース
     test_cases = [
         # (説明, 法案データ, 期待されるパターン)
-        ("内閣提出・衆議院", BillRecord("test1", "", "テスト法案", "", "", "", "内閣", "", "", "衆議院"), "HC"),
-        ("内閣提出・参議院", BillRecord("test2", "", "テスト法案", "", "", "", "内閣", "", "", "参議院"), "SC"),
-        ("内閣提出・院不明", BillRecord("test3", "", "テスト法案", "", "", "", "内閣", "", "", ""), "GC"),
-        ("議員提出・衆議院", BillRecord("test4", "", "テスト法案", "", "", "", "田中議員", "", "", "衆議院"), "HM"),
-        ("議員提出・参議院", BillRecord("test5", "", "テスト法案", "", "", "", "田中議員", "", "", "参議院"), "SM"),
-        ("予算関連", BillRecord("test6", "", "テスト法案", "", "", "", "内閣", "予算", "", "衆議院"), "HB"),
-        ("条約", BillRecord("test7", "", "テスト法案", "", "", "", "外務大臣", "条約", "", "両院"), "BT"),
-        ("承認案件", BillRecord("test8", "", "テスト法案", "", "", "", "内閣", "承認", "", "衆議院"), "HA"),
-        ("その他", BillRecord("test9", "", "テスト法案", "", "", "", "不明", "その他", "", "参議院"), "SO"),
+        (
+            "内閣提出・衆議院",
+            BillRecord("test1", "", "テスト法案", "", "", "", "内閣", "", "", "衆議院"),
+            "HC",
+        ),
+        (
+            "内閣提出・参議院",
+            BillRecord("test2", "", "テスト法案", "", "", "", "内閣", "", "", "参議院"),
+            "SC",
+        ),
+        (
+            "内閣提出・院不明",
+            BillRecord("test3", "", "テスト法案", "", "", "", "内閣", "", "", ""),
+            "GC",
+        ),
+        (
+            "議員提出・衆議院",
+            BillRecord(
+                "test4", "", "テスト法案", "", "", "", "田中議員", "", "", "衆議院"
+            ),
+            "HM",
+        ),
+        (
+            "議員提出・参議院",
+            BillRecord(
+                "test5", "", "テスト法案", "", "", "", "田中議員", "", "", "参議院"
+            ),
+            "SM",
+        ),
+        (
+            "予算関連",
+            BillRecord(
+                "test6", "", "テスト法案", "", "", "", "内閣", "予算", "", "衆議院"
+            ),
+            "HB",
+        ),
+        (
+            "条約",
+            BillRecord(
+                "test7", "", "テスト法案", "", "", "", "外務大臣", "条約", "", "両院"
+            ),
+            "BT",
+        ),
+        (
+            "承認案件",
+            BillRecord(
+                "test8", "", "テスト法案", "", "", "", "内閣", "承認", "", "衆議院"
+            ),
+            "HA",
+        ),
+        (
+            "その他",
+            BillRecord(
+                "test9", "", "テスト法案", "", "", "", "不明", "その他", "", "参議院"
+            ),
+            "SO",
+        ),
     ]
 
     success_count = 0
@@ -359,7 +415,8 @@ def test_specific_cases():
                 success_count += 1
             else:
                 print(
-                    f"❌ {description}: {generated_id} (期待: {expected_pattern}, 実際: {actual_pattern})")
+                    f"❌ {description}: {generated_id} (期待: {expected_pattern}, 実際: {actual_pattern})"
+                )
 
         except Exception as e:
             print(f"❌ {description}: エラー - {e}")

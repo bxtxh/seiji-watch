@@ -18,9 +18,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -30,8 +30,8 @@ def debug_environment_variables():
     print("🔍 Step 1: 環境変数の詳細確認")
     print("=" * 50)
 
-    api_key = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    api_key = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     print("AIRTABLE_PAT:")
     if api_key:
@@ -40,7 +40,8 @@ def debug_environment_variables():
         print(f"  先頭10文字: '{api_key[:10]}...'")
         print(f"  末尾10文字: '...{api_key[-10:]}'")
         print(
-            f"  形式チェック: {'✅ pat...' if api_key.startswith('pat') else '❌ pat...ではない'}")
+            f"  形式チェック: {'✅ pat...' if api_key.startswith('pat') else '❌ pat...ではない'}"
+        )
         print(f"  前後空白: '[{api_key}]'")
     else:
         print("  ❌ 環境変数が設定されていません")
@@ -50,7 +51,8 @@ def debug_environment_variables():
         print("  存在: はい")
         print(f"  値: '{base_id}'")
         print(
-            f"  形式チェック: {'✅ app...' if base_id.startswith('app') else '❌ app...ではない'}")
+            f"  形式チェック: {'✅ app...' if base_id.startswith('app') else '❌ app...ではない'}"
+        )
     else:
         print("  ❌ 環境変数が設定されていません")
 
@@ -69,15 +71,12 @@ def test_curl_equivalent(api_key, base_id):
     # テーブル名の候補
     table_candidates = [
         "Bills%20%28%E6%B3%95%E6%A1%88%29",  # URL エンコード済み
-        "Bills (法案)",                       # 日本語そのまま
-        "Bills",                            # シンプル版
-        "tblBillsTableId"                   # もしテーブルIDがわかる場合
+        "Bills (法案)",  # 日本語そのまま
+        "Bills",  # シンプル版
+        "tblBillsTableId",  # もしテーブルIDがわかる場合
     ]
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     print(f"Base ID: {base_id}")
     print(f"Authorization Header: Bearer {api_key[:15]}...")
@@ -94,7 +93,7 @@ def test_curl_equivalent(api_key, base_id):
 
             if response.status_code == 200:
                 data = response.json()
-                records_count = len(data.get('records', []))
+                records_count = len(data.get("records", []))
                 print(f"  ✅ 成功! レコード数: {records_count}")
                 print(f"  レスポンス例: {str(data)[:100]}...")
                 return True
@@ -134,13 +133,13 @@ def test_simple_base_access(api_key, base_id):
 
         if response.status_code == 200:
             data = response.json()
-            tables = data.get('tables', [])
+            tables = data.get("tables", [])
             print(f"✅ ベースアクセス成功! テーブル数: {len(tables)}")
 
             print("\n📋 利用可能なテーブル:")
             for table in tables:
-                table_id = table.get('id', 'Unknown')
-                table_name = table.get('name', 'Unknown')
+                table_id = table.get("id", "Unknown")
+                table_name = table.get("name", "Unknown")
                 print(f"  - {table_name} (ID: {table_id})")
 
             return True

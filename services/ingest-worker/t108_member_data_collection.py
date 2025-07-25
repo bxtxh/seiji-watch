@@ -19,12 +19,13 @@ from dotenv import load_dotenv
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 @dataclass
 class MemberData:
     """議員データ構造"""
+
     name: str
     name_kana: str | None = None
     name_en: str | None = None
@@ -47,6 +48,7 @@ class MemberData:
 @dataclass
 class PartyData:
     """政党データ構造"""
+
     name: str
     name_en: str | None = None
     abbreviation: str | None = None
@@ -69,19 +71,16 @@ class MemberDataCollector:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self,
-                                    session: aiohttp.ClientSession,
-                                    method: str,
-                                    url: str,
-                                    **kwargs) -> dict[str,
-                                                      Any]:
+    async def _rate_limited_request(
+        self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
+    ) -> dict[str, Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -90,13 +89,17 @@ class MemberDataCollector:
             if time_since_last < 0.3:
                 await asyncio.sleep(0.3 - time_since_last)
 
-            async with session.request(method, url, headers=self.headers, **kwargs) as response:
+            async with session.request(
+                method, url, headers=self.headers, **kwargs
+            ) as response:
                 self._last_request_time = asyncio.get_event_loop().time()
 
                 if response.status == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
                     await asyncio.sleep(retry_after)
-                    return await self._rate_limited_request(session, method, url, **kwargs)
+                    return await self._rate_limited_request(
+                        session, method, url, **kwargs
+                    )
 
                 response.raise_for_status()
                 return await response.json()
@@ -115,7 +118,7 @@ class MemberDataCollector:
                 party_name="自由民主党",
                 first_elected="2019",
                 terms_served=1,
-                is_active=True
+                is_active=True,
             ),
             MemberData(
                 name="田中花子",
@@ -125,7 +128,7 @@ class MemberDataCollector:
                 party_name="立憲民主党",
                 first_elected="2021",
                 terms_served=1,
-                is_active=True
+                is_active=True,
             ),
             MemberData(
                 name="佐藤次郎",
@@ -135,7 +138,7 @@ class MemberDataCollector:
                 party_name="日本維新の会",
                 first_elected="2016",
                 terms_served=2,
-                is_active=True
+                is_active=True,
             ),
             MemberData(
                 name="鈴木三郎",
@@ -145,7 +148,7 @@ class MemberDataCollector:
                 party_name="公明党",
                 first_elected="2020",
                 terms_served=1,
-                is_active=True
+                is_active=True,
             ),
             MemberData(
                 name="高橋美咲",
@@ -155,8 +158,8 @@ class MemberDataCollector:
                 party_name="国民民主党",
                 first_elected="2018",
                 terms_served=1,
-                is_active=True
-            )
+                is_active=True,
+            ),
         ]
 
         # 50件に拡張（パターン生成）
@@ -171,7 +174,8 @@ class MemberDataCollector:
             "宮城県",
             "広島県",
             "兵庫県",
-            "千葉県"]
+            "千葉県",
+        ]
         parties = [
             "自由民主党",
             "立憲民主党",
@@ -180,7 +184,8 @@ class MemberDataCollector:
             "国民民主党",
             "日本共産党",
             "れいわ新選組",
-            "社会民主党"]
+            "社会民主党",
+        ]
         houses = ["参議院", "衆議院"]
 
         # 基本データ拡張
@@ -196,15 +201,16 @@ class MemberDataCollector:
                 party_name=parties[i % len(parties)],
                 first_elected=str(2015 + (i % 8)),
                 terms_served=(i % 3) + 1,
-                is_active=True
+                is_active=True,
             )
             extended_members.append(member)
 
         print(f"✅ 議員データ生成完了: {len(extended_members)}件")
         return extended_members
 
-    async def create_parties(self, session: aiohttp.ClientSession,
-                             members: list[MemberData]) -> dict[str, str]:
+    async def create_parties(
+        self, session: aiohttp.ClientSession, members: list[MemberData]
+    ) -> dict[str, str]:
         """政党データを作成・取得"""
 
         # 既存政党取得
@@ -236,11 +242,13 @@ class MemberDataCollector:
                         "Name": party_name,
                         "Is_Active": True,
                         "Created_At": datetime.now().isoformat(),
-                        "Updated_At": datetime.now().isoformat()
+                        "Updated_At": datetime.now().isoformat(),
                     }
                 }
 
-                response = await self._rate_limited_request(session, "POST", parties_url, json=party_data)
+                response = await self._rate_limited_request(
+                    session, "POST", parties_url, json=party_data
+                )
                 party_id = response["id"]
                 party_id_map[party_name] = party_id
                 print(f"  ✅ 新規政党作成: {party_name} ({party_id})")
@@ -250,11 +258,12 @@ class MemberDataCollector:
 
         return party_id_map
 
-    async def create_members(self,
-                             session: aiohttp.ClientSession,
-                             members: list[MemberData],
-                             party_id_map: dict[str,
-                                                str]) -> int:
+    async def create_members(
+        self,
+        session: aiohttp.ClientSession,
+        members: list[MemberData],
+        party_id_map: dict[str, str],
+    ) -> int:
         """議員データをAirtableに投入"""
 
         members_url = f"{self.base_url}/Members (議員)"
@@ -278,7 +287,7 @@ class MemberDataCollector:
                     "Facebook_URL": member.facebook_url,
                     "Is_Active": member.is_active,
                     "Created_At": datetime.now().isoformat(),
-                    "Updated_At": datetime.now().isoformat()
+                    "Updated_At": datetime.now().isoformat(),
                 }
 
                 # 政党リンク
@@ -286,12 +295,15 @@ class MemberDataCollector:
                     member_fields["Party"] = [party_id_map[member.party_name]]
 
                 # None値を除去
-                member_fields = {k: v for k,
-                                 v in member_fields.items() if v is not None}
+                member_fields = {
+                    k: v for k, v in member_fields.items() if v is not None
+                }
 
                 data = {"fields": member_fields}
 
-                response = await self._rate_limited_request(session, "POST", members_url, json=data)
+                response = await self._rate_limited_request(
+                    session, "POST", members_url, json=data
+                )
                 record_id = response["id"]
                 success_count += 1
 
@@ -319,7 +331,7 @@ class MemberDataCollector:
             "members_collected": 0,
             "parties_created": 0,
             "errors": [],
-            "start_time": start_time.isoformat()
+            "start_time": start_time.isoformat(),
         }
 
         try:
@@ -337,7 +349,9 @@ class MemberDataCollector:
 
                 # Step 3: 議員データ投入
                 print("\n👥 Step 3: 議員データ投入...")
-                success_count = await self.create_members(session, members, party_id_map)
+                success_count = await self.create_members(
+                    session, members, party_id_map
+                )
 
                 # 結果計算
                 end_time = datetime.now()
@@ -383,10 +397,10 @@ async def main():
         result = await collector.execute_member_collection()
 
         # 結果をJSONファイルに保存
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         result_file = f"t108_member_collection_result_{timestamp}.json"
 
-        with open(result_file, 'w', encoding='utf-8') as f:
+        with open(result_file, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 結果保存: {result_file}")
@@ -396,8 +410,10 @@ async def main():
     except Exception as e:
         print(f"💥 T108 実行エラー: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

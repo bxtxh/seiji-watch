@@ -15,22 +15,23 @@ from typing import Any
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 @dataclass
 class QualityMetrics:
     """Data quality metrics for a table"""
+
     table_name: str
     total_records: int
 
     # Core quality dimensions
-    completeness_score: float      # 完全性: 必須フィールド充足率
-    uniqueness_score: float        # 一意性: 重複・冗長データ検出率
-    validity_score: float          # 妥当性: データ形式・範囲の正確性
-    consistency_score: float       # 一貫性: テーブル間参照整合性
-    accuracy_score: float          # 正確性: 情報源との一致度
-    timeliness_score: float        # 鮮度: データ更新頻度・最新性
+    completeness_score: float  # 完全性: 必須フィールド充足率
+    uniqueness_score: float  # 一意性: 重複・冗長データ検出率
+    validity_score: float  # 妥当性: データ形式・範囲の正確性
+    consistency_score: float  # 一貫性: テーブル間参照整合性
+    accuracy_score: float  # 正確性: 情報源との一致度
+    timeliness_score: float  # 鮮度: データ更新頻度・最新性
 
     # Overall quality score
     overall_quality_score: float
@@ -46,6 +47,7 @@ class QualityMetrics:
 @dataclass
 class DatabaseQualityReport:
     """Comprehensive database quality report"""
+
     analysis_date: str
     total_tables: int
     total_records: int
@@ -73,7 +75,7 @@ class ComprehensiveDataQualityAnalyzer:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
@@ -85,28 +87,48 @@ class ComprehensiveDataQualityAnalyzer:
             "Members (議員)": {
                 "target_score": 95.0,
                 "required_fields": ["Name", "House", "Is_Active"],
-                "optional_fields": ["Name_Kana", "Constituency", "Party", "First_Elected",
-                                    "Terms_Served", "Birth_Date", "Gender", "Previous_Occupations",
-                                    "Education", "Website_URL", "Twitter_Handle"],
+                "optional_fields": [
+                    "Name_Kana",
+                    "Constituency",
+                    "Party",
+                    "First_Elected",
+                    "Terms_Served",
+                    "Birth_Date",
+                    "Gender",
+                    "Previous_Occupations",
+                    "Education",
+                    "Website_URL",
+                    "Twitter_Handle",
+                ],
                 "unique_fields": ["Name", "House"],  # Combined uniqueness
                 "reference_fields": {"Party": "Parties (政党)"},
                 "validation_rules": {
                     "House": ["衆議院", "参議院"],
                     "Is_Active": [True, False],
-                    "Terms_Served": {"type": "int", "min": 1, "max": 20}
-                }
+                    "Terms_Served": {"type": "int", "min": 1, "max": 20},
+                },
             },
             "Bills (法案)": {
                 "target_score": 90.0,
                 "required_fields": ["Title", "Bill_Number", "Status", "Session"],
-                "optional_fields": ["Submitter", "Category", "Summary", "Full_Text_URL",
-                                    "Date_Submitted", "Date_Passed", "Vote_Results"],
+                "optional_fields": [
+                    "Submitter",
+                    "Category",
+                    "Summary",
+                    "Full_Text_URL",
+                    "Date_Submitted",
+                    "Date_Passed",
+                    "Vote_Results",
+                ],
                 "unique_fields": ["Bill_Number"],
-                "reference_fields": {"Submitter": "Members (議員)", "Session": "Sessions (会議)"},
+                "reference_fields": {
+                    "Submitter": "Members (議員)",
+                    "Session": "Sessions (会議)",
+                },
                 "validation_rules": {
                     "Status": ["提出", "審議中", "可決", "否決", "廃案"],
-                    "Bill_Number": {"pattern": r"^\d+号$"}
-                }
+                    "Bill_Number": {"pattern": r"^\d+号$"},
+                },
             },
             "Sessions (会議)": {
                 "target_score": 95.0,
@@ -116,41 +138,66 @@ class ComprehensiveDataQualityAnalyzer:
                 "reference_fields": {},
                 "validation_rules": {
                     "Session_Type": ["本会議", "委員会", "公聴会"],
-                    "Date": {"type": "date"}
-                }
+                    "Date": {"type": "date"},
+                },
             },
             "Speeches (発言)": {
                 "target_score": 85.0,
                 "required_fields": ["Speaker", "Content", "Session", "Timestamp"],
-                "optional_fields": ["Duration", "Transcript_Quality", "Audio_URL", "Video_URL"],
+                "optional_fields": [
+                    "Duration",
+                    "Transcript_Quality",
+                    "Audio_URL",
+                    "Video_URL",
+                ],
                 "unique_fields": [],  # Speeches can be similar
-                "reference_fields": {"Speaker": "Members (議員)", "Session": "Sessions (会議)"},
+                "reference_fields": {
+                    "Speaker": "Members (議員)",
+                    "Session": "Sessions (会議)",
+                },
                 "validation_rules": {
                     "Transcript_Quality": {"type": "float", "min": 0.0, "max": 1.0}
-                }
+                },
             },
             "Parties (政党)": {
                 "target_score": 98.0,
                 "required_fields": ["Name", "Is_Active"],
-                "optional_fields": ["Founded_Date", "Leader", "Seats_Count", "Website_URL"],
+                "optional_fields": [
+                    "Founded_Date",
+                    "Leader",
+                    "Seats_Count",
+                    "Website_URL",
+                ],
                 "unique_fields": ["Name"],
                 "reference_fields": {"Leader": "Members (議員)"},
                 "validation_rules": {
                     "Is_Active": [True, False],
-                    "Seats_Count": {"type": "int", "min": 0, "max": 500}
-                }
+                    "Seats_Count": {"type": "int", "min": 0, "max": 500},
+                },
             },
             "Issues (イシュー)": {
                 "target_score": 90.0,
                 "required_fields": ["Title", "Category_L1"],
-                "optional_fields": ["Category_L2", "Category_L3", "Description", "Related_Bills"],
+                "optional_fields": [
+                    "Category_L2",
+                    "Category_L3",
+                    "Description",
+                    "Related_Bills",
+                ],
                 "unique_fields": ["Title"],
                 "reference_fields": {"Related_Bills": "Bills (法案)"},
                 "validation_rules": {
-                    "Category_L1": ["社会保障", "経済・産業", "外交・国際", "教育・文化",
-                                    "環境・エネルギー", "法務・司法", "その他"]
-                }
-            }
+                    "Category_L1": [
+                        "社会保障",
+                        "経済・産業",
+                        "外交・国際",
+                        "教育・文化",
+                        "環境・エネルギー",
+                        "法務・司法",
+                        "その他",
+                    ]
+                },
+            },
         }
 
     async def rate_limit_delay(self):
@@ -162,9 +209,9 @@ class ComprehensiveDataQualityAnalyzer:
                 await asyncio.sleep(0.5 - time_since_last)
             self._last_request_time = asyncio.get_event_loop().time()
 
-    async def get_all_records(self,
-                              session: aiohttp.ClientSession,
-                              table_name: str) -> list[dict]:
+    async def get_all_records(
+        self, session: aiohttp.ClientSession, table_name: str
+    ) -> list[dict]:
         """Get all records from a specific table"""
         all_records = []
         offset = None
@@ -175,14 +222,16 @@ class ComprehensiveDataQualityAnalyzer:
                 url = f"{self.base_url}/{table_name}"
                 params = {}
                 if offset:
-                    params['offset'] = offset
+                    params["offset"] = offset
 
-                async with session.get(url, headers=self.headers, params=params) as response:
+                async with session.get(
+                    url, headers=self.headers, params=params
+                ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        all_records.extend(data.get('records', []))
+                        all_records.extend(data.get("records", []))
 
-                        offset = data.get('offset')
+                        offset = data.get("offset")
                         if not offset:
                             break
                     else:
@@ -196,7 +245,8 @@ class ComprehensiveDataQualityAnalyzer:
         return all_records
 
     def calculate_completeness_score(
-            self, records: list[dict], config: dict) -> tuple[float, dict[str, float]]:
+        self, records: list[dict], config: dict
+    ) -> tuple[float, dict[str, float]]:
         """Calculate data completeness score"""
         if not records:
             return 0.0, {}
@@ -212,7 +262,7 @@ class ComprehensiveDataQualityAnalyzer:
         for field in all_fields:
             filled_count = 0
             for record in records:
-                fields = record.get('fields', {})
+                fields = record.get("fields", {})
                 if field in fields and fields[field]:
                     # Handle different data types
                     value = fields[field]
@@ -237,7 +287,8 @@ class ComprehensiveDataQualityAnalyzer:
         return overall_score, field_completeness
 
     def calculate_uniqueness_score(
-            self, records: list[dict], config: dict) -> tuple[float, list[str]]:
+        self, records: list[dict], config: dict
+    ) -> tuple[float, list[str]]:
         """Calculate data uniqueness score"""
         if not records:
             return 1.0, []
@@ -251,7 +302,7 @@ class ComprehensiveDataQualityAnalyzer:
         duplicate_count = 0
 
         for record in records:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
 
             # Create combination key from unique fields
             key_parts = []
@@ -266,7 +317,7 @@ class ComprehensiveDataQualityAnalyzer:
 
             if key in seen_combinations and key.strip():
                 duplicate_count += 1
-                duplicate_records.append(record['id'])
+                duplicate_records.append(record["id"])
             else:
                 seen_combinations.add(key)
 
@@ -274,7 +325,8 @@ class ComprehensiveDataQualityAnalyzer:
         return uniqueness_score, duplicate_records
 
     def calculate_validity_score(
-            self, records: list[dict], config: dict) -> tuple[float, list[str]]:
+        self, records: list[dict], config: dict
+    ) -> tuple[float, list[str]]:
         """Calculate data validity score"""
         if not records:
             return 1.0, []
@@ -288,7 +340,7 @@ class ComprehensiveDataQualityAnalyzer:
         passed_validations = 0
 
         for record in records:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
 
             for field, rule in validation_rules.items():
                 if field not in fields:
@@ -326,22 +378,23 @@ class ComprehensiveDataQualityAnalyzer:
                             is_valid = False
                     elif rule.get("pattern"):
                         pattern = rule["pattern"]
-                        is_valid = bool(re.match(pattern, str(value))
-                                        ) if value else False
+                        is_valid = (
+                            bool(re.match(pattern, str(value))) if value else False
+                        )
 
                 if is_valid:
                     passed_validations += 1
-                elif record['id'] not in invalid_records:
-                    invalid_records.append(record['id'])
+                elif record["id"] not in invalid_records:
+                    invalid_records.append(record["id"])
 
-        validity_score = passed_validations / total_validations if total_validations > 0 else 1.0
+        validity_score = (
+            passed_validations / total_validations if total_validations > 0 else 1.0
+        )
         return validity_score, invalid_records
 
-    async def calculate_consistency_score(self,
-                                          session: aiohttp.ClientSession,
-                                          records: list[dict],
-                                          config: dict) -> tuple[float,
-                                                                 list[str]]:
+    async def calculate_consistency_score(
+        self, session: aiohttp.ClientSession, records: list[dict], config: dict
+    ) -> tuple[float, list[str]]:
         """Calculate data consistency score (referential integrity)"""
         if not records:
             return 1.0, []
@@ -359,14 +412,14 @@ class ComprehensiveDataQualityAnalyzer:
         for field, ref_table in reference_fields.items():
             try:
                 ref_records = await self.get_all_records(session, ref_table)
-                reference_data[ref_table] = {r['id'] for r in ref_records}
+                reference_data[ref_table] = {r["id"] for r in ref_records}
             except Exception as e:
                 print(f"⚠️ Error fetching reference table {ref_table}: {e}")
                 reference_data[ref_table] = set()
 
         # Check referential integrity
         for record in records:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
 
             for field, ref_table in reference_fields.items():
                 if field not in fields:
@@ -393,7 +446,9 @@ class ComprehensiveDataQualityAnalyzer:
                     else:
                         consistency_issues.append(f"{record['id']}.{field}")
 
-        consistency_score = valid_references / total_references if total_references > 0 else 1.0
+        consistency_score = (
+            valid_references / total_references if total_references > 0 else 1.0
+        )
         return consistency_score, consistency_issues
 
     def calculate_accuracy_score(self, records: list[dict], config: dict) -> float:
@@ -410,7 +465,7 @@ class ComprehensiveDataQualityAnalyzer:
         total_score = 0.0
 
         for record in records:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
             filled_required = sum(1 for field in required_fields if fields.get(field))
             accuracy = filled_required / len(required_fields)
             total_score += accuracy
@@ -427,21 +482,23 @@ class ComprehensiveDataQualityAnalyzer:
 
         for record in records:
             # Use Created_At or Updated_At fields if available
-            created_at = record.get('createdTime')
-            updated_at = record.get('fields', {}).get('Updated_At')
+            created_at = record.get("createdTime")
+            updated_at = record.get("fields", {}).get("Updated_At")
 
             most_recent = None
             if updated_at:
                 try:
                     most_recent = datetime.fromisoformat(
-                        updated_at.replace('Z', '+00:00'))
+                        updated_at.replace("Z", "+00:00")
+                    )
                 except Exception:
                     pass
 
             if not most_recent and created_at:
                 try:
                     most_recent = datetime.fromisoformat(
-                        created_at.replace('Z', '+00:00'))
+                        created_at.replace("Z", "+00:00")
+                    )
                 except Exception:
                     pass
 
@@ -464,15 +521,15 @@ class ComprehensiveDataQualityAnalyzer:
         return total_score / len(records)
 
     def generate_recommendations(
-            self,
-            metrics: QualityMetrics,
-            config: dict) -> list[str]:
+        self, metrics: QualityMetrics, config: dict
+    ) -> list[str]:
         """Generate improvement recommendations"""
         recommendations = []
 
         if metrics.completeness_score < 0.8:
             low_completeness_fields = [
-                field for field, score in metrics.field_completeness.items()
+                field
+                for field, score in metrics.field_completeness.items()
                 if score < 0.5 and field in config["required_fields"]
             ]
             if low_completeness_fields:
@@ -505,8 +562,9 @@ class ComprehensiveDataQualityAnalyzer:
 
         return recommendations
 
-    async def analyze_table_quality(self, session: aiohttp.ClientSession,
-                                    table_name: str) -> QualityMetrics:
+    async def analyze_table_quality(
+        self, session: aiohttp.ClientSession, table_name: str
+    ) -> QualityMetrics:
         """Analyze quality metrics for a single table"""
         print(f"🔍 Analyzing {table_name}...")
 
@@ -525,11 +583,15 @@ class ComprehensiveDataQualityAnalyzer:
 
         # Calculate all quality dimensions
         completeness_score, field_completeness = self.calculate_completeness_score(
-            records, config)
+            records, config
+        )
         uniqueness_score, duplicate_records = self.calculate_uniqueness_score(
-            records, config)
+            records, config
+        )
         validity_score, invalid_records = self.calculate_validity_score(records, config)
-        consistency_score, consistency_issues = await self.calculate_consistency_score(session, records, config)
+        consistency_score, consistency_issues = await self.calculate_consistency_score(
+            session, records, config
+        )
         accuracy_score = self.calculate_accuracy_score(records, config)
         timeliness_score = self.calculate_timeliness_score(records)
 
@@ -540,16 +602,16 @@ class ComprehensiveDataQualityAnalyzer:
             "validity": 0.20,
             "consistency": 0.15,
             "accuracy": 0.10,
-            "timeliness": 0.10
+            "timeliness": 0.10,
         }
 
         overall_score = (
-            completeness_score * weights["completeness"] +
-            uniqueness_score * weights["uniqueness"] +
-            validity_score * weights["validity"] +
-            consistency_score * weights["consistency"] +
-            accuracy_score * weights["accuracy"] +
-            timeliness_score * weights["timeliness"]
+            completeness_score * weights["completeness"]
+            + uniqueness_score * weights["uniqueness"]
+            + validity_score * weights["validity"]
+            + consistency_score * weights["consistency"]
+            + accuracy_score * weights["accuracy"]
+            + timeliness_score * weights["timeliness"]
         )
 
         # Create metrics object
@@ -582,15 +644,20 @@ class ComprehensiveDataQualityAnalyzer:
                     duplicate_records,
                     invalid_records,
                     consistency_issues,
-                    []),
-                config))
+                    [],
+                ),
+                config,
+            ),
+        )
 
-        print(f"✅ {table_name} analysis complete: {overall_score*100:.1f}% quality score")
+        print(
+            f"✅ {table_name} analysis complete: {overall_score*100:.1f}% quality score"
+        )
         return metrics
 
-    def generate_database_report(self,
-                                 table_metrics: dict[str,
-                                                     QualityMetrics]) -> DatabaseQualityReport:
+    def generate_database_report(
+        self, table_metrics: dict[str, QualityMetrics]
+    ) -> DatabaseQualityReport:
         """Generate comprehensive database quality report"""
         total_records = sum(m.total_records for m in table_metrics.values())
         total_tables = len(table_metrics)
@@ -616,16 +683,18 @@ class ComprehensiveDataQualityAnalyzer:
         improvement_priorities = []
         for table_name, metrics in table_metrics.items():
             if metrics.recommendations:
-                improvement_priorities.extend([
-                    f"{table_name}: {rec}" for rec in metrics.recommendations
-                ])
+                improvement_priorities.extend(
+                    [f"{table_name}: {rec}" for rec in metrics.recommendations]
+                )
 
         # Check target achievements
         target_achievements = {}
         for table_name, metrics in table_metrics.items():
             config = self.table_configs.get(table_name, {})
             target = config.get("target_score", 90.0)
-            target_achievements[table_name] = metrics.overall_quality_score * 100 >= target
+            target_achievements[table_name] = (
+                metrics.overall_quality_score * 100 >= target
+            )
 
         return DatabaseQualityReport(
             analysis_date=datetime.now().isoformat(),
@@ -636,7 +705,7 @@ class ComprehensiveDataQualityAnalyzer:
             critical_issues=critical_issues,
             improvement_priorities=improvement_priorities[:20],  # Top 20 priorities
             quality_trends={},  # Would be populated with historical data
-            target_achievements=target_achievements
+            target_achievements=target_achievements,
         )
 
     def print_quality_report(self, report: DatabaseQualityReport):
@@ -660,7 +729,8 @@ class ComprehensiveDataQualityAnalyzer:
             print(f"\n{status} {table_name}")
             print(f"   📊 Records: {metrics.total_records:,}")
             print(
-                f"   🎯 Overall Score: {metrics.overall_quality_score*100:.1f}% (Target: {target}%)")
+                f"   🎯 Overall Score: {metrics.overall_quality_score*100:.1f}% (Target: {target}%)"
+            )
             print(f"   📈 Completeness: {metrics.completeness_score*100:.1f}%")
             print(f"   🔍 Uniqueness: {metrics.uniqueness_score*100:.1f}%")
             print(f"   ✅ Validity: {metrics.validity_score*100:.1f}%")
@@ -690,7 +760,8 @@ class ComprehensiveDataQualityAnalyzer:
         achieved_count = sum(report.target_achievements.values())
         total_count = len(report.target_achievements)
         print(
-            f"\n🎯 Targets Achieved: {achieved_count}/{total_count} ({achieved_count/total_count*100:.1f}%)")
+            f"\n🎯 Targets Achieved: {achieved_count}/{total_count} ({achieved_count/total_count*100:.1f}%)"
+        )
 
         print("\n📈 IMPROVEMENT PRIORITIES:")
         print("-" * 40)
@@ -715,10 +786,10 @@ class ComprehensiveDataQualityAnalyzer:
             "target_achievements": report.target_achievements,
             "table_metrics": {
                 name: asdict(metrics) for name, metrics in report.table_metrics.items()
-            }
+            },
         }
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(serializable_report, f, indent=2, ensure_ascii=False)
 
         print(f"💾 Quality report saved: {filename}")
@@ -736,7 +807,8 @@ class ComprehensiveDataQualityAnalyzer:
                 "Members (議員)",
                 "Bills (法案)",
                 "Speeches (発言)",
-                "Parties (政党)"]
+                "Parties (政党)",
+            ]
 
             for table_name in available_tables:
                 if table_name in self.table_configs:
@@ -771,9 +843,11 @@ async def main():
     # Summary recommendations
     if report.critical_issues:
         print(
-            f"\n⚠️ {len(report.critical_issues)} critical issues require immediate attention")
+            f"\n⚠️ {len(report.critical_issues)} critical issues require immediate attention"
+        )
     else:
         print("\n🎉 No critical issues detected - database quality is excellent!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

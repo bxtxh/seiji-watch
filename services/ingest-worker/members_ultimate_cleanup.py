@@ -11,7 +11,7 @@ from collections import defaultdict
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def members_ultimate_cleanup():
@@ -21,10 +21,7 @@ async def members_ultimate_cleanup():
     base_id = os.getenv("AIRTABLE_BASE_ID")
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     print("🏆 Starting Members Ultimate Cleanup...")
     print("🎯 Target: 91.6% → 95.0% (Final push to A+)")
@@ -50,16 +47,14 @@ async def members_ultimate_cleanup():
                     params["offset"] = offset
 
                 async with session.get(
-                    f"{base_url}/Members (議員)",
-                    headers=headers,
-                    params=params
+                    f"{base_url}/Members (議員)", headers=headers, params=params
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        records = data.get('records', [])
+                        records = data.get("records", [])
                         all_records.extend(records)
 
-                        offset = data.get('offset')
+                        offset = data.get("offset")
                         if not offset:
                             break
                     else:
@@ -70,7 +65,7 @@ async def members_ultimate_cleanup():
             # Group by name
             name_groups = defaultdict(list)
             for record in all_records:
-                name = record.get('fields', {}).get('Name', '').strip()
+                name = record.get("fields", {}).get("Name", "").strip()
                 if name:
                     name_groups[name].append(record)
 
@@ -85,15 +80,16 @@ async def members_ultimate_cleanup():
                     # Sort group by quality (completeness + recency)
                     scored_group = []
                     for record in group:
-                        fields = record.get('fields', {})
+                        fields = record.get("fields", {})
 
                         # Count filled fields
                         filled_count = sum(
-                            1 for v in fields.values() if v and str(v).strip())
+                            1 for v in fields.values() if v and str(v).strip()
+                        )
 
                         # Prefer recent updates
-                        updated_at = fields.get('Updated_At', '')
-                        recency_bonus = 0.1 if '2025-07-12T' in updated_at else 0
+                        updated_at = fields.get("Updated_At", "")
+                        recency_bonus = 0.1 if "2025-07-12T" in updated_at else 0
 
                         score = filled_count + recency_bonus
                         scored_group.append((score, record))
@@ -113,7 +109,7 @@ async def members_ultimate_cleanup():
                         try:
                             async with session.delete(
                                 f"{base_url}/Members (議員)/{delete_record['id']}",
-                                headers=headers
+                                headers=headers,
                             ) as response:
                                 if response.status == 200:
                                     deleted_count += 1
@@ -121,7 +117,8 @@ async def members_ultimate_cleanup():
 
                                     if duplicates_processed % 5 == 0:
                                         print(
-                                            f"   🗑️ Processed {duplicates_processed} duplicates in iteration {iteration}")
+                                            f"   🗑️ Processed {duplicates_processed} duplicates in iteration {iteration}"
+                                        )
                                 else:
                                     errors += 1
                         except Exception:
@@ -133,7 +130,8 @@ async def members_ultimate_cleanup():
                         break
 
             print(
-                f"🔍 Iteration {iteration}: Found {duplicates_found} duplicates, processed {duplicates_processed}")
+                f"🔍 Iteration {iteration}: Found {duplicates_found} duplicates, processed {duplicates_processed}"
+            )
 
             if duplicates_processed == 0:
                 print("✅ No more duplicates found - cleanup complete!")
@@ -152,38 +150,37 @@ async def members_ultimate_cleanup():
                 params["offset"] = offset
 
             async with session.get(
-                f"{base_url}/Members (議員)",
-                headers=headers,
-                params=params
+                f"{base_url}/Members (議員)", headers=headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     final_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
 
         # Remove any remaining synthetic data patterns
         synthetic_removed = 0
         for record in final_records:
-            name = record.get('fields', {}).get('Name', '')
+            name = record.get("fields", {}).get("Name", "")
 
             # Very aggressive synthetic data detection
             is_synthetic = (
-                any(char.isdigit() for char in name) or  # Contains numbers
-                len(name) <= 2 or  # Very short names
-                name in ['テスト', 'Test', 'test'] or  # Test keywords
-                name.count('太郎') > 0 and any(char.isdigit()
-                                             for char in name)  # Numbered Taro patterns
+                any(char.isdigit() for char in name)  # Contains numbers
+                or len(name) <= 2  # Very short names
+                or name in ["テスト", "Test", "test"]  # Test keywords
+                or name.count("太郎") > 0
+                and any(char.isdigit() for char in name)  # Numbered Taro patterns
             )
 
-            if is_synthetic and synthetic_removed < 10:  # Limit to prevent over-deletion
+            if (
+                is_synthetic and synthetic_removed < 10
+            ):  # Limit to prevent over-deletion
                 try:
                     async with session.delete(
-                        f"{base_url}/Members (議員)/{record['id']}",
-                        headers=headers
+                        f"{base_url}/Members (議員)/{record['id']}", headers=headers
                     ) as response:
                         if response.status == 200:
                             synthetic_removed += 1
@@ -205,16 +202,14 @@ async def members_ultimate_cleanup():
                 params["offset"] = offset
 
             async with session.get(
-                f"{base_url}/Members (議員)",
-                headers=headers,
-                params=params
+                f"{base_url}/Members (議員)", headers=headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     final_all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
 
@@ -237,7 +232,8 @@ async def members_ultimate_cleanup():
     print("   Before: 91.6% (A)")
     print(f"   Estimated After: {estimated_quality:.1f}%")
     print(
-        f"   Target Status: {'✅ ACHIEVED' if estimated_quality >= 95.0 else '🎯 VERY CLOSE'}")
+        f"   Target Status: {'✅ ACHIEVED' if estimated_quality >= 95.0 else '🎯 VERY CLOSE'}"
+    )
 
     # Final recommendation
     if estimated_quality >= 95.0:
@@ -253,8 +249,9 @@ async def members_ultimate_cleanup():
         "synthetic_removed": synthetic_removed,
         "errors": errors,
         "final_count": final_count,
-        "estimated_quality": estimated_quality
+        "estimated_quality": estimated_quality,
     }
+
 
 if __name__ == "__main__":
     asyncio.run(members_ultimate_cleanup())

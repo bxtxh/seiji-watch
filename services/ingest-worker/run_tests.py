@@ -28,53 +28,34 @@ def main():
     parser = argparse.ArgumentParser(description="Run Policy Issue Extraction tests")
 
     parser.add_argument(
-        '--type',
-        choices=['unit', 'integration', 'performance', 'all'],
-        default='all',
-        help='Type of tests to run'
+        "--type",
+        choices=["unit", "integration", "performance", "all"],
+        default="all",
+        help="Type of tests to run",
     )
 
     parser.add_argument(
-        '--coverage',
-        action='store_true',
-        help='Generate coverage report'
+        "--coverage", action="store_true", help="Generate coverage report"
+    )
+
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
+
+    parser.add_argument(
+        "--parallel", type=int, default=1, help="Number of parallel test workers"
+    )
+
+    parser.add_argument("--fast", action="store_true", help="Skip slow tests")
+
+    parser.add_argument(
+        "--specific", type=str, help="Run specific test file or test function"
     )
 
     parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Verbose output'
+        "--html-report", action="store_true", help="Generate HTML coverage report"
     )
 
     parser.add_argument(
-        '--parallel',
-        type=int,
-        default=1,
-        help='Number of parallel test workers'
-    )
-
-    parser.add_argument(
-        '--fast',
-        action='store_true',
-        help='Skip slow tests'
-    )
-
-    parser.add_argument(
-        '--specific',
-        type=str,
-        help='Run specific test file or test function'
-    )
-
-    parser.add_argument(
-        '--html-report',
-        action='store_true',
-        help='Generate HTML coverage report'
-    )
-
-    parser.add_argument(
-        '--junit-xml',
-        type=str,
-        help='Generate JUnit XML report to specified file'
+        "--junit-xml", type=str, help="Generate JUnit XML report to specified file"
     )
 
     args = parser.parse_args()
@@ -85,7 +66,9 @@ def main():
 
     # Install test dependencies
     print("Installing test dependencies...")
-    install_cmd = "pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout"
+    install_cmd = (
+        "pip install pytest pytest-asyncio pytest-cov pytest-xdist pytest-timeout"
+    )
     if not run_command(install_cmd, "Installing test dependencies"):
         print("Failed to install dependencies")
         return 1
@@ -105,10 +88,7 @@ def main():
 
     # Add coverage reporting
     if args.coverage:
-        pytest_cmd.extend([
-            "--cov=src",
-            "--cov-report=term-missing"
-        ])
+        pytest_cmd.extend(["--cov=src", "--cov-report=term-missing"])
 
         if args.html_report:
             pytest_cmd.extend(["--cov-report=html:htmlcov"])
@@ -118,11 +98,11 @@ def main():
         pytest_cmd.extend(["--junit-xml", args.junit_xml])
 
     # Add test type filtering
-    if args.type == 'unit':
+    if args.type == "unit":
         pytest_cmd.extend(["-m", "unit"])
-    elif args.type == 'integration':
+    elif args.type == "integration":
         pytest_cmd.extend(["-m", "integration"])
-    elif args.type == 'performance':
+    elif args.type == "performance":
         pytest_cmd.extend(["-m", "performance"])
 
     # Skip slow tests if requested
@@ -195,14 +175,22 @@ def generate_coverage_report():
 def run_test_suite_ci():
     """Run complete test suite for CI/CD."""
     commands = [
-        ("python -m pytest tests/test_policy_issue_extractor.py -v",
-         "Unit Tests - Policy Extractor"),
-        ("python -m pytest tests/test_airtable_issue_manager.py -v",
-         "Unit Tests - Airtable Manager"),
-        ("python -m pytest tests/test_integration_workflow.py::TestCompleteExtractionWorkflow -v",
-         "Integration Tests - Core Workflow"),
-        ("python -m pytest tests/test_integration_workflow.py::TestDataConsistency -v",
-         "Integration Tests - Data Consistency"),
+        (
+            "python -m pytest tests/test_policy_issue_extractor.py -v",
+            "Unit Tests - Policy Extractor",
+        ),
+        (
+            "python -m pytest tests/test_airtable_issue_manager.py -v",
+            "Unit Tests - Airtable Manager",
+        ),
+        (
+            "python -m pytest tests/test_integration_workflow.py::TestCompleteExtractionWorkflow -v",
+            "Integration Tests - Core Workflow",
+        ),
+        (
+            "python -m pytest tests/test_integration_workflow.py::TestDataConsistency -v",
+            "Integration Tests - Data Consistency",
+        ),
     ]
 
     all_success = True
@@ -221,27 +209,27 @@ def run_test_suite_ci():
 
 if __name__ == "__main__":
     # If run with specific function arguments
-    if len(
-        sys.argv) > 1 and sys.argv[1] in [
-        'unit',
-        'integration',
-        'performance',
-        'quick',
-        'coverage',
-            'ci']:
+    if len(sys.argv) > 1 and sys.argv[1] in [
+        "unit",
+        "integration",
+        "performance",
+        "quick",
+        "coverage",
+        "ci",
+    ]:
         test_type = sys.argv[1]
 
-        if test_type == 'unit':
+        if test_type == "unit":
             exit_code = 0 if run_unit_tests() else 1
-        elif test_type == 'integration':
+        elif test_type == "integration":
             exit_code = 0 if run_integration_tests() else 1
-        elif test_type == 'performance':
+        elif test_type == "performance":
             exit_code = 0 if run_performance_tests() else 1
-        elif test_type == 'quick':
+        elif test_type == "quick":
             exit_code = 0 if run_quick_tests() else 1
-        elif test_type == 'coverage':
+        elif test_type == "coverage":
             exit_code = 0 if generate_coverage_report() else 1
-        elif test_type == 'ci':
+        elif test_type == "ci":
             exit_code = run_test_suite_ci()
 
         sys.exit(exit_code)

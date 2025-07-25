@@ -58,7 +58,9 @@ async def create_bills_policy_categories_table():
 
         # Check if Bills_PolicyCategories table already exists by trying to list records
         try:
-            test_records = await client.list_bill_policy_category_relationships(max_records=1)
+            test_records = await client.list_bill_policy_category_relationships(
+                max_records=1
+            )
             logger.info("✅ Bills_PolicyCategories table already exists")
             logger.info(f"Current record count: {len(test_records)}")
             return True
@@ -67,7 +69,8 @@ async def create_bills_policy_categories_table():
             if "NOT_FOUND" in str(e) or "Table not found" in str(e):
                 logger.warning("⚠️  Bills_PolicyCategories table does not exist")
                 logger.info(
-                    "📋 Please create the table manually in Airtable with the following structure:")
+                    "📋 Please create the table manually in Airtable with the following structure:"
+                )
                 print_table_schema()
                 return False
             else:
@@ -152,7 +155,8 @@ async def verify_related_tables():
         # Check IssueCategories table
         categories = await client.list_issue_categories(max_records=1)
         logger.info(
-            f"✅ IssueCategories table found with {len(categories)} records (showing first 1)")
+            f"✅ IssueCategories table found with {len(categories)} records (showing first 1)"
+        )
 
         return True
 

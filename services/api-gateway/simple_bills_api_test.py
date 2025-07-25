@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 # Add the project root to the Python path
-sys.path.insert(0, '/Users/shogen/seiji-watch')
+sys.path.insert(0, "/Users/shogen/seiji-watch")
 
 
 # Create a simplified app for testing
@@ -16,6 +16,7 @@ app = FastAPI()
 try:
     # Import and add the bills router
     from src.routes.bills import router as bills_router
+
     app.include_router(bills_router)
     print("✅ Bills router imported successfully")
 except ImportError as e:
@@ -59,10 +60,7 @@ def test_bills_endpoints():
     # Test 3: Search bills endpoint
     print("\n🔍 Test 3: POST /api/bills/search")
     try:
-        search_data = {
-            "query": "test",
-            "max_records": 10
-        }
+        search_data = {"query": "test", "max_records": 10}
         response = client.post("/api/bills/search", json=search_data)
         print(f"   Status: {response.status_code}")
         if response.status_code == 500:

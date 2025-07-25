@@ -6,49 +6,79 @@ import urllib.parse
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Mock category data
-CATEGORY_TREE = {"L1": [{"id": "rec_l1_macroeconomics",
-                         "fields": {"CAP_Code": "1",
-                                    "Layer": "L1",
-                                    "Title_JA": "マクロ経済学",
-                                    "Title_EN": "Macroeconomics",
-                                    "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
-                                    "Is_Seed": True}},
-                        {"id": "rec_l1_civil_rights",
-                         "fields": {"CAP_Code": "2",
-                                    "Layer": "L1",
-                                    "Title_JA": "市民権・自由・少数者問題",
-                                    "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
-                                    "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
-                                    "Is_Seed": True}},
-                        {"id": "rec_l1_health",
-                         "fields": {"CAP_Code": "3",
-                                    "Layer": "L1",
-                                    "Title_JA": "健康",
-                                    "Title_EN": "Health",
-                                    "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
-                                    "Is_Seed": True}},
-                        {"id": "rec_l1_agriculture",
-                         "fields": {"CAP_Code": "4",
-                                    "Layer": "L1",
-                                    "Title_JA": "農業",
-                                    "Title_EN": "Agriculture",
-                                    "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
-                                    "Is_Seed": True}}],
-                 "L2": [{"id": "rec_l2_general_domestic_macro",
-                         "fields": {"CAP_Code": "105",
-                                    "Layer": "L2",
-                                    "Title_JA": "国内マクロ経済問題",
-                                    "Title_EN": "General Domestic Macroeconomic Issues",
-                                    "Parent_Category": ["rec_l1_macroeconomics"],
-                                    "Is_Seed": True}},
-                        {"id": "rec_l2_inflation_prices",
-                         "fields": {"CAP_Code": "106",
-                                    "Layer": "L2",
-                                    "Title_JA": "インフレ・物価・デフレ",
-                                    "Title_EN": "Inflation, Prices, and Deflation",
-                                    "Parent_Category": ["rec_l1_macroeconomics"],
-                                    "Is_Seed": True}}],
-                 "L3": []}
+CATEGORY_TREE = {
+    "L1": [
+        {
+            "id": "rec_l1_macroeconomics",
+            "fields": {
+                "CAP_Code": "1",
+                "Layer": "L1",
+                "Title_JA": "マクロ経済学",
+                "Title_EN": "Macroeconomics",
+                "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
+                "Is_Seed": True,
+            },
+        },
+        {
+            "id": "rec_l1_civil_rights",
+            "fields": {
+                "CAP_Code": "2",
+                "Layer": "L1",
+                "Title_JA": "市民権・自由・少数者問題",
+                "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
+                "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野。憲法的権利の保障と社会的平等の促進を含みます。",
+                "Is_Seed": True,
+            },
+        },
+        {
+            "id": "rec_l1_health",
+            "fields": {
+                "CAP_Code": "3",
+                "Layer": "L1",
+                "Title_JA": "健康",
+                "Title_EN": "Health",
+                "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野。国民の健康増進と医療アクセスの確保を目的とします。",
+                "Is_Seed": True,
+            },
+        },
+        {
+            "id": "rec_l1_agriculture",
+            "fields": {
+                "CAP_Code": "4",
+                "Layer": "L1",
+                "Title_JA": "農業",
+                "Title_EN": "Agriculture",
+                "Summary_150JA": "農業政策、食料安全保障、農村開発に関する政策分野。農業生産性の向上と農村地域の活性化を目指します。",
+                "Is_Seed": True,
+            },
+        },
+    ],
+    "L2": [
+        {
+            "id": "rec_l2_general_domestic_macro",
+            "fields": {
+                "CAP_Code": "105",
+                "Layer": "L2",
+                "Title_JA": "国内マクロ経済問題",
+                "Title_EN": "General Domestic Macroeconomic Issues",
+                "Parent_Category": ["rec_l1_macroeconomics"],
+                "Is_Seed": True,
+            },
+        },
+        {
+            "id": "rec_l2_inflation_prices",
+            "fields": {
+                "CAP_Code": "106",
+                "Layer": "L2",
+                "Title_JA": "インフレ・物価・デフレ",
+                "Title_EN": "Inflation, Prices, and Deflation",
+                "Parent_Category": ["rec_l1_macroeconomics"],
+                "Is_Seed": True,
+            },
+        },
+    ],
+    "L3": [],
+}
 
 DEMO_HTML = """
 <!DOCTYPE html>
@@ -193,35 +223,34 @@ class DemoHandler(BaseHTTPRequestHandler):
         path = parsed_path.path
 
         # CORS headers
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
-        if path == '/':
+        if path == "/":
             self.send_response(200)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write(DEMO_HTML.encode('utf-8'))
+            self.wfile.write(DEMO_HTML.encode("utf-8"))
 
-        elif path == '/api/tree':
+        elif path == "/api/tree":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json; charset=utf-8')
+            self.send_header("Content-type", "application/json; charset=utf-8")
             self.end_headers()
             self.wfile.write(
-                json.dumps(
-                    CATEGORY_TREE,
-                    ensure_ascii=False).encode('utf-8'))
+                json.dumps(CATEGORY_TREE, ensure_ascii=False).encode("utf-8")
+            )
 
-        elif path == '/health':
+        elif path == "/health":
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
             health_data = {
                 "status": "healthy",
                 "service": "epic7-demo",
-                "message": "EPIC 7 Demo Server Running"
+                "message": "EPIC 7 Demo Server Running",
             }
-            self.wfile.write(json.dumps(health_data).encode('utf-8'))
+            self.wfile.write(json.dumps(health_data).encode("utf-8"))
 
         else:
             self.send_response(404)
@@ -231,9 +260,9 @@ class DemoHandler(BaseHTTPRequestHandler):
         print(f"[DEMO] {format % args}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     port = 8080
-    server = HTTPServer(('127.0.0.1', port), DemoHandler)
+    server = HTTPServer(("127.0.0.1", port), DemoHandler)
     print(f"🚀 EPIC 7 Demo Server starting on http://127.0.0.1:{port}")
     print(f"📱 ブラウザで http://127.0.0.1:{port} にアクセスしてください")
     server.serve_forever()

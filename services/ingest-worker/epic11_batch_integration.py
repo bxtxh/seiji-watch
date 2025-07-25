@@ -12,7 +12,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class Epic11BatchIntegrator:
@@ -24,7 +24,7 @@ class Epic11BatchIntegrator:
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def transform_bill_minimal(self, bill: dict) -> dict:
@@ -32,15 +32,15 @@ class Epic11BatchIntegrator:
 
         return {
             "fields": {
-                "Name": bill['title'][:100],  # Airtable Name field length limit
-                "Bill_Number": bill['bill_id'],
-                "Bill_Status": bill['status'],
-                "Stage": bill['stage'],
-                "Submitter": bill['submitter'],
-                "Category": bill['category'],
-                "Bill_URL": bill['url'],
-                "Collection_Date": bill['collected_at'],
-                "Data_Source": "参議院公式サイト"
+                "Name": bill["title"][:100],  # Airtable Name field length limit
+                "Bill_Number": bill["bill_id"],
+                "Bill_Status": bill["status"],
+                "Stage": bill["stage"],
+                "Submitter": bill["submitter"],
+                "Category": bill["category"],
+                "Bill_URL": bill["url"],
+                "Collection_Date": bill["collected_at"],
+                "Data_Source": "参議院公式サイト",
             }
         }
 
@@ -60,7 +60,7 @@ class Epic11BatchIntegrator:
                     async with session.post(
                         f"{self.base_url}/Bills (法案)",
                         headers=self.headers,
-                        json=airtable_bill
+                        json=airtable_bill,
                     ) as response:
 
                         if response.status == 200:
@@ -71,7 +71,8 @@ class Epic11BatchIntegrator:
                             failed_count += 1
                             error = await response.text()
                             print(
-                                f"  ❌ Failed: {bill['title'][:40]}... - {response.status}")
+                                f"  ❌ Failed: {bill['title'][:40]}... - {response.status}"
+                            )
                             if failed_count <= 2:  # Show first few errors
                                 print(f"     Error: {error[:100]}")
 
@@ -83,7 +84,8 @@ class Epic11BatchIntegrator:
                     print(f"  ❌ Exception: {bill['title'][:40]}... - {str(e)[:100]}")
 
         print(
-            f"📊 Batch {batch_num} results: ✅ {success_count} success, ❌ {failed_count} failed")
+            f"📊 Batch {batch_num} results: ✅ {success_count} success, ❌ {failed_count} failed"
+        )
         return success_count, failed_count
 
     async def run_full_integration(self, batch_size: int = 20):
@@ -95,11 +97,11 @@ class Epic11BatchIntegrator:
         print("=" * 60)
 
         # Load production data
-        data_file = '/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json'
-        with open(data_file, encoding='utf-8') as f:
+        data_file = "/Users/shogen/seiji-watch/services/ingest-worker/production_scraping_june2025_20250709_032237.json"
+        with open(data_file, encoding="utf-8") as f:
             data = json.load(f)
 
-        bills = data['production_dataset']['bills']
+        bills = data["production_dataset"]["bills"]
         print(f"📋 Total bills to process: {len(bills)}")
 
         # Calculate batches
@@ -112,7 +114,7 @@ class Epic11BatchIntegrator:
 
         # Process in batches
         for i in range(0, len(bills), batch_size):
-            batch = bills[i:i + batch_size]
+            batch = bills[i : i + batch_size]
             batch_num = i // batch_size + 1
 
             batch_success, batch_failed = await self.process_bill_batch(
@@ -141,7 +143,8 @@ class Epic11BatchIntegrator:
         print("=" * 60)
         print(f"⏱️  Total time: {duration:.1f} seconds")
         print(
-            f"📋 Bills: {total_success}/{len(bills)} ({total_success/len(bills)*100:.1f}%)")
+            f"📋 Bills: {total_success}/{len(bills)} ({total_success/len(bills)*100:.1f}%)"
+        )
         print(f"✅ Success: {total_success}")
         print(f"❌ Failed: {total_failed}")
 
@@ -178,6 +181,7 @@ async def main():
     except Exception as e:
         print(f"💥 Integration failed with exception: {e}")
         raise
+
 
 if __name__ == "__main__":
     asyncio.run(main())

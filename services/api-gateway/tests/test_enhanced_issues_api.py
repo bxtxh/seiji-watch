@@ -13,7 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 from main import app
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 class TestEnhancedIssuesAPI:
@@ -39,8 +39,8 @@ class TestEnhancedIssuesAPI:
                     "Confidence": 0.8,
                     "Status": "approved",
                     "Source_Bill_ID": "bill_001",
-                    "Created_At": "2024-01-01T10:00:00Z"
-                }
+                    "Created_At": "2024-01-01T10:00:00Z",
+                },
             }
         ]
 
@@ -55,9 +55,9 @@ class TestEnhancedIssuesAPI:
                         "issue_id": "issue_c1",
                         "label_lv2": "子の政策課題",
                         "confidence": 0.7,
-                        "source_bill_id": "bill_001"
+                        "source_bill_id": "bill_001",
                     }
-                ]
+                ],
             }
         }
 
@@ -67,7 +67,7 @@ class TestEnhancedIssuesAPI:
             "pending_count": 15,
             "rejected_count": 5,
             "average_confidence": 0.85,
-            "average_quality_score": 0.75
+            "average_quality_score": 0.75,
         }
 
         mock_manager.health_check.return_value = True
@@ -85,14 +85,14 @@ class TestEnhancedIssuesAPI:
                 {
                     "label_lv1": "介護制度を改善する",
                     "label_lv2": "高齢者介護制度の包括的な見直しを実施する",
-                    "confidence": 0.9
+                    "confidence": 0.9,
                 }
             ],
             "metadata": {
                 "extraction_time_ms": 1500,
                 "model_used": "gpt-4",
-                "individual_quality_scores": [0.85]
-            }
+                "individual_quality_scores": [0.85],
+            },
         }
 
         mock_extractor.health_check.return_value = True
@@ -102,8 +102,8 @@ class TestEnhancedIssuesAPI:
     def test_get_issues_without_level_filter(self, client, mock_airtable_manager):
         """Test getting issues without level filtering."""
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             mock_airtable_manager.list_issues_by_status.return_value = [
                 {
@@ -113,8 +113,8 @@ class TestEnhancedIssuesAPI:
                         "Label_Lv1": "政策課題1",
                         "Label_Lv2": "",
                         "Parent_ID": None,
-                        "Status": "approved"
-                    }
+                        "Status": "approved",
+                    },
                 }
             ]
 
@@ -129,8 +129,8 @@ class TestEnhancedIssuesAPI:
     def test_get_issues_with_level1_filter(self, client, mock_airtable_manager):
         """Test getting level 1 issues."""
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/?level=1")
 
@@ -144,8 +144,8 @@ class TestEnhancedIssuesAPI:
     def test_get_issues_with_level2_filter(self, client, mock_airtable_manager):
         """Test getting level 2 issues."""
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/?level=2")
 
@@ -165,8 +165,8 @@ class TestEnhancedIssuesAPI:
     def test_get_issue_tree(self, client, mock_airtable_manager):
         """Test getting hierarchical issue tree."""
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/tree")
 
@@ -184,14 +184,14 @@ class TestEnhancedIssuesAPI:
         mock_issue_record.to_dict.return_value = {
             "issue_id": "issue_001",
             "label_lv1": "テスト課題",
-            "confidence": 0.8
+            "confidence": 0.8,
         }
 
         mock_airtable_manager.get_issue_record.return_value = mock_issue_record
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/rec_123")
 
@@ -205,8 +205,8 @@ class TestEnhancedIssuesAPI:
         mock_airtable_manager.get_issue_record.return_value = None
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/nonexistent")
 
@@ -224,20 +224,21 @@ class TestEnhancedIssuesAPI:
             "expected_effects": "介護費用の削減",
             "key_provisions": ["自己負担率見直し"],
             "submitter": "厚生労働省",
-            "category": "社会保障"
+            "category": "社会保障",
         }
 
         # Mock issue pair creation
         mock_airtable_manager.create_issue_pair.return_value = (
-            "rec_lv1_123", "rec_lv2_456"
+            "rec_lv1_123",
+            "rec_lv2_456",
         )
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ), patch(
-            'routes.enhanced_issues.get_policy_issue_extractor',
-            return_value=mock_policy_extractor
+            "routes.enhanced_issues.get_policy_issue_extractor",
+            return_value=mock_policy_extractor,
         ):
 
             response = client.post("/api/issues/extract", json=request_data)
@@ -252,7 +253,7 @@ class TestEnhancedIssuesAPI:
         """Test extraction with validation errors."""
         invalid_request = {
             "bill_id": "",  # Empty bill ID should fail validation
-            "bill_title": "テスト法案"
+            "bill_title": "テスト法案",
         }
 
         response = client.post("/api/issues/extract", json=invalid_request)
@@ -264,16 +265,8 @@ class TestEnhancedIssuesAPI:
     ):
         """Test batch extraction of issues."""
         request_data = [
-            {
-                "bill_id": "bill_001",
-                "bill_title": "法案1",
-                "bill_outline": "概要1"
-            },
-            {
-                "bill_id": "bill_002",
-                "bill_title": "法案2",
-                "bill_outline": "概要2"
-            }
+            {"bill_id": "bill_001", "bill_title": "法案1", "bill_outline": "概要1"},
+            {"bill_id": "bill_002", "bill_title": "法案2", "bill_outline": "概要2"},
         ]
 
         # Mock batch extraction
@@ -284,7 +277,7 @@ class TestEnhancedIssuesAPI:
                 "issues": [
                     {"label_lv1": "課題1", "label_lv2": "詳細課題1", "confidence": 0.8}
                 ],
-                "metadata": {"individual_quality_scores": [0.8]}
+                "metadata": {"individual_quality_scores": [0.8]},
             },
             {
                 "bill_id": "bill_002",
@@ -292,18 +285,18 @@ class TestEnhancedIssuesAPI:
                 "issues": [
                     {"label_lv1": "課題2", "label_lv2": "詳細課題2", "confidence": 0.9}
                 ],
-                "metadata": {"individual_quality_scores": [0.9]}
-            }
+                "metadata": {"individual_quality_scores": [0.9]},
+            },
         ]
 
         mock_airtable_manager.create_issue_pair.return_value = ("rec_lv1", "rec_lv2")
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ), patch(
-            'routes.enhanced_issues.get_policy_issue_extractor',
-            return_value=mock_policy_extractor
+            "routes.enhanced_issues.get_policy_issue_extractor",
+            return_value=mock_policy_extractor,
         ):
 
             response = client.post("/api/issues/extract/batch", json=request_data)
@@ -320,7 +313,7 @@ class TestEnhancedIssuesAPI:
             {
                 "bill_id": f"bill_{i:03d}",
                 "bill_title": f"法案{i}",
-                "bill_outline": f"概要{i}"
+                "bill_outline": f"概要{i}",
             }
             for i in range(15)  # Exceed limit of 10
         ]
@@ -332,16 +325,13 @@ class TestEnhancedIssuesAPI:
 
     def test_update_issue_status(self, client, mock_airtable_manager):
         """Test updating issue status."""
-        request_data = {
-            "status": "approved",
-            "reviewer_notes": "High quality issue"
-        }
+        request_data = {"status": "approved", "reviewer_notes": "High quality issue"}
 
         mock_airtable_manager.update_issue_status.return_value = True
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.patch("/api/issues/rec_123/status", json=request_data)
 
@@ -352,10 +342,7 @@ class TestEnhancedIssuesAPI:
 
     def test_update_issue_status_invalid_status(self, client):
         """Test updating issue with invalid status."""
-        request_data = {
-            "status": "invalid_status",
-            "reviewer_notes": "Test notes"
-        }
+        request_data = {"status": "invalid_status", "reviewer_notes": "Test notes"}
 
         response = client.patch("/api/issues/rec_123/status", json=request_data)
 
@@ -367,7 +354,7 @@ class TestEnhancedIssuesAPI:
             "query": "介護",
             "level": 1,
             "status": "approved",
-            "max_records": 50
+            "max_records": 50,
         }
 
         mock_airtable_manager.search_issues.return_value = [
@@ -376,14 +363,14 @@ class TestEnhancedIssuesAPI:
                 "fields": {
                     "Issue_ID": "issue_1",
                     "Label_Lv1": "介護制度を改善する",
-                    "Status": "approved"
-                }
+                    "Status": "approved",
+                },
             }
         ]
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.post("/api/issues/search", json=request_data)
 
@@ -395,10 +382,7 @@ class TestEnhancedIssuesAPI:
 
     def test_search_issues_empty_query(self, client):
         """Test searching with empty query."""
-        request_data = {
-            "query": "",
-            "status": "approved"
-        }
+        request_data = {"query": "", "status": "approved"}
 
         response = client.post("/api/issues/search", json=request_data)
 
@@ -407,8 +391,8 @@ class TestEnhancedIssuesAPI:
     def test_get_issue_statistics(self, client, mock_airtable_manager):
         """Test getting issue statistics."""
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/statistics")
 
@@ -423,8 +407,8 @@ class TestEnhancedIssuesAPI:
         mock_airtable_manager.count_pending_issues.return_value = 15
 
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ):
             response = client.get("/api/issues/pending/count")
 
@@ -436,11 +420,11 @@ class TestEnhancedIssuesAPI:
     def test_health_check(self, client, mock_airtable_manager, mock_policy_extractor):
         """Test health check endpoint."""
         with patch(
-            'routes.enhanced_issues.get_airtable_issue_manager',
-            return_value=mock_airtable_manager
+            "routes.enhanced_issues.get_airtable_issue_manager",
+            return_value=mock_airtable_manager,
         ), patch(
-            'routes.enhanced_issues.get_policy_issue_extractor',
-            return_value=mock_policy_extractor
+            "routes.enhanced_issues.get_policy_issue_extractor",
+            return_value=mock_policy_extractor,
         ):
 
             response = client.get("/api/issues/health")
@@ -495,7 +479,7 @@ class TestInputValidation:
             "1' OR '1'='1",
             "<script>alert('xss')</script>",
             "{{7*7}}",
-            "../../../etc/passwd"
+            "../../../etc/passwd",
         ]
 
         for malicious_input in malicious_inputs:
@@ -508,7 +492,7 @@ class TestInputValidation:
             request_data = {
                 "bill_id": malicious_input,
                 "bill_title": "Valid title",
-                "bill_outline": "Valid outline"
+                "bill_outline": "Valid outline",
             }
             response = client.post("/api/issues/extract", json=request_data)
             # Should return validation error or handle safely
@@ -522,7 +506,7 @@ class TestInputValidation:
         request_data = {
             "bill_id": "valid_id",
             "bill_title": long_string,  # Exceeds validation limit
-            "bill_outline": "Valid outline"
+            "bill_outline": "Valid outline",
         }
 
         response = client.post("/api/issues/extract", json=request_data)
@@ -533,12 +517,13 @@ class TestInputValidation:
         special_chars_data = {
             "bill_id": "test_001",
             "bill_title": "テスト法案 with émojí 🏛️ and spéciàl chars",
-            "bill_outline": "概要 with 特殊文字 & symbols !@#$%^&*()"
+            "bill_outline": "概要 with 特殊文字 & symbols !@#$%^&*()",
         }
 
         # Should handle special characters gracefully
-        with patch('routes.enhanced_issues.get_airtable_issue_manager'), \
-                patch('routes.enhanced_issues.get_policy_issue_extractor'):
+        with patch("routes.enhanced_issues.get_airtable_issue_manager"), patch(
+            "routes.enhanced_issues.get_policy_issue_extractor"
+        ):
             response = client.post("/api/issues/extract", json=special_chars_data)
             # Should not crash due to special characters
             assert response.status_code in [200, 422, 500]

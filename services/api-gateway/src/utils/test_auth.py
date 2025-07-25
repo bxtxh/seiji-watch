@@ -13,26 +13,26 @@ def generate_test_token(
     user_id: str = "test_user",
     email: str = "test@example.com",
     scopes: list[str] = None,
-    secret_key: str = None
+    secret_key: str = None,
 ) -> str:
     """Generate a test JWT token for CI/CD and testing."""
 
     if scopes is None:
-        scopes = ['read', 'write', 'admin']  # Full permissions for testing
+        scopes = ["read", "write", "admin"]  # Full permissions for testing
 
     if secret_key is None:
-        secret_key = os.getenv('JWT_SECRET_KEY', 'test-jwt-secret-unified-for-ci-cd')
+        secret_key = os.getenv("JWT_SECRET_KEY", "test-jwt-secret-unified-for-ci-cd")
 
     payload = {
-        'user_id': user_id,
-        'email': email,
-        'scopes': scopes,
-        'exp': datetime.utcnow() + timedelta(hours=24),
-        'iat': datetime.utcnow(),
-        'type': 'access_token'
+        "user_id": user_id,
+        "email": email,
+        "scopes": scopes,
+        "exp": datetime.utcnow() + timedelta(hours=24),
+        "iat": datetime.utcnow(),
+        "type": "access_token",
     }
 
-    token = jwt.encode(payload, secret_key, algorithm='HS256')
+    token = jwt.encode(payload, secret_key, algorithm="HS256")
     return token
 
 
@@ -41,16 +41,13 @@ def get_auth_headers(token: str = None) -> dict:
     if token is None:
         token = generate_test_token()
 
-    return {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
+    return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
 
 def get_api_bearer_token() -> str:
     """Get API bearer token from environment or generate test token."""
     # First try to get from environment (for CI/CD)
-    api_token = os.getenv('API_BEARER_TOKEN')
+    api_token = os.getenv("API_BEARER_TOKEN")
     if api_token:
         return api_token
 
@@ -58,7 +55,7 @@ def get_api_bearer_token() -> str:
     return generate_test_token()
 
 
-def make_authenticated_request(url: str, method: str = 'GET', **kwargs) -> dict:
+def make_authenticated_request(url: str, method: str = "GET", **kwargs) -> dict:
     """Make an authenticated API request with proper error handling."""
     import requests
 
@@ -66,9 +63,9 @@ def make_authenticated_request(url: str, method: str = 'GET', **kwargs) -> dict:
     headers = get_auth_headers(token)
 
     # Merge with any existing headers
-    if 'headers' in kwargs:
-        headers.update(kwargs['headers'])
-    kwargs['headers'] = headers
+    if "headers" in kwargs:
+        headers.update(kwargs["headers"])
+    kwargs["headers"] = headers
 
     try:
         response = requests.request(method, url, **kwargs)
@@ -91,5 +88,6 @@ if __name__ == "__main__":
 
     # Test API bearer token
     api_token = get_api_bearer_token()
-    print(f"API Bearer Token: {api_token[:20]}..." if len(
-        api_token) > 20 else api_token)
+    print(
+        f"API Bearer Token: {api_token[:20]}..." if len(api_token) > 20 else api_token
+    )

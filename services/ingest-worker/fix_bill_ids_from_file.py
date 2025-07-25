@@ -15,6 +15,7 @@ from datetime import datetime
 @dataclass
 class BillRecord:
     """法案レコード構造"""
+
     bill_id: str | None
     title: str
     status: str
@@ -37,7 +38,7 @@ class BillIDGenerator:
             "衆議院": "H",
             "参議院": "S",
             "両院": "B",
-            "": "G"  # 政府提出法案
+            "": "G",  # 政府提出法案
         }
 
         self.CATEGORY_CODES = {
@@ -46,7 +47,7 @@ class BillIDGenerator:
             "予算関連": "B",
             "条約": "T",
             "承認": "A",
-            "その他": "O"
+            "その他": "O",
         }
 
     def set_existing_ids(self, existing_ids: set):
@@ -128,22 +129,24 @@ class BillIDGenerator:
 
 def load_bills_from_file(file_path: str) -> list[BillRecord]:
     """ファイルからBillsデータを読み込み"""
-    with open(file_path, encoding='utf-8') as f:
+    with open(file_path, encoding="utf-8") as f:
         data = json.load(f)
 
     bills = []
-    for bill_data in data.get('bills', []):
-        bills.append(BillRecord(
-            bill_id=bill_data.get('bill_id', ''),
-            title=bill_data.get('title', ''),
-            status=bill_data.get('status', ''),
-            stage=bill_data.get('stage', ''),
-            submitter=bill_data.get('submitter', ''),
-            category=bill_data.get('category', ''),
-            url=bill_data.get('url', ''),
-            summary=bill_data.get('summary'),
-            submission_date=bill_data.get('submission_date')
-        ))
+    for bill_data in data.get("bills", []):
+        bills.append(
+            BillRecord(
+                bill_id=bill_data.get("bill_id", ""),
+                title=bill_data.get("title", ""),
+                status=bill_data.get("status", ""),
+                stage=bill_data.get("stage", ""),
+                submitter=bill_data.get("submitter", ""),
+                category=bill_data.get("category", ""),
+                url=bill_data.get("url", ""),
+                summary=bill_data.get("summary"),
+                submission_date=bill_data.get("submission_date"),
+            )
+        )
 
     return bills
 
@@ -157,7 +160,7 @@ def analyze_bill_ids(bills: list[BillRecord]) -> dict:
         "invalid_format": 0,
         "existing_ids": set(),
         "missing_bills": [],
-        "id_patterns": {}
+        "id_patterns": {},
     }
 
     for bill in bills:
@@ -166,15 +169,18 @@ def analyze_bill_ids(bills: list[BillRecord]) -> dict:
             analysis["existing_ids"].add(bill.bill_id)
 
             # フォーマット分析
-            if re.match(r'^[HSBG][CMBTAO][0-9]{3}$', bill.bill_id):
-                analysis["id_patterns"]["standard"] = analysis["id_patterns"].get(
-                    "standard", 0) + 1
-            elif re.match(r'^[0-9]+-[0-9]+$', bill.bill_id):
-                analysis["id_patterns"]["legacy"] = analysis["id_patterns"].get(
-                    "legacy", 0) + 1
+            if re.match(r"^[HSBG][CMBTAO][0-9]{3}$", bill.bill_id):
+                analysis["id_patterns"]["standard"] = (
+                    analysis["id_patterns"].get("standard", 0) + 1
+                )
+            elif re.match(r"^[0-9]+-[0-9]+$", bill.bill_id):
+                analysis["id_patterns"]["legacy"] = (
+                    analysis["id_patterns"].get("legacy", 0) + 1
+                )
             else:
-                analysis["id_patterns"]["other"] = analysis["id_patterns"].get(
-                    "other", 0) + 1
+                analysis["id_patterns"]["other"] = (
+                    analysis["id_patterns"].get("other", 0) + 1
+                )
                 analysis["invalid_format"] += 1
         else:
             analysis["missing_bill_id"] += 1
@@ -184,8 +190,8 @@ def analyze_bill_ids(bills: list[BillRecord]) -> dict:
 
 
 def generate_bill_ids_for_missing(
-        bills: list[BillRecord],
-        existing_ids: set) -> list[dict]:
+    bills: list[BillRecord], existing_ids: set
+) -> list[dict]:
     """欠損Bill_IDを生成"""
     generator = BillIDGenerator()
     generator.set_existing_ids(existing_ids)
@@ -195,21 +201,25 @@ def generate_bill_ids_for_missing(
         if not bill.bill_id or not bill.bill_id.strip():
             try:
                 new_id = generator.generate_bill_id(bill)
-                results.append({
-                    "title": bill.title,
-                    "original_id": bill.bill_id,
-                    "new_id": new_id,
-                    "submitter": bill.submitter,
-                    "category": bill.category,
-                    "status": bill.status
-                })
+                results.append(
+                    {
+                        "title": bill.title,
+                        "original_id": bill.bill_id,
+                        "new_id": new_id,
+                        "submitter": bill.submitter,
+                        "category": bill.category,
+                        "status": bill.status,
+                    }
+                )
             except Exception as e:
-                results.append({
-                    "title": bill.title,
-                    "original_id": bill.bill_id,
-                    "new_id": None,
-                    "error": str(e)
-                })
+                results.append(
+                    {
+                        "title": bill.title,
+                        "original_id": bill.bill_id,
+                        "new_id": None,
+                        "error": str(e),
+                    }
+                )
 
     return results
 
@@ -236,32 +246,32 @@ def main():
         print(f"  Bill_ID無し: {analysis['missing_bill_id']}")
         print(f"  不正フォーマット: {analysis['invalid_format']}")
         print(
-            f"  欠損率: {(analysis['missing_bill_id']/analysis['total_bills'])*100:.1f}%")
+            f"  欠損率: {(analysis['missing_bill_id']/analysis['total_bills'])*100:.1f}%"
+        )
 
-        if analysis['id_patterns']:
+        if analysis["id_patterns"]:
             print("\n  既存IDパターン:")
-            for pattern, count in analysis['id_patterns'].items():
+            for pattern, count in analysis["id_patterns"].items():
                 print(f"    {pattern}: {count}件")
 
         # 欠損データのサンプル表示
-        if analysis['missing_bills']:
+        if analysis["missing_bills"]:
             print("\n  欠損データ例 (先頭10件):")
-            for i, bill in enumerate(analysis['missing_bills'][:10]):
+            for i, bill in enumerate(analysis["missing_bills"][:10]):
                 print(f"    {i+1}. {bill.title}")
                 print(f"       提出者: {bill.submitter}, カテゴリ: {bill.category}")
 
         # Bill ID生成
-        if analysis['missing_bill_id'] > 0:
+        if analysis["missing_bill_id"] > 0:
             print(f"\n🔨 Step 3: Bill ID生成 ({analysis['missing_bill_id']}件)")
 
             generated_results = generate_bill_ids_for_missing(
-                analysis['missing_bills'],
-                analysis['existing_ids']
+                analysis["missing_bills"], analysis["existing_ids"]
             )
 
             # 結果表示
-            successful = [r for r in generated_results if r.get('new_id')]
-            failed = [r for r in generated_results if not r.get('new_id')]
+            successful = [r for r in generated_results if r.get("new_id")]
+            failed = [r for r in generated_results if not r.get("new_id")]
 
             print(f"  生成成功: {len(successful)}件")
             print(f"  生成失敗: {len(failed)}件")
@@ -271,13 +281,15 @@ def main():
                 for i, result in enumerate(successful[:10]):
                     print(f"    {i+1}. {result['new_id']}: {result['title']}")
                     print(
-                        f"       提出者: {result['submitter']}, カテゴリ: {result['category']}")
+                        f"       提出者: {result['submitter']}, カテゴリ: {result['category']}"
+                    )
 
             if failed:
                 print("\n  ⚠️  生成失敗例:")
                 for result in failed[:5]:
                     print(
-                        f"    - {result['title']}: {result.get('error', 'Unknown error')}")
+                        f"    - {result['title']}: {result.get('error', 'Unknown error')}"
+                    )
 
             # 結果を保存
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -287,16 +299,16 @@ def main():
                 "timestamp": timestamp,
                 "source_file": file_path,
                 "analysis": {
-                    "total_bills": analysis['total_bills'],
-                    "has_bill_id": analysis['has_bill_id'],
-                    "missing_bill_id": analysis['missing_bill_id'],
-                    "invalid_format": analysis['invalid_format'],
-                    "id_patterns": analysis['id_patterns']
+                    "total_bills": analysis["total_bills"],
+                    "has_bill_id": analysis["has_bill_id"],
+                    "missing_bill_id": analysis["missing_bill_id"],
+                    "invalid_format": analysis["invalid_format"],
+                    "id_patterns": analysis["id_patterns"],
                 },
-                "generated_results": generated_results
+                "generated_results": generated_results,
             }
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(output_data, f, ensure_ascii=False, indent=2)
 
             print(f"\n📄 結果保存: {output_file}")
@@ -307,7 +319,7 @@ def main():
             # 生成されたIDのパターン分析
             pattern_count = {}
             for result in successful:
-                pattern = result['new_id'][:2]
+                pattern = result["new_id"][:2]
                 pattern_count[pattern] = pattern_count.get(pattern, 0) + 1
 
             print("  生成IDパターン:")
@@ -317,21 +329,21 @@ def main():
             # 提出者別統計
             submitter_count = {}
             for result in successful:
-                submitter = result['submitter']
+                submitter = result["submitter"]
                 submitter_count[submitter] = submitter_count.get(submitter, 0) + 1
 
             print("\n  提出者別統計:")
             for submitter, count in sorted(
-                    submitter_count.items(), key=lambda x: x[1], reverse=True)[
-                    :10]:
+                submitter_count.items(), key=lambda x: x[1], reverse=True
+            )[:10]:
                 print(f"    {submitter}: {count}件")
 
         print("\n🎉 Bill ID修正処理が完了しました！")
 
-        if analysis['missing_bill_id'] == 0:
+        if analysis["missing_bill_id"] == 0:
             print("✅ 全ての法案にBill_IDが設定されています。")
         else:
-            completion_rate = (len(successful) / analysis['missing_bill_id']) * 100
+            completion_rate = (len(successful) / analysis["missing_bill_id"]) * 100
             print(f"📊 修正完了率: {completion_rate:.1f}%")
 
         return 0

@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DiscordNotificationConfig:
     """Configuration for Discord notifications."""
+
     webhook_url: str
     channel_id: str | None = None
     notification_time: time = field(default_factory=lambda: time(14, 0))  # 14:00
@@ -62,27 +63,20 @@ class DiscordNotificationBot:
             notification_time = time(hour, minute)
         except ValueError:
             self.logger.warning(
-                f"Invalid notification time format: {notification_time_str}, using default 14:00")
+                f"Invalid notification time format: {notification_time_str}, using default 14:00"
+            )
             notification_time = time(14, 0)
 
         return DiscordNotificationConfig(
             webhook_url=webhook_url,
             channel_id=os.getenv("DISCORD_CHANNEL_ID"),
             notification_time=notification_time,
-            timezone=os.getenv(
-                "DISCORD_TIMEZONE",
-                "Asia/Tokyo"),
-            enabled=os.getenv(
-                "DISCORD_NOTIFICATIONS_ENABLED",
-                "true").lower() == "true",
-            retry_attempts=int(
-                os.getenv(
-                    "DISCORD_RETRY_ATTEMPTS",
-                    "3")),
-            retry_delay=float(
-                os.getenv(
-                    "DISCORD_RETRY_DELAY",
-                    "60.0")))
+            timezone=os.getenv("DISCORD_TIMEZONE", "Asia/Tokyo"),
+            enabled=os.getenv("DISCORD_NOTIFICATIONS_ENABLED", "true").lower()
+            == "true",
+            retry_attempts=int(os.getenv("DISCORD_RETRY_ATTEMPTS", "3")),
+            retry_delay=float(os.getenv("DISCORD_RETRY_DELAY", "60.0")),
+        )
 
     async def start(self):
         """Start the notification scheduler."""
@@ -98,7 +92,8 @@ class DiscordNotificationBot:
         self.notification_task = asyncio.create_task(self._notification_scheduler())
 
         self.logger.info(
-            f"Discord notification bot started - notifications at {self.config.notification_time} {self.config.timezone}")
+            f"Discord notification bot started - notifications at {self.config.notification_time} {self.config.timezone}"
+        )
 
     async def stop(self):
         """Stop the notification scheduler."""
@@ -130,7 +125,8 @@ class DiscordNotificationBot:
 
                 if wait_seconds > 0:
                     self.logger.info(
-                        f"Next notification scheduled for {next_notification.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+                        f"Next notification scheduled for {next_notification.strftime('%Y-%m-%d %H:%M:%S %Z')}"
+                    )
 
                     # Wait until next notification time
                     await asyncio.sleep(wait_seconds)
@@ -155,7 +151,7 @@ class DiscordNotificationBot:
             hour=self.config.notification_time.hour,
             minute=self.config.notification_time.minute,
             second=0,
-            microsecond=0
+            microsecond=0,
         )
 
         # If today's notification time has passed, schedule for tomorrow
@@ -187,7 +183,8 @@ class DiscordNotificationBot:
 
             if success:
                 self.logger.info(
-                    f"Daily notification sent successfully - {pending_count} pending issues")
+                    f"Daily notification sent successfully - {pending_count} pending issues"
+                )
             else:
                 self.logger.error("Failed to send daily notification after all retries")
 
@@ -195,68 +192,77 @@ class DiscordNotificationBot:
             self.logger.error(f"Error sending daily notification: {e}")
 
     def _create_notification_message(
-            self, pending_count: int, stats: dict[str, Any]) -> dict[str, Any]:
+        self, pending_count: int, stats: dict[str, Any]
+    ) -> dict[str, Any]:
         """Create Discord message for notification."""
 
         # Get current date in JST
-        current_date = datetime.now(self.timezone).strftime('%Y年%m月%d日')
+        current_date = datetime.now(self.timezone).strftime("%Y年%m月%d日")
 
         # Choose emoji and message based on pending count
         if pending_count == 0:
             emoji = "✅"
             title = "レビュー完了"
             description = "本日のレビュー待ちイシューはありません。"
-            color = 0x00ff00  # Green
+            color = 0x00FF00  # Green
         elif pending_count <= 5:
             emoji = "📋"
             title = "レビュー通知"
             description = f"レビュー待ちのイシューが **{pending_count}件** あります。"
-            color = 0x3498db  # Blue
+            color = 0x3498DB  # Blue
         elif pending_count <= 20:
             emoji = "⚠️"
             title = "レビュー要注意"
             description = f"レビュー待ちのイシューが **{pending_count}件** あります。"
-            color = 0xf39c12  # Orange
+            color = 0xF39C12  # Orange
         else:
             emoji = "🚨"
             title = "レビュー緊急"
-            description = f"レビュー待ちのイシューが **{pending_count}件** と多数あります。"
-            color = 0xe74c3c  # Red
+            description = (
+                f"レビュー待ちのイシューが **{pending_count}件** と多数あります。"
+            )
+            color = 0xE74C3C  # Red
 
         # Build embed fields
         fields = []
 
         if pending_count > 0:
-            fields.append({
-                "name": "📝 レビュー待ち",
-                "value": f"{pending_count}件",
-                "inline": True
-            })
+            fields.append(
+                {
+                    "name": "📝 レビュー待ち",
+                    "value": f"{pending_count}件",
+                    "inline": True,
+                }
+            )
 
         # Add statistics if available
         if stats:
             total_issues = stats.get("total_issues", 0)
             approved_count = stats.get("approved_count", 0)
 
-            fields.extend([
-                {
-                    "name": "📊 総イシュー数",
-                    "value": f"{total_issues}件",
-                    "inline": True
-                },
-                {
-                    "name": "✅ 承認済み",
-                    "value": f"{approved_count}件",
-                    "inline": True
-                }
-            ])
+            fields.extend(
+                [
+                    {
+                        "name": "📊 総イシュー数",
+                        "value": f"{total_issues}件",
+                        "inline": True,
+                    },
+                    {
+                        "name": "✅ 承認済み",
+                        "value": f"{approved_count}件",
+                        "inline": True,
+                    },
+                ]
+            )
 
             if stats.get("average_quality_score", 0) > 0:
-                fields.append({
-                    "name": "🎯 平均品質スコア",
-                    "value": f"{stats['average_quality_score']:.2f}",
-                    "inline": True
-                })
+                fields.append(
+                    {
+                        "name": "🎯 平均品質スコア",
+                        "value": f"{stats['average_quality_score']:.2f}",
+                        "inline": True,
+                    }
+                )
 
         # Create the embed message
         embed = {
@@ -266,26 +272,27 @@ class DiscordNotificationBot:
             "fields": fields,
             "footer": {
                 "text": f"Seiji Watch | {current_date}",
-                "icon_url": "https://example.com/seiji-watch-icon.png"  # Optional: Add your icon URL
+                "icon_url": "https://example.com/seiji-watch-icon.png",  # Optional: Add your icon URL
             },
-            "timestamp": datetime.now(self.timezone).isoformat()
+            "timestamp": datetime.now(self.timezone).isoformat(),
         }
 
         # Add action buttons if there are pending issues
         if pending_count > 0:
             # Note: Discord webhook doesn't support interactive components,
             # but we can include helpful links in the description
-            airtable_url = os.getenv("AIRTABLE_REVIEW_URL",
-                                     "https://airtable.com/your-base-id/your-table-id")
+            airtable_url = os.getenv(
+                "AIRTABLE_REVIEW_URL", "https://airtable.com/your-base-id/your-table-id"
+            )
             embed["description"] += f"\n\n👉 [Airtableでレビューする]({airtable_url})"
 
         # Add next notification info
         next_notification = self._calculate_next_notification_time()
-        embed["description"] += f"\n⏰ 次回通知: {next_notification.strftime('%m月%d日 %H:%M')}"
+        embed[
+            "description"
+        ] += f"\n⏰ 次回通知: {next_notification.strftime('%m月%d日 %H:%M')}"
 
-        return {
-            "embeds": [embed]
-        }
+        return {"embeds": [embed]}
 
     async def _send_discord_message(self, message: dict[str, Any]) -> bool:
         """Send message to Discord webhook with retries."""
@@ -296,19 +303,21 @@ class DiscordNotificationBot:
                     async with session.post(
                         self.config.webhook_url,
                         json=message,
-                        timeout=aiohttp.ClientTimeout(total=30)
+                        timeout=aiohttp.ClientTimeout(total=30),
                     ) as response:
                         if response.status == 204:  # Discord webhook success
                             return True
                         elif response.status == 429:  # Rate limited
                             retry_after = int(response.headers.get("Retry-After", 60))
                             self.logger.warning(
-                                f"Discord rate limited, waiting {retry_after} seconds")
+                                f"Discord rate limited, waiting {retry_after} seconds"
+                            )
                             await asyncio.sleep(retry_after)
                         else:
                             response_text = await response.text()
                             self.logger.error(
-                                f"Discord webhook failed (attempt {attempt + 1}): {response.status} - {response_text}")
+                                f"Discord webhook failed (attempt {attempt + 1}): {response.status} - {response_text}"
+                            )
 
             except TimeoutError:
                 self.logger.error(f"Discord webhook timeout (attempt {attempt + 1})")
@@ -335,10 +344,12 @@ class DiscordNotificationBot:
 
             # Add test indicator
             if message["embeds"]:
-                message["embeds"][0]["title"] = "🧪 " + \
-                    message["embeds"][0]["title"] + " (テスト)"
-                message["embeds"][0]["description"] = "これはテスト通知です。\n\n" + \
-                    message["embeds"][0]["description"]
+                message["embeds"][0]["title"] = (
+                    "🧪 " + message["embeds"][0]["title"] + " (テスト)"
+                )
+                message["embeds"][0]["description"] = (
+                    "これはテスト通知です。\n\n" + message["embeds"][0]["description"]
+                )
 
             # Send message
             success = await self._send_discord_message(message)
@@ -354,8 +365,9 @@ class DiscordNotificationBot:
             self.logger.error(f"Error sending test notification: {e}")
             return False
 
-    async def send_custom_notification(self, title: str, message: str,
-                                       color: int = 0x3498db) -> bool:
+    async def send_custom_notification(
+        self, title: str, message: str, color: int = 0x3498DB
+    ) -> bool:
         """Send a custom notification message."""
         try:
             embed = {
@@ -365,7 +377,7 @@ class DiscordNotificationBot:
                 "footer": {
                     "text": "Seiji Watch",
                 },
-                "timestamp": datetime.now(self.timezone).isoformat()
+                "timestamp": datetime.now(self.timezone).isoformat(),
             }
 
             discord_message = {"embeds": [embed]}
@@ -382,14 +394,14 @@ class DiscordNotificationBot:
             # Send a minimal test message
             test_message = {
                 "content": "Health check - this message will be deleted",
-                "flags": 64  # Ephemeral flag (though webhooks might not support this)
+                "flags": 64,  # Ephemeral flag (though webhooks might not support this)
             }
 
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     self.config.webhook_url,
                     json=test_message,
-                    timeout=aiohttp.ClientTimeout(total=10)
+                    timeout=aiohttp.ClientTimeout(total=10),
                 ) as response:
                     return response.status == 204
 
@@ -399,18 +411,22 @@ class DiscordNotificationBot:
 
     def get_status(self) -> dict[str, Any]:
         """Get current bot status."""
-        next_notification = self._calculate_next_notification_time() if self.is_running else None
+        next_notification = (
+            self._calculate_next_notification_time() if self.is_running else None
+        )
 
         return {
             "is_running": self.is_running,
             "enabled": self.config.enabled,
             "notification_time": self.config.notification_time.strftime("%H:%M"),
             "timezone": self.config.timezone,
-            "next_notification": next_notification.isoformat() if next_notification else None,
-            "webhook_configured": bool(
-                self.config.webhook_url),
+            "next_notification": (
+                next_notification.isoformat() if next_notification else None
+            ),
+            "webhook_configured": bool(self.config.webhook_url),
             "retry_attempts": self.config.retry_attempts,
-            "retry_delay": self.config.retry_delay}
+            "retry_delay": self.config.retry_delay,
+        }
 
 
 # CLI utility functions for standalone operation

@@ -18,9 +18,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -34,8 +34,8 @@ def main():
         print("❌ .env.local読み込み失敗")
         return 1
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat or not base_id:
         print("❌ 環境変数不足")
@@ -45,7 +45,7 @@ def main():
 
     try:
         # 法案データ収集
-        sys.path.insert(0, 'src')
+        sys.path.insert(0, "src")
         from scraper.diet_scraper import DietScraper
 
         scraper = DietScraper(enable_resilience=False)
@@ -54,10 +54,7 @@ def main():
 
         # 10件ずつバッチ処理
         url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29"
-        headers = {
-            "Authorization": f"Bearer {pat}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
         batch_size = 10
         total_success = 0
@@ -67,7 +64,9 @@ def main():
             batch_end = min(batch_start + batch_size, len(bills))
             batch_bills = bills[batch_start:batch_end]
 
-            print(f"\n📦 バッチ {batch_start//batch_size + 1}: {batch_start+1}-{batch_end}")
+            print(
+                f"\n📦 バッチ {batch_start//batch_size + 1}: {batch_start+1}-{batch_end}"
+            )
 
             batch_success = 0
             for i, bill in enumerate(batch_bills):
@@ -77,8 +76,8 @@ def main():
                             "Name": bill.title,
                             "Bill_ID": bill.bill_id,
                             "Diet_Session": "217",
-                            "Bill_Status": bill.status or 'N/A',
-                            "Category": bill.category or 'N/A'
+                            "Bill_Status": bill.status or "N/A",
+                            "Category": bill.category or "N/A",
                         }
                     }
 

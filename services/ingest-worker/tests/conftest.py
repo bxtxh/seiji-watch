@@ -14,17 +14,19 @@ from unittest.mock import AsyncMock, Mock, patch
 import pytest
 
 # Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # Test environment configuration
-os.environ.update({
-    'OPENAI_API_KEY': 'test_openai_key',
-    'AIRTABLE_API_KEY': 'test_airtable_key',
-    'AIRTABLE_BASE_ID': 'test_base_id',
-    'DISCORD_WEBHOOK_URL': 'https://discord.com/api/webhooks/test',
-    'DISCORD_NOTIFICATIONS_ENABLED': 'false',  # Disable for tests
-    'LOG_LEVEL': 'INFO'
-})
+os.environ.update(
+    {
+        "OPENAI_API_KEY": "test_openai_key",
+        "AIRTABLE_API_KEY": "test_airtable_key",
+        "AIRTABLE_BASE_ID": "test_base_id",
+        "DISCORD_WEBHOOK_URL": "https://discord.com/api/webhooks/test",
+        "DISCORD_NOTIFICATIONS_ENABLED": "false",  # Disable for tests
+        "LOG_LEVEL": "INFO",
+    }
+)
 
 
 @pytest.fixture(scope="session")
@@ -44,11 +46,13 @@ def mock_openai_client():
     # Default successful response
     mock_response = Mock()
     mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = json.dumps({
-        "label_lv1": "政策課題を解決する",
-        "label_lv2": "包括的な政策課題の解決を図る",
-        "confidence": 0.85
-    })
+    mock_response.choices[0].message.content = json.dumps(
+        {
+            "label_lv1": "政策課題を解決する",
+            "label_lv2": "包括的な政策課題の解決を図る",
+            "confidence": 0.85,
+        }
+    )
 
     mock_client.chat.completions.create.return_value = mock_response
     return mock_client
@@ -64,7 +68,7 @@ def mock_airtable_client():
     mock_client._rate_limited_request.return_value = {
         "id": "rec_test_123",
         "fields": {},
-        "createdTime": datetime.now().isoformat()
+        "createdTime": datetime.now().isoformat(),
     }
 
     mock_client.health_check.return_value = True
@@ -84,7 +88,7 @@ def mock_discord_client():
     mock_session = AsyncMock()
     mock_session.post.return_value.__aenter__.return_value = mock_response
 
-    with patch('aiohttp.ClientSession', return_value=mock_session):
+    with patch("aiohttp.ClientSession", return_value=mock_session):
         yield mock_client
 
 
@@ -101,7 +105,7 @@ def sample_bill_data():
         expected_effects="介護費用の削減と質の向上が期待される",
         key_provisions=["自己負担率の見直し", "サービス提供体制の強化"],
         submitter="厚生労働省",
-        category="社会保障"
+        category="社会保障",
     )
 
 
@@ -113,7 +117,7 @@ def sample_dual_issue():
     return DualLevelIssue(
         label_lv1="介護制度を改善する",
         label_lv2="高齢者介護保険制度の包括的な見直しを実施する",
-        confidence=0.85
+        confidence=0.85,
     )
 
 
@@ -129,7 +133,7 @@ def sample_issue_record():
         confidence=0.8,
         status="pending",
         source_bill_id="test_bill_001",
-        quality_score=0.75
+        quality_score=0.75,
     )
 
 
@@ -139,25 +143,19 @@ def mock_all_components(mock_openai_client, mock_airtable_client, mock_discord_c
     return {
         "openai_client": mock_openai_client,
         "airtable_client": mock_airtable_client,
-        "discord_client": mock_discord_client
+        "discord_client": mock_discord_client,
     }
 
 
 # Custom pytest markers for test categorization
 def pytest_configure(config):
     """Configure custom pytest markers."""
-    config.addinivalue_line(
-        "markers", "unit: Unit tests for individual components"
-    )
+    config.addinivalue_line("markers", "unit: Unit tests for individual components")
     config.addinivalue_line(
         "markers", "integration: Integration tests for workflow testing"
     )
-    config.addinivalue_line(
-        "markers", "performance: Performance and scalability tests"
-    )
-    config.addinivalue_line(
-        "markers", "slow: Tests that take a long time to run"
-    )
+    config.addinivalue_line("markers", "performance: Performance and scalability tests")
+    config.addinivalue_line("markers", "slow: Tests that take a long time to run")
     config.addinivalue_line(
         "markers", "requires_api: Tests that require external API access"
     )
@@ -183,7 +181,7 @@ class TestDataFactory:
             "expected_effects": "期待される効果",
             "key_provisions": ["条項1", "条項2"],
             "submitter": "提出者",
-            "category": "テスト"
+            "category": "テスト",
         }
         defaults.update(kwargs)
         return BillData(**defaults)
@@ -196,7 +194,7 @@ class TestDataFactory:
         defaults = {
             "label_lv1": "政策課題を解決する",
             "label_lv2": "包括的な政策課題の解決を図る",
-            "confidence": 0.8
+            "confidence": 0.8,
         }
         defaults.update(kwargs)
         return DualLevelIssue(**defaults)
@@ -213,7 +211,7 @@ class TestDataFactory:
             "confidence": 0.8,
             "status": "pending",
             "source_bill_id": f"bill_{uuid.uuid4().hex[:8]}",
-            "quality_score": 0.75
+            "quality_score": 0.75,
         }
         defaults.update(kwargs)
         return AirtableIssueRecord(**defaults)
@@ -226,7 +224,7 @@ class TestDataFactory:
                 {
                     "id": f"rec_{i}",
                     "fields": record_data,
-                    "createdTime": datetime.now().isoformat()
+                    "createdTime": datetime.now().isoformat(),
                 }
                 for i, record_data in enumerate(records_data)
             ]
@@ -305,10 +303,7 @@ class PerformanceTracker:
 
     def get_summary(self):
         """Get performance summary."""
-        summary = {
-            "duration_seconds": self.duration,
-            "metrics": self.metrics
-        }
+        summary = {"duration_seconds": self.duration, "metrics": self.metrics}
         return summary
 
 
@@ -325,13 +320,19 @@ class MockValidators:
     @staticmethod
     def mock_verb_ending_validator():
         """Mock verb ending validator that always returns True."""
-        with patch('services.policy_issue_extractor.VerbEndingValidator.is_valid_verb_ending', return_value=True):
+        with patch(
+            "services.policy_issue_extractor.VerbEndingValidator.is_valid_verb_ending",
+            return_value=True,
+        ):
             yield
 
     @staticmethod
     def mock_vocabulary_validator():
         """Mock vocabulary validator that always returns True."""
-        with patch('services.policy_issue_extractor.VocabularyLevelValidator.is_high_school_appropriate', return_value=True):
+        with patch(
+            "services.policy_issue_extractor.VocabularyLevelValidator.is_high_school_appropriate",
+            return_value=True,
+        ):
             yield
 
 
@@ -367,9 +368,9 @@ class CustomAssertions:
     @staticmethod
     def assert_valid_dual_issue(issue):
         """Assert that a dual-level issue is valid."""
-        assert hasattr(issue, 'label_lv1')
-        assert hasattr(issue, 'label_lv2')
-        assert hasattr(issue, 'confidence')
+        assert hasattr(issue, "label_lv1")
+        assert hasattr(issue, "label_lv2")
+        assert hasattr(issue, "confidence")
         assert 10 <= len(issue.label_lv1) <= 60
         assert 10 <= len(issue.label_lv2) <= 60
         assert 0.0 <= issue.confidence <= 1.0
@@ -377,16 +378,18 @@ class CustomAssertions:
     @staticmethod
     def assert_valid_issue_record(record):
         """Assert that an issue record is valid."""
-        assert hasattr(record, 'issue_id')
-        assert hasattr(record, 'label_lv1')
-        assert hasattr(record, 'label_lv2')
-        assert hasattr(record, 'status')
-        assert record.status in ['pending', 'approved', 'rejected', 'failed_validation']
+        assert hasattr(record, "issue_id")
+        assert hasattr(record, "label_lv1")
+        assert hasattr(record, "label_lv2")
+        assert hasattr(record, "status")
+        assert record.status in ["pending", "approved", "rejected", "failed_validation"]
 
     @staticmethod
     def assert_performance_acceptable(duration, max_duration):
         """Assert that performance is acceptable."""
-        assert duration <= max_duration, f"Performance not acceptable: {duration}s > {max_duration}s"
+        assert (
+            duration <= max_duration
+        ), f"Performance not acceptable: {duration}s > {max_duration}s"
 
 
 @pytest.fixture
@@ -398,8 +401,11 @@ def custom_assertions():
 # Test skip conditions
 def skip_if_no_api_key():
     """Skip test if no API key is available."""
-    return pytest.mark.skipif(not os.getenv('OPENAI_API_KEY') or os.getenv(
-        'OPENAI_API_KEY') == 'test_openai_key', reason="No real OpenAI API key available")
+    return pytest.mark.skipif(
+        not os.getenv("OPENAI_API_KEY")
+        or os.getenv("OPENAI_API_KEY") == "test_openai_key",
+        reason="No real OpenAI API key available",
+    )
 
 
 def skip_if_no_network():
@@ -414,24 +420,23 @@ def skip_if_no_network():
             return False
 
     return pytest.mark.skipif(
-        not has_network(),
-        reason="No network connection available"
+        not has_network(), reason="No network connection available"
     )
 
 
 # Export commonly used fixtures and utilities
 __all__ = [
-    'mock_openai_client',
-    'mock_airtable_client',
-    'mock_discord_client',
-    'sample_bill_data',
-    'sample_dual_issue',
-    'sample_issue_record',
-    'test_data_factory',
-    'async_test_utils',
-    'performance_tracker',
-    'mock_validators',
-    'custom_assertions',
-    'skip_if_no_api_key',
-    'skip_if_no_network'
+    "mock_openai_client",
+    "mock_airtable_client",
+    "mock_discord_client",
+    "sample_bill_data",
+    "sample_dual_issue",
+    "sample_issue_record",
+    "test_data_factory",
+    "async_test_utils",
+    "performance_tracker",
+    "mock_validators",
+    "custom_assertions",
+    "skip_if_no_api_key",
+    "skip_if_no_network",
 ]

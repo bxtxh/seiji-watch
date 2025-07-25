@@ -24,15 +24,20 @@ def print_members_field_deletion_guide():
     print("Fields referenced in frontend code:")
     print("• member_id (/pages/api/members/[id].ts, /pages/members/[id].tsx)")
     print(
-        "• name (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+        "• name (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)"
+    )
     print(
-        "• name_kana (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+        "• name_kana (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)"
+    )
     print(
-        "• house (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+        "• house (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)"
+    )
     print(
-        "• party (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+        "• party (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)"
+    )
     print(
-        "• constituency (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)")
+        "• constituency (/pages/api/members/[id].ts, /pages/members/[id].tsx, /pages/members/index.tsx)"
+    )
     print()
 
     print("🗑️ SAFE TO DELETE (14 fields - 0% usage):")
@@ -50,7 +55,7 @@ def print_members_field_deletion_guide():
         "Email",
         "Phone",
         "Office_Address",
-        "Secretary_Name"
+        "Secretary_Name",
     ]
 
     for i, field in enumerate(safe_to_delete, 1):
@@ -69,7 +74,7 @@ def print_members_field_deletion_guide():
         "Birth_Date (56% usage)",
         "Education (52% usage)",
         "Committee_Memberships (48% usage)",
-        "Is_Active (44% usage)"
+        "Is_Active (44% usage)",
     ]
 
     for field in preserve_fields:
@@ -79,8 +84,14 @@ def print_members_field_deletion_guide():
     print("🎯 DELETION PRIORITY:")
     print("HIGH PRIORITY (no frontend references, 0% usage):")
     high_priority = [
-        "Notes", "Name_EN", "Gender", "Previous_Occupations",
-        "Twitter_Handle", "Facebook_URL", "Instagram_URL", "YouTube_URL"
+        "Notes",
+        "Name_EN",
+        "Gender",
+        "Previous_Occupations",
+        "Twitter_Handle",
+        "Facebook_URL",
+        "Instagram_URL",
+        "YouTube_URL",
     ]
     for field in high_priority:
         print(f"• {field}")
@@ -88,8 +99,12 @@ def print_members_field_deletion_guide():
 
     print("MEDIUM PRIORITY (potential future use):")
     medium_priority = [
-        "Website_URL", "Profile_Image_URL", "Email", "Phone",
-        "Office_Address", "Secretary_Name"
+        "Website_URL",
+        "Profile_Image_URL",
+        "Email",
+        "Phone",
+        "Office_Address",
+        "Secretary_Name",
     ]
     for field in medium_priority:
         print(f"• {field}")
@@ -97,12 +112,18 @@ def print_members_field_deletion_guide():
 
     print("💾 BACKEND SERVICE IMPACT:")
     print("• member_service.py: Uses Name, Name_Kana, House, Party, Constituency")
-    print("• API endpoints: Transform member_id, name, name_kana, house, party, constituency")
-    print("• Mock data generation: Uses name, name_kana, house, party, constituency, terms_served")
+    print(
+        "• API endpoints: Transform member_id, name, name_kana, house, party, constituency"
+    )
+    print(
+        "• Mock data generation: Uses name, name_kana, house, party, constituency, terms_served"
+    )
     print()
 
     print("🔄 RECOMMENDED DELETION ORDER:")
-    print("1. Social media fields (Twitter_Handle, Facebook_URL, Instagram_URL, YouTube_URL)")
+    print(
+        "1. Social media fields (Twitter_Handle, Facebook_URL, Instagram_URL, YouTube_URL)"
+    )
     print("2. Contact fields (Email, Phone, Office_Address, Secretary_Name)")
     print("3. Profile fields (Notes, Name_EN, Gender, Previous_Occupations)")
     print("4. Media fields (Website_URL, Profile_Image_URL)")

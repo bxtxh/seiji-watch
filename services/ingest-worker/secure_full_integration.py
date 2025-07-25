@@ -20,9 +20,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -40,8 +40,8 @@ def main():
         print("❌ .env.localが見つかりません")
         return 1
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat or not base_id:
         print("❌ 環境変数不足")
@@ -54,7 +54,7 @@ def main():
     try:
         # 1. 法案データ収集
         print("\n📄 第217回国会法案データ収集")
-        sys.path.insert(0, 'src')
+        sys.path.insert(0, "src")
         from scraper.diet_scraper import DietScraper
 
         scraper = DietScraper(enable_resilience=False)
@@ -66,10 +66,7 @@ def main():
         print("⏱️  推定所要時間: 約45秒 (レート制限対応)")
 
         url = f"https://api.airtable.com/v0/{base_id}/Bills%20%28%E6%B3%95%E6%A1%88%29"
-        headers = {
-            "Authorization": f"Bearer {pat}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
         success_count = 0
         failed_count = 0
@@ -83,10 +80,10 @@ def main():
                         "Name": bill.title,
                         "Bill_ID": bill.bill_id,
                         "Diet_Session": "217",
-                        "Bill_Status": bill.status or 'N/A',
-                        "Category": bill.category or 'N/A',
-                        "Submitter": bill.submitter or 'N/A',
-                        "Bill_URL": bill.url or 'N/A'
+                        "Bill_Status": bill.status or "N/A",
+                        "Category": bill.category or "N/A",
+                        "Submitter": bill.submitter or "N/A",
+                        "Bill_URL": bill.url or "N/A",
                     }
                 }
 
@@ -99,7 +96,8 @@ def main():
                 else:
                     failed_count += 1
                     print(
-                        f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (エラー {response.status_code})")
+                        f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (エラー {response.status_code})"
+                    )
 
                 # レート制限対応 (5 req/sec)
                 time.sleep(0.2)
@@ -110,11 +108,14 @@ def main():
                     remaining = len(bills) - (i + 1)
                     est_time = (elapsed / (i + 1)) * remaining
                     print(
-                        f"    📊 進捗: {i+1}/{len(bills)} ({success_count}成功, {failed_count}失敗) - 残り約{est_time:.0f}秒")
+                        f"    📊 進捗: {i+1}/{len(bills)} ({success_count}成功, {failed_count}失敗) - 残り約{est_time:.0f}秒"
+                    )
 
             except Exception as e:
                 failed_count += 1
-                print(f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (例外: {str(e)[:50]})")
+                print(
+                    f"  {i+1:3d}/{len(bills)}: ❌ {bill.bill_id} (例外: {str(e)[:50]})"
+                )
 
         elapsed_total = time.time() - start_time
 

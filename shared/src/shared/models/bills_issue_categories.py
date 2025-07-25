@@ -17,9 +17,7 @@ class BillsPolicyCategory(BaseRecord):
     )
 
     # Airtable record IDs for actual linking
-    bill_record_id: str | None = Field(
-        None, description="Airtable Bills record ID"
-    )
+    bill_record_id: str | None = Field(None, description="Airtable Bills record ID")
     policy_category_record_id: str | None = Field(
         None, description="Airtable IssueCategories record ID"
     )
@@ -63,7 +61,7 @@ class BillsPolicyCategory(BaseRecord):
         is_manual: bool = False,
         source: str = "auto_migration",
         bill_record_id: str | None = None,
-        policy_category_record_id: str | None = None
+        policy_category_record_id: str | None = None,
     ) -> "BillsPolicyCategory":
         """Create a new bill-category relationship."""
         now = datetime.now().isoformat()
@@ -76,5 +74,5 @@ class BillsPolicyCategory(BaseRecord):
             is_manual=is_manual,
             source=source,
             created_at=now,
-            updated_at=now
+            updated_at=now,
         )

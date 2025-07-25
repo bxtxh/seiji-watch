@@ -29,12 +29,30 @@ def test_search_formula_syntax():
     tests = [
         ("検索式にクエリが含まれる", test_query in search_formula),
         ("Name フィールド検索", f"SEARCH('{test_query}', {{Name}})" in search_formula),
-        ("Bill_Status フィールド検索", f"SEARCH('{test_query}', {{Bill_Status}})" in search_formula),
-        ("Category フィールド検索", f"SEARCH('{test_query}', {{Category}})" in search_formula),
-        ("Submitter フィールド検索", f"SEARCH('{test_query}', {{Submitter}})" in search_formula),
-        ("Stage フィールド検索", f"SEARCH('{test_query}', {{Stage}})" in search_formula),
-        ("Bill_Number フィールド検索", f"SEARCH('{test_query}', {{Bill_Number}})" in search_formula),
-        ("Notes フィールド検索なし", f"SEARCH('{test_query}', {{Notes}})" not in search_formula),
+        (
+            "Bill_Status フィールド検索",
+            f"SEARCH('{test_query}', {{Bill_Status}})" in search_formula,
+        ),
+        (
+            "Category フィールド検索",
+            f"SEARCH('{test_query}', {{Category}})" in search_formula,
+        ),
+        (
+            "Submitter フィールド検索",
+            f"SEARCH('{test_query}', {{Submitter}})" in search_formula,
+        ),
+        (
+            "Stage フィールド検索",
+            f"SEARCH('{test_query}', {{Stage}})" in search_formula,
+        ),
+        (
+            "Bill_Number フィールド検索",
+            f"SEARCH('{test_query}', {{Bill_Number}})" in search_formula,
+        ),
+        (
+            "Notes フィールド検索なし",
+            f"SEARCH('{test_query}', {{Notes}})" not in search_formula,
+        ),
         ("OR構文使用", search_formula.strip().startswith("OR(")),
     ]
 
@@ -68,7 +86,10 @@ def test_airtable_api_compatibility():
     tests = [
         ("SEARCH関数使用", "SEARCH(" in sample_formula),
         ("OR関数使用", "OR(" in sample_formula),
-        ("フィールド参照記法", "{Name}" in sample_formula and "{Category}" in sample_formula),
+        (
+            "フィールド参照記法",
+            "{Name}" in sample_formula and "{Category}" in sample_formula,
+        ),
         ("比較演算子使用", "> 0" in sample_formula),
         ("適切な括弧バランス", sample_formula.count("(") == sample_formula.count(")")),
     ]
@@ -97,7 +118,7 @@ def test_field_mapping_accuracy():
     old_notes_samples = [
         "状態: 議案要旨 | カテゴリ: その他 | 提出者: 議員",
         "状態: 審議中\\nカテゴリ: 税制\\n提出者: 政府",
-        "【法案詳細】\\n🏛️ 法案ID: 217-001\\n📋 ステータス: 議案要旨\\n🏷️ カテゴリ: 経済"
+        "【法案詳細】\\n🏛️ 法案ID: 217-001\\n📋 ステータス: 議案要旨\\n🏷️ カテゴリ: 経済",
     ]
 
     # 構造化フィールドでの検索対象
@@ -107,7 +128,8 @@ def test_field_mapping_accuracy():
         "Category",
         "Submitter",
         "Stage",
-        "Bill_Number"]
+        "Bill_Number",
+    ]
 
     print(f"検索対象構造化フィールド: {', '.join(searchable_fields)}")
     print("\n旧Notes形式サンプル:")
@@ -142,12 +164,17 @@ def test_search_performance_estimation():
     print("=" * 40)
 
     # 検索フィールド数と推定パフォーマンス
-    search_fields_count = 6  # Name, Bill_Status, Category, Submitter, Stage, Bill_Number
+    search_fields_count = (
+        6  # Name, Bill_Status, Category, Submitter, Stage, Bill_Number
+    )
     old_search_fields_count = 2  # Name, Notes
 
     # 構造化検索の利点
     advantages = [
-        ("検索フィールド数", f"{search_fields_count}個（旧: {old_search_fields_count}個）"),
+        (
+            "検索フィールド数",
+            f"{search_fields_count}個（旧: {old_search_fields_count}個）",
+        ),
         ("インデックス効率", "各フィールドが個別にインデックス化"),
         ("検索精度", "構造化データでの正確なマッチング"),
         ("フィルタリング能力", "フィールド別の詳細フィルタリング可能"),
@@ -160,12 +187,12 @@ def test_search_performance_estimation():
 
     # パフォーマンス予測
     estimated_improvements = [
-        ("検索範囲の拡大",
-         f"3倍増加（{search_fields_count}/{old_search_fields_count} = {search_fields_count/old_search_fields_count:.1f}倍）"),
-        ("検索精度の向上",
-         "非構造化テキストから構造化フィールドへ"),
-        ("インデックス利用効率",
-         "フィールド別インデックスによる高速化"),
+        (
+            "検索範囲の拡大",
+            f"3倍増加（{search_fields_count}/{old_search_fields_count} = {search_fields_count/old_search_fields_count:.1f}倍）",
+        ),
+        ("検索精度の向上", "非構造化テキストから構造化フィールドへ"),
+        ("インデックス利用効率", "フィールド別インデックスによる高速化"),
     ]
 
     print("\n予想されるパフォーマンス改善:")

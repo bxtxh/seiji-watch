@@ -18,13 +18,8 @@ from pydantic import BaseModel, Field, validator
 from ..security.validation import InputValidator
 
 sys.path.append(
-    os.path.join(
-        os.path.dirname(__file__),
-        '..',
-        '..',
-        '..',
-        'ingest-worker',
-        'src'))
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "ingest-worker", "src")
+)
 
 
 logger = logging.getLogger(__name__)
@@ -35,19 +30,21 @@ router = APIRouter(prefix="/api/batch", tags=["Batch Management"])
 # Request/Response Models
 class BatchJobTriggerRequest(BaseModel):
     """Request to manually trigger a batch job."""
+
     job_id: str
     force_run: bool = False
     custom_params: dict[str, Any] | None = None
 
-    @validator('job_id')
+    @validator("job_id")
     def validate_job_id(self, v):
         if not v or not v.strip():
-            raise ValueError('Job ID cannot be empty')
+            raise ValueError("Job ID cannot be empty")
         return InputValidator.sanitize_string(v, 100)
 
 
 class BatchJobConfigUpdateRequest(BaseModel):
     """Request to update batch job configuration."""
+
     enabled: bool | None = None
     schedule_time: str | None = None  # Format: "HH:MM"
     batch_size: int | None = Field(None, ge=1, le=1000)
@@ -56,16 +53,16 @@ class BatchJobConfigUpdateRequest(BaseModel):
     notification_on_success: bool | None = None
     notification_on_failure: bool | None = None
 
-    @validator('schedule_time')
+    @validator("schedule_time")
     def validate_schedule_time(self, v):
         if v is not None:
             try:
-                hour, minute = map(int, v.split(':'))
+                hour, minute = map(int, v.split(":"))
                 if not (0 <= hour <= 23 and 0 <= minute <= 59):
-                    raise ValueError('Invalid time format')
+                    raise ValueError("Invalid time format")
                 return v
             except (ValueError, AttributeError):
-                raise ValueError('Schedule time must be in HH:MM format')
+                raise ValueError("Schedule time must be in HH:MM format")
         return v
 
 
@@ -78,7 +75,7 @@ async def get_batch_processor() -> IssueRelationshipBatchProcessor:
 # Batch Job Status Endpoints
 @router.get("/jobs")
 async def get_all_batch_jobs(
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Get status of all batch jobs."""
     try:
@@ -87,7 +84,7 @@ async def get_all_batch_jobs(
         return {
             "success": True,
             "timestamp": datetime.now().isoformat(),
-            "data": job_statuses
+            "data": job_statuses,
         }
 
     except Exception as e:
@@ -98,7 +95,7 @@ async def get_all_batch_jobs(
 @router.get("/jobs/{job_id}")
 async def get_batch_job_status(
     job_id: str,
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Get status of a specific batch job."""
     try:
@@ -109,11 +106,7 @@ async def get_batch_job_status(
         if not job_status:
             raise HTTPException(status_code=404, detail="Job not found")
 
-        return {
-            "success": True,
-            "job_id": job_id,
-            "status": job_status
-        }
+        return {"success": True, "job_id": job_id, "status": job_status}
 
     except HTTPException:
         raise
@@ -126,7 +119,7 @@ async def get_batch_job_status(
 async def get_job_execution_history(
     job_id: str,
     limit: int = Query(10, ge=1, le=100),
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Get execution history for a specific job."""
     try:
@@ -149,7 +142,7 @@ async def get_job_execution_history(
             "success": True,
             "job_id": job_id,
             "history": limited_history,
-            "total_executions": len(job_history)
+            "total_executions": len(job_history),
         }
 
     except Exception as e:
@@ -163,7 +156,7 @@ async def trigger_batch_job(
     job_id: str,
     request: BatchJobTriggerRequest,
     background_tasks: BackgroundTasks,
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Manually trigger a batch job."""
     try:
@@ -191,10 +184,7 @@ async def trigger_batch_job(
             raise HTTPException(status_code=404, detail="Job configuration not found")
 
         # Trigger job in background
-        background_tasks.add_task(
-            batch_processor._execute_batch_job,
-            job_config
-        )
+        background_tasks.add_task(batch_processor._execute_batch_job, job_config)
 
         logger.info(f"Manually triggered batch job: {job_id}")
 
@@ -203,7 +193,7 @@ async def trigger_batch_job(
             "message": f"Job {job_id} has been triggered",
             "job_id": job_id,
             "triggered_at": datetime.now().isoformat(),
-            "force_run": request.force_run
+            "force_run": request.force_run,
         }
 
     except HTTPException:
@@ -216,7 +206,7 @@ async def trigger_batch_job(
 @router.post("/jobs/{job_id}/cancel")
 async def cancel_batch_job(
     job_id: str,
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Cancel a running batch job."""
     try:
@@ -244,11 +234,12 @@ async def cancel_batch_job(
                 "success": True,
                 "message": f"Job {job_id} has been cancelled",
                 "job_id": job_id,
-                "cancelled_at": datetime.now().isoformat()
+                "cancelled_at": datetime.now().isoformat(),
             }
         else:
-            raise HTTPException(status_code=400,
-                                detail="Could not find active job execution")
+            raise HTTPException(
+                status_code=400, detail="Could not find active job execution"
+            )
 
     except HTTPException:
         raise
@@ -261,7 +252,7 @@ async def cancel_batch_job(
 @router.get("/jobs/{job_id}/config")
 async def get_job_configuration(
     job_id: str,
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Get configuration for a specific job."""
     try:
@@ -288,8 +279,8 @@ async def get_job_configuration(
                         "notification_on_failure": config.notification_on_failure,
                         "notification_on_success": config.notification_on_success,
                         "alert_threshold_minutes": config.alert_threshold_minutes,
-                        "keep_logs_days": config.keep_logs_days
-                    }
+                        "keep_logs_days": config.keep_logs_days,
+                    },
                 }
 
         raise HTTPException(status_code=404, detail="Job configuration not found")
@@ -305,7 +296,7 @@ async def get_job_configuration(
 async def update_job_configuration(
     job_id: str,
     request: BatchJobConfigUpdateRequest,
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Update configuration for a specific job."""
     try:
@@ -329,7 +320,7 @@ async def update_job_configuration(
             updated_fields.append("enabled")
 
         if request.schedule_time is not None:
-            hour, minute = map(int, request.schedule_time.split(':'))
+            hour, minute = map(int, request.schedule_time.split(":"))
             job_config.schedule_time = time(hour, minute)
             updated_fields.append("schedule_time")
 
@@ -360,21 +351,22 @@ async def update_job_configuration(
             "message": f"Job configuration updated for {job_id}",
             "job_id": job_id,
             "updated_fields": updated_fields,
-            "updated_at": datetime.now().isoformat()
+            "updated_at": datetime.now().isoformat(),
         }
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to update job configuration for {job_id}: {e}")
-        raise HTTPException(status_code=500,
-                            detail="Failed to update job configuration")
+        raise HTTPException(
+            status_code=500, detail="Failed to update job configuration"
+        )
 
 
 # Scheduler Management
 @router.get("/scheduler/status")
 async def get_scheduler_status(
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Get batch job scheduler status."""
     try:
@@ -383,8 +375,10 @@ async def get_scheduler_status(
             "scheduler_running": batch_processor.is_running,
             "active_jobs_count": len(batch_processor.active_jobs),
             "total_configured_jobs": len(batch_processor.default_jobs),
-            "enabled_jobs_count": len([config for config in batch_processor.default_jobs if config.enabled]),
-            "timestamp": datetime.now().isoformat()
+            "enabled_jobs_count": len(
+                [config for config in batch_processor.default_jobs if config.enabled]
+            ),
+            "timestamp": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -394,7 +388,7 @@ async def get_scheduler_status(
 
 @router.post("/scheduler/start")
 async def start_scheduler(
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Start the batch job scheduler."""
     try:
@@ -402,7 +396,7 @@ async def start_scheduler(
             return {
                 "success": False,
                 "message": "Scheduler is already running",
-                "scheduler_running": True
+                "scheduler_running": True,
             }
 
         await batch_processor.start_scheduler()
@@ -411,7 +405,7 @@ async def start_scheduler(
             "success": True,
             "message": "Batch job scheduler started",
             "scheduler_running": True,
-            "started_at": datetime.now().isoformat()
+            "started_at": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -421,7 +415,7 @@ async def start_scheduler(
 
 @router.post("/scheduler/stop")
 async def stop_scheduler(
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Stop the batch job scheduler."""
     try:
@@ -429,7 +423,7 @@ async def stop_scheduler(
             return {
                 "success": False,
                 "message": "Scheduler is not running",
-                "scheduler_running": False
+                "scheduler_running": False,
             }
 
         await batch_processor.stop_scheduler()
@@ -438,7 +432,7 @@ async def stop_scheduler(
             "success": True,
             "message": "Batch job scheduler stopped",
             "scheduler_running": False,
-            "stopped_at": datetime.now().isoformat()
+            "stopped_at": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -450,7 +444,7 @@ async def stop_scheduler(
 @router.get("/statistics")
 async def get_batch_statistics(
     days: int = Query(7, ge=1, le=30),
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Get batch job statistics for the specified period."""
     try:
@@ -458,27 +452,35 @@ async def get_batch_statistics(
 
         # Analyze job history
         recent_executions = [
-            execution for execution in batch_processor.job_history
+            execution
+            for execution in batch_processor.job_history
             if execution.started_at and execution.started_at > cutoff_date
         ]
 
         statistics = {
             "period_days": days,
             "total_executions": len(recent_executions),
-            "successful_executions": len([e for e in recent_executions if e.status.value == "completed"]),
-            "failed_executions": len([e for e in recent_executions if e.status.value == "failed"]),
-            "cancelled_executions": len([e for e in recent_executions if e.status.value == "cancelled"]),
+            "successful_executions": len(
+                [e for e in recent_executions if e.status.value == "completed"]
+            ),
+            "failed_executions": len(
+                [e for e in recent_executions if e.status.value == "failed"]
+            ),
+            "cancelled_executions": len(
+                [e for e in recent_executions if e.status.value == "cancelled"]
+            ),
             "average_duration_seconds": 0,
             "total_items_processed": sum(e.successful_items for e in recent_executions),
             "by_job_type": {},
-            "by_job_id": {}
+            "by_job_id": {},
         }
 
         # Calculate average duration
         completed_executions = [e for e in recent_executions if e.duration_seconds]
         if completed_executions:
             statistics["average_duration_seconds"] = sum(
-                e.duration_seconds for e in completed_executions) / len(completed_executions)
+                e.duration_seconds for e in completed_executions
+            ) / len(completed_executions)
 
         # Group by job type and job ID
         for execution in recent_executions:
@@ -496,24 +498,30 @@ async def get_batch_statistics(
         # Calculate success rates
         for job_type_stats in statistics["by_job_type"].values():
             job_type_executions = [
-                e for e in recent_executions if e.job_config.job_type.value == job_type]
+                e for e in recent_executions if e.job_config.job_type.value == job_type
+            ]
             successful = len(
-                [e for e in job_type_executions if e.status.value == "completed"])
-            job_type_stats["success_rate"] = successful / \
-                len(job_type_executions) if job_type_executions else 0
+                [e for e in job_type_executions if e.status.value == "completed"]
+            )
+            job_type_stats["success_rate"] = (
+                successful / len(job_type_executions) if job_type_executions else 0
+            )
 
         for job_id_stats in statistics["by_job_id"].values():
             job_executions = [
-                e for e in recent_executions if e.job_config.job_id == job_id]
+                e for e in recent_executions if e.job_config.job_id == job_id
+            ]
             successful = len(
-                [e for e in job_executions if e.status.value == "completed"])
-            job_id_stats["success_rate"] = successful / \
-                len(job_executions) if job_executions else 0
+                [e for e in job_executions if e.status.value == "completed"]
+            )
+            job_id_stats["success_rate"] = (
+                successful / len(job_executions) if job_executions else 0
+            )
 
         return {
             "success": True,
             "statistics": statistics,
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -524,7 +532,7 @@ async def get_batch_statistics(
 # Health Check
 @router.get("/health")
 async def batch_health_check(
-    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor)
+    batch_processor: IssueRelationshipBatchProcessor = Depends(get_batch_processor),
 ):
     """Health check for batch processing system."""
     try:
@@ -535,7 +543,7 @@ async def batch_health_check(
             "scheduler_running": batch_processor.is_running,
             "active_jobs": len(batch_processor.active_jobs),
             "dependencies_healthy": health_status,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -543,5 +551,5 @@ async def batch_health_check(
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }

@@ -19,9 +19,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -54,8 +54,7 @@ async def execute_t52_pilot_generation():
         print()
 
         result = await coordinator.execute_limited_scraping(
-            target=target,
-            dry_run=False  # Real execution
+            target=target, dry_run=False  # Real execution
         )
 
         # Display results
@@ -75,34 +74,34 @@ async def execute_t52_pilot_generation():
                 print(f"  {i}. {error}")
 
         # Save results to file
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         results_file = f"t52_pilot_dataset_{timestamp}.json"
 
         result_data = {
-            'execution_info': {
-                'timestamp': datetime.now().isoformat(),
-                'target_period': '2025-06-02 to 2025-06-08',
-                'execution_type': 'pilot_dataset_generation'
+            "execution_info": {
+                "timestamp": datetime.now().isoformat(),
+                "target_period": "2025-06-02 to 2025-06-08",
+                "execution_type": "pilot_dataset_generation",
             },
-            'pipeline_results': {
-                'success': result.success,
-                'total_time': result.total_time,
-                'bills_collected': result.bills_collected,
-                'voting_sessions_collected': result.voting_sessions_collected,
-                'speeches_processed': result.speeches_processed,
-                'embeddings_generated': result.embeddings_generated,
-                'transcriptions_completed': result.transcriptions_completed,
-                'errors': result.errors,
-                'performance_metrics': result.performance_metrics
+            "pipeline_results": {
+                "success": result.success,
+                "total_time": result.total_time,
+                "bills_collected": result.bills_collected,
+                "voting_sessions_collected": result.voting_sessions_collected,
+                "speeches_processed": result.speeches_processed,
+                "embeddings_generated": result.embeddings_generated,
+                "transcriptions_completed": result.transcriptions_completed,
+                "errors": result.errors,
+                "performance_metrics": result.performance_metrics,
             },
-            'next_steps': {
-                'quality_validation': 'T53 - Data Quality Validation & Report',
-                'ui_testing': 'T54 - UI/UX Testing with Real Data',
-                'ready_for_production': result.success and len(result.errors) == 0
-            }
+            "next_steps": {
+                "quality_validation": "T53 - Data Quality Validation & Report",
+                "ui_testing": "T54 - UI/UX Testing with Real Data",
+                "ready_for_production": result.success and len(result.errors) == 0,
+            },
         }
 
-        with open(results_file, 'w', encoding='utf-8') as f:
+        with open(results_file, "w", encoding="utf-8") as f:
             json.dump(result_data, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Results saved to: {results_file}")
@@ -122,8 +121,12 @@ async def execute_t52_pilot_generation():
             print()
             print("🎯 Key Achievements:")
             print(f"  • {result.bills_collected} real bills collected and processed")
-            print(f"  • {result.voting_sessions_collected} voting sessions with member data")
-            print(f"  • {result.embeddings_generated} vector embeddings for semantic search")
+            print(
+                f"  • {result.voting_sessions_collected} voting sessions with member data"
+            )
+            print(
+                f"  • {result.embeddings_generated} vector embeddings for semantic search"
+            )
             print("  • Rate limiting compliance verified")
             print("  • End-to-end pipeline validation completed")
 
@@ -131,7 +134,8 @@ async def execute_t52_pilot_generation():
                 metrics = result.performance_metrics
                 print("\n📈 Performance Metrics:")
                 print(
-                    f"  • Processing rate: {metrics.get('bills_per_second', 0):.2f} bills/sec")
+                    f"  • Processing rate: {metrics.get('bills_per_second', 0):.2f} bills/sec"
+                )
                 print(f"  • Error rate: {metrics.get('error_rate', 0):.2%}")
                 print(f"  • Total processing time: {result.total_time:.2f}s")
         else:
@@ -146,6 +150,7 @@ async def execute_t52_pilot_generation():
     except Exception as e:
         print(f"❌ T52 pilot generation failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -162,6 +167,7 @@ async def main():
     success = await execute_t52_pilot_generation()
 
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

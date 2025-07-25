@@ -12,14 +12,15 @@ from pathlib import Path
 def analyze_api_usage():
     """フロントエンドのAPI使用状況を分析"""
 
-    web_frontend_path = Path(__file__).parent.parent.parent / \
-        "services" / "web-frontend"
+    web_frontend_path = (
+        Path(__file__).parent.parent.parent / "services" / "web-frontend"
+    )
 
     results = {
         "api_endpoints": [],
         "field_usage": defaultdict(list),
         "api_files": [],
-        "component_usage": defaultdict(list)
+        "component_usage": defaultdict(list),
     }
 
     # 検索対象ファイル
@@ -28,7 +29,7 @@ def analyze_api_usage():
     for pattern in search_patterns:
         for file_path in web_frontend_path.rglob(pattern):
             try:
-                with open(file_path, encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
                     rel_path = file_path.relative_to(web_frontend_path)
 
@@ -37,24 +38,39 @@ def analyze_api_usage():
                         r'/api/bills[^\s"\']*',
                         r'/api/issues[^\s"\']*',
                         r'bills[^/\s"\']*',
-                        r'issues[^/\s"\']*'
+                        r'issues[^/\s"\']*',
                     ]
 
                     for pattern in api_patterns:
                         matches = re.findall(pattern, content, re.IGNORECASE)
                         for match in matches:
-                            results["api_endpoints"].append({
-                                "file": str(rel_path),
-                                "endpoint": match,
-                                "line_context": ""
-                            })
+                            results["api_endpoints"].append(
+                                {
+                                    "file": str(rel_path),
+                                    "endpoint": match,
+                                    "line_context": "",
+                                }
+                            )
 
                     # フィールド使用検索
                     bills_fields = [
-                        "Status", "Summary", "Assignee", "Attachments", "Speeches",
-                        "Issues", "Submission_Date", "Committee", "Full_Text",
-                        "Related_Documents", "AI_Analysis", "Keywords", "Bill_ID",
-                        "Title", "Diet_Session", "Category", "Bill_Number"
+                        "Status",
+                        "Summary",
+                        "Assignee",
+                        "Attachments",
+                        "Speeches",
+                        "Issues",
+                        "Submission_Date",
+                        "Committee",
+                        "Full_Text",
+                        "Related_Documents",
+                        "AI_Analysis",
+                        "Keywords",
+                        "Bill_ID",
+                        "Title",
+                        "Diet_Session",
+                        "Category",
+                        "Bill_Number",
                     ]
 
                     for field in bills_fields:
@@ -71,19 +87,23 @@ def analyze_api_usage():
                         for pattern in patterns:
                             if re.search(pattern, content):
                                 # 行番号を取得
-                                lines = content.split('\n')
+                                lines = content.split("\n")
                                 for i, line in enumerate(lines):
                                     if re.search(pattern, line):
-                                        results["field_usage"][field].append({
-                                            "file": str(rel_path),
-                                            "line": i + 1,
-                                            "context": line.strip()
-                                        })
+                                        results["field_usage"][field].append(
+                                            {
+                                                "file": str(rel_path),
+                                                "line": i + 1,
+                                                "context": line.strip(),
+                                            }
+                                        )
                                         break
 
                     # API関連ファイルの特定
-                    if any(keyword in content.lower()
-                           for keyword in ['api', 'fetch', 'axios', 'bills', 'issues']):
+                    if any(
+                        keyword in content.lower()
+                        for keyword in ["api", "fetch", "axios", "bills", "issues"]
+                    ):
                         results["api_files"].append(str(rel_path))
 
             except Exception:
@@ -123,8 +143,15 @@ def main():
     print("\n🗑️ 削除候補フィールドの使用状況")
     print("-" * 40)
 
-    deletion_candidates = ["Assignee", "Attachments", "Submission_Date", "Full_Text",
-                           "Related_Documents", "AI_Analysis", "Keywords"]
+    deletion_candidates = [
+        "Assignee",
+        "Attachments",
+        "Submission_Date",
+        "Full_Text",
+        "Related_Documents",
+        "AI_Analysis",
+        "Keywords",
+    ]
 
     for field in deletion_candidates:
         usage = results["field_usage"][field]
@@ -160,12 +187,13 @@ def main():
         "src/components/BillDetailModal.tsx",
         "src/components/BillCard.tsx",
         "src/pages/issues/index.tsx",
-        "src/pages/issues/[id].tsx"
+        "src/pages/issues/[id].tsx",
     ]
 
     for file in key_files:
-        web_frontend_path = Path(__file__).parent.parent.parent / \
-            "services" / "web-frontend"
+        web_frontend_path = (
+            Path(__file__).parent.parent.parent / "services" / "web-frontend"
+        )
         full_path = web_frontend_path / file
         if full_path.exists():
             print(f"  ✅ {file} - 存在")

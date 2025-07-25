@@ -23,7 +23,7 @@ async def analyze_bills_categories():
     base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     print("🔍 Analyzing Bills table categories for T129 migration")
@@ -42,7 +42,9 @@ async def analyze_bills_categories():
             if offset:
                 params["offset"] = offset
 
-            async with session.get(bills_url, headers=headers, params=params) as response:
+            async with session.get(
+                bills_url, headers=headers, params=params
+            ) as response:
                 if response.status == 200:
                     data = await response.json()
                     records = data.get("records", [])
@@ -96,7 +98,8 @@ async def analyze_bills_categories():
         print("   Category breakdown:")
 
         for category, count in sorted(
-                categories.items(), key=lambda x: x[1], reverse=True):
+            categories.items(), key=lambda x: x[1], reverse=True
+        ):
             percentage = (count / len(all_bills)) * 100
             print(f"   {category}: {count} bills ({percentage:.1f}%)")
 
@@ -114,7 +117,7 @@ async def analyze_bills_categories():
             "行政・地方": ["行政", "地方", "自治体", "公務員", "議員"],
             "交通・通信": ["交通", "通信", "道路", "鉄道", "航空", "港湾"],
             "労働・雇用": ["労働", "雇用", "働き方", "賃金", "労災"],
-            "その他": ["その他", "一般", "雑則"]
+            "その他": ["その他", "一般", "雑則"],
         }
 
         print("   📋 Suggested mapping structure:")
@@ -157,13 +160,15 @@ async def analyze_bills_categories():
             "category_distribution": dict(categories),
             "suggested_mappings": suggested_mappings,
             "mapping_candidates": mapping_candidates,
-            "sample_record": {
-                k: str(v)[
-                    :100] for k,
-                v in sample_record.items()} if sample_record else None}
+            "sample_record": (
+                {k: str(v)[:100] for k, v in sample_record.items()}
+                if sample_record
+                else None
+            ),
+        }
 
         output_file = "bills_category_analysis_t129.json"
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
 
         print(f"\n💾 Results saved to: {output_file}")
@@ -172,6 +177,7 @@ async def analyze_bills_categories():
         print("   1. Review suggested mappings")
         print("   2. Verify against IssueCategories table")
         print("   3. Create migration script for T129.3")
+
 
 if __name__ == "__main__":
     asyncio.run(analyze_bills_categories())

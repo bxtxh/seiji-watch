@@ -19,9 +19,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -35,8 +35,8 @@ def get_table_schema(pat, base_id):
 
     if response.status_code == 200:
         data = response.json()
-        for table in data.get('tables', []):
-            if table.get('name') == "Bills (法案)":
+        for table in data.get("tables", []):
+            if table.get("name") == "Bills (法案)":
                 return table
     return None
 
@@ -55,13 +55,13 @@ def get_all_records(pat, base_id):
             break
 
         data = response.json()
-        records = data.get('records', [])
+        records = data.get("records", [])
         all_records.extend(records)
 
-        offset = data.get('offset')
+        offset = data.get("offset")
         if not offset:
             break
-        params['offset'] = offset
+        params["offset"] = offset
 
     return all_records
 
@@ -71,11 +71,11 @@ def analyze_field_usage(records, fields_schema):
     field_usage = defaultdict(lambda: {"populated": 0, "empty": 0, "total": 0})
 
     for record in records:
-        record_fields = record.get('fields', {})
+        record_fields = record.get("fields", {})
 
         for field_schema in fields_schema:
-            field_name = field_schema.get('name')
-            field_schema.get('type')
+            field_name = field_schema.get("name")
+            field_schema.get("type")
 
             field_usage[field_name]["total"] += 1
 
@@ -95,8 +95,9 @@ def analyze_field_usage(records, fields_schema):
 
 def check_web_frontend_usage():
     """Web frontend での使用状況確認"""
-    web_frontend_path = Path(__file__).parent.parent.parent / \
-        "services" / "web-frontend"
+    web_frontend_path = (
+        Path(__file__).parent.parent.parent / "services" / "web-frontend"
+    )
 
     # 使用されているフィールド名を検索
     used_fields = set()
@@ -106,16 +107,32 @@ def check_web_frontend_usage():
         for ext in ["*.ts", "*.tsx", "*.js", "*.jsx"]:
             for file_path in web_frontend_path.rglob(ext):
                 try:
-                    with open(file_path, encoding='utf-8') as f:
+                    with open(file_path, encoding="utf-8") as f:
                         content = f.read()
 
                         # よくあるBillsフィールド名を検索
                         potential_fields = [
-                            "Bill_Number", "Bill_ID", "Title", "Status", "Category",
-                            "Diet_Session", "House_Of_Origin", "Bill_Type", "Diet_URL",
-                            "PDF_URL", "Summary", "Notes", "Name", "Assignee",
-                            "Attachments", "Created_At", "Updated_At", "Speeches",
-                            "Issues", "Submitter_Type", "Sponsoring_Ministry"
+                            "Bill_Number",
+                            "Bill_ID",
+                            "Title",
+                            "Status",
+                            "Category",
+                            "Diet_Session",
+                            "House_Of_Origin",
+                            "Bill_Type",
+                            "Diet_URL",
+                            "PDF_URL",
+                            "Summary",
+                            "Notes",
+                            "Name",
+                            "Assignee",
+                            "Attachments",
+                            "Created_At",
+                            "Updated_At",
+                            "Speeches",
+                            "Issues",
+                            "Submitter_Type",
+                            "Sponsoring_Ministry",
                         ]
 
                         for field in potential_fields:
@@ -138,8 +155,8 @@ def main():
     env_file = Path(__file__).parent / ".env.local"
     load_env_file(env_file)
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat or not base_id:
         print("❌ 環境変数不足")
@@ -153,7 +170,7 @@ def main():
         print("❌ スキーマ取得失敗")
         return 1
 
-    fields_schema = table_schema.get('fields', [])
+    fields_schema = table_schema.get("fields", [])
     print(f"✅ {len(fields_schema)}個のフィールドを確認")
 
     # 2. 全レコード取得
@@ -179,12 +196,13 @@ def main():
     well_used_fields = []
 
     for field_schema in fields_schema:
-        field_name = field_schema.get('name')
-        field_type = field_schema.get('type')
+        field_name = field_schema.get("name")
+        field_type = field_schema.get("type")
         usage = field_usage[field_name]
 
-        usage_rate = usage["populated"] / usage["total"] * \
-            100 if usage["total"] > 0 else 0
+        usage_rate = (
+            usage["populated"] / usage["total"] * 100 if usage["total"] > 0 else 0
+        )
         frontend_used = field_name in frontend_used_fields
 
         status = ""
@@ -193,7 +211,8 @@ def main():
             status = "🔴 未使用"
         elif usage_rate < 10:
             barely_used_fields.append(
-                (field_name, field_type, usage_rate, frontend_used))
+                (field_name, field_type, usage_rate, frontend_used)
+            )
             status = "🟡 ほぼ未使用"
         else:
             well_used_fields.append((field_name, field_type, usage_rate, frontend_used))
@@ -202,7 +221,8 @@ def main():
         frontend_status = "🌐" if frontend_used else "❌"
 
         print(
-            f"{status} {field_name:25} | {field_type:15} | {usage_rate:5.1f}% | {frontend_status}")
+            f"{status} {field_name:25} | {field_type:15} | {usage_rate:5.1f}% | {frontend_status}"
+        )
 
     # 6. サマリー
     print("\n📋 サマリー")

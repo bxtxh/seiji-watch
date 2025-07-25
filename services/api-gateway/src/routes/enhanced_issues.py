@@ -19,13 +19,8 @@ from services.policy_issue_extractor import BillData, PolicyIssueExtractor
 from ..security.validation import InputValidator
 
 sys.path.append(
-    os.path.join(
-        os.path.dirname(__file__),
-        '..',
-        '..',
-        '..',
-        'ingest-worker',
-        'src'))
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "ingest-worker", "src")
+)
 
 
 logger = logging.getLogger(__name__)
@@ -47,6 +42,7 @@ async def get_policy_issue_extractor() -> PolicyIssueExtractor:
 # Request/Response Models
 class DualLevelIssueRequest(BaseModel):
     """Request for creating dual-level issues."""
+
     bill_id: str
     bill_title: str
     bill_outline: str | None = None
@@ -56,53 +52,55 @@ class DualLevelIssueRequest(BaseModel):
     submitter: str | None = None
     category: str | None = None
 
-    @validator('bill_id')
+    @validator("bill_id")
     def validate_bill_id(self, v):
         if not v or not v.strip():
-            raise ValueError('Bill ID cannot be empty')
+            raise ValueError("Bill ID cannot be empty")
         return InputValidator.sanitize_string(v, 100)
 
-    @validator('bill_title')
+    @validator("bill_title")
     def validate_bill_title(self, v):
         if not v or not v.strip():
-            raise ValueError('Bill title cannot be empty')
+            raise ValueError("Bill title cannot be empty")
         if len(v) > 500:
-            raise ValueError('Bill title too long (max 500 characters)')
+            raise ValueError("Bill title too long (max 500 characters)")
         return InputValidator.sanitize_string(v, 500)
 
 
 class IssueStatusUpdateRequest(BaseModel):
     """Request for updating issue status."""
+
     status: str
     reviewer_notes: str | None = None
 
-    @validator('status')
+    @validator("status")
     def validate_status(self, v):
-        allowed_statuses = ['pending', 'approved', 'rejected', 'failed_validation']
+        allowed_statuses = ["pending", "approved", "rejected", "failed_validation"]
         if v not in allowed_statuses:
             raise ValueError(f'Status must be one of: {", ".join(allowed_statuses)}')
         return v
 
-    @validator('reviewer_notes')
+    @validator("reviewer_notes")
     def validate_reviewer_notes(self, v):
         if v and len(v) > 1000:
-            raise ValueError('Reviewer notes too long (max 1000 characters)')
+            raise ValueError("Reviewer notes too long (max 1000 characters)")
         return InputValidator.sanitize_string(v, 1000) if v else v
 
 
 class IssueSearchRequest(BaseModel):
     """Request for searching issues."""
+
     query: str
     level: int | None = Query(None, ge=1, le=2, description="Issue level (1 or 2)")
     status: str = "approved"
     max_records: int = Query(50, le=200)
 
-    @validator('query')
+    @validator("query")
     def validate_query(self, v):
         if not v or not v.strip():
-            raise ValueError('Search query cannot be empty')
+            raise ValueError("Search query cannot be empty")
         if len(v) > 100:
-            raise ValueError('Search query too long (max 100 characters)')
+            raise ValueError("Search query too long (max 100 characters)")
         return InputValidator.sanitize_string(v, 100)
 
 
@@ -114,7 +112,7 @@ async def get_issues(
     bill_id: str | None = Query(None, description="Filter by bill ID"),
     parent_id: str | None = Query(None, description="Filter by parent issue"),
     max_records: int = Query(100, le=1000),
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Get issues with level filtering and enhanced options."""
     try:
@@ -127,21 +125,17 @@ async def get_issues(
         if level:
             # Get issues by specific level
             issues = await airtable_manager.get_issues_by_level(
-                level=level,
-                status=status,
-                max_records=max_records
+                level=level, status=status, max_records=max_records
             )
         elif bill_id:
             # Get issues by bill
             issues = await airtable_manager.get_issues_by_bill(
-                bill_id=bill_id,
-                status=status
+                bill_id=bill_id, status=status
             )
         else:
             # Get all issues with basic filtering
             issues = await airtable_manager.list_issues_by_status(
-                status=status,
-                max_records=max_records
+                status=status, max_records=max_records
             )
 
         # Format response based on level
@@ -151,52 +145,58 @@ async def get_issues(
 
             if level == 1:
                 # Level 1 format
-                formatted_issues.append({
-                    "issue_id": fields.get("Issue_ID"),
-                    "record_id": issue["id"],
-                    "label": fields.get("Label_Lv1", ""),
-                    "confidence": fields.get("Confidence", 0.0),
-                    "source_bill_id": fields.get("Source_Bill_ID"),
-                    "quality_score": fields.get("Quality_Score", 0.0),
-                    "status": fields.get("Status", "pending"),
-                    "created_at": fields.get("Created_At"),
-                    "level": 1
-                })
+                formatted_issues.append(
+                    {
+                        "issue_id": fields.get("Issue_ID"),
+                        "record_id": issue["id"],
+                        "label": fields.get("Label_Lv1", ""),
+                        "confidence": fields.get("Confidence", 0.0),
+                        "source_bill_id": fields.get("Source_Bill_ID"),
+                        "quality_score": fields.get("Quality_Score", 0.0),
+                        "status": fields.get("Status", "pending"),
+                        "created_at": fields.get("Created_At"),
+                        "level": 1,
+                    }
+                )
             elif level == 2:
                 # Level 2 format
-                formatted_issues.append({
-                    "issue_id": fields.get("Issue_ID"),
-                    "record_id": issue["id"],
-                    "label": fields.get("Label_Lv2", ""),
-                    "parent_id": fields.get("Parent_ID"),
-                    "confidence": fields.get("Confidence", 0.0),
-                    "source_bill_id": fields.get("Source_Bill_ID"),
-                    "quality_score": fields.get("Quality_Score", 0.0),
-                    "status": fields.get("Status", "pending"),
-                    "created_at": fields.get("Created_At"),
-                    "level": 2
-                })
+                formatted_issues.append(
+                    {
+                        "issue_id": fields.get("Issue_ID"),
+                        "record_id": issue["id"],
+                        "label": fields.get("Label_Lv2", ""),
+                        "parent_id": fields.get("Parent_ID"),
+                        "confidence": fields.get("Confidence", 0.0),
+                        "source_bill_id": fields.get("Source_Bill_ID"),
+                        "quality_score": fields.get("Quality_Score", 0.0),
+                        "status": fields.get("Status", "pending"),
+                        "created_at": fields.get("Created_At"),
+                        "level": 2,
+                    }
+                )
             else:
                 # Both levels for frontend toggle
-                formatted_issues.append({
-                    "issue_id": fields.get("Issue_ID"),
-                    "record_id": issue["id"],
-                    "label_lv1": fields.get("Label_Lv1", ""),
-                    "label_lv2": fields.get("Label_Lv2", ""),
-                    "parent_id": fields.get("Parent_ID"),
-                    "confidence": fields.get("Confidence", 0.0),
-                    "source_bill_id": fields.get("Source_Bill_ID"),
-                    "quality_score": fields.get("Quality_Score", 0.0),
-                    "status": fields.get("Status", "pending"),
-                    "created_at": fields.get("Created_At"),
-                    "level": 1 if not fields.get("Parent_ID") else 2
-                })
+                formatted_issues.append(
+                    {
+                        "issue_id": fields.get("Issue_ID"),
+                        "record_id": issue["id"],
+                        "label_lv1": fields.get("Label_Lv1", ""),
+                        "label_lv2": fields.get("Label_Lv2", ""),
+                        "parent_id": fields.get("Parent_ID"),
+                        "confidence": fields.get("Confidence", 0.0),
+                        "source_bill_id": fields.get("Source_Bill_ID"),
+                        "quality_score": fields.get("Quality_Score", 0.0),
+                        "status": fields.get("Status", "pending"),
+                        "created_at": fields.get("Created_At"),
+                        "level": 1 if not fields.get("Parent_ID") else 2,
+                    }
+                )
 
         return {
             "issues": formatted_issues,
             "count": len(formatted_issues),
             "level_filter": level,
-            "status_filter": status
+            "status_filter": status,
         }
 
     except Exception as e:
@@ -207,7 +207,7 @@ async def get_issues(
 @router.get("/tree")
 async def get_issue_tree(
     status: str = Query("approved", description="Issue status filter"),
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Get hierarchical issue tree structure."""
     try:
@@ -222,7 +222,7 @@ async def get_issue_tree(
                 "label_lv1": parent_data["label_lv1"],
                 "confidence": parent_data["confidence"],
                 "source_bill_id": parent_data["source_bill_id"],
-                "children": []
+                "children": [],
             }
 
             for child in parent_data["children"]:
@@ -230,7 +230,7 @@ async def get_issue_tree(
                     "issue_id": child["issue_id"],
                     "label_lv2": child["label_lv2"],
                     "confidence": child["confidence"],
-                    "source_bill_id": child["source_bill_id"]
+                    "source_bill_id": child["source_bill_id"],
                 }
                 formatted_parent["children"].append(formatted_child)
 
@@ -239,8 +239,10 @@ async def get_issue_tree(
         return {
             "tree": formatted_tree,
             "total_parent_issues": len(formatted_tree),
-            "total_child_issues": sum(len(parent["children"]) for parent in formatted_tree),
-            "status_filter": status
+            "total_child_issues": sum(
+                len(parent["children"]) for parent in formatted_tree
+            ),
+            "status_filter": status,
         }
 
     except Exception as e:
@@ -251,7 +253,7 @@ async def get_issue_tree(
 @router.get("/{record_id}")
 async def get_issue(
     record_id: str,
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Get a specific issue by Airtable record ID."""
     try:
@@ -261,10 +263,7 @@ async def get_issue(
         if not issue_record:
             raise HTTPException(status_code=404, detail="Issue not found")
 
-        return {
-            "issue": issue_record.to_dict(),
-            "record_id": record_id
-        }
+        return {"issue": issue_record.to_dict(), "record_id": record_id}
 
     except HTTPException:
         raise
@@ -278,7 +277,7 @@ async def get_issue(
 async def extract_dual_level_issues(
     request: DualLevelIssueRequest,
     extractor: PolicyIssueExtractor = Depends(get_policy_issue_extractor),
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Extract dual-level issues from bill data using LLM."""
     try:
@@ -291,7 +290,7 @@ async def extract_dual_level_issues(
             expected_effects=request.expected_effects,
             key_provisions=request.key_provisions,
             submitter=request.submitter,
-            category=request.category
+            category=request.category,
         )
 
         # Extract issues using LLM
@@ -302,7 +301,7 @@ async def extract_dual_level_issues(
                 "success": False,
                 "message": "Failed to extract issues",
                 "error": extraction_result["metadata"].get("error"),
-                "bill_id": request.bill_id
+                "bill_id": request.bill_id,
             }
 
         extracted_issues = extraction_result["issues"]
@@ -318,6 +317,7 @@ async def extract_dual_level_issues(
 
                 # Convert dict to DualLevelIssue for validation
                 from services.policy_issue_extractor import DualLevelIssue
+
                 dual_issue = DualLevelIssue(**issue_data)
 
                 # Create issue pair in Airtable
@@ -325,21 +325,23 @@ async def extract_dual_level_issues(
                     dual_issue, request.bill_id, quality_score
                 )
 
-                created_pairs.append({
-                    "lv1_record_id": lv1_id,
-                    "lv2_record_id": lv2_id,
-                    "label_lv1": dual_issue.label_lv1,
-                    "label_lv2": dual_issue.label_lv2,
-                    "confidence": dual_issue.confidence,
-                    "quality_score": quality_score
-                })
+                created_pairs.append(
+                    {
+                        "lv1_record_id": lv1_id,
+                        "lv2_record_id": lv2_id,
+                        "label_lv1": dual_issue.label_lv1,
+                        "label_lv2": dual_issue.label_lv2,
+                        "confidence": dual_issue.confidence,
+                        "quality_score": quality_score,
+                    }
+                )
 
         return {
             "success": True,
             "message": f"Extracted and created {len(created_pairs)} issue pairs",
             "bill_id": request.bill_id,
             "created_issues": created_pairs,
-            "extraction_metadata": metadata
+            "extraction_metadata": metadata,
         }
 
     except Exception as e:
@@ -351,14 +353,14 @@ async def extract_dual_level_issues(
 async def batch_extract_issues(
     requests: list[DualLevelIssueRequest],
     extractor: PolicyIssueExtractor = Depends(get_policy_issue_extractor),
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Batch extract issues from multiple bills."""
     try:
         if len(requests) > 10:  # Limit batch size
             raise HTTPException(
-                status_code=400,
-                detail="Batch size limited to 10 bills")
+                status_code=400, detail="Batch size limited to 10 bills"
+            )
 
         # Convert to BillData objects
         bills = []
@@ -371,7 +373,7 @@ async def batch_extract_issues(
                 expected_effects=req.expected_effects,
                 key_provisions=req.key_provisions,
                 submitter=req.submitter,
-                category=req.category
+                category=req.category,
             )
             bills.append(bill_data)
 
@@ -390,37 +392,45 @@ async def batch_extract_issues(
 
                 created_pairs = []
                 for j, issue_data in enumerate(extracted_issues):
-                    quality_score = quality_scores[j] if j < len(
-                        quality_scores) else 0.0
+                    quality_score = (
+                        quality_scores[j] if j < len(quality_scores) else 0.0
+                    )
 
                     from services.policy_issue_extractor import DualLevelIssue
+
                     dual_issue = DualLevelIssue(**issue_data)
 
                     lv1_id, lv2_id = await airtable_manager.create_issue_pair(
                         dual_issue, bill_id, quality_score
                     )
 
-                    created_pairs.append({
-                        "lv1_record_id": lv1_id,
-                        "lv2_record_id": lv2_id,
-                        "label_lv1": dual_issue.label_lv1,
-                        "label_lv2": dual_issue.label_lv2,
-                        "confidence": dual_issue.confidence,
-                        "quality_score": quality_score
-                    })
+                    created_pairs.append(
+                        {
+                            "lv1_record_id": lv1_id,
+                            "lv2_record_id": lv2_id,
+                            "label_lv1": dual_issue.label_lv1,
+                            "label_lv2": dual_issue.label_lv2,
+                            "confidence": dual_issue.confidence,
+                            "quality_score": quality_score,
+                        }
+                    )
 
-                processed_results.append({
-                    "bill_id": bill_id,
-                    "success": True,
-                    "issues_created": len(created_pairs),
-                    "created_issues": created_pairs
-                })
+                processed_results.append(
+                    {
+                        "bill_id": bill_id,
+                        "success": True,
+                        "issues_created": len(created_pairs),
+                        "created_issues": created_pairs,
+                    }
+                )
             else:
-                processed_results.append({
-                    "bill_id": bill_id,
-                    "success": False,
-                    "error": result["metadata"].get("error")
-                })
+                processed_results.append(
+                    {
+                        "bill_id": bill_id,
+                        "success": False,
+                        "error": result["metadata"].get("error"),
+                    }
+                )
 
         successful_count = sum(1 for r in processed_results if r["success"])
         total_issues = sum(r.get("issues_created", 0) for r in processed_results)
@@ -428,7 +438,8 @@ async def batch_extract_issues(
         return {
             "message": f"Processed {len(requests)} bills, {successful_count} successful",
             "total_issues_created": total_issues,
-            "results": processed_results}
+            "results": processed_results,
+        }
 
     except HTTPException:
         raise
@@ -442,7 +453,7 @@ async def batch_extract_issues(
 async def update_issue_status(
     record_id: str,
     request: IssueStatusUpdateRequest,
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Update issue status for review workflow."""
     try:
@@ -451,18 +462,19 @@ async def update_issue_status(
         success = await airtable_manager.update_issue_status(
             record_id=record_id,
             status=request.status,
-            reviewer_notes=request.reviewer_notes
+            reviewer_notes=request.reviewer_notes,
         )
 
         if not success:
-            raise HTTPException(status_code=404,
-                                detail="Issue not found or update failed")
+            raise HTTPException(
+                status_code=404, detail="Issue not found or update failed"
+            )
 
         return {
             "success": True,
             "message": f"Issue status updated to {request.status}",
             "record_id": record_id,
-            "status": request.status
+            "status": request.status,
         }
 
     except HTTPException:
@@ -475,7 +487,7 @@ async def update_issue_status(
 @router.post("/search")
 async def search_issues(
     request: IssueSearchRequest,
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Search issues by text query."""
     try:
@@ -483,7 +495,7 @@ async def search_issues(
             query=request.query,
             level=request.level,
             status=request.status,
-            max_records=request.max_records
+            max_records=request.max_records,
         )
 
         # Format results
@@ -501,7 +513,7 @@ async def search_issues(
                 "source_bill_id": fields.get("Source_Bill_ID"),
                 "quality_score": fields.get("Quality_Score", 0.0),
                 "status": fields.get("Status", "pending"),
-                "level": 1 if not fields.get("Parent_ID") else 2
+                "level": 1 if not fields.get("Parent_ID") else 2,
             }
             formatted_results.append(formatted_result)
 
@@ -510,7 +522,7 @@ async def search_issues(
             "results": formatted_results,
             "count": len(formatted_results),
             "level_filter": request.level,
-            "status_filter": request.status
+            "status_filter": request.status,
         }
 
     except Exception as e:
@@ -521,7 +533,7 @@ async def search_issues(
 # Statistics and Monitoring Endpoints
 @router.get("/statistics")
 async def get_issue_statistics(
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Get comprehensive issue statistics."""
     try:
@@ -535,10 +547,11 @@ async def get_issue_statistics(
 
 @router.get("/pending/count")
 async def get_pending_count(
-        exclude_failed_validation: bool = Query(
-            True,
-            description="Exclude failed validation"),
-        airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)):
+    exclude_failed_validation: bool = Query(
+        True, description="Exclude failed validation"
+    ),
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
+):
     """Get count of pending issues for notifications."""
     try:
         count = await airtable_manager.count_pending_issues(exclude_failed_validation)
@@ -546,7 +559,7 @@ async def get_pending_count(
         return {
             "pending_count": count,
             "exclude_failed_validation": exclude_failed_validation,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -557,7 +570,7 @@ async def get_pending_count(
 # Health Check Endpoint
 @router.get("/health")
 async def health_check(
-    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager)
+    airtable_manager: AirtableIssueManager = Depends(get_airtable_issue_manager),
 ):
     """Health check for enhanced issues service."""
     try:
@@ -577,9 +590,9 @@ async def health_check(
             "status": "healthy" if overall_healthy else "unhealthy",
             "components": {
                 "airtable_manager": "healthy" if airtable_healthy else "unhealthy",
-                "policy_extractor": "healthy" if extractor_healthy else "unhealthy"
+                "policy_extractor": "healthy" if extractor_healthy else "unhealthy",
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     except Exception as e:
@@ -587,5 +600,5 @@ async def health_check(
         return {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }

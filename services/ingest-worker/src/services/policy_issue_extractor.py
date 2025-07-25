@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BillData:
     """Bill data structure for issue extraction."""
+
     id: str
     title: str
     outline: str | None = None
@@ -33,42 +34,43 @@ class BillData:
 
 class DualLevelIssue(BaseModel):
     """Pydantic model for dual-level issue validation."""
+
     label_lv1: str
     label_lv2: str
     confidence: float
 
-    @validator('label_lv1')
+    @validator("label_lv1")
     def validate_lv1_label(self, v):
         # Length check
         if len(v) > 60:
-            raise ValueError('label_lv1 must be ≤ 60 characters')
+            raise ValueError("label_lv1 must be ≤ 60 characters")
 
         # High school vocabulary check
         if not self._is_high_school_vocabulary(v):
-            raise ValueError('label_lv1 contains advanced vocabulary')
+            raise ValueError("label_lv1 contains advanced vocabulary")
 
         # Verb ending check
         if not self._ends_with_verb(v):
-            raise ValueError('label_lv1 must end with a verb')
+            raise ValueError("label_lv1 must end with a verb")
 
         return v
 
-    @validator('label_lv2')
+    @validator("label_lv2")
     def validate_lv2_label(self, v):
         # Length check
         if len(v) > 60:
-            raise ValueError('label_lv2 must be ≤ 60 characters')
+            raise ValueError("label_lv2 must be ≤ 60 characters")
 
         # Verb ending check
         if not self._ends_with_verb(v):
-            raise ValueError('label_lv2 must end with a verb')
+            raise ValueError("label_lv2 must end with a verb")
 
         return v
 
-    @validator('confidence')
+    @validator("confidence")
     def validate_confidence(self, v):
         if not 0.0 <= v <= 1.0:
-            raise ValueError('confidence must be between 0.0 and 1.0')
+            raise ValueError("confidence must be between 0.0 and 1.0")
         return v
 
     @classmethod
@@ -82,23 +84,24 @@ class DualLevelIssue(BaseModel):
                 return False
 
             last_token = tokens[-1]
-            pos = last_token.part_of_speech.split(',')[0]
+            pos = last_token.part_of_speech.split(",")[0]
 
-            return pos == '動詞'
+            return pos == "動詞"
         except Exception as e:
             logger.warning(f"POS tagging failed for '{text}': {e}")
             # Fallback to simple pattern matching
             verb_endings = [
-                'する',
-                'される',
-                'できる',
-                'なる',
-                'れる',
-                'せる',
-                'ける',
-                'げる',
-                'める',
-                'える']
+                "する",
+                "される",
+                "できる",
+                "なる",
+                "れる",
+                "せる",
+                "ける",
+                "げる",
+                "める",
+                "える",
+            ]
             return any(text.endswith(ending) for ending in verb_endings)
 
     @classmethod
@@ -106,14 +109,45 @@ class DualLevelIssue(BaseModel):
         """Check if text uses only high school level vocabulary."""
         # Advanced terms that are too complex for high school level
         advanced_terms = [
-            '施策', '方策', '措置', '制度設計', '政策立案',
-            '実効性', '持続可能性', '包括的', '体系的', '戦略的',
-            '抜本的', '根本的', '構造的', '包摂的', '多角的',
-            '実証的', '効率的', '合理的', '恒久的', '暫定的',
-            '予防的', '事後的', '総合的', '統合的', '段階的',
-            '優遇措置', '特例措置', '緊急措置', '暫定措置',
-            '施行', '実施', '運用', '執行', '適用',
-            '改廃', '制定', '改正', '廃止', '見直し'
+            "施策",
+            "方策",
+            "措置",
+            "制度設計",
+            "政策立案",
+            "実効性",
+            "持続可能性",
+            "包括的",
+            "体系的",
+            "戦略的",
+            "抜本的",
+            "根本的",
+            "構造的",
+            "包摂的",
+            "多角的",
+            "実証的",
+            "効率的",
+            "合理的",
+            "恒久的",
+            "暫定的",
+            "予防的",
+            "事後的",
+            "総合的",
+            "統合的",
+            "段階的",
+            "優遇措置",
+            "特例措置",
+            "緊急措置",
+            "暫定措置",
+            "施行",
+            "実施",
+            "運用",
+            "執行",
+            "適用",
+            "改廃",
+            "制定",
+            "改正",
+            "廃止",
+            "見直し",
         ]
 
         return not any(term in text for term in advanced_terms)
@@ -122,6 +156,7 @@ class DualLevelIssue(BaseModel):
 @dataclass
 class ValidationResult:
     """Validation result for extracted issues."""
+
     is_valid: bool
     validated_data: DualLevelIssue | None
     errors: list[str]
@@ -144,7 +179,7 @@ class IssueValidator:
                 is_valid=True,
                 validated_data=validated_issue,
                 errors=[],
-                quality_score=quality_score
+                quality_score=quality_score,
             )
         except ValidationError as e:
             error_messages = [str(error) for error in e.errors()]
@@ -152,7 +187,7 @@ class IssueValidator:
                 is_valid=False,
                 validated_data=None,
                 errors=error_messages,
-                quality_score=0.0
+                quality_score=0.0,
             )
 
     def _calculate_quality_score(self, issue: DualLevelIssue) -> float:
@@ -175,9 +210,9 @@ class IssueValidator:
             score += 0.1
 
         # Clarity and specificity bonus
-        if self._is_clear_and_specific(
-                issue.label_lv1) and self._is_clear_and_specific(
-                issue.label_lv2):
+        if self._is_clear_and_specific(issue.label_lv1) and self._is_clear_and_specific(
+            issue.label_lv2
+        ):
             score += 0.1
 
         return min(1.0, score)
@@ -199,15 +234,27 @@ class IssueValidator:
     def _has_advanced_terms(self, text: str) -> bool:
         """Check if text contains advanced terms appropriate for general readers."""
         advanced_terms = [
-            '改善', '向上', '推進', '促進', '強化', '充実', '確保',
-            '対策', '対応', '解決', '防止', '予防', '支援', '援助'
+            "改善",
+            "向上",
+            "推進",
+            "促進",
+            "強化",
+            "充実",
+            "確保",
+            "対策",
+            "対応",
+            "解決",
+            "防止",
+            "予防",
+            "支援",
+            "援助",
         ]
         return any(term in text for term in advanced_terms)
 
     def _is_clear_and_specific(self, text: str) -> bool:
         """Check if text is clear and specific."""
         # Avoid vague terms
-        vague_terms = ['問題', 'こと', 'もの', 'など', 'について', 'に関して']
+        vague_terms = ["問題", "こと", "もの", "など", "について", "に関して"]
         return len(text) > 10 and not any(term in text for term in vague_terms[:3])
 
 
@@ -215,9 +262,7 @@ class PolicyIssueExtractor:
     """Main service for extracting dual-level policy issues from bills."""
 
     def __init__(self, api_key: str | None = None):
-        self.client = openai.AsyncOpenAI(
-            api_key=api_key or os.getenv("OPENAI_API_KEY")
-        )
+        self.client = openai.AsyncOpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
         if not self.client.api_key:
             raise ValueError("OpenAI API key is required")
 
@@ -229,7 +274,8 @@ class PolicyIssueExtractor:
         self.retry_delay = 2.0
 
     async def extract_dual_level_issues(
-            self, bill_data: BillData) -> list[DualLevelIssue]:
+        self, bill_data: BillData
+    ) -> list[DualLevelIssue]:
         """Extract issues at both high school and general reader levels."""
 
         prompt = self._build_dual_level_prompt(bill_data)
@@ -239,17 +285,11 @@ class PolicyIssueExtractor:
                 response = await self.client.chat.completions.create(
                     model="gpt-4",
                     messages=[
-                        {
-                            "role": "system",
-                            "content": self._get_system_prompt()
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
+                        {"role": "system", "content": self._get_system_prompt()},
+                        {"role": "user", "content": prompt},
                     ],
                     temperature=0.2,
-                    max_tokens=800
+                    max_tokens=800,
                 )
 
                 return await self._parse_and_validate_response(response)
@@ -363,10 +403,12 @@ NGパターン:
                 if validation_result.is_valid:
                     validated_issues.append(validation_result.validated_data)
                     self.logger.info(
-                        f"Issue validated with quality score: {validation_result.quality_score:.2f}")
+                        f"Issue validated with quality score: {validation_result.quality_score:.2f}"
+                    )
                 else:
                     self.logger.warning(
-                        f"Issue validation failed: {validation_result.errors}")
+                        f"Issue validation failed: {validation_result.errors}"
+                    )
                     # Store for manual review or retry
                     continue
 
@@ -400,8 +442,9 @@ NGパターン:
                 validation_result = self.validator.validate_issue(issue.dict())
                 quality_scores.append(validation_result.quality_score)
 
-            avg_quality = sum(quality_scores) / \
-                len(quality_scores) if quality_scores else 0.0
+            avg_quality = (
+                sum(quality_scores) / len(quality_scores) if quality_scores else 0.0
+            )
 
             return {
                 "bill_id": bill_data.id,
@@ -413,9 +456,9 @@ NGパターン:
                     "average_quality_score": avg_quality,
                     "individual_quality_scores": quality_scores,
                     "model_used": "gpt-4",
-                    "extractor_version": "1.0.0"
+                    "extractor_version": "1.0.0",
                 },
-                "status": "success"
+                "status": "success",
             }
 
         except Exception as e:
@@ -430,16 +473,17 @@ NGパターン:
                     "issue_count": 0,
                     "error": str(e),
                     "model_used": "gpt-4",
-                    "extractor_version": "1.0.0"
+                    "extractor_version": "1.0.0",
                 },
-                "status": "failed"
+                "status": "failed",
             }
 
-    async def batch_extract_issues(self,
-                                   bills: list[BillData],
-                                   batch_size: int = 5,
-                                   delay_between_batches: float = 2.0) -> list[dict[str,
-                                                                                    Any]]:
+    async def batch_extract_issues(
+        self,
+        bills: list[BillData],
+        batch_size: int = 5,
+        delay_between_batches: float = 2.0,
+    ) -> list[dict[str, Any]]:
         """Extract issues from multiple bills in batches."""
 
         self.logger.info(f"Starting batch extraction for {len(bills)} bills")
@@ -447,10 +491,11 @@ NGパターン:
         results = []
 
         for i in range(0, len(bills), batch_size):
-            batch = bills[i:i + batch_size]
+            batch = bills[i : i + batch_size]
 
             self.logger.info(
-                f"Processing batch {i // batch_size + 1}: {len(batch)} bills")
+                f"Processing batch {i // batch_size + 1}: {len(batch)} bills"
+            )
 
             # Process batch concurrently
             tasks = [self.extract_issues_with_metadata(bill) for bill in batch]
@@ -460,7 +505,8 @@ NGパターン:
             for j, result in enumerate(batch_results):
                 if isinstance(result, Exception):
                     self.logger.error(
-                        f"Batch processing failed for bill {batch[j].id}: {result}")
+                        f"Batch processing failed for bill {batch[j].id}: {result}"
+                    )
                     error_result = {
                         "bill_id": batch[j].id,
                         "issues": [],
@@ -468,9 +514,9 @@ NGパターン:
                             "extraction_timestamp": datetime.now().isoformat(),
                             "error": str(result),
                             "model_used": "gpt-4",
-                            "extractor_version": "1.0.0"
+                            "extractor_version": "1.0.0",
                         },
-                        "status": "failed"
+                        "status": "failed",
                     }
                     results.append(error_result)
                 else:
@@ -490,7 +536,7 @@ NGパターン:
             test_bill = BillData(
                 id="health_check",
                 title="テスト法案",
-                outline="健康チェック用のテスト法案です。"
+                outline="健康チェック用のテスト法案です。",
             )
 
             issues = await self.extract_dual_level_issues(test_bill)
@@ -511,5 +557,5 @@ NGパターン:
             "validator_class": "IssueValidator",
             "supported_levels": ["high_school", "general_reader"],
             "max_characters": 60,
-            "language": "japanese"
+            "language": "japanese",
         }

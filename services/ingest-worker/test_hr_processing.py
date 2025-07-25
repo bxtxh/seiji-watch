@@ -24,8 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ async def test_basic_hr_processing():
         # Test with a small time window
         sessions = await processor.process_enhanced_hr_data(
             days_back=3,  # Small window for testing
-            max_concurrent=1  # Conservative for testing
+            max_concurrent=1,  # Conservative for testing
         )
 
         logger.info(f"Processed {len(sessions)} voting sessions")
@@ -78,24 +77,28 @@ async def test_integration_pipeline():
         result = await run_hr_integration_pipeline(
             days_back=2,
             dry_run=True,  # Important: don't modify database in test
-            max_concurrent=1
+            max_concurrent=1,
         )
 
         logger.info(f"Pipeline result: {json.dumps(result, indent=2, default=str)}")
 
-        if result['success']:
-            integration_result = result.get('integration_results')
+        if result["success"]:
+            integration_result = result.get("integration_results")
             if integration_result:
                 logger.info(
-                    f"Integration would have processed {integration_result.sessions_processed} sessions")
+                    f"Integration would have processed {integration_result.sessions_processed} sessions"
+                )
                 logger.info(
-                    f"Integration would have created {integration_result.bills_created} bills")
+                    f"Integration would have created {integration_result.bills_created} bills"
+                )
                 logger.info(
-                    f"Integration would have created {integration_result.members_created} members")
+                    f"Integration would have created {integration_result.members_created} members"
+                )
                 logger.info(
-                    f"Integration would have created {integration_result.votes_created} votes")
+                    f"Integration would have created {integration_result.votes_created} votes"
+                )
 
-        return result['success']
+        return result["success"]
 
     except Exception as e:
         logger.error(f"Integration pipeline test failed: {e}")
@@ -113,16 +116,14 @@ async def test_error_handling():
 
         # Test with impossible parameters
         sessions = await processor.process_enhanced_hr_data(
-            days_back=0,  # Should handle gracefully
-            max_concurrent=1
+            days_back=0, max_concurrent=1  # Should handle gracefully
         )
 
         logger.info(f"Processed {len(sessions)} sessions with days_back=0")
 
         # Test with very old date range (should find no PDFs)
         sessions = await processor.process_enhanced_hr_data(
-            days_back=3650,  # 10 years back - should be empty
-            max_concurrent=1
+            days_back=3650, max_concurrent=1  # 10 years back - should be empty
         )
 
         logger.info(f"Processed {len(sessions)} sessions with days_back=3650")
@@ -147,14 +148,14 @@ async def test_performance():
         start_time = time.time()
 
         sessions = await processor.process_enhanced_hr_data(
-            days_back=1,  # Single day for performance test
-            max_concurrent=2
+            days_back=1, max_concurrent=2  # Single day for performance test
         )
 
         processing_time = time.time() - start_time
 
         logger.info(
-            f"Processed {len(sessions)} sessions in {processing_time:.2f} seconds")
+            f"Processed {len(sessions)} sessions in {processing_time:.2f} seconds"
+        )
 
         if sessions:
             avg_time_per_session = processing_time / len(sessions)
@@ -183,11 +184,11 @@ def save_test_results(results: dict[str, Any]):
             "test_results": results,
             "test_environment": {
                 "python_version": sys.version,
-                "test_script": str(Path(__file__).name)
-            }
+                "test_script": str(Path(__file__).name),
+            },
         }
 
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(test_data, f, indent=2, ensure_ascii=False, default=str)
 
         logger.info(f"Test results saved to {output_file}")
@@ -206,23 +207,23 @@ async def run_comprehensive_tests():
 
     # Test 1: Basic processing
     logger.info("\n1. Basic HR PDF Processing Test")
-    test_results['basic_processing'] = await test_basic_hr_processing()
-    overall_success &= test_results['basic_processing']
+    test_results["basic_processing"] = await test_basic_hr_processing()
+    overall_success &= test_results["basic_processing"]
 
     # Test 2: Integration pipeline
     logger.info("\n2. Integration Pipeline Test")
-    test_results['integration_pipeline'] = await test_integration_pipeline()
-    overall_success &= test_results['integration_pipeline']
+    test_results["integration_pipeline"] = await test_integration_pipeline()
+    overall_success &= test_results["integration_pipeline"]
 
     # Test 3: Error handling
     logger.info("\n3. Error Handling Test")
-    test_results['error_handling'] = await test_error_handling()
-    overall_success &= test_results['error_handling']
+    test_results["error_handling"] = await test_error_handling()
+    overall_success &= test_results["error_handling"]
 
     # Test 4: Performance
     logger.info("\n4. Performance Test")
-    test_results['performance'] = await test_performance()
-    overall_success &= test_results['performance']
+    test_results["performance"] = await test_performance()
+    overall_success &= test_results["performance"]
 
     # Summary
     logger.info("\n" + "=" * 80)

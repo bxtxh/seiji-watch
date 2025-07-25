@@ -9,7 +9,7 @@ import os
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def add_speech_fields():
@@ -18,10 +18,7 @@ async def add_speech_fields():
     pat = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     # Get table info
     meta_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -54,62 +51,107 @@ async def add_speech_fields():
                 fields_to_add = [
                     {"name": "Speaker_Name", "type": "singleLineText"},
                     {"name": "Speech_Content", "type": "multilineText"},
-                    {"name": "Speech_Date", "type": "date", "options": {"dateFormat": {"name": "iso"}}},
+                    {
+                        "name": "Speech_Date",
+                        "type": "date",
+                        "options": {"dateFormat": {"name": "iso"}},
+                    },
                     {"name": "Meeting_Name", "type": "singleLineText"},
-                    {"name": "Meeting_Type", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "委員会"},
-                            {"name": "本会議"},
-                            {"name": "その他"}
-                        ]
-                    }},
-                    {"name": "House", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "参議院"},
-                            {"name": "衆議院"}
-                        ]
-                    }},
-                    {"name": "Category", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "一般質疑"},
-                            {"name": "代表質問"},
-                            {"name": "討論"},
-                            {"name": "答弁"}
-                        ]
-                    }},
-                    {"name": "Duration_Minutes", "type": "number", "options": {"precision": 0}},
-                    {"name": "Is_Government_Answer", "type": "checkbox", "options": {"icon": "check", "color": "blueBright"}},
+                    {
+                        "name": "Meeting_Type",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "委員会"},
+                                {"name": "本会議"},
+                                {"name": "その他"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "House",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [{"name": "参議院"}, {"name": "衆議院"}]
+                        },
+                    },
+                    {
+                        "name": "Category",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "一般質疑"},
+                                {"name": "代表質問"},
+                                {"name": "討論"},
+                                {"name": "答弁"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Duration_Minutes",
+                        "type": "number",
+                        "options": {"precision": 0},
+                    },
+                    {
+                        "name": "Is_Government_Answer",
+                        "type": "checkbox",
+                        "options": {"icon": "check", "color": "blueBright"},
+                    },
                     {"name": "Related_Bill_ID", "type": "singleLineText"},
                     {"name": "Transcript_URL", "type": "url"},
                     {"name": "Video_URL", "type": "url"},
                     {"name": "AI_Summary", "type": "multilineText"},
-                    {"name": "Sentiment", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "positive"},
-                            {"name": "neutral"},
-                            {"name": "critical"}
-                        ]
-                    }},
+                    {
+                        "name": "Sentiment",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "positive"},
+                                {"name": "neutral"},
+                                {"name": "critical"},
+                            ]
+                        },
+                    },
                     {"name": "Topics", "type": "singleLineText"},
-                    {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                    {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
+                    {
+                        "name": "Created_At",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
+                    {
+                        "name": "Updated_At",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
                 ]
 
                 # Add Member link field if Members table exists
                 if members_table_id:
-                    fields_to_add.append({
-                        "name": "Speaker",
-                        "type": "multipleRecordLinks",
-                        "options": {"linkedTableId": members_table_id}
-                    })
+                    fields_to_add.append(
+                        {
+                            "name": "Speaker",
+                            "type": "multipleRecordLinks",
+                            "options": {"linkedTableId": members_table_id},
+                        }
+                    )
 
                 # Add Bill link field if Bills table exists
                 if bills_table_id:
-                    fields_to_add.append({
-                        "name": "Related_Bills",
-                        "type": "multipleRecordLinks",
-                        "options": {"linkedTableId": bills_table_id}
-                    })
+                    fields_to_add.append(
+                        {
+                            "name": "Related_Bills",
+                            "type": "multipleRecordLinks",
+                            "options": {"linkedTableId": bills_table_id},
+                        }
+                    )
 
                 # Add fields one by one
                 success_count = 0
@@ -117,7 +159,9 @@ async def add_speech_fields():
                     try:
                         add_field_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables/{speeches_table_id}/fields"
 
-                        async with session.post(add_field_url, headers=headers, json=field) as add_response:
+                        async with session.post(
+                            add_field_url, headers=headers, json=field
+                        ) as add_response:
                             if add_response.status == 200:
                                 result = await add_response.json()
                                 field_id = result.get("id")
@@ -126,7 +170,8 @@ async def add_speech_fields():
                             else:
                                 error_text = await add_response.text()
                                 print(
-                                    f"  ❌ Failed to add {field['name']}: {add_response.status}")
+                                    f"  ❌ Failed to add {field['name']}: {add_response.status}"
+                                )
                                 if "already exists" in error_text.lower():
                                     print("    (Field already exists, skipping)")
                                     success_count += 1
@@ -162,6 +207,7 @@ async def main():
         print("🔄 Ready to retry T109 speech data collection")
     else:
         print("\n❌ Failed to add all required fields")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

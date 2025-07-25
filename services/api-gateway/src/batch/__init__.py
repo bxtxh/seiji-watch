@@ -15,5 +15,5 @@ __all__ = [
     "TaskPriority",
     "task_queue",
     "batch_processor",
-    "MemberTaskManager"
+    "MemberTaskManager",
 ]

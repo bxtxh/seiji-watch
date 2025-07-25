@@ -28,7 +28,7 @@ class TestLLMService:
 
             result = await llm_service.generate_speech_summary(
                 "これは国会での発言のテストです。重要な政策について議論しています。",
-                "テスト議員"
+                "テスト議員",
             )
 
             assert result == "テスト要約です。"
@@ -76,8 +76,7 @@ class TestLLMService:
             llm_service = LLMService(api_key="test-key")
 
             result = await llm_service.extract_speech_topics(
-                "予算について議論し、社会保障制度の改革を提案します。",
-                "テスト議員"
+                "予算について議論し、社会保障制度の改革を提案します。", "テスト議員"
             )
 
             assert result == ["予算・決算", "社会保障", "その他"]
@@ -107,23 +106,19 @@ class TestLLMService:
         with patch("src.services.llm_service.openai.AsyncOpenAI") as mock_openai:
             mock_client = AsyncMock()
             mock_client.chat.completions.create.side_effect = [
-                mock_summary_response, mock_topics_response
+                mock_summary_response,
+                mock_topics_response,
             ]
             mock_openai.return_value = mock_client
 
             llm_service = LLMService(api_key="test-key")
 
             speeches = [
-                {
-                    "original_text": "テスト発言です。" * 10,
-                    "speaker_name": "テスト議員"
-                }
+                {"original_text": "テスト発言です。" * 10, "speaker_name": "テスト議員"}
             ]
 
             result = await llm_service.batch_process_speeches(
-                speeches,
-                generate_summaries=True,
-                extract_topics=True
+                speeches, generate_summaries=True, extract_topics=True
             )
 
             assert len(result) == 1

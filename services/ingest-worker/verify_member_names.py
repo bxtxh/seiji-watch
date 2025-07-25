@@ -10,7 +10,7 @@ import re
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def verify_member_names():
@@ -20,10 +20,7 @@ async def verify_member_names():
     base_id = os.getenv("AIRTABLE_BASE_ID")
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     print("🔍 Verifying Members Name State...")
 
@@ -38,16 +35,14 @@ async def verify_member_names():
                 params["offset"] = offset
 
             async with session.get(
-                f"{base_url}/Members (議員)",
-                headers=headers,
-                params=params
+                f"{base_url}/Members (議員)", headers=headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -61,15 +56,19 @@ async def verify_member_names():
         clean_names = []
 
         for record in all_records:
-            name = record.get('fields', {}).get('Name', '')
+            name = record.get("fields", {}).get("Name", "")
             if name:
-                if re.search(r'\d+$', name):
-                    names_with_numbers.append({
-                        'id': record['id'],
-                        'name': name,
-                        'constituency': record.get('fields', {}).get('Constituency', ''),
-                        'house': record.get('fields', {}).get('House', '')
-                    })
+                if re.search(r"\d+$", name):
+                    names_with_numbers.append(
+                        {
+                            "id": record["id"],
+                            "name": name,
+                            "constituency": record.get("fields", {}).get(
+                                "Constituency", ""
+                            ),
+                            "house": record.get("fields", {}).get("House", ""),
+                        }
+                    )
                 else:
                     clean_names.append(name)
 
@@ -80,7 +79,8 @@ async def verify_member_names():
             print("\n📋 Names still with trailing numbers:")
             for i, item in enumerate(names_with_numbers[:20]):  # Show first 20
                 print(
-                    f"   {i+1:2d}. {item['name']} ({item['house']}, {item['constituency']})")
+                    f"   {i+1:2d}. {item['name']} ({item['house']}, {item['constituency']})"
+                )
 
             if len(names_with_numbers) > 20:
                 print(f"   ... and {len(names_with_numbers) - 20} more")
@@ -99,14 +99,16 @@ async def verify_member_names():
             print("👍 GOOD! Most names are clean.")
         else:
             print(
-                f"⚠️ Needs attention - {len(names_with_numbers)} names still need cleanup.")
+                f"⚠️ Needs attention - {len(names_with_numbers)} names still need cleanup."
+            )
 
         return {
             "total_records": len(all_records),
             "clean_names": len(clean_names),
             "names_with_numbers": len(names_with_numbers),
-            "clean_percentage": clean_percentage
+            "clean_percentage": clean_percentage,
         }
+
 
 if __name__ == "__main__":
     asyncio.run(verify_member_names())

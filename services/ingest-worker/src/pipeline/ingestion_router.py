@@ -25,6 +25,7 @@ from ..pipeline.ndl_data_mapper import NDLDataMapper
 
 class DataSource(Enum):
     """Data source types for ingestion"""
+
     NDL_API = "ndl_api"
     WHISPER_STT = "whisper_stt"
     UNKNOWN = "unknown"
@@ -33,6 +34,7 @@ class DataSource(Enum):
 @dataclass
 class RoutingDecision:
     """Result of routing decision"""
+
     data_source: DataSource
     meeting_date: date | None
     rationale: str
@@ -44,6 +46,7 @@ class RoutingDecision:
 @dataclass
 class IngestionRequest:
     """Request for data ingestion"""
+
     meeting_date: date | None = None
     meeting_id: str | None = None
     diet_session: int | None = None
@@ -55,6 +58,7 @@ class IngestionRequest:
 @dataclass
 class IngestionResult:
     """Result of ingestion operation"""
+
     success: bool
     data_source: DataSource
     meeting_count: int = 0
@@ -102,7 +106,7 @@ class HybridIngestionRouter:
             "fallback_used": 0,
             "manual_overrides": 0,
             "total_meetings_processed": 0,
-            "total_speeches_processed": 0
+            "total_speeches_processed": 0,
         }
 
         self.logger.info(f"Hybrid router initialized - Cutoff: {self.CUTOFF_DATE}")
@@ -143,7 +147,7 @@ class HybridIngestionRouter:
                 rationale=f"Manual override to {request.force_source.value}",
                 confidence=1.0,
                 manual_override=True,
-                fallback_available=True
+                fallback_available=True,
             )
 
         # Date-based routing
@@ -151,26 +155,30 @@ class HybridIngestionRouter:
             if request.meeting_date <= self.CUTOFF_DATE:
                 # Historical data - use NDL API
                 rationale = f"Historical meeting ({request.meeting_date}) ≤ cutoff ({self.CUTOFF_DATE})"
-                confidence = 1.0 if request.meeting_date >= self.SESSION_217_START else 0.8
+                confidence = (
+                    1.0 if request.meeting_date >= self.SESSION_217_START else 0.8
+                )
 
                 return RoutingDecision(
                     data_source=DataSource.NDL_API,
                     meeting_date=request.meeting_date,
                     rationale=rationale,
                     confidence=confidence,
-                    fallback_available=False  # Whisper not available for historical data
+                    fallback_available=False,  # Whisper not available for historical data
                 )
             else:
                 # Recent data - use Whisper STT
                 rationale = f"Recent meeting ({request.meeting_date}) > cutoff ({self.CUTOFF_DATE})"
-                confidence = 1.0 if request.meeting_date >= self.SESSION_218_START else 0.9
+                confidence = (
+                    1.0 if request.meeting_date >= self.SESSION_218_START else 0.9
+                )
 
                 return RoutingDecision(
                     data_source=DataSource.WHISPER_STT,
                     meeting_date=request.meeting_date,
                     rationale=rationale,
                     confidence=confidence,
-                    fallback_available=True  # NDL API may have recent data
+                    fallback_available=True,  # NDL API may have recent data
                 )
 
         # Diet session-based routing
@@ -181,7 +189,7 @@ class HybridIngestionRouter:
                     meeting_date=None,
                     rationale=f"Historical session ({request.diet_session}) ≤ 217",
                     confidence=0.9,
-                    fallback_available=False
+                    fallback_available=False,
                 )
             else:
                 return RoutingDecision(
@@ -189,7 +197,7 @@ class HybridIngestionRouter:
                     meeting_date=None,
                     rationale=f"Recent session ({request.diet_session}) > 217",
                     confidence=0.9,
-                    fallback_available=True
+                    fallback_available=True,
                 )
 
         # Default to current pipeline (Whisper STT) for unknown dates
@@ -198,7 +206,7 @@ class HybridIngestionRouter:
             meeting_date=None,
             rationale="Unknown date/session - defaulting to Whisper STT",
             confidence=0.5,
-            fallback_available=True
+            fallback_available=True,
         )
 
     async def ingest_data(self, request: IngestionRequest) -> IngestionResult:
@@ -217,7 +225,8 @@ class HybridIngestionRouter:
         decision = self.make_routing_decision(request)
         self.logger.info(
             f"Routing decision: {decision.data_source.value} "
-            f"(confidence: {decision.confidence:.2f}) - {decision.rationale}")
+            f"(confidence: {decision.confidence:.2f}) - {decision.rationale}"
+        )
 
         try:
             # Route to appropriate pipeline
@@ -242,7 +251,8 @@ class HybridIngestionRouter:
 
         except Exception as e:
             self.logger.error(
-                f"Ingestion failed with {decision.data_source.value}: {e}")
+                f"Ingestion failed with {decision.data_source.value}: {e}"
+            )
 
             # Try fallback if available and not manual override
             if decision.fallback_available and not decision.manual_override:
@@ -255,7 +265,7 @@ class HybridIngestionRouter:
                 success=False,
                 data_source=decision.data_source,
                 processing_time_seconds=processing_time,
-                errors=[f"Ingestion failed: {str(e)}"]
+                errors=[f"Ingestion failed: {str(e)}"],
             )
 
     async def _ingest_via_ndl_api(self, request: IngestionRequest) -> IngestionResult:
@@ -268,7 +278,9 @@ class HybridIngestionRouter:
         try:
             if request.meeting_id:
                 # Process specific meeting
-                meeting_result = await self._process_single_meeting_ndl(request.meeting_id)
+                meeting_result = await self._process_single_meeting_ndl(
+                    request.meeting_id
+                )
                 if meeting_result["success"]:
                     meetings_processed = 1
                     speeches_processed = meeting_result["speeches_count"]
@@ -280,11 +292,13 @@ class HybridIngestionRouter:
                 meetings = await self.ndl_client.search_meetings(
                     start_date=request.meeting_date,
                     end_date=request.meeting_date,
-                    diet_session=request.diet_session
+                    diet_session=request.diet_session,
                 )
 
                 for meeting in meetings:
-                    meeting_result = await self._process_single_meeting_ndl(meeting.meeting_id)
+                    meeting_result = await self._process_single_meeting_ndl(
+                        meeting.meeting_id
+                    )
                     if meeting_result["success"]:
                         meetings_processed += 1
                         speeches_processed += meeting_result["speeches_count"]
@@ -303,7 +317,8 @@ class HybridIngestionRouter:
 
                 if stats.processing_errors > 0:
                     errors.append(
-                        f"{stats.processing_errors} meetings failed to process")
+                        f"{stats.processing_errors} meetings failed to process"
+                    )
 
             return IngestionResult(
                 success=len(errors) == 0,
@@ -311,18 +326,19 @@ class HybridIngestionRouter:
                 meeting_count=meetings_processed,
                 speech_count=speeches_processed,
                 warnings=warnings,
-                errors=errors
+                errors=errors,
             )
 
         except Exception as e:
             return IngestionResult(
                 success=False,
                 data_source=DataSource.NDL_API,
-                errors=[f"NDL API ingestion failed: {str(e)}"]
+                errors=[f"NDL API ingestion failed: {str(e)}"],
             )
 
     async def _ingest_via_whisper_stt(
-            self, request: IngestionRequest) -> IngestionResult:
+        self, request: IngestionRequest
+    ) -> IngestionResult:
         """Ingest data using Whisper STT pipeline"""
         from ..scraper.diet_scraper import DietScraper
         from ..stt.whisper_client import WhisperClient
@@ -341,17 +357,20 @@ class HybridIngestionRouter:
 
             if request.meeting_date:
                 # Process recent meetings for specific date
-                meeting_data = await self._get_recent_meeting_data(diet_scraper, request.meeting_date)
+                meeting_data = await self._get_recent_meeting_data(
+                    diet_scraper, request.meeting_date
+                )
 
                 if not meeting_data:
                     warnings.append(
-                        f"No recent meetings found for {request.meeting_date}")
+                        f"No recent meetings found for {request.meeting_date}"
+                    )
                     return IngestionResult(
                         success=True,
                         data_source=DataSource.WHISPER_STT,
                         meeting_count=0,
                         speech_count=0,
-                        warnings=warnings
+                        warnings=warnings,
                     )
 
                 for meeting_info in meeting_data:
@@ -370,7 +389,8 @@ class HybridIngestionRouter:
                 # This would typically involve finding the meeting's video URL
                 # and processing it through Whisper
                 errors.append(
-                    "Specific meeting ID processing for Whisper STT not yet implemented")
+                    "Specific meeting ID processing for Whisper STT not yet implemented"
+                )
 
             else:
                 # Process today's sessions (default behavior)
@@ -393,14 +413,14 @@ class HybridIngestionRouter:
                 meeting_count=meetings_processed,
                 speech_count=speeches_processed,
                 warnings=warnings,
-                errors=errors
+                errors=errors,
             )
 
         except Exception as e:
             return IngestionResult(
                 success=False,
                 data_source=DataSource.WHISPER_STT,
-                errors=[f"Whisper STT pipeline failed: {str(e)}"]
+                errors=[f"Whisper STT pipeline failed: {str(e)}"],
             )
 
     async def _process_single_meeting_ndl(self, meeting_id: str) -> dict[str, Any]:
@@ -419,14 +439,17 @@ class HybridIngestionRouter:
                 return {"success": False, "errors": meeting_result.errors}
 
             # Create meeting record
-            meeting_record_id = await self.airtable_client.create_meeting(meeting_result.mapped_data)
+            meeting_record_id = await self.airtable_client.create_meeting(
+                meeting_result.mapped_data
+            )
 
             # Get and process speeches
             speeches = await self.ndl_client.get_all_speeches_for_meeting(meeting_id)
 
             if speeches:
                 batch_result = self.data_mapper.batch_map_speeches(
-                    speeches, meeting_record_id)
+                    speeches, meeting_record_id
+                )
 
                 # Create speech records
                 for speech in batch_result["speeches"]:
@@ -435,14 +458,15 @@ class HybridIngestionRouter:
             return {
                 "success": True,
                 "speeches_count": len(speeches),
-                "warnings": batch_result.get("warnings", []) if speeches else []
+                "warnings": batch_result.get("warnings", []) if speeches else [],
             }
 
         except Exception as e:
             return {"success": False, "errors": [str(e)]}
 
     async def _get_recent_meeting_data(
-            self, diet_scraper, meeting_date: date) -> list[dict[str, Any]]:
+        self, diet_scraper, meeting_date: date
+    ) -> list[dict[str, Any]]:
         """Get recent meeting data for Whisper STT processing"""
         try:
             # This would interface with the Diet TV or live streaming system
@@ -456,16 +480,14 @@ class HybridIngestionRouter:
 
             # Mock data for development
             return [
-
                 {
                     "meeting_id": f"live_{meeting_date.strftime('%Y%m%d')}_001",
                     "title": f"Live Session {meeting_date}",
                     "date": meeting_date,
                     "video_url": None,  # Would contain actual video URL
                     "house": "参議院",
-                    "committee": "本会議"
+                    "committee": "本会議",
                 }
-
             ]
 
         except Exception as e:
@@ -475,10 +497,12 @@ class HybridIngestionRouter:
     async def _get_todays_meetings(self, diet_scraper) -> list[dict[str, Any]]:
         """Get today's meetings for processing"""
         from datetime import date
+
         return await self._get_recent_meeting_data(diet_scraper, date.today())
 
     async def _process_recent_meeting_whisper(
-            self, meeting_info: dict[str, Any], whisper_client) -> dict[str, Any]:
+        self, meeting_info: dict[str, Any], whisper_client
+    ) -> dict[str, Any]:
         """Process a recent meeting using Whisper STT"""
         stats = {
             "meeting_id": meeting_info["meeting_id"],
@@ -486,19 +510,21 @@ class HybridIngestionRouter:
             "speeches_count": 0,
             "warnings": [],
             "errors": [],
-            "success": False
+            "success": False,
         }
 
         try:
             # Check if we have a video URL to process
             if not meeting_info.get("video_url"):
                 stats["warnings"].append(
-                    "No video URL available for Whisper processing")
+                    "No video URL available for Whisper processing"
+                )
                 stats["success"] = True  # Not an error, just no data to process
                 return stats
 
             self.logger.info(
-                f"Processing meeting {meeting_info['meeting_id']} via Whisper STT")
+                f"Processing meeting {meeting_info['meeting_id']} via Whisper STT"
+            )
 
             # 1. Download and transcribe video
             transcription, audio_file = whisper_client.download_and_transcribe_video(
@@ -523,7 +549,7 @@ class HybridIngestionRouter:
                 "is_processed": False,
                 "transcript_processed": True,
                 "stt_completed": True,
-                "is_public": True
+                "is_public": True,
             }
 
             meeting_record_id = await self.airtable_client.create_meeting(meeting_data)
@@ -542,7 +568,7 @@ class HybridIngestionRouter:
                 "start_time": None,
                 "word_count": len(transcription.text.split()),
                 "is_processed": False,
-                "needs_review": True  # Whisper transcriptions need review
+                "needs_review": True,  # Whisper transcriptions need review
             }
 
             await self.airtable_client.create_speech(speech_data)
@@ -550,7 +576,8 @@ class HybridIngestionRouter:
             stats["success"] = True
 
             self.logger.info(
-                f"✅ Processed meeting {meeting_info['meeting_id']} via Whisper STT")
+                f"✅ Processed meeting {meeting_info['meeting_id']} via Whisper STT"
+            )
 
         except Exception as e:
             error_msg = f"Failed to process meeting via Whisper: {str(e)}"
@@ -559,16 +586,21 @@ class HybridIngestionRouter:
 
         return stats
 
-    async def _attempt_fallback(self,
-                                request: IngestionRequest,
-                                failed_decision: RoutingDecision,
-                                start_time: datetime) -> IngestionResult:
+    async def _attempt_fallback(
+        self,
+        request: IngestionRequest,
+        failed_decision: RoutingDecision,
+        start_time: datetime,
+    ) -> IngestionResult:
         """Attempt fallback to alternative pipeline"""
         self.routing_stats["fallback_used"] += 1
 
         # Determine fallback source
-        fallback_source = (DataSource.WHISPER_STT if failed_decision.data_source ==
-                           DataSource.NDL_API else DataSource.NDL_API)
+        fallback_source = (
+            DataSource.WHISPER_STT
+            if failed_decision.data_source == DataSource.NDL_API
+            else DataSource.NDL_API
+        )
 
         self.logger.info(f"Fallback: trying {fallback_source.value}")
 
@@ -579,13 +611,14 @@ class HybridIngestionRouter:
             diet_session=request.diet_session,
             force_source=fallback_source,
             priority=request.priority,
-            metadata=request.metadata
+            metadata=request.metadata,
         )
 
         try:
             result = await self.ingest_data(fallback_request)
             result.warnings.append(
-                f"Fallback used: {failed_decision.data_source.value} → {fallback_source.value}")
+                f"Fallback used: {failed_decision.data_source.value} → {fallback_source.value}"
+            )
             return result
 
         except Exception as e:
@@ -596,37 +629,55 @@ class HybridIngestionRouter:
                 processing_time_seconds=processing_time,
                 errors=[
                     f"Primary pipeline failed: {failed_decision.data_source.value}",
-                    f"Fallback also failed: {str(e)}"
-                ]
+                    f"Fallback also failed: {str(e)}",
+                ],
             )
 
     def get_routing_statistics(self) -> dict[str, Any]:
         """Get routing and processing statistics"""
-        total_requests = (self.routing_stats["ndl_api_requests"] +
-                          self.routing_stats["whisper_stt_requests"])
+        total_requests = (
+            self.routing_stats["ndl_api_requests"]
+            + self.routing_stats["whisper_stt_requests"]
+        )
 
         return {
             "routing_distribution": {
                 "ndl_api_requests": self.routing_stats["ndl_api_requests"],
                 "whisper_stt_requests": self.routing_stats["whisper_stt_requests"],
-                "ndl_api_percentage": (self.routing_stats["ndl_api_requests"] / max(total_requests, 1)) * 100,
-                "whisper_stt_percentage": (self.routing_stats["whisper_stt_requests"] / max(total_requests, 1)) * 100
+                "ndl_api_percentage": (
+                    self.routing_stats["ndl_api_requests"] / max(total_requests, 1)
+                )
+                * 100,
+                "whisper_stt_percentage": (
+                    self.routing_stats["whisper_stt_requests"] / max(total_requests, 1)
+                )
+                * 100,
             },
             "reliability": {
                 "fallback_used": self.routing_stats["fallback_used"],
                 "manual_overrides": self.routing_stats["manual_overrides"],
-                "fallback_rate": (self.routing_stats["fallback_used"] / max(total_requests, 1)) * 100
+                "fallback_rate": (
+                    self.routing_stats["fallback_used"] / max(total_requests, 1)
+                )
+                * 100,
             },
             "throughput": {
-                "total_meetings_processed": self.routing_stats["total_meetings_processed"],
-                "total_speeches_processed": self.routing_stats["total_speeches_processed"],
-                "meetings_per_request": (self.routing_stats["total_meetings_processed"] / max(total_requests, 1))
+                "total_meetings_processed": self.routing_stats[
+                    "total_meetings_processed"
+                ],
+                "total_speeches_processed": self.routing_stats[
+                    "total_speeches_processed"
+                ],
+                "meetings_per_request": (
+                    self.routing_stats["total_meetings_processed"]
+                    / max(total_requests, 1)
+                ),
             },
             "configuration": {
                 "cutoff_date": self.CUTOFF_DATE.isoformat(),
                 "session_217_period": f"{self.SESSION_217_START} to {self.SESSION_217_END}",
-                "session_218_start": self.SESSION_218_START.isoformat()
-            }
+                "session_218_start": self.SESSION_218_START.isoformat(),
+            },
         }
 
     async def test_routing_decision(self, test_date: date) -> dict[str, Any]:
@@ -639,7 +690,7 @@ class HybridIngestionRouter:
             "selected_source": decision.data_source.value,
             "rationale": decision.rationale,
             "confidence": decision.confidence,
-            "fallback_available": decision.fallback_available
+            "fallback_available": decision.fallback_available,
         }
 
 
@@ -650,28 +701,27 @@ async def main():
 
     parser = argparse.ArgumentParser(description="Hybrid Ingestion Router")
     parser.add_argument(
-        "--test-date",
-        type=str,
-        help="Test routing for date (YYYY-MM-DD)")
+        "--test-date", type=str, help="Test routing for date (YYYY-MM-DD)"
+    )
     parser.add_argument(
-        "--ingest-date",
-        type=str,
-        help="Ingest data for date (YYYY-MM-DD)")
+        "--ingest-date", type=str, help="Ingest data for date (YYYY-MM-DD)"
+    )
     parser.add_argument("--meeting-id", type=str, help="Ingest specific meeting ID")
     parser.add_argument("--diet-session", type=int, help="Ingest entire diet session")
     parser.add_argument(
         "--force-source",
-        choices=[
-            "ndl_api",
-            "whisper_stt"],
-        help="Force specific source")
+        choices=["ndl_api", "whisper_stt"],
+        help="Force specific source",
+    )
     parser.add_argument("--stats", action="store_true", help="Show routing statistics")
 
     args = parser.parse_args()
 
     # Configure logging
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     async with HybridIngestionRouter() as router:
 
@@ -692,7 +742,8 @@ async def main():
 
             if args.ingest_date:
                 request.meeting_date = datetime.strptime(
-                    args.ingest_date, "%Y-%m-%d").date()
+                    args.ingest_date, "%Y-%m-%d"
+                ).date()
             if args.meeting_id:
                 request.meeting_id = args.meeting_id
             if args.diet_session:
@@ -726,14 +777,17 @@ async def main():
             print("\n📈 Routing Statistics:")
             print(
                 f"  NDL API: {stats['routing_distribution']['ndl_api_requests']} requests "
-                f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)")
+                f"({stats['routing_distribution']['ndl_api_percentage']:.1f}%)"
+            )
             print(
                 f"  Whisper STT: {stats['routing_distribution']['whisper_stt_requests']} requests "
-                f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)")
+                f"({stats['routing_distribution']['whisper_stt_percentage']:.1f}%)"
+            )
             print(f"  Fallback Rate: {stats['reliability']['fallback_rate']:.1f}%")
             print(
                 f"  Total Processed: {stats['throughput']['total_meetings_processed']} meetings, "
-                f"{stats['throughput']['total_speeches_processed']} speeches")
+                f"{stats['throughput']['total_speeches_processed']} speeches"
+            )
 
 
 if __name__ == "__main__":

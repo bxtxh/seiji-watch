@@ -50,8 +50,5 @@ def get_session(engine: Engine) -> sessionmaker[Session]:
     """Create session factory for the given engine."""
 
     return sessionmaker(
-        bind=engine,
-        autocommit=False,
-        autoflush=False,
-        expire_on_commit=False
+        bind=engine, autocommit=False, autoflush=False, expire_on_commit=False
     )

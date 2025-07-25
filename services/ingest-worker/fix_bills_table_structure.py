@@ -9,7 +9,7 @@ import os
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def fix_bills_table_structure():
@@ -18,10 +18,7 @@ async def fix_bills_table_structure():
     pat = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     # Get table info
     meta_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -52,64 +49,149 @@ async def fix_bills_table_structure():
                     {"name": "Diet_Session", "type": "singleLineText"},
                     {"name": "Bill_Number", "type": "singleLineText"},
                     {"name": "Title", "type": "singleLineText"},
-                    {"name": "Bill_Status", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "提出"}, {"name": "審議中"}, {"name": "可決"},
-                            {"name": "否決"}, {"name": "成立"}, {"name": "廃案"}
-                        ]
-                    }},
-                    {"name": "Stage", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "Backlog"}, {"name": "審議中"},
-                            {"name": "採決待ち"}, {"name": "成立"}
-                        ]
-                    }},
-                    {"name": "Submitter", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "政府"}, {"name": "議員"}, {"name": "委員会"}
-                        ]
-                    }},
-                    {"name": "House", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "参議院"}, {"name": "衆議院"}, {"name": "両院"}
-                        ]
-                    }},
-                    {"name": "Bill_Type", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "提出法律案"}, {"name": "予算案"}, {"name": "条約"},
-                            {"name": "決議案"}, {"name": "意見書"}
-                        ]
-                    }},
-                    {"name": "Category", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "予算・決算"}, {"name": "税制"}, {"name": "社会保障"},
-                            {"name": "外交・国際"}, {"name": "経済・産業"}, {"name": "その他"}
-                        ]
-                    }},
-                    {"name": "Submission_Date", "type": "date", "options": {"dateFormat": {"name": "iso"}}},
+                    {
+                        "name": "Bill_Status",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "提出"},
+                                {"name": "審議中"},
+                                {"name": "可決"},
+                                {"name": "否決"},
+                                {"name": "成立"},
+                                {"name": "廃案"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Stage",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "Backlog"},
+                                {"name": "審議中"},
+                                {"name": "採決待ち"},
+                                {"name": "成立"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Submitter",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "政府"},
+                                {"name": "議員"},
+                                {"name": "委員会"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "House",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "参議院"},
+                                {"name": "衆議院"},
+                                {"name": "両院"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Bill_Type",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "提出法律案"},
+                                {"name": "予算案"},
+                                {"name": "条約"},
+                                {"name": "決議案"},
+                                {"name": "意見書"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Category",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "予算・決算"},
+                                {"name": "税制"},
+                                {"name": "社会保障"},
+                                {"name": "外交・国際"},
+                                {"name": "経済・産業"},
+                                {"name": "その他"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Submission_Date",
+                        "type": "date",
+                        "options": {"dateFormat": {"name": "iso"}},
+                    },
                     {"name": "Committee", "type": "singleLineText"},
                     {"name": "Bill_URL", "type": "url"},
                     {"name": "Summary", "type": "multilineText"},
                     {"name": "Full_Text", "type": "multilineText"},
                     {"name": "Related_Documents", "type": "multilineText"},
                     {"name": "Data_Source", "type": "singleLineText"},
-                    {"name": "Collection_Date", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                    {"name": "Process_Method", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "自動スクレイピング"}, {"name": "手動入力"},
-                            {"name": "AI処理"}, {"name": "混合"}
-                        ]
-                    }},
-                    {"name": "Quality_Score", "type": "number", "options": {"precision": 2}},
+                    {
+                        "name": "Collection_Date",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
+                    {
+                        "name": "Process_Method",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "自動スクレイピング"},
+                                {"name": "手動入力"},
+                                {"name": "AI処理"},
+                                {"name": "混合"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Quality_Score",
+                        "type": "number",
+                        "options": {"precision": 2},
+                    },
                     {"name": "AI_Analysis", "type": "multilineText"},
                     {"name": "Keywords", "type": "singleLineText"},
-                    {"name": "Priority", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "high"}, {"name": "medium"}, {"name": "low"}
-                        ]
-                    }},
-                    {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                    {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
+                    {
+                        "name": "Priority",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "high"},
+                                {"name": "medium"},
+                                {"name": "low"},
+                            ]
+                        },
+                    },
+                    {
+                        "name": "Created_At",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
+                    {
+                        "name": "Updated_At",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
                 ]
 
                 # Add fields one by one
@@ -118,7 +200,9 @@ async def fix_bills_table_structure():
                     try:
                         add_field_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables/{bills_table_id}/fields"
 
-                        async with session.post(add_field_url, headers=headers, json=field) as add_response:
+                        async with session.post(
+                            add_field_url, headers=headers, json=field
+                        ) as add_response:
                             if add_response.status == 200:
                                 result = await add_response.json()
                                 field_id = result.get("id")
@@ -127,7 +211,8 @@ async def fix_bills_table_structure():
                             else:
                                 error_text = await add_response.text()
                                 print(
-                                    f"  ❌ Failed to add {field['name']}: {add_response.status}")
+                                    f"  ❌ Failed to add {field['name']}: {add_response.status}"
+                                )
                                 if "already exists" in error_text.lower():
                                     print("    (Field already exists, skipping)")
                                     success_count += 1
@@ -179,6 +264,7 @@ async def main():
         print("💡 Recommendation: Create data migration script to parse Notes content")
     else:
         print("\n❌ Failed to add all required fields")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

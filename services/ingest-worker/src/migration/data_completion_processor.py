@@ -28,6 +28,7 @@ from .data_quality_auditor import DataQualityAuditor, QualityIssue, QualityIssue
 
 class CompletionStrategy(Enum):
     """Data completion strategies"""
+
     SCRAPE_MISSING = "scrape_missing"
     ENHANCE_EXISTING = "enhance_existing"
     VALIDATE_AND_FIX = "validate_and_fix"
@@ -36,6 +37,7 @@ class CompletionStrategy(Enum):
 
 class CompletionPriority(Enum):
     """Completion priority levels"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -45,6 +47,7 @@ class CompletionPriority(Enum):
 @dataclass
 class CompletionTask:
     """Represents a data completion task"""
+
     bill_id: str
     strategy: CompletionStrategy
     priority: CompletionPriority
@@ -56,12 +59,15 @@ class CompletionTask:
     created_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self):
-        self.task_id = f"{self.bill_id}_{self.strategy.value}_{int(self.created_at.timestamp())}"
+        self.task_id = (
+            f"{self.bill_id}_{self.strategy.value}_{int(self.created_at.timestamp())}"
+        )
 
 
 @dataclass
 class CompletionResult:
     """Result of a completion task"""
+
     task_id: str
     bill_id: str
     success: bool
@@ -76,6 +82,7 @@ class CompletionResult:
 @dataclass
 class BatchCompletionResult:
     """Result of batch completion processing"""
+
     batch_id: str
     total_tasks: int
     completed_tasks: int
@@ -96,7 +103,8 @@ class DataCompletionProcessor:
         self.database_url = database_url
         self.engine = create_engine(database_url)
         self.SessionLocal = sessionmaker(
-            autocommit=False, autoflush=False, bind=self.engine)
+            autocommit=False, autoflush=False, bind=self.engine
+        )
         self.logger = logging.getLogger(__name__)
 
         # Initialize components
@@ -107,23 +115,23 @@ class DataCompletionProcessor:
 
         # Processing configuration
         self.config = {
-            'batch_size': 50,
-            'max_concurrent_tasks': 10,
-            'retry_attempts': 3,
-            'retry_delay_seconds': 5,
-            'timeout_seconds': 300,
-            'quality_threshold': 0.8,
-            'rate_limit_delay': 2.0  # Seconds between scraper requests
+            "batch_size": 50,
+            "max_concurrent_tasks": 10,
+            "retry_attempts": 3,
+            "retry_delay_seconds": 5,
+            "timeout_seconds": 300,
+            "quality_threshold": 0.8,
+            "rate_limit_delay": 2.0,  # Seconds between scraper requests
         }
 
         # Field completion priorities
         self.field_priorities = {
-            'bill_outline': 1,
-            'background_context': 2,
-            'expected_effects': 3,
-            'key_provisions': 4,
-            'submitter_details': 5,
-            'committee_assignments': 6
+            "bill_outline": 1,
+            "background_context": 2,
+            "expected_effects": 3,
+            "key_provisions": 4,
+            "submitter_details": 5,
+            "committee_assignments": 6,
         }
 
         # Task execution history
@@ -131,8 +139,8 @@ class DataCompletionProcessor:
         self.max_history_entries = 100
 
     def generate_completion_plan(
-            self,
-            quality_issues: list[QualityIssue] | None = None) -> list[CompletionTask]:
+        self, quality_issues: list[QualityIssue] | None = None
+    ) -> list[CompletionTask]:
         """Generate comprehensive completion plan based on quality issues"""
         self.logger.info("Generating data completion plan")
 
@@ -161,12 +169,13 @@ class DataCompletionProcessor:
             raise
 
     def execute_completion_plan(
-            self,
-            tasks: list[CompletionTask]) -> BatchCompletionResult:
+        self, tasks: list[CompletionTask]
+    ) -> BatchCompletionResult:
         """Execute completion plan with batch processing"""
         batch_id = f"batch_{int(datetime.now().timestamp())}"
         self.logger.info(
-            f"Executing completion plan {batch_id} with {len(tasks)} tasks")
+            f"Executing completion plan {batch_id} with {len(tasks)} tasks"
+        )
 
         start_time = time.time()
 
@@ -174,18 +183,19 @@ class DataCompletionProcessor:
             # Process tasks in batches
             batch_results = []
 
-            for i in range(0, len(tasks), self.config['batch_size']):
-                batch_tasks = tasks[i:i + self.config['batch_size']]
+            for i in range(0, len(tasks), self.config["batch_size"]):
+                batch_tasks = tasks[i : i + self.config["batch_size"]]
                 self.logger.info(
-                    f"Processing batch {i//self.config['batch_size'] + 1} with {len(batch_tasks)} tasks")
+                    f"Processing batch {i//self.config['batch_size'] + 1} with {len(batch_tasks)} tasks"
+                )
 
                 # Process batch with concurrency
                 batch_result = self._process_batch(batch_tasks)
                 batch_results.extend(batch_result)
 
                 # Rate limiting between batches
-                if i + self.config['batch_size'] < len(tasks):
-                    time.sleep(self.config['rate_limit_delay'])
+                if i + self.config["batch_size"] < len(tasks):
+                    time.sleep(self.config["rate_limit_delay"])
 
             # Compile results
             processing_time = (time.time() - start_time) * 1000
@@ -203,14 +213,15 @@ class DataCompletionProcessor:
                 total_processing_time_ms=processing_time,
                 success_rate=success_rate,
                 tasks_results=batch_results,
-                performance_metrics=self._calculate_performance_metrics(batch_results)
+                performance_metrics=self._calculate_performance_metrics(batch_results),
             )
 
             # Store execution history
             self._store_execution_history(result)
 
             self.logger.info(
-                f"Batch completion finished: {completed_tasks}/{len(tasks)} tasks completed")
+                f"Batch completion finished: {completed_tasks}/{len(tasks)} tasks completed"
+            )
             return result
 
         except Exception as e:
@@ -225,11 +236,12 @@ class DataCompletionProcessor:
                 skipped_tasks=0,
                 total_processing_time_ms=(time.time() - start_time) * 1000,
                 success_rate=0,
-                errors=[str(e)]
+                errors=[str(e)],
             )
 
     def _group_issues_by_bill(
-            self, issues: list[QualityIssue]) -> dict[str, list[QualityIssue]]:
+        self, issues: list[QualityIssue]
+    ) -> dict[str, list[QualityIssue]]:
         """Group quality issues by bill ID"""
         bill_issues = {}
         for issue in issues:
@@ -239,9 +251,8 @@ class DataCompletionProcessor:
         return bill_issues
 
     def _create_completion_tasks(
-            self,
-            bill_id: str,
-            issues: list[QualityIssue]) -> list[CompletionTask]:
+        self, bill_id: str, issues: list[QualityIssue]
+    ) -> list[CompletionTask]:
         """Create completion tasks for a bill based on its issues"""
         tasks = []
 
@@ -252,8 +263,9 @@ class DataCompletionProcessor:
 
         for issue in issues:
             if issue.issue_type in [
-                    QualityIssueType.MISSING_REQUIRED_FIELD,
-                    QualityIssueType.EMPTY_FIELD]:
+                QualityIssueType.MISSING_REQUIRED_FIELD,
+                QualityIssueType.EMPTY_FIELD,
+            ]:
                 missing_fields.append(issue.field_name)
             elif issue.issue_type == QualityIssueType.INCONSISTENT_DATA:
                 inconsistent_fields.append(issue.field_name)
@@ -263,15 +275,17 @@ class DataCompletionProcessor:
         # Create tasks based on issue types
         if missing_fields:
             priority = self._determine_task_priority(missing_fields)
-            tasks.append(CompletionTask(
-                bill_id=bill_id,
-                strategy=CompletionStrategy.SCRAPE_MISSING,
-                priority=priority,
-                target_fields=missing_fields,
-                description=f"Scrape missing fields: {', '.join(missing_fields)}",
-                estimated_effort=len(missing_fields) * 10,
-                metadata={'issue_types': ['missing_field']}
-            ))
+            tasks.append(
+                CompletionTask(
+                    bill_id=bill_id,
+                    strategy=CompletionStrategy.SCRAPE_MISSING,
+                    priority=priority,
+                    target_fields=missing_fields,
+                    description=f"Scrape missing fields: {', '.join(missing_fields)}",
+                    estimated_effort=len(missing_fields) * 10,
+                    metadata={"issue_types": ["missing_field"]},
+                )
+            )
 
         if inconsistent_fields:
             tasks.append(
@@ -282,19 +296,22 @@ class DataCompletionProcessor:
                     target_fields=inconsistent_fields,
                     description=f"Fix inconsistent fields: {', '.join(inconsistent_fields)}",
                     estimated_effort=len(inconsistent_fields) * 5,
-                    metadata={
-                        'issue_types': ['inconsistent_data']}))
+                    metadata={"issue_types": ["inconsistent_data"]},
+                )
+            )
 
         if poor_quality_fields:
-            tasks.append(CompletionTask(
-                bill_id=bill_id,
-                strategy=CompletionStrategy.ENHANCE_EXISTING,
-                priority=CompletionPriority.MEDIUM,
-                target_fields=poor_quality_fields,
-                description=f"Enhance text quality: {', '.join(poor_quality_fields)}",
-                estimated_effort=len(poor_quality_fields) * 8,
-                metadata={'issue_types': ['poor_quality']}
-            ))
+            tasks.append(
+                CompletionTask(
+                    bill_id=bill_id,
+                    strategy=CompletionStrategy.ENHANCE_EXISTING,
+                    priority=CompletionPriority.MEDIUM,
+                    target_fields=poor_quality_fields,
+                    description=f"Enhance text quality: {', '.join(poor_quality_fields)}",
+                    estimated_effort=len(poor_quality_fields) * 8,
+                    metadata={"issue_types": ["poor_quality"]},
+                )
+            )
 
         return tasks
 
@@ -304,7 +321,7 @@ class DataCompletionProcessor:
             return CompletionPriority.LOW
 
         # Check if any critical fields are missing
-        critical_fields = ['bill_outline', 'title', 'status']
+        critical_fields = ["bill_outline", "title", "status"]
         if any(field in critical_fields for field in fields):
             return CompletionPriority.CRITICAL
 
@@ -325,41 +342,45 @@ class DataCompletionProcessor:
             CompletionPriority.CRITICAL: 0,
             CompletionPriority.HIGH: 1,
             CompletionPriority.MEDIUM: 2,
-            CompletionPriority.LOW: 3
+            CompletionPriority.LOW: 3,
         }
 
-        return sorted(tasks, key=lambda t: (
-            priority_order[t.priority], t.estimated_effort))
+        return sorted(
+            tasks, key=lambda t: (priority_order[t.priority], t.estimated_effort)
+        )
 
     def _process_batch(self, tasks: list[CompletionTask]) -> list[CompletionResult]:
         """Process a batch of tasks with concurrency"""
         results = []
 
         # Use ThreadPoolExecutor for concurrent processing
-        with ThreadPoolExecutor(max_workers=self.config['max_concurrent_tasks']) as executor:
+        with ThreadPoolExecutor(
+            max_workers=self.config["max_concurrent_tasks"]
+        ) as executor:
             # Submit all tasks
             future_to_task = {
-                executor.submit(self._execute_task, task): task
-                for task in tasks
+                executor.submit(self._execute_task, task): task for task in tasks
             }
 
             # Collect results
             for future in as_completed(future_to_task):
                 task = future_to_task[future]
                 try:
-                    result = future.result(timeout=self.config['timeout_seconds'])
+                    result = future.result(timeout=self.config["timeout_seconds"])
                     results.append(result)
                 except Exception as e:
                     self.logger.error(f"Task {task.task_id} failed: {e}")
-                    results.append(CompletionResult(
-                        task_id=task.task_id,
-                        bill_id=task.bill_id,
-                        success=False,
-                        fields_completed=[],
-                        fields_failed=task.target_fields,
-                        processing_time_ms=0,
-                        error_message=str(e)
-                    ))
+                    results.append(
+                        CompletionResult(
+                            task_id=task.task_id,
+                            bill_id=task.bill_id,
+                            success=False,
+                            fields_completed=[],
+                            fields_failed=task.target_fields,
+                            processing_time_ms=0,
+                            error_message=str(e),
+                        )
+                    )
 
         return results
 
@@ -384,7 +405,7 @@ class DataCompletionProcessor:
                         fields_completed=[],
                         fields_failed=task.target_fields,
                         processing_time_ms=0,
-                        error_message="Bill not found"
+                        error_message="Bill not found",
                     )
 
                 # Execute strategy
@@ -404,16 +425,16 @@ class DataCompletionProcessor:
                 completion_result = CompletionResult(
                     task_id=task.task_id,
                     bill_id=task.bill_id,
-                    success=result['success'],
-                    fields_completed=result['completed_fields'],
-                    fields_failed=result['failed_fields'],
+                    success=result["success"],
+                    fields_completed=result["completed_fields"],
+                    fields_failed=result["failed_fields"],
                     processing_time_ms=processing_time,
-                    error_message=result.get('error'),
-                    quality_improvement=result.get('quality_improvement')
+                    error_message=result.get("error"),
+                    quality_improvement=result.get("quality_improvement"),
                 )
 
                 # Record completion in history
-                if result['success']:
+                if result["success"]:
                     self._record_completion_history(bill, task, completion_result)
 
                 return completion_result
@@ -429,11 +450,12 @@ class DataCompletionProcessor:
                 fields_completed=[],
                 fields_failed=task.target_fields,
                 processing_time_ms=processing_time,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def _scrape_missing_data(
-            self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
+        self, bill: Bill, target_fields: list[str]
+    ) -> dict[str, Any]:
         """Scrape missing data for specified fields"""
         try:
             completed_fields = []
@@ -458,33 +480,35 @@ class DataCompletionProcessor:
                         failed_fields.append(field)
 
                 # Update quality score
-                if hasattr(bill, 'data_quality_score'):
+                if hasattr(bill, "data_quality_score"):
                     bill.data_quality_score = self._calculate_quality_score(bill)
 
                 return {
-                    'success': True,
-                    'completed_fields': completed_fields,
-                    'failed_fields': failed_fields,
-                    'quality_improvement': 0.1 * len(completed_fields)  # Rough estimate
+                    "success": True,
+                    "completed_fields": completed_fields,
+                    "failed_fields": failed_fields,
+                    "quality_improvement": 0.1
+                    * len(completed_fields),  # Rough estimate
                 }
             else:
                 return {
-                    'success': False,
-                    'completed_fields': [],
-                    'failed_fields': target_fields,
-                    'error': 'Scraping failed'
+                    "success": False,
+                    "completed_fields": [],
+                    "failed_fields": target_fields,
+                    "error": "Scraping failed",
                 }
 
         except Exception as e:
             return {
-                'success': False,
-                'completed_fields': [],
-                'failed_fields': target_fields,
-                'error': str(e)
+                "success": False,
+                "completed_fields": [],
+                "failed_fields": target_fields,
+                "error": str(e),
             }
 
     def _enhance_existing_data(
-            self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
+        self, bill: Bill, target_fields: list[str]
+    ) -> dict[str, Any]:
         """Enhance existing data quality"""
         try:
             completed_fields = []
@@ -506,22 +530,23 @@ class DataCompletionProcessor:
                     failed_fields.append(field)
 
             return {
-                'success': len(completed_fields) > 0,
-                'completed_fields': completed_fields,
-                'failed_fields': failed_fields,
-                'quality_improvement': 0.05 * len(completed_fields)
+                "success": len(completed_fields) > 0,
+                "completed_fields": completed_fields,
+                "failed_fields": failed_fields,
+                "quality_improvement": 0.05 * len(completed_fields),
             }
 
         except Exception as e:
             return {
-                'success': False,
-                'completed_fields': [],
-                'failed_fields': target_fields,
-                'error': str(e)
+                "success": False,
+                "completed_fields": [],
+                "failed_fields": target_fields,
+                "error": str(e),
             }
 
     def _validate_and_fix_data(
-            self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
+        self, bill: Bill, target_fields: list[str]
+    ) -> dict[str, Any]:
         """Validate and fix data inconsistencies"""
         try:
             completed_fields = []
@@ -540,18 +565,18 @@ class DataCompletionProcessor:
                         failed_fields.append(issue.field_name)
 
             return {
-                'success': len(completed_fields) > 0,
-                'completed_fields': completed_fields,
-                'failed_fields': failed_fields,
-                'quality_improvement': 0.08 * len(completed_fields)
+                "success": len(completed_fields) > 0,
+                "completed_fields": completed_fields,
+                "failed_fields": failed_fields,
+                "quality_improvement": 0.08 * len(completed_fields),
             }
 
         except Exception as e:
             return {
-                'success': False,
-                'completed_fields': [],
-                'failed_fields': target_fields,
-                'error': str(e)
+                "success": False,
+                "completed_fields": [],
+                "failed_fields": target_fields,
+                "error": str(e),
             }
 
     def _bulk_update_data(self, bill: Bill, target_fields: list[str]) -> dict[str, Any]:
@@ -568,18 +593,18 @@ class DataCompletionProcessor:
                     failed_fields.append(field)
 
             return {
-                'success': len(completed_fields) > 0,
-                'completed_fields': completed_fields,
-                'failed_fields': failed_fields,
-                'quality_improvement': 0.03 * len(completed_fields)
+                "success": len(completed_fields) > 0,
+                "completed_fields": completed_fields,
+                "failed_fields": failed_fields,
+                "quality_improvement": 0.03 * len(completed_fields),
             }
 
         except Exception as e:
             return {
-                'success': False,
-                'completed_fields': [],
-                'failed_fields': target_fields,
-                'error': str(e)
+                "success": False,
+                "completed_fields": [],
+                "failed_fields": target_fields,
+                "error": str(e),
             }
 
     def _enhance_text_quality(self, text: str) -> str:
@@ -588,10 +613,10 @@ class DataCompletionProcessor:
         enhanced = text.strip()
 
         # Remove duplicate spaces
-        enhanced = ' '.join(enhanced.split())
+        enhanced = " ".join(enhanced.split())
 
         # Ensure proper Japanese punctuation
-        enhanced = enhanced.replace('。。', '。').replace('、、', '、')
+        enhanced = enhanced.replace("。。", "。").replace("、、", "、")
 
         return enhanced
 
@@ -599,22 +624,22 @@ class DataCompletionProcessor:
         """Apply validation fix for a specific issue"""
         try:
             # Apply field-specific fixes
-            if issue.field_name == 'status':
+            if issue.field_name == "status":
                 # Fix status values
-                current_status = getattr(bill, 'status', None)
+                current_status = getattr(bill, "status", None)
                 if current_status:
                     fixed_status = self._fix_status_value(current_status)
                     if fixed_status != current_status:
-                        setattr(bill, 'status', fixed_status)
+                        setattr(bill, "status", fixed_status)
                         return True
 
-            elif issue.field_name == 'submitted_date':
+            elif issue.field_name == "submitted_date":
                 # Fix date formatting
-                current_date = getattr(bill, 'submitted_date', None)
+                current_date = getattr(bill, "submitted_date", None)
                 if current_date:
                     fixed_date = self._fix_date_value(current_date)
                     if fixed_date != current_date:
-                        setattr(bill, 'submitted_date', fixed_date)
+                        setattr(bill, "submitted_date", fixed_date)
                         return True
 
             return False
@@ -627,14 +652,14 @@ class DataCompletionProcessor:
         """Apply bulk update for a field"""
         try:
             # Field-specific bulk updates
-            if field == 'data_quality_score':
+            if field == "data_quality_score":
                 score = self._calculate_quality_score(bill)
                 setattr(bill, field, score)
                 return True
 
-            elif field == 'source_house':
+            elif field == "source_house":
                 # Set source house based on house_of_origin
-                if hasattr(bill, 'house_of_origin') and bill.house_of_origin:
+                if hasattr(bill, "house_of_origin") and bill.house_of_origin:
                     setattr(bill, field, bill.house_of_origin)
                     return True
 
@@ -647,12 +672,12 @@ class DataCompletionProcessor:
     def _fix_status_value(self, status: str) -> str:
         """Fix status value formatting"""
         status_mapping = {
-            '提出済み': '提出',
-            '審議中': '審議中',
-            '可決済み': '可決',
-            '否決済み': '否決',
-            '成立済み': '成立',
-            '廃案済み': '廃案'
+            "提出済み": "提出",
+            "審議中": "審議中",
+            "可決済み": "可決",
+            "否決済み": "否決",
+            "成立済み": "成立",
+            "廃案済み": "廃案",
         }
         return status_mapping.get(status, status)
 
@@ -682,10 +707,7 @@ class DataCompletionProcessor:
         return score / max_score if max_score > 0 else 0.0
 
     def _record_completion_history(
-        self,
-        bill: Bill,
-        task: CompletionTask,
-        result: CompletionResult
+        self, bill: Bill, task: CompletionTask, result: CompletionResult
     ):
         """Record completion in bill history"""
         try:
@@ -701,14 +723,14 @@ class DataCompletionProcessor:
                     source_system="data_completion_processor",
                     previous_values={},
                     new_values={
-                        'completed_fields': result.fields_completed,
-                        'strategy': task.strategy.value
+                        "completed_fields": result.fields_completed,
+                        "strategy": task.strategy.value,
                     },
                     metadata={
-                        'task_id': task.task_id,
-                        'processing_time_ms': result.processing_time_ms,
-                        'quality_improvement': result.quality_improvement
-                    }
+                        "task_id": task.task_id,
+                        "processing_time_ms": result.processing_time_ms,
+                        "quality_improvement": result.quality_improvement,
+                    },
                 )
 
                 session.add(history_record)
@@ -718,7 +740,8 @@ class DataCompletionProcessor:
             self.logger.error(f"Error recording completion history: {e}")
 
     def _calculate_performance_metrics(
-            self, results: list[CompletionResult]) -> dict[str, Any]:
+        self, results: list[CompletionResult]
+    ) -> dict[str, Any]:
         """Calculate performance metrics from results"""
         if not results:
             return {}
@@ -727,16 +750,20 @@ class DataCompletionProcessor:
         avg_time = total_time / len(results)
 
         quality_improvements = [
-            r.quality_improvement for r in results if r.quality_improvement]
-        avg_quality_improvement = sum(
-            quality_improvements) / len(quality_improvements) if quality_improvements else 0
+            r.quality_improvement for r in results if r.quality_improvement
+        ]
+        avg_quality_improvement = (
+            sum(quality_improvements) / len(quality_improvements)
+            if quality_improvements
+            else 0
+        )
 
         return {
-            'average_processing_time_ms': avg_time,
-            'total_processing_time_ms': total_time,
-            'average_quality_improvement': avg_quality_improvement,
-            'fields_completed_total': sum(len(r.fields_completed) for r in results),
-            'fields_failed_total': sum(len(r.fields_failed) for r in results)
+            "average_processing_time_ms": avg_time,
+            "total_processing_time_ms": total_time,
+            "average_quality_improvement": avg_quality_improvement,
+            "fields_completed_total": sum(len(r.fields_completed) for r in results),
+            "fields_failed_total": sum(len(r.fields_failed) for r in results),
         }
 
     def _store_execution_history(self, result: BatchCompletionResult):
@@ -752,16 +779,17 @@ class DataCompletionProcessor:
         cutoff_date = datetime.now() - timedelta(days=days)
 
         recent_results = [
-            result for result in self.execution_history
+            result
+            for result in self.execution_history
             if result.completed_at > cutoff_date
         ]
 
         if not recent_results:
             return {
-                'period_days': days,
-                'total_batches': 0,
-                'total_tasks': 0,
-                'success_rate': 0.0
+                "period_days": days,
+                "total_batches": 0,
+                "total_tasks": 0,
+                "success_rate": 0.0,
             }
 
         total_batches = len(recent_results)
@@ -769,69 +797,69 @@ class DataCompletionProcessor:
         completed_tasks = sum(r.completed_tasks for r in recent_results)
 
         return {
-            'period_days': days,
-            'total_batches': total_batches,
-            'total_tasks': total_tasks,
-            'completed_tasks': completed_tasks,
-            'failed_tasks': sum(
-                r.failed_tasks for r in recent_results),
-            'success_rate': completed_tasks / total_tasks if total_tasks > 0 else 0,
-            'average_processing_time_ms': sum(
-                r.total_processing_time_ms for r in recent_results) / total_batches,
-            'total_processing_time_ms': sum(
-                r.total_processing_time_ms for r in recent_results)}
+            "period_days": days,
+            "total_batches": total_batches,
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "failed_tasks": sum(r.failed_tasks for r in recent_results),
+            "success_rate": completed_tasks / total_tasks if total_tasks > 0 else 0,
+            "average_processing_time_ms": sum(
+                r.total_processing_time_ms for r in recent_results
+            )
+            / total_batches,
+            "total_processing_time_ms": sum(
+                r.total_processing_time_ms for r in recent_results
+            ),
+        }
 
     def get_recent_completions(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get recent completion results"""
-        recent_results = self.execution_history[-limit:
-                                                ] if self.execution_history else []
+        recent_results = (
+            self.execution_history[-limit:] if self.execution_history else []
+        )
 
         return [
-
             {
-                'batch_id': result.batch_id,
-                'completed_at': result.completed_at.isoformat(),
-                'total_tasks': result.total_tasks,
-                'completed_tasks': result.completed_tasks,
-                'success_rate': result.success_rate,
-                'processing_time_ms': result.total_processing_time_ms
+                "batch_id": result.batch_id,
+                "completed_at": result.completed_at.isoformat(),
+                "total_tasks": result.total_tasks,
+                "completed_tasks": result.completed_tasks,
+                "success_rate": result.success_rate,
+                "processing_time_ms": result.total_processing_time_ms,
             }
-
             for result in recent_results
-
         ]
 
-    def export_completion_report(self,
-                                 batch_result: BatchCompletionResult,
-                                 format: str = "json") -> dict[str,
-                                                               Any]:
+    def export_completion_report(
+        self, batch_result: BatchCompletionResult, format: str = "json"
+    ) -> dict[str, Any]:
         """Export completion report"""
         if format == "json":
             return {
-                'batch_id': batch_result.batch_id,
-                'completed_at': batch_result.completed_at.isoformat(),
-                'summary': {
-                    'total_tasks': batch_result.total_tasks,
-                    'completed_tasks': batch_result.completed_tasks,
-                    'failed_tasks': batch_result.failed_tasks,
-                    'success_rate': batch_result.success_rate,
-                    'total_processing_time_ms': batch_result.total_processing_time_ms
+                "batch_id": batch_result.batch_id,
+                "completed_at": batch_result.completed_at.isoformat(),
+                "summary": {
+                    "total_tasks": batch_result.total_tasks,
+                    "completed_tasks": batch_result.completed_tasks,
+                    "failed_tasks": batch_result.failed_tasks,
+                    "success_rate": batch_result.success_rate,
+                    "total_processing_time_ms": batch_result.total_processing_time_ms,
                 },
-                'performance_metrics': batch_result.performance_metrics,
-                'task_results': [
+                "performance_metrics": batch_result.performance_metrics,
+                "task_results": [
                     {
-                        'task_id': result.task_id,
-                        'bill_id': result.bill_id,
-                        'success': result.success,
-                        'fields_completed': result.fields_completed,
-                        'fields_failed': result.fields_failed,
-                        'processing_time_ms': result.processing_time_ms,
-                        'quality_improvement': result.quality_improvement,
-                        'error_message': result.error_message
+                        "task_id": result.task_id,
+                        "bill_id": result.bill_id,
+                        "success": result.success,
+                        "fields_completed": result.fields_completed,
+                        "fields_failed": result.fields_failed,
+                        "processing_time_ms": result.processing_time_ms,
+                        "quality_improvement": result.quality_improvement,
+                        "error_message": result.error_message,
                     }
                     for result in batch_result.tasks_results
                 ],
-                'errors': batch_result.errors
+                "errors": batch_result.errors,
             }
         else:
-            return {'error': f'Unsupported format: {format}'}
+            return {"error": f"Unsupported format: {format}"}

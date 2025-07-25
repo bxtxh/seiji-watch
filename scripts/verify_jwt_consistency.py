@@ -16,6 +16,7 @@ try:
     import datetime
 
     import jwt
+
     JWT_AVAILABLE = True
 except ImportError:
     JWT_AVAILABLE = False
@@ -32,9 +33,8 @@ def test_jwt_consistency():
     test_configs = {
         "Production": "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w",
         "Test/CI-CD": "test-jwt-secret-unified-for-ci-cd",
-        "Environment": os.getenv(
-            'JWT_SECRET_KEY',
-            'NOT_SET')}
+        "Environment": os.getenv("JWT_SECRET_KEY", "NOT_SET"),
+    }
 
     print("\n📋 JWT_SECRET_KEY Configurations:")
     for name, secret in test_configs.items():
@@ -47,7 +47,7 @@ def test_jwt_consistency():
     results = {}
 
     for config_name, secret_key in test_configs.items():
-        if secret_key == 'NOT_SET':
+        if secret_key == "NOT_SET":
             continue
 
         try:
@@ -58,7 +58,7 @@ def test_jwt_consistency():
                 "scopes": ["read", "write"],
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.utcnow(),
-                "type": "access_token"
+                "type": "access_token",
             }
 
             # Generate token
@@ -68,24 +68,27 @@ def test_jwt_consistency():
             decoded = jwt.decode(token, secret_key, algorithms=["HS256"])
 
             # Check if verification successful
-            if decoded["user_id"] == "test-user" and decoded["email"] == "test@seiji-watch.local":
+            if (
+                decoded["user_id"] == "test-user"
+                and decoded["email"] == "test@seiji-watch.local"
+            ):
                 results[config_name] = {
                     "status": "✅ PASS",
                     "token": token[:30] + "...",
-                    "secret_length": len(secret_key)
+                    "secret_length": len(secret_key),
                 }
             else:
                 results[config_name] = {
                     "status": "❌ FAIL - Token verification failed",
                     "token": "N/A",
-                    "secret_length": len(secret_key)
+                    "secret_length": len(secret_key),
                 }
 
         except Exception as e:
             results[config_name] = {
                 "status": f"❌ FAIL - {str(e)}",
                 "token": "N/A",
-                "secret_length": len(secret_key) if secret_key != 'NOT_SET' else 0
+                "secret_length": len(secret_key) if secret_key != "NOT_SET" else 0,
             }
 
     # Display results
@@ -115,7 +118,7 @@ def test_jwt_consistency():
                 "scopes": ["read"],
                 "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
                 "iat": datetime.datetime.utcnow(),
-                "type": "access_token"
+                "type": "access_token",
             }
 
             test_token = jwt.encode(test_payload, test_secret, algorithm="HS256")
@@ -136,7 +139,7 @@ def test_jwt_consistency():
     print("\n🌍 Environment Consistency Check:")
     print("-" * 40)
 
-    env_jwt_secret = os.getenv('JWT_SECRET_KEY')
+    env_jwt_secret = os.getenv("JWT_SECRET_KEY")
     if env_jwt_secret:
         if env_jwt_secret == test_configs["Test/CI-CD"]:
             print("✅ Environment JWT_SECRET_KEY matches Test/CI-CD configuration")
@@ -144,7 +147,8 @@ def test_jwt_consistency():
             print("✅ Environment JWT_SECRET_KEY matches Production configuration")
         else:
             print(
-                f"⚠️  Environment JWT_SECRET_KEY is different: {env_jwt_secret[:20]}...")
+                f"⚠️  Environment JWT_SECRET_KEY is different: {env_jwt_secret[:20]}..."
+            )
     else:
         print("❌ JWT_SECRET_KEY not set in environment")
 
@@ -176,11 +180,13 @@ def test_with_auth_middleware():
 
         print("✅ Auth middleware imported successfully")
         print(
-            f"   Middleware JWT_SECRET_KEY: {JWT_SECRET_KEY[:20] if len(JWT_SECRET_KEY) > 20 else JWT_SECRET_KEY}...")
+            f"   Middleware JWT_SECRET_KEY: {JWT_SECRET_KEY[:20] if len(JWT_SECRET_KEY) > 20 else JWT_SECRET_KEY}..."
+        )
 
         # Test token creation and verification
         test_token = create_access_token(
-            "test-user", "test@example.com", ["read", "write"])
+            "test-user", "test@example.com", ["read", "write"]
+        )
         print(f"✅ Token created: {test_token[:30]}...")
 
         # Verify the token
@@ -205,7 +211,7 @@ if __name__ == "__main__":
     print("=" * 60)
 
     # Set test environment
-    os.environ['ENVIRONMENT'] = 'testing'
+    os.environ["ENVIRONMENT"] = "testing"
 
     # Run consistency tests
     consistency_ok = test_jwt_consistency()

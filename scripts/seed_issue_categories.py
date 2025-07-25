@@ -19,8 +19,8 @@ sys.path.append(str(Path(__file__).parent.parent / "shared" / "src"))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s')
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +42,7 @@ class IssueCategorySeedManager:
         if not l1_file.exists():
             raise FileNotFoundError(f"L1 file not found: {l1_file}")
 
-        with open(l1_file, encoding='utf-8') as f:
+        with open(l1_file, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             self.l1_categories = list(reader)
 
@@ -51,12 +51,13 @@ class IssueCategorySeedManager:
         if not l2_file.exists():
             raise FileNotFoundError(f"L2 file not found: {l2_file}")
 
-        with open(l2_file, encoding='utf-8') as f:
+        with open(l2_file, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             self.l2_categories = list(reader)
 
         logger.info(
-            f"📊 Loaded {len(self.l1_categories)} L1 and {len(self.l2_categories)} L2 categories")
+            f"📊 Loaded {len(self.l1_categories)} L1 and {len(self.l2_categories)} L2 categories"
+        )
 
     async def load_existing_categories(self) -> None:
         """Load existing categories from Airtable to enable idempotent operation."""
@@ -71,11 +72,13 @@ class IssueCategorySeedManager:
                     self.existing_categories[cap_code] = record["id"]
 
             logger.info(
-                f"🔍 Found {len(self.existing_categories)} existing categories in Airtable")
+                f"🔍 Found {len(self.existing_categories)} existing categories in Airtable"
+            )
 
         except Exception as e:
             logger.warning(
-                f"⚠️  Could not load existing categories (table may not exist): {e}")
+                f"⚠️  Could not load existing categories (table may not exist): {e}"
+            )
             self.existing_categories = {}
 
     async def seed_l1_categories(self) -> dict[str, str]:
@@ -95,22 +98,26 @@ class IssueCategorySeedManager:
                 "title_ja": category["title_ja"],
                 "title_en": category["title_en"],
                 "summary_150ja": "",
-                "is_seed": True
+                "is_seed": True,
             }
 
             try:
                 if cap_code in self.existing_categories:
                     # Update existing category
                     record_id = self.existing_categories[cap_code]
-                    await self.client.update_issue_category(record_id, {
-                        "Title_JA": category_data["title_ja"],
-                        "Title_EN": category_data["title_en"],
-                        "Is_Seed": True
-                    })
+                    await self.client.update_issue_category(
+                        record_id,
+                        {
+                            "Title_JA": category_data["title_ja"],
+                            "Title_EN": category_data["title_en"],
+                            "Is_Seed": True,
+                        },
+                    )
                     l1_mapping[cap_code] = record_id
                     updated_count += 1
                     logger.debug(
-                        f"✏️  Updated L1 category: {cap_code} - {category['title_ja']}")
+                        f"✏️  Updated L1 category: {cap_code} - {category['title_ja']}"
+                    )
                 else:
                     # Create new category
                     response = await self.client.create_issue_category(category_data)
@@ -118,7 +125,8 @@ class IssueCategorySeedManager:
                     l1_mapping[cap_code] = record_id
                     created_count += 1
                     logger.debug(
-                        f"✨ Created L1 category: {cap_code} - {category['title_ja']}")
+                        f"✨ Created L1 category: {cap_code} - {category['title_ja']}"
+                    )
 
                 # Small delay to respect rate limits
                 await asyncio.sleep(0.25)
@@ -128,7 +136,8 @@ class IssueCategorySeedManager:
                 continue
 
         logger.info(
-            f"✅ L1 seeding complete: {created_count} created, {updated_count} updated")
+            f"✅ L1 seeding complete: {created_count} created, {updated_count} updated"
+        )
         return l1_mapping
 
     async def seed_l2_categories(self, l1_mapping: dict[str, str]) -> dict[str, str]:
@@ -147,7 +156,8 @@ class IssueCategorySeedManager:
             # Check if parent exists
             if parent_cap_code not in l1_mapping:
                 logger.warning(
-                    f"⚠️  Orphaned L2 category (parent {parent_cap_code} not found): {cap_code}")
+                    f"⚠️  Orphaned L2 category (parent {parent_cap_code} not found): {cap_code}"
+                )
                 orphaned_count += 1
                 continue
 
@@ -158,23 +168,27 @@ class IssueCategorySeedManager:
                 "title_en": category["title_en"],
                 "summary_150ja": "",
                 "parent_category_id": l1_mapping[parent_cap_code],
-                "is_seed": True
+                "is_seed": True,
             }
 
             try:
                 if cap_code in self.existing_categories:
                     # Update existing category
                     record_id = self.existing_categories[cap_code]
-                    await self.client.update_issue_category(record_id, {
-                        "Title_JA": category_data["title_ja"],
-                        "Title_EN": category_data["title_en"],
-                        "Parent_Category": [l1_mapping[parent_cap_code]],
-                        "Is_Seed": True
-                    })
+                    await self.client.update_issue_category(
+                        record_id,
+                        {
+                            "Title_JA": category_data["title_ja"],
+                            "Title_EN": category_data["title_en"],
+                            "Parent_Category": [l1_mapping[parent_cap_code]],
+                            "Is_Seed": True,
+                        },
+                    )
                     l2_mapping[cap_code] = record_id
                     updated_count += 1
                     logger.debug(
-                        f"✏️  Updated L2 category: {cap_code} - {category['title_ja']}")
+                        f"✏️  Updated L2 category: {cap_code} - {category['title_ja']}"
+                    )
                 else:
                     # Create new category
                     response = await self.client.create_issue_category(category_data)
@@ -182,7 +196,8 @@ class IssueCategorySeedManager:
                     l2_mapping[cap_code] = record_id
                     created_count += 1
                     logger.debug(
-                        f"✨ Created L2 category: {cap_code} - {category['title_ja']}")
+                        f"✨ Created L2 category: {cap_code} - {category['title_ja']}"
+                    )
 
                 # Small delay to respect rate limits
                 await asyncio.sleep(0.25)
@@ -195,11 +210,13 @@ class IssueCategorySeedManager:
             logger.warning(f"⚠️  {orphaned_count} L2 categories were orphaned")
 
         logger.info(
-            f"✅ L2 seeding complete: {created_count} created, {updated_count} updated")
+            f"✅ L2 seeding complete: {created_count} created, {updated_count} updated"
+        )
         return l2_mapping
 
     async def validate_relationships(
-            self, l1_mapping: dict[str, str], l2_mapping: dict[str, str]) -> None:
+        self, l1_mapping: dict[str, str], l2_mapping: dict[str, str]
+    ) -> None:
         """Validate parent-child relationships in Airtable."""
         logger.info("🔍 Validating relationships...")
 
@@ -221,20 +238,23 @@ class IssueCategorySeedManager:
                 elif layer == "L2":
                     if not parent_category:
                         validation_errors.append(
-                            f"L2 category {cap_code} has no parent")
+                            f"L2 category {cap_code} has no parent"
+                        )
                     else:
                         # Find parent cap_code
                         parent_id = parent_category[0]
                         parent_cap = None
                         for parent_record in all_categories:
                             if parent_record["id"] == parent_id:
-                                parent_cap = parent_record.get(
-                                    "fields", {}).get("CAP_Code")
+                                parent_cap = parent_record.get("fields", {}).get(
+                                    "CAP_Code"
+                                )
                                 break
 
                         if parent_cap:
-                            l1_children_count[parent_cap] = l1_children_count.get(
-                                parent_cap, 0) + 1
+                            l1_children_count[parent_cap] = (
+                                l1_children_count.get(parent_cap, 0) + 1
+                            )
 
             if validation_errors:
                 logger.warning("⚠️  Validation issues found:")
@@ -246,8 +266,8 @@ class IssueCategorySeedManager:
             # Show hierarchy statistics
             logger.info("📊 Hierarchy statistics:")
             for l1_cap, child_count in sorted(
-                l1_children_count.items(), key=lambda x: int(
-                    x[0])):
+                l1_children_count.items(), key=lambda x: int(x[0])
+            ):
                 logger.info(f"   L1-{l1_cap}: {child_count} children")
 
         except Exception as e:
@@ -268,11 +288,13 @@ class IssueCategorySeedManager:
                 fields = record.get("fields", {})
                 is_seed = fields.get("Is_Seed", False)
                 if not is_seed:
-                    non_seed_categories.append({
-                        "id": record["id"],
-                        "cap_code": fields.get("CAP_Code", "unknown"),
-                        "title": fields.get("Title_JA", "unknown")
-                    })
+                    non_seed_categories.append(
+                        {
+                            "id": record["id"],
+                            "cap_code": fields.get("CAP_Code", "unknown"),
+                            "title": fields.get("Title_JA", "unknown"),
+                        }
+                    )
 
             if non_seed_categories:
                 logger.info(f"🔍 Found {len(non_seed_categories)} non-seed categories:")
@@ -345,6 +367,7 @@ async def main():
     except Exception as e:
         logger.error(f"❌ Seeding failed: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

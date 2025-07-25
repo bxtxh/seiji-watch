@@ -12,7 +12,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 # Final batch of specific politician readings for remaining placeholders
 REMAINING_POLITICIAN_READINGS = {
@@ -40,13 +40,11 @@ REMAINING_POLITICIAN_READINGS = {
     "穀田恵二": "こくたけいじ",
     "赤嶺政賢": "あかみねせいけん",
     "屋良朝博": "やらともひろ",
-
     # Common placeholder names that might be real people
     "田中太郎": "たなかたろう",  # Could be real, keep as is
     "佐藤花子": "さとうはなこ",  # Could be real, keep as is
     "山田一郎": "やまだいちろう",  # Could be real, keep as is
-    "鈴木次郎": "すずきじろう",   # Could be real, keep as is
-
+    "鈴木次郎": "すずきじろう",  # Could be real, keep as is
     # Generate readings for other common patterns
     "木原誠二": "きはらせいじ",
     "後藤茂之": "ごとうしげゆき",
@@ -66,34 +64,90 @@ REMAINING_POLITICIAN_READINGS = {
     "寺田稔": "てらだみのる",
     "小倉將信": "おぐらまさのぶ",
     "和田義明": "わだよしあき",
-    "浜田靖一": "はまだやすかず"
+    "浜田靖一": "はまだやすかず",
 }
 
 # Enhanced pattern-based reading generation
 ADVANCED_PATTERNS = {
     # More complex surname patterns
-    '藤野': 'ふじの', '仁比': 'にひ', '田村': 'たむら', '倉林': 'くらばやし',
-    '宮沢': 'みやざわ', '柳ヶ瀬': 'やながせ', '江島': 'えじま', '伊藤': 'いとう',
-    '塩村': 'しおむら', '福島': 'ふくしま', '緒方': 'おがた', '山本': 'やまもと',
-    '北神': 'きたがみ', '青柳': 'あおやぎ', '斎藤': 'さいとう', '塩川': 'しおかわ',
-    '本村': 'もとむら', '畑野': 'はたの', '志位': 'しい', '笠井': 'かさい',
-    '穀田': 'こくた', '赤嶺': 'あかみね', '屋良': 'やら', '木原': 'きはら',
-    '後藤': 'ごとう', '岸田': 'きしだ', '松野': 'まつの', '茂木': 'もてぎ',
-    '永岡': 'ながおか', '葉梨': 'はなし', '谷': 'たに', '秋葉': 'あきば',
-    '寺田': 'てらだ', '小倉': 'おぐら', '和田': 'わだ', '浜田': 'はまだ',
-
+    "藤野": "ふじの",
+    "仁比": "にひ",
+    "田村": "たむら",
+    "倉林": "くらばやし",
+    "宮沢": "みやざわ",
+    "柳ヶ瀬": "やながせ",
+    "江島": "えじま",
+    "伊藤": "いとう",
+    "塩村": "しおむら",
+    "福島": "ふくしま",
+    "緒方": "おがた",
+    "山本": "やまもと",
+    "北神": "きたがみ",
+    "青柳": "あおやぎ",
+    "斎藤": "さいとう",
+    "塩川": "しおかわ",
+    "本村": "もとむら",
+    "畑野": "はたの",
+    "志位": "しい",
+    "笠井": "かさい",
+    "穀田": "こくた",
+    "赤嶺": "あかみね",
+    "屋良": "やら",
+    "木原": "きはら",
+    "後藤": "ごとう",
+    "岸田": "きしだ",
+    "松野": "まつの",
+    "茂木": "もてぎ",
+    "永岡": "ながおか",
+    "葉梨": "はなし",
+    "谷": "たに",
+    "秋葉": "あきば",
+    "寺田": "てらだ",
+    "小倉": "おぐら",
+    "和田": "わだ",
+    "浜田": "はまだ",
     # More complex given name patterns
-    '保史': 'やすふみ', '聡平': 'そうへい', '智子': 'ともこ', '明子': 'あきこ',
-    '洋一': 'よういち', '裕文': 'ひろふみ', '潔': 'きよし', '孝恵': 'たかえ',
-    'あやか': 'あやか', 'みずほ': 'みずほ', '林太郎': 'りんたろう', '太郎': 'たろう',
-    '圭朗': 'けいろう', '陽一郎': 'よういちろう', '嘉隆': 'よしたか', '鉄也': 'てつや',
-    '伸子': 'のぶこ', '君枝': 'きみえ', '和夫': 'かずお', '亮': 'りょう',
-    '恵二': 'けいじ', '政賢': 'せいけん', '朝博': 'ともひろ', '誠二': 'せいじ',
-    '茂之': 'しげゆき', '文雄': 'ふみお', '博一': 'ひろかず', '敏充': 'としみつ',
-    '芳正': 'よしまさ', '康稔': 'やすとし', '桂子': 'けいこ', '康弘': 'やすひろ',
-    '健': 'けん', '公一': 'こういち', '賢也': 'けんや', '裕': 'ゆたか',
-    '早苗': 'さなえ', '稔': 'みのる', '將信': 'まさのぶ', '義明': 'よしあき',
-    '靖一': 'やすかず'
+    "保史": "やすふみ",
+    "聡平": "そうへい",
+    "智子": "ともこ",
+    "明子": "あきこ",
+    "洋一": "よういち",
+    "裕文": "ひろふみ",
+    "潔": "きよし",
+    "孝恵": "たかえ",
+    "あやか": "あやか",
+    "みずほ": "みずほ",
+    "林太郎": "りんたろう",
+    "太郎": "たろう",
+    "圭朗": "けいろう",
+    "陽一郎": "よういちろう",
+    "嘉隆": "よしたか",
+    "鉄也": "てつや",
+    "伸子": "のぶこ",
+    "君枝": "きみえ",
+    "和夫": "かずお",
+    "亮": "りょう",
+    "恵二": "けいじ",
+    "政賢": "せいけん",
+    "朝博": "ともひろ",
+    "誠二": "せいじ",
+    "茂之": "しげゆき",
+    "文雄": "ふみお",
+    "博一": "ひろかず",
+    "敏充": "としみつ",
+    "芳正": "よしまさ",
+    "康稔": "やすとし",
+    "桂子": "けいこ",
+    "康弘": "やすひろ",
+    "健": "けん",
+    "公一": "こういち",
+    "賢也": "けんや",
+    "裕": "ゆたか",
+    "早苗": "さなえ",
+    "稔": "みのる",
+    "將信": "まさのぶ",
+    "義明": "よしあき",
+    "靖一": "やすかず",
 }
 
 
@@ -107,7 +161,7 @@ class FinalPlaceholderFixer:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         self.fix_results = {
@@ -117,7 +171,7 @@ class FinalPlaceholderFixer:
             "pattern_generated": 0,
             "could_not_fix": 0,
             "already_good": 0,
-            "errors": 0
+            "errors": 0,
         }
 
     async def get_all_members(self, session):
@@ -131,16 +185,14 @@ class FinalPlaceholderFixer:
                 params["offset"] = offset
 
             async with session.get(
-                f"{self.base_url}/Members (議員)",
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/Members (議員)", headers=self.headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -157,7 +209,7 @@ class FinalPlaceholderFixer:
         name_kana = name_kana.strip()
 
         # Check for placeholder patterns
-        placeholder_patterns = ['たなかたろう', 'さとうはなこ', 'やまだ']
+        placeholder_patterns = ["たなかたろう", "さとうはなこ", "やまだ"]
 
         for pattern in placeholder_patterns:
             if pattern in name_kana.lower():
@@ -180,17 +232,15 @@ class FinalPlaceholderFixer:
 
         # Sort by length (longest first)
         sorted_patterns = sorted(
-            ADVANCED_PATTERNS.items(),
-            key=lambda x: len(
-                x[0]),
-            reverse=True)
+            ADVANCED_PATTERNS.items(), key=lambda x: len(x[0]), reverse=True
+        )
 
         while remaining:
             matched = False
             for kanji, kana in sorted_patterns:
                 if remaining.startswith(kanji):
                     result += kana
-                    remaining = remaining[len(kanji):]
+                    remaining = remaining[len(kanji) :]
                     matched = True
                     break
 
@@ -198,18 +248,54 @@ class FinalPlaceholderFixer:
                 # Single character fallback
                 single_char = remaining[0]
                 single_readings = {
-                    '保': 'やす', '史': 'ふみ', '聡': 'そう', '平': 'へい',
-                    '智': 'とも', '子': 'こ', '明': 'あき', '洋': 'よう',
-                    '一': 'いち', '裕': 'ゆう', '文': 'ふみ', '潔': 'きよし',
-                    '孝': 'たか', '恵': 'え', '林': 'りん', '圭': 'けい',
-                    '朗': 'ろう', '陽': 'よう', '嘉': 'よし', '隆': 'たか',
-                    '鉄': 'てつ', '也': 'や', '伸': 'のぶ', '君': 'きみ',
-                    '枝': 'え', '和': 'かず', '夫': 'お', '亮': 'りょう',
-                    '二': 'じ', '政': 'せい', '賢': 'けん', '朝': 'とも',
-                    '博': 'ひろ', '誠': 'せい', '茂': 'しげ', '之': 'ゆき',
-                    '芳': 'よし', '正': 'まさ', '康': 'やす', '桂': 'けい',
-                    '公': 'こう', '早': 'さ', '苗': 'なえ', '稔': 'みのる',
-                    '將': 'まさ', '信': 'のぶ', '義': 'よし', '靖': 'やす'
+                    "保": "やす",
+                    "史": "ふみ",
+                    "聡": "そう",
+                    "平": "へい",
+                    "智": "とも",
+                    "子": "こ",
+                    "明": "あき",
+                    "洋": "よう",
+                    "一": "いち",
+                    "裕": "ゆう",
+                    "文": "ふみ",
+                    "潔": "きよし",
+                    "孝": "たか",
+                    "恵": "え",
+                    "林": "りん",
+                    "圭": "けい",
+                    "朗": "ろう",
+                    "陽": "よう",
+                    "嘉": "よし",
+                    "隆": "たか",
+                    "鉄": "てつ",
+                    "也": "や",
+                    "伸": "のぶ",
+                    "君": "きみ",
+                    "枝": "え",
+                    "和": "かず",
+                    "夫": "お",
+                    "亮": "りょう",
+                    "二": "じ",
+                    "政": "せい",
+                    "賢": "けん",
+                    "朝": "とも",
+                    "博": "ひろ",
+                    "誠": "せい",
+                    "茂": "しげ",
+                    "之": "ゆき",
+                    "芳": "よし",
+                    "正": "まさ",
+                    "康": "やす",
+                    "桂": "けい",
+                    "公": "こう",
+                    "早": "さ",
+                    "苗": "なえ",
+                    "稔": "みのる",
+                    "將": "まさ",
+                    "信": "のぶ",
+                    "義": "よし",
+                    "靖": "やす",
                 }
 
                 if single_char in single_readings:
@@ -228,35 +314,32 @@ class FinalPlaceholderFixer:
 
         for record_info in records_to_fix:
             try:
-                update_data = {
-                    "fields": {
-                        "Name_Kana": record_info['new_kana']
-                    }
-                }
+                update_data = {"fields": {"Name_Kana": record_info["new_kana"]}}
 
                 async with session.patch(
                     f"{self.base_url}/Members (議員)/{record_info['id']}",
                     headers=self.headers,
-                    json=update_data
+                    json=update_data,
                 ) as response:
                     if response.status == 200:
                         successful_fixes += 1
 
                         # Track fix type
-                        if record_info['name'] in REMAINING_POLITICIAN_READINGS:
-                            self.fix_results['real_politician_fixed'] += 1
+                        if record_info["name"] in REMAINING_POLITICIAN_READINGS:
+                            self.fix_results["real_politician_fixed"] += 1
                         else:
-                            self.fix_results['pattern_generated'] += 1
+                            self.fix_results["pattern_generated"] += 1
 
-                        self.fix_results['placeholder_fixed'] += 1
+                        self.fix_results["placeholder_fixed"] += 1
 
                     else:
-                        self.fix_results['errors'] += 1
+                        self.fix_results["errors"] += 1
                         print(
-                            f"   ❌ Error updating {record_info['name']}: {response.status}")
+                            f"   ❌ Error updating {record_info['name']}: {response.status}"
+                        )
 
             except Exception as e:
-                self.fix_results['errors'] += 1
+                self.fix_results["errors"] += 1
                 print(f"   ❌ Exception updating {record_info['name']}: {e}")
 
             # Rate limiting
@@ -286,12 +369,12 @@ class FinalPlaceholderFixer:
             records_to_fix = []
 
             for record in all_records:
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                current_kana = fields.get('Name_Kana', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                current_kana = fields.get("Name_Kana", "")
 
                 if name:
-                    self.fix_results['total_processed'] += 1
+                    self.fix_results["total_processed"] += 1
 
                     needs_fix, fix_type = self.needs_placeholder_fix(name, current_kana)
 
@@ -299,19 +382,21 @@ class FinalPlaceholderFixer:
                         new_kana = self.generate_final_kana(name)
 
                         if new_kana and new_kana != current_kana:
-                            records_to_fix.append({
-                                'id': record['id'],
-                                'name': name,
-                                'current_kana': current_kana,
-                                'new_kana': new_kana,
-                                'fix_type': fix_type,
-                                'house': fields.get('House', ''),
-                                'constituency': fields.get('Constituency', '')
-                            })
+                            records_to_fix.append(
+                                {
+                                    "id": record["id"],
+                                    "name": name,
+                                    "current_kana": current_kana,
+                                    "new_kana": new_kana,
+                                    "fix_type": fix_type,
+                                    "house": fields.get("House", ""),
+                                    "constituency": fields.get("Constituency", ""),
+                                }
+                            )
                         else:
-                            self.fix_results['could_not_fix'] += 1
+                            self.fix_results["could_not_fix"] += 1
                     else:
-                        self.fix_results['already_good'] += 1
+                        self.fix_results["already_good"] += 1
 
             print(f"🔍 Found {len(records_to_fix)} remaining placeholders to fix")
 
@@ -322,8 +407,11 @@ class FinalPlaceholderFixer:
             # Show preview
             print("\n👀 Preview of final placeholder fixes:")
             for i, item in enumerate(records_to_fix, 1):
-                politician_status = "🏛️ REAL POLITICIAN" if item[
-                    'name'] in REMAINING_POLITICIAN_READINGS else "📝 PATTERN"
+                politician_status = (
+                    "🏛️ REAL POLITICIAN"
+                    if item["name"] in REMAINING_POLITICIAN_READINGS
+                    else "📝 PATTERN"
+                )
                 print(f"   {i:2d}. {item['name']} {politician_status}")
                 print(f"       Before: '{item['current_kana']}'")
                 print(f"       After:  '{item['new_kana']}'")
@@ -357,11 +445,11 @@ class FinalPlaceholderFixer:
         print(f"   ❌ Errors: {results['errors']}")
 
         # Calculate final estimated completeness
-        remaining_placeholders = results['could_not_fix']
-        total_good = results['already_good'] + results['placeholder_fixed']
+        remaining_placeholders = results["could_not_fix"]
+        total_good = results["already_good"] + results["placeholder_fixed"]
 
-        if results['total_processed'] > 0:
-            final_completeness = (total_good / results['total_processed']) * 100
+        if results["total_processed"] > 0:
+            final_completeness = (total_good / results["total_processed"]) * 100
             print(f"\n📈 ESTIMATED FINAL COMPLETENESS: {final_completeness:.1f}%")
             print(f"🎯 Remaining placeholders: {remaining_placeholders}")
 
@@ -383,14 +471,19 @@ async def main():
     print("\n✅ Final placeholder elimination completed!")
 
     # Save final report
-    report_filename = f"members_final_placeholder_fix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(report_filename, 'w', encoding='utf-8') as f:
-        json.dump({
-            "completion_date": datetime.now().isoformat(),
-            "fix_results": results
-        }, f, indent=2, ensure_ascii=False)
+    report_filename = (
+        f"members_final_placeholder_fix_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    )
+    with open(report_filename, "w", encoding="utf-8") as f:
+        json.dump(
+            {"completion_date": datetime.now().isoformat(), "fix_results": results},
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     print(f"💾 Final elimination report saved: {report_filename}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

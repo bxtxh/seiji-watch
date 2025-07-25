@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class AlertSeverity(Enum):
     """Alert severity levels."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -41,6 +42,7 @@ class AlertSeverity(Enum):
 
 class AlertStatus(Enum):
     """Alert lifecycle status."""
+
     TRIGGERED = "triggered"
     ACKNOWLEDGED = "acknowledged"
     RESOLVED = "resolved"
@@ -49,6 +51,7 @@ class AlertStatus(Enum):
 
 class NotificationChannel(Enum):
     """Available notification channels."""
+
     EMAIL = "email"
     SLACK = "slack"
     WEBHOOK = "webhook"
@@ -58,6 +61,7 @@ class NotificationChannel(Enum):
 @dataclass
 class AlertRule:
     """Alert rule configuration."""
+
     name: str
     description: str
     metric_name: str
@@ -78,6 +82,7 @@ class AlertRule:
 @dataclass
 class Alert:
     """Alert instance."""
+
     id: str
     rule_name: str
     severity: AlertSeverity
@@ -98,6 +103,7 @@ class Alert:
 @dataclass
 class NotificationConfig:
     """Notification channel configuration."""
+
     channel: NotificationChannel
     enabled: bool = True
     config: dict[str, Any] = None
@@ -114,7 +120,8 @@ class AnomalyDetector:
         self.window_size = window_size
         self.sensitivity = sensitivity  # Standard deviations for outlier detection
         self.metric_history: dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=window_size))
+            lambda: deque(maxlen=window_size)
+        )
 
     def add_value(self, metric_name: str, value: float):
         """Add a metric value to the history."""
@@ -150,12 +157,12 @@ class AnomalyDetector:
 
         try:
             return {
-                'mean': statistics.mean(history),
-                'median': statistics.median(history),
-                'stdev': statistics.stdev(history),
-                'min': min(history),
-                'max': max(history),
-                'count': len(history)
+                "mean": statistics.mean(history),
+                "median": statistics.median(history),
+                "stdev": statistics.stdev(history),
+                "min": min(history),
+                "max": max(history),
+                "count": len(history),
             }
         except statistics.StatisticsError:
             return {}
@@ -180,10 +187,10 @@ class AlertManager:
 
         # Statistics
         self.stats = {
-            'alerts_triggered': 0,
-            'alerts_resolved': 0,
-            'false_positives': 0,
-            'sla_violations': 0
+            "alerts_triggered": 0,
+            "alerts_resolved": 0,
+            "false_positives": 0,
+            "sla_violations": 0,
         }
 
         self._setup_default_rules()
@@ -200,7 +207,7 @@ class AlertManager:
                 threshold=10.0,
                 severity=AlertSeverity.HIGH,
                 evaluation_window_minutes=5,
-                min_data_points=3
+                min_data_points=3,
             ),
             AlertRule(
                 name="processing_failure_rate",
@@ -210,7 +217,7 @@ class AlertManager:
                 threshold=25.0,
                 severity=AlertSeverity.MEDIUM,
                 evaluation_window_minutes=10,
-                min_data_points=5
+                min_data_points=5,
             ),
             AlertRule(
                 name="system_memory_critical",
@@ -220,7 +227,7 @@ class AlertManager:
                 threshold=90.0,
                 severity=AlertSeverity.CRITICAL,
                 evaluation_window_minutes=2,
-                min_data_points=2
+                min_data_points=2,
             ),
             AlertRule(
                 name="disk_space_warning",
@@ -230,7 +237,7 @@ class AlertManager:
                 threshold=85.0,
                 severity=AlertSeverity.MEDIUM,
                 evaluation_window_minutes=5,
-                min_data_points=3
+                min_data_points=3,
             ),
             AlertRule(
                 name="processing_time_anomaly",
@@ -240,7 +247,7 @@ class AlertManager:
                 threshold=0.0,  # Not used for anomaly detection
                 severity=AlertSeverity.MEDIUM,
                 evaluation_window_minutes=15,
-                min_data_points=10
+                min_data_points=10,
             ),
             AlertRule(
                 name="data_quality_degradation",
@@ -250,8 +257,8 @@ class AlertManager:
                 threshold=0.7,
                 severity=AlertSeverity.HIGH,
                 evaluation_window_minutes=30,
-                min_data_points=5
-            )
+                min_data_points=5,
+            ),
         ]
 
         for rule in default_rules:
@@ -297,18 +304,19 @@ class AlertManager:
     def suppress_rule(self, rule_name: str, duration_minutes: int = 60):
         """Temporarily suppress an alert rule."""
         if rule_name in self.rules:
-            self.suppressed_rules[rule_name] = datetime.utcnow(
-            ) + timedelta(minutes=duration_minutes)
+            self.suppressed_rules[rule_name] = datetime.utcnow() + timedelta(
+                minutes=duration_minutes
+            )
             log_info(
-                f"Suppressed alert rule {rule_name} for {duration_minutes} minutes")
+                f"Suppressed alert rule {rule_name} for {duration_minutes} minutes"
+            )
 
     def configure_notification(
-            self, channel: NotificationChannel, config: dict[str, Any]):
+        self, channel: NotificationChannel, config: dict[str, Any]
+    ):
         """Configure a notification channel."""
         self.notification_configs[channel] = NotificationConfig(
-            channel=channel,
-            enabled=True,
-            config=config
+            channel=channel, enabled=True, config=config
         )
         log_info(f"Configured notification channel: {channel.value}")
 
@@ -318,7 +326,8 @@ class AlertManager:
 
         # Clean up suppressed rules
         expired_suppressions = [
-            rule_name for rule_name, expiry in self.suppressed_rules.items()
+            rule_name
+            for rule_name, expiry in self.suppressed_rules.items()
             if current_time > expiry
         ]
         for rule_name in expired_suppressions:
@@ -338,8 +347,7 @@ class AlertManager:
         """Evaluate a single alert rule."""
         # Get recent metric values
         metric_values = self._get_recent_metric_values(
-            rule.metric_name,
-            rule.evaluation_window_minutes
+            rule.metric_name, rule.evaluation_window_minutes
         )
 
         if len(metric_values) < rule.min_data_points:
@@ -353,7 +361,8 @@ class AlertManager:
             # Add to anomaly detector
             self.anomaly_detector.add_value(rule.metric_name, current_value)
             should_alert = self.anomaly_detector.is_anomaly(
-                rule.metric_name, current_value)
+                rule.metric_name, current_value
+            )
         else:
             # Threshold-based conditions
             if rule.condition == "gt" and current_value > rule.threshold:
@@ -379,9 +388,8 @@ class AlertManager:
             await self._resolve_alert(alert_key)
 
     def _get_recent_metric_values(
-            self,
-            metric_name: str,
-            window_minutes: int) -> list[float]:
+        self, metric_name: str, window_minutes: int
+    ) -> list[float]:
         """Get recent metric values within the time window."""
         cutoff_time = datetime.utcnow() - timedelta(minutes=window_minutes)
 
@@ -407,15 +415,15 @@ class AlertManager:
             threshold=rule.threshold,
             triggered_at=datetime.utcnow(),
             metadata={
-                'metric_name': rule.metric_name,
-                'condition': rule.condition,
-                'evaluation_window': rule.evaluation_window_minutes
-            }
+                "metric_name": rule.metric_name,
+                "condition": rule.condition,
+                "evaluation_window": rule.evaluation_window_minutes,
+            },
         )
 
         self.active_alerts[alert_id] = alert
         self.alert_history.append(alert)
-        self.stats['alerts_triggered'] += 1
+        self.stats["alerts_triggered"] += 1
 
         # Send notifications
         await self._send_notifications(alert)
@@ -425,11 +433,11 @@ class AlertManager:
             "alert_triggered",
             rule.severity.value,
             details={
-                'rule_name': rule.name,
-                'metric_value': value,
-                'threshold': rule.threshold,
-                'alert_id': alert_id
-            }
+                "rule_name": rule.name,
+                "metric_value": value,
+                "threshold": rule.threshold,
+                "alert_id": alert_id,
+            },
         )
 
     async def _resolve_alert(self, alert_key: str):
@@ -444,7 +452,7 @@ class AlertManager:
 
             # Remove from active alerts
             del self.active_alerts[alert_key]
-            self.stats['alerts_resolved'] += 1
+            self.stats["alerts_resolved"] += 1
 
             log_info(f"Resolved alert: {alert.rule_name}")
 
@@ -453,14 +461,18 @@ class AlertManager:
         if rule.condition == "anomaly":
             baseline = self.anomaly_detector.get_baseline_stats(rule.metric_name)
             if baseline:
-                return (f"{rule.description}. Current value: {value:.2f}, "
-                        f"baseline mean: {baseline.get('mean', 0):.2f} "
-                        f"(±{baseline.get('stdev', 0):.2f})")
+                return (
+                    f"{rule.description}. Current value: {value:.2f}, "
+                    f"baseline mean: {baseline.get('mean', 0):.2f} "
+                    f"(±{baseline.get('stdev', 0):.2f})"
+                )
             else:
                 return f"{rule.description}. Current value: {value:.2f} (anomalous)"
         else:
-            return (f"{rule.description}. Current value: {value:.2f}, "
-                    f"threshold: {rule.threshold:.2f}")
+            return (
+                f"{rule.description}. Current value: {value:.2f}, "
+                f"threshold: {rule.threshold:.2f}"
+            )
 
     async def _send_notifications(self, alert: Alert):
         """Send notifications for an alert."""
@@ -499,19 +511,16 @@ class AlertManager:
     async def _send_email_notification(self, alert: Alert, config: dict[str, Any]):
         """Send email notification."""
         if not all(
-            k in config for k in [
-                'smtp_server',
-                'smtp_port',
-                'username',
-                'password',
-                'to_emails']):
+            k in config
+            for k in ["smtp_server", "smtp_port", "username", "password", "to_emails"]
+        ):
             return
 
         severity_emojis = {
             AlertSeverity.LOW: "🟡",
             AlertSeverity.MEDIUM: "🟠",
             AlertSeverity.HIGH: "🔴",
-            AlertSeverity.CRITICAL: "🚨"
+            AlertSeverity.CRITICAL: "🚨",
         }
 
         subject = f"{severity_emojis[alert.severity]} Alert: {alert.rule_name}"
@@ -533,15 +542,15 @@ Please investigate this issue promptly.
 
         try:
             msg = MimeMultipart()
-            msg['From'] = config['username']
-            msg['To'] = ', '.join(config['to_emails'])
-            msg['Subject'] = subject
+            msg["From"] = config["username"]
+            msg["To"] = ", ".join(config["to_emails"])
+            msg["Subject"] = subject
 
-            msg.attach(MimeText(body, 'plain'))
+            msg.attach(MimeText(body, "plain"))
 
-            with smtplib.SMTP(config['smtp_server'], config['smtp_port']) as server:
+            with smtplib.SMTP(config["smtp_server"], config["smtp_port"]) as server:
                 server.starttls()
-                server.login(config['username'], config['password'])
+                server.login(config["username"], config["password"])
                 server.send_message(msg)
 
         except Exception as e:
@@ -549,14 +558,14 @@ Please investigate this issue promptly.
 
     async def _send_slack_notification(self, alert: Alert, config: dict[str, Any]):
         """Send Slack notification."""
-        if 'webhook_url' not in config:
+        if "webhook_url" not in config:
             return
 
         severity_colors = {
             AlertSeverity.LOW: "#ffeb3b",
             AlertSeverity.MEDIUM: "#ff9800",
             AlertSeverity.HIGH: "#f44336",
-            AlertSeverity.CRITICAL: "#9c27b0"
+            AlertSeverity.CRITICAL: "#9c27b0",
         }
 
         payload = {
@@ -569,33 +578,31 @@ Please investigate this issue promptly.
                         {
                             "title": "Severity",
                             "value": alert.severity.value.upper(),
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Current Value",
                             "value": str(alert.metric_value),
-                            "short": True
+                            "short": True,
                         },
                         {
                             "title": "Threshold",
                             "value": str(alert.threshold),
-                            "short": True
+                            "short": True,
                         },
-                        {
-                            "title": "Alert ID",
-                            "value": alert.id,
-                            "short": True
-                        }
+                        {"title": "Alert ID", "value": alert.id, "short": True},
                     ],
                     "footer": "Diet Issue Tracker Monitoring",
-                    "ts": int(alert.triggered_at.timestamp())
+                    "ts": int(alert.triggered_at.timestamp()),
                 }
             ]
         }
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(config['webhook_url'], json=payload) as response:
+                async with session.post(
+                    config["webhook_url"], json=payload
+                ) as response:
                     if response.status != 200:
                         log_error(f"Slack notification failed: {response.status}")
 
@@ -604,21 +611,19 @@ Please investigate this issue promptly.
 
     async def _send_webhook_notification(self, alert: Alert, config: dict[str, Any]):
         """Send webhook notification."""
-        if 'url' not in config:
+        if "url" not in config:
             return
 
         payload = {
             "alert": asdict(alert),
             "timestamp": datetime.utcnow().isoformat(),
-            "service": "ingest_worker"
+            "service": "ingest_worker",
         }
 
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    config['url'],
-                    json=payload,
-                    headers=config.get('headers', {})
+                    config["url"], json=payload, headers=config.get("headers", {})
                 ) as response:
                     if response.status not in [200, 201, 202]:
                         log_error(f"Webhook notification failed: {response.status}")
@@ -628,11 +633,7 @@ Please investigate this issue promptly.
 
     def _send_log_notification(self, alert: Alert):
         """Send log-based notification."""
-        log_security(
-            "alert_notification",
-            alert.severity.value,
-            details=asdict(alert)
-        )
+        log_security("alert_notification", alert.severity.value, details=asdict(alert))
 
     def acknowledge_alert(self, alert_id: str, acknowledged_by: str = None):
         """Acknowledge an alert."""
@@ -642,7 +643,7 @@ Please investigate this issue promptly.
             alert.acknowledged_at = datetime.utcnow()
 
             if acknowledged_by:
-                alert.metadata['acknowledged_by'] = acknowledged_by
+                alert.metadata["acknowledged_by"] = acknowledged_by
 
             log_info(f"Alert acknowledged: {alert_id}")
 
@@ -656,8 +657,7 @@ Please investigate this issue promptly.
         last_24h = now - timedelta(hours=24)
 
         recent_alerts = [
-            alert for alert in self.alert_history
-            if alert.triggered_at >= last_24h
+            alert for alert in self.alert_history if alert.triggered_at >= last_24h
         ]
 
         severity_counts = defaultdict(int)
@@ -665,14 +665,14 @@ Please investigate this issue promptly.
             severity_counts[alert.severity.value] += 1
 
         return {
-            'active_alerts_count': len(self.active_alerts),
-            'alerts_last_24h': len(recent_alerts),
-            'severity_distribution': dict(severity_counts),
-            'total_rules': len(self.rules),
-            'enabled_rules': sum(1 for rule in self.rules.values() if rule.enabled),
-            'suppressed_rules': len(self.suppressed_rules),
-            'notification_channels': len(self.notification_configs),
-            'stats': self.stats.copy()
+            "active_alerts_count": len(self.active_alerts),
+            "alerts_last_24h": len(recent_alerts),
+            "severity_distribution": dict(severity_counts),
+            "total_rules": len(self.rules),
+            "enabled_rules": sum(1 for rule in self.rules.values() if rule.enabled),
+            "suppressed_rules": len(self.suppressed_rules),
+            "notification_channels": len(self.notification_configs),
+            "stats": self.stats.copy(),
         }
 
 
@@ -694,8 +694,8 @@ def configure_email_notifications(smtp_config: dict[str, Any]):
 def configure_slack_notifications(webhook_url: str):
     """Configure Slack notifications."""
     alert_manager.configure_notification(
-        NotificationChannel.SLACK, {
-            'webhook_url': webhook_url})
+        NotificationChannel.SLACK, {"webhook_url": webhook_url}
+    )
 
 
 def get_active_alerts():

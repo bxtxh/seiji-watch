@@ -9,7 +9,7 @@ import os
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def add_member_fields():
@@ -18,10 +18,7 @@ async def add_member_fields():
     pat = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     # Get table info
     meta_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables"
@@ -50,41 +47,76 @@ async def add_member_fields():
                 fields_to_add = [
                     {"name": "Name_Kana", "type": "singleLineText"},
                     {"name": "Name_EN", "type": "singleLineText"},
-                    {"name": "House", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "衆議院"},
-                            {"name": "参議院"}
-                        ]
-                    }},
+                    {
+                        "name": "House",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [{"name": "衆議院"}, {"name": "参議院"}]
+                        },
+                    },
                     {"name": "Constituency", "type": "singleLineText"},
                     {"name": "Diet_Member_ID", "type": "singleLineText"},
-                    {"name": "Birth_Date", "type": "date", "options": {"dateFormat": {"name": "iso"}}},
-                    {"name": "Gender", "type": "singleSelect", "options": {
-                        "choices": [
-                            {"name": "男性"},
-                            {"name": "女性"},
-                            {"name": "その他"}
-                        ]
-                    }},
+                    {
+                        "name": "Birth_Date",
+                        "type": "date",
+                        "options": {"dateFormat": {"name": "iso"}},
+                    },
+                    {
+                        "name": "Gender",
+                        "type": "singleSelect",
+                        "options": {
+                            "choices": [
+                                {"name": "男性"},
+                                {"name": "女性"},
+                                {"name": "その他"},
+                            ]
+                        },
+                    },
                     {"name": "First_Elected", "type": "singleLineText"},
-                    {"name": "Terms_Served", "type": "number", "options": {"precision": 0}},
+                    {
+                        "name": "Terms_Served",
+                        "type": "number",
+                        "options": {"precision": 0},
+                    },
                     {"name": "Previous_Occupations", "type": "multilineText"},
                     {"name": "Education", "type": "multilineText"},
                     {"name": "Website_URL", "type": "url"},
                     {"name": "Twitter_Handle", "type": "singleLineText"},
                     {"name": "Facebook_URL", "type": "url"},
-                    {"name": "Is_Active", "type": "checkbox", "options": {"icon": "check", "color": "greenBright"}},
-                    {"name": "Created_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}},
-                    {"name": "Updated_At", "type": "dateTime", "options": {"dateFormat": {"name": "iso"}, "timeFormat": {"name": "24hour"}, "timeZone": "Asia/Tokyo"}}
+                    {
+                        "name": "Is_Active",
+                        "type": "checkbox",
+                        "options": {"icon": "check", "color": "greenBright"},
+                    },
+                    {
+                        "name": "Created_At",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
+                    {
+                        "name": "Updated_At",
+                        "type": "dateTime",
+                        "options": {
+                            "dateFormat": {"name": "iso"},
+                            "timeFormat": {"name": "24hour"},
+                            "timeZone": "Asia/Tokyo",
+                        },
+                    },
                 ]
 
                 # Add Party link field if Parties table exists
                 if parties_table_id:
-                    fields_to_add.append({
-                        "name": "Party",
-                        "type": "multipleRecordLinks",
-                        "options": {"linkedTableId": parties_table_id}
-                    })
+                    fields_to_add.append(
+                        {
+                            "name": "Party",
+                            "type": "multipleRecordLinks",
+                            "options": {"linkedTableId": parties_table_id},
+                        }
+                    )
 
                 # Add fields one by one
                 success_count = 0
@@ -92,7 +124,9 @@ async def add_member_fields():
                     try:
                         add_field_url = f"https://api.airtable.com/v0/meta/bases/{base_id}/tables/{members_table_id}/fields"
 
-                        async with session.post(add_field_url, headers=headers, json=field) as add_response:
+                        async with session.post(
+                            add_field_url, headers=headers, json=field
+                        ) as add_response:
                             if add_response.status == 200:
                                 result = await add_response.json()
                                 field_id = result.get("id")
@@ -101,7 +135,8 @@ async def add_member_fields():
                             else:
                                 error_text = await add_response.text()
                                 print(
-                                    f"  ❌ Failed to add {field['name']}: {add_response.status}")
+                                    f"  ❌ Failed to add {field['name']}: {add_response.status}"
+                                )
                                 if "already exists" in error_text.lower():
                                     print("    (Field already exists, skipping)")
                                     success_count += 1
@@ -137,6 +172,7 @@ async def main():
         print("🔄 Ready to retry T108 member data collection")
     else:
         print("\n❌ Failed to add all required fields")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

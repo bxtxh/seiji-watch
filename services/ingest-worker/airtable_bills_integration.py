@@ -22,9 +22,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -39,18 +39,14 @@ class SimpleAirtableClient:
         self.base_url = f"https://api.airtable.com/v0/{base_id}/{table_name}"
         self.headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
     def create_record(self, fields):
         """レコード作成"""
         data = {"fields": fields}
 
-        response = requests.post(
-            self.base_url,
-            headers=self.headers,
-            json=data
-        )
+        response = requests.post(self.base_url, headers=self.headers, json=data)
 
         if response.status_code == 200:
             return response.json()
@@ -62,11 +58,7 @@ class SimpleAirtableClient:
         """レコード一覧取得"""
         params = {"maxRecords": max_records}
 
-        response = requests.get(
-            self.base_url,
-            headers=self.headers,
-            params=params
-        )
+        response = requests.get(self.base_url, headers=self.headers, params=params)
 
         if response.status_code == 200:
             return response.json()
@@ -85,7 +77,7 @@ def bill_to_airtable_fields(bill_data):
         "外交・国際": "foreign_affairs",
         "予算・決算": "budget",
         "経済・産業": "economy",
-        "その他": "other"
+        "その他": "other",
     }
 
     # ステータスマッピング
@@ -95,7 +87,7 @@ def bill_to_airtable_fields(bill_data):
         "採決待ち": "pending_vote",
         "成立": "passed",
         "否決": "rejected",
-        "": "backlog"  # 空の場合はbacklog
+        "": "backlog",  # 空の場合はbacklog
     }
 
     fields = {
@@ -108,7 +100,7 @@ def bill_to_airtable_fields(bill_data):
         "Bill_Type": bill_data["submitter"],
         "Diet_URL": bill_data["url"],
         "Created_At": datetime.now().isoformat(),
-        "Updated_At": datetime.now().isoformat()
+        "Updated_At": datetime.now().isoformat(),
     }
 
     # オプショナルフィールド
@@ -128,8 +120,8 @@ async def integrate_bills_to_airtable():
     print()
 
     # 環境変数確認
-    api_key = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    api_key = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not api_key or not base_id:
         print("❌ 環境変数が設定されていません:")
@@ -144,7 +136,7 @@ async def integrate_bills_to_airtable():
     try:
         # 1. スクレイピング実行
         print("📄 Step 1: 参議院サイトから法案データをスクレイピング")
-        sys.path.insert(0, 'src')
+        sys.path.insert(0, "src")
         from scraper.diet_scraper import DietScraper
 
         scraper = DietScraper(enable_resilience=False)
@@ -155,12 +147,15 @@ async def integrate_bills_to_airtable():
         # 2. Airtableクライアント初期化
         print("🔗 Step 2: Airtable接続初期化")
         airtable = SimpleAirtableClient(
-            api_key, base_id, "Bills%20%28%E6%B3%95%E6%A1%88%29")
+            api_key, base_id, "Bills%20%28%E6%B3%95%E6%A1%88%29"
+        )
 
         # 既存レコード確認
         existing_records = airtable.list_records(max_records=10)
         if existing_records:
-            print(f"📊 既存レコード数: {len(existing_records.get('records', []))}件確認")
+            print(
+                f"📊 既存レコード数: {len(existing_records.get('records', []))}件確認"
+            )
         print()
 
         # 3. データ統合実行
@@ -176,15 +171,20 @@ async def integrate_bills_to_airtable():
             try:
                 # BillDataオブジェクトを辞書に変換
                 bill_dict = {
-                    'bill_id': bill.bill_id,
-                    'title': bill.title,
-                    'status': bill.status,
-                    'stage': bill.stage,
-                    'submitter': bill.submitter,
-                    'category': bill.category,
-                    'url': bill.url,
-                    'summary': bill.summary,
-                    'submission_date': bill.submission_date.isoformat() if bill.submission_date else None}
+                    "bill_id": bill.bill_id,
+                    "title": bill.title,
+                    "status": bill.status,
+                    "stage": bill.stage,
+                    "submitter": bill.submitter,
+                    "category": bill.category,
+                    "url": bill.url,
+                    "summary": bill.summary,
+                    "submission_date": (
+                        bill.submission_date.isoformat()
+                        if bill.submission_date
+                        else None
+                    ),
+                }
 
                 # Airtableフィールド形式に変換
                 airtable_fields = bill_to_airtable_fields(bill_dict)
@@ -194,7 +194,7 @@ async def integrate_bills_to_airtable():
 
                 if result:
                     successful_integrations += 1
-                    record_id = result.get('id', 'Unknown')
+                    record_id = result.get("id", "Unknown")
                     print(f"  {i+1:2d}/20: ✅ {bill.bill_id} → {record_id}")
                 else:
                     failed_integrations += 1
@@ -212,7 +212,8 @@ async def integrate_bills_to_airtable():
         print(f"  ✅ 成功: {successful_integrations}件")
         print(f"  ❌ 失敗: {failed_integrations}件")
         print(
-            f"  📈 成功率: {successful_integrations/(successful_integrations+failed_integrations)*100:.1f}%")
+            f"  📈 成功率: {successful_integrations/(successful_integrations+failed_integrations)*100:.1f}%"
+        )
         print()
 
         if successful_integrations > 0:
@@ -227,6 +228,7 @@ async def integrate_bills_to_airtable():
     except Exception as e:
         print(f"❌ 統合エラー: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -243,6 +245,7 @@ async def main():
 
     success = await integrate_bills_to_airtable()
     return 0 if success else 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

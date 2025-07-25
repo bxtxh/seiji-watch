@@ -27,11 +27,8 @@ class APITester:
             await self.session.close()
 
     async def test_endpoint(
-            self,
-            method: str,
-            endpoint: str,
-            data: dict = None,
-            params: dict = None) -> dict:
+        self, method: str, endpoint: str, data: dict = None, params: dict = None
+    ) -> dict:
         """Test an API endpoint and return the response."""
         url = f"{self.base_url}{endpoint}"
         headers = {"Content-Type": "application/json"}
@@ -44,11 +41,7 @@ class APITester:
 
         try:
             async with self.session.request(
-                method=method,
-                url=url,
-                json=data,
-                params=params,
-                headers=headers
+                method=method, url=url, json=data, params=params, headers=headers
             ) as response:
                 status = response.status
                 content = await response.json()
@@ -97,27 +90,31 @@ async def test_bills_api():
             if result["success"]:
                 bill = result["data"]
                 print(
-                    f"   Retrieved bill: {bill.get('fields', {}).get('Name', 'Unknown')}")
+                    f"   Retrieved bill: {bill.get('fields', {}).get('Name', 'Unknown')}"
+                )
             else:
                 print(f"   ❌ Failed to get bill {bill_id}")
 
         # Test 3: Get bill with policy categories
         print("\n🔗 Test 3: Get bill with policy categories")
         if bill_id:
-            result = await tester.test_endpoint("GET", f"/api/bills/{bill_id}", params={"include_policy_categories": True})
+            result = await tester.test_endpoint(
+                "GET",
+                f"/api/bills/{bill_id}",
+                params={"include_policy_categories": True},
+            )
             if result["success"]:
                 bill = result["data"]
                 policy_categories = bill.get("policy_categories", [])
                 print(
-                    f"   Bill has {len(policy_categories)} policy category relationships")
+                    f"   Bill has {len(policy_categories)} policy category relationships"
+                )
                 for i, rel in enumerate(policy_categories[:3]):  # Show first 3
-                    category_name = rel.get(
-                        "category",
-                        {}).get(
-                        "fields",
-                        {}).get(
-                        "Title_JA",
-                        "Unknown")
+                    category_name = (
+                        rel.get("category", {})
+                        .get("fields", {})
+                        .get("Title_JA", "Unknown")
+                    )
                     confidence = rel.get("confidence_score", 0.0)
                     print(f"   {i+1}. {category_name} (confidence: {confidence})")
             else:
@@ -125,11 +122,10 @@ async def test_bills_api():
 
         # Test 4: Search bills
         print("\n🔍 Test 4: Search bills")
-        search_data = {
-            "query": "予算",
-            "max_records": 5
-        }
-        result = await tester.test_endpoint("POST", "/api/bills/search", data=search_data)
+        search_data = {"query": "予算", "max_records": 5}
+        result = await tester.test_endpoint(
+            "POST", "/api/bills/search", data=search_data
+        )
         if result["success"]:
             search_result = result["data"]
             bills = search_result.get("results", [])
@@ -140,16 +136,18 @@ async def test_bills_api():
 
         # Test 5: List issue categories (for creating relationships)
         print("\n📂 Test 5: List issue categories")
-        result = await tester.test_endpoint("GET", "/api/issues/categories", params={"max_records": 10})
+        result = await tester.test_endpoint(
+            "GET", "/api/issues/categories", params={"max_records": 10}
+        )
         if result["success"]:
             categories = result["data"]
             print(f"   Found {len(categories)} issue categories")
             if categories:
                 sample_category = categories[0]
                 category_id = sample_category.get("id", "")
-                category_name = sample_category.get(
-                    "fields", {}).get(
-                    "Title_JA", "Unknown")
+                category_name = sample_category.get("fields", {}).get(
+                    "Title_JA", "Unknown"
+                )
                 print(f"   Sample category: {category_name} (ID: {category_id})")
 
                 # Test 6: Create Bills-PolicyCategory relationship
@@ -160,9 +158,13 @@ async def test_bills_api():
                         "policy_category_id": category_id,
                         "confidence_score": 0.9,
                         "is_manual": True,
-                        "notes": "Test relationship created by API test script"
+                        "notes": "Test relationship created by API test script",
                     }
-                    result = await tester.test_endpoint("POST", f"/api/bills/{bill_id}/policy-categories", data=relationship_data)
+                    result = await tester.test_endpoint(
+                        "POST",
+                        f"/api/bills/{bill_id}/policy-categories",
+                        data=relationship_data,
+                    )
                     if result["success"]:
                         relationship = result["data"]["relationship"]
                         relationship_id = relationship.get("id", "")
@@ -170,24 +172,33 @@ async def test_bills_api():
 
                         # Test 7: Get bill policy categories
                         print("\n📋 Test 7: Get bill policy categories")
-                        result = await tester.test_endpoint("GET", f"/api/bills/{bill_id}/policy-categories")
+                        result = await tester.test_endpoint(
+                            "GET", f"/api/bills/{bill_id}/policy-categories"
+                        )
                         if result["success"]:
                             policy_data = result["data"]
                             policy_categories = policy_data.get("policy_categories", [])
                             print(
-                                f"   Bill has {len(policy_categories)} policy category relationships")
+                                f"   Bill has {len(policy_categories)} policy category relationships"
+                            )
 
                             # Test 8: Update relationship (if we have one)
                             if relationship_id:
-                                print("\n📝 Test 8: Update Bills-PolicyCategory relationship")
+                                print(
+                                    "\n📝 Test 8: Update Bills-PolicyCategory relationship"
+                                )
                                 update_data = {
                                     "bill_id": bill_id,
                                     "policy_category_id": category_id,
                                     "confidence_score": 0.95,
                                     "is_manual": True,
-                                    "notes": "Updated test relationship"
+                                    "notes": "Updated test relationship",
                                 }
-                                result = await tester.test_endpoint("PUT", f"/api/bills/{bill_id}/policy-categories/{relationship_id}", data=update_data)
+                                result = await tester.test_endpoint(
+                                    "PUT",
+                                    f"/api/bills/{bill_id}/policy-categories/{relationship_id}",
+                                    data=update_data,
+                                )
                                 if result["success"]:
                                     print("   ✅ Relationship updated successfully")
                                 else:
@@ -195,8 +206,13 @@ async def test_bills_api():
 
                             # Test 9: Delete relationship (cleanup)
                             if relationship_id:
-                                print("\n🗑️  Test 9: Delete Bills-PolicyCategory relationship")
-                                result = await tester.test_endpoint("DELETE", f"/api/bills/{bill_id}/policy-categories/{relationship_id}")
+                                print(
+                                    "\n🗑️  Test 9: Delete Bills-PolicyCategory relationship"
+                                )
+                                result = await tester.test_endpoint(
+                                    "DELETE",
+                                    f"/api/bills/{bill_id}/policy-categories/{relationship_id}",
+                                )
                                 if result["success"]:
                                     print("   ✅ Relationship deleted successfully")
                                 else:
@@ -206,7 +222,9 @@ async def test_bills_api():
                     else:
                         print("   ❌ Failed to create relationship")
                 else:
-                    print("   ⚠️  Skipping relationship tests - missing bill_id or category_id")
+                    print(
+                        "   ⚠️  Skipping relationship tests - missing bill_id or category_id"
+                    )
             else:
                 print("   No categories found - may need to add test data")
         else:
@@ -214,12 +232,15 @@ async def test_bills_api():
 
         # Test 10: Get statistics
         print("\n📊 Test 10: Get Bills-PolicyCategory statistics")
-        result = await tester.test_endpoint("GET", "/api/bills/statistics/policy-categories")
+        result = await tester.test_endpoint(
+            "GET", "/api/bills/statistics/policy-categories"
+        )
         if result["success"]:
             stats = result["data"]
             print(f"   Total relationships: {stats.get('total_relationships', 0)}")
             print(
-                f"   Confidence distribution: {stats.get('confidence_distribution', {})}")
+                f"   Confidence distribution: {stats.get('confidence_distribution', {})}"
+            )
             print(f"   Manual vs Automatic: {stats.get('manual_vs_automatic', {})}")
         else:
             print("   ❌ Failed to get statistics")
@@ -250,7 +271,9 @@ async def main():
                     return 1
     except Exception as e:
         print(f"❌ Cannot connect to API server: {e}")
-        print("   Make sure the API server is running with: python -m uvicorn src.main:app --reload")
+        print(
+            "   Make sure the API server is running with: python -m uvicorn src.main:app --reload"
+        )
         return 1
 
     # Run the tests
@@ -260,8 +283,10 @@ async def main():
     except Exception as e:
         print(f"❌ Test suite failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

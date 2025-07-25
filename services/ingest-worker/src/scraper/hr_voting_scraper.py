@@ -34,9 +34,11 @@ class HouseOfRepresentativesVotingScraper:
 
     def __init__(self, enable_resilience: bool = True):
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
+            }
+        )
 
         self.logger = logging.getLogger(__name__)
         self.pdf_processor = PDFProcessor()
@@ -59,7 +61,7 @@ class HouseOfRepresentativesVotingScraper:
                 requests_per_second=0.3,  # Very conservative: 1 request per 3+ seconds
                 burst_size=2,  # Small burst allowance
                 cooldown_seconds=20.0,  # Longer cooldown
-                respect_retry_after=True
+                respect_retry_after=True,
             )
 
             # Configure caching
@@ -68,14 +70,14 @@ class HouseOfRepresentativesVotingScraper:
                 cache_dir="/tmp/hr_scraper_cache",
                 max_age_hours=12,  # Shorter cache for HR data
                 max_size_mb=100,
-                hash_algorithm="sha256"
+                hash_algorithm="sha256",
             )
 
             self._resilient_scraper = ResilientScraper(
                 rate_limit_config=rate_config,
                 cache_config=cache_config,
                 max_concurrent_requests=2,  # Very conservative
-                request_timeout=45  # Longer timeout for PDF downloads
+                request_timeout=45,  # Longer timeout for PDF downloads
             )
 
             self.logger.info("House of Representatives resilient scraper initialized")
@@ -85,9 +87,7 @@ class HouseOfRepresentativesVotingScraper:
             self._resilient_scraper = None
 
     async def fetch_recent_voting_sessions(
-        self,
-        days_back: int = 30,
-        session_numbers: list[int] | None = None
+        self, days_back: int = 30, session_numbers: list[int] | None = None
     ) -> list[PDFVotingSession]:
         """
         Fetch recent voting sessions from House of Representatives
@@ -119,13 +119,18 @@ class HouseOfRepresentativesVotingScraper:
 
             if self._resilient_scraper:
                 # Use resilient scraper for concurrent processing
-                voting_sessions = await self._process_pdfs_with_resilience(pdf_urls, member_names)
+                voting_sessions = await self._process_pdfs_with_resilience(
+                    pdf_urls, member_names
+                )
             else:
                 # Fallback to sequential processing
-                voting_sessions = await self._process_pdfs_sequential(pdf_urls, member_names)
+                voting_sessions = await self._process_pdfs_sequential(
+                    pdf_urls, member_names
+                )
 
             self.logger.info(
-                f"Successfully processed {len(voting_sessions)} voting sessions")
+                f"Successfully processed {len(voting_sessions)} voting sessions"
+            )
             return voting_sessions
 
         except Exception as e:
@@ -133,9 +138,7 @@ class HouseOfRepresentativesVotingScraper:
             return []
 
     async def _discover_voting_pdf_urls(
-        self,
-        days_back: int,
-        session_numbers: list[int] | None = None
+        self, days_back: int, session_numbers: list[int] | None = None
     ) -> list[str]:
         """Discover PDF URLs containing voting data"""
         pdf_urls = []
@@ -168,10 +171,12 @@ class HouseOfRepresentativesVotingScraper:
 
                     if content:
                         page_pdfs = self._extract_pdf_urls_from_page(
-                            content, search_url, days_back)
+                            content, search_url, days_back
+                        )
                         pdf_urls.extend(page_pdfs)
                         self.logger.debug(
-                            f"Found {len(page_pdfs)} PDFs from {search_url}")
+                            f"Found {len(page_pdfs)} PDFs from {search_url}"
+                        )
 
                 except Exception as e:
                     self.logger.warning(f"Failed to search {search_url}: {e}")
@@ -187,25 +192,22 @@ class HouseOfRepresentativesVotingScraper:
             return []
 
     def _extract_pdf_urls_from_page(
-        self,
-        html_content: str,
-        base_url: str,
-        days_back: int
+        self, html_content: str, base_url: str, days_back: int
     ) -> list[str]:
         """Extract PDF URLs from HTML page"""
         pdf_urls = []
 
         try:
-            soup = BeautifulSoup(html_content, 'html.parser')
+            soup = BeautifulSoup(html_content, "html.parser")
 
             # Look for PDF links
-            pdf_links = soup.find_all('a', href=re.compile(r'\.pdf$', re.IGNORECASE))
+            pdf_links = soup.find_all("a", href=re.compile(r"\.pdf$", re.IGNORECASE))
 
             cutoff_date = datetime.now() - timedelta(days=days_back)
 
             for link in pdf_links:
                 try:
-                    href = link.get('href')
+                    href = link.get("href")
                     if not href:
                         continue
 
@@ -216,9 +218,11 @@ class HouseOfRepresentativesVotingScraper:
                     link_text = link.get_text(strip=True).lower()
                     href_lower = href.lower()
 
-                    voting_keywords = ['採決', '表決', 'vote', '議決', '投票']
+                    voting_keywords = ["採決", "表決", "vote", "議決", "投票"]
                     if any(
-                            keyword in link_text or keyword in href_lower for keyword in voting_keywords):
+                        keyword in link_text or keyword in href_lower
+                        for keyword in voting_keywords
+                    ):
 
                         # Try to extract date from link text or URL
                         if self._is_recent_enough(link_text, href, cutoff_date):
@@ -235,25 +239,26 @@ class HouseOfRepresentativesVotingScraper:
             self.logger.error(f"Failed to extract PDF URLs from page: {e}")
             return []
 
-    def _is_recent_enough(self, link_text: str, href: str,
-                          cutoff_date: datetime) -> bool:
+    def _is_recent_enough(
+        self, link_text: str, href: str, cutoff_date: datetime
+    ) -> bool:
         """Check if PDF is recent enough based on text/URL patterns"""
         try:
             # Look for date patterns in link text and URL
             text_to_check = f"{link_text} {href}"
 
             date_patterns = [
-                r'令和(\d+)年(\d+)月(\d+)日',
-                r'(\d{4})年(\d+)月(\d+)日',
-                r'(\d{4})-(\d{1,2})-(\d{1,2})',
-                r'(\d{4})(\d{2})(\d{2})',
+                r"令和(\d+)年(\d+)月(\d+)日",
+                r"(\d{4})年(\d+)月(\d+)日",
+                r"(\d{4})-(\d{1,2})-(\d{1,2})",
+                r"(\d{4})(\d{2})(\d{2})",
             ]
 
             for pattern in date_patterns:
                 matches = re.findall(pattern, text_to_check)
                 for match in matches:
                     try:
-                        if pattern.startswith('令和'):
+                        if pattern.startswith("令和"):
                             year = int(match[0]) + 2018
                             month = int(match[1])
                             day = int(match[2])
@@ -279,14 +284,19 @@ class HouseOfRepresentativesVotingScraper:
         """Get list of current House of Representatives members"""
         try:
             # Check cache first
-            if (self._member_names_cache and self._cache_expiry and
-                    datetime.now() < self._cache_expiry):
+            if (
+                self._member_names_cache
+                and self._cache_expiry
+                and datetime.now() < self._cache_expiry
+            ):
                 return self._member_names_cache
 
             self.logger.info("Fetching current HR member list")
 
             # URL for current members list
-            members_url = f"{self.BASE_URL}/internet/itdb_iinkai.nsf/html/members/list.html"
+            members_url = (
+                f"{self.BASE_URL}/internet/itdb_iinkai.nsf/html/members/list.html"
+            )
 
             if self._resilient_scraper:
                 async with self._resilient_scraper as scraper:
@@ -305,7 +315,9 @@ class HouseOfRepresentativesVotingScraper:
 
             # Cache the results
             self._member_names_cache = member_names
-            self._cache_expiry = datetime.now() + timedelta(hours=24)  # Cache for 24 hours
+            self._cache_expiry = datetime.now() + timedelta(
+                hours=24
+            )  # Cache for 24 hours
 
             self.logger.info(f"Found {len(member_names)} HR members")
             return member_names
@@ -319,13 +331,13 @@ class HouseOfRepresentativesVotingScraper:
         member_names = []
 
         try:
-            soup = BeautifulSoup(html_content, 'html.parser')
+            soup = BeautifulSoup(html_content, "html.parser")
 
             # Look for various patterns where member names might appear
             name_patterns = [
-                soup.find_all('td', class_='member-name'),
-                soup.find_all('span', class_='name'),
-                soup.find_all('a', href=re.compile(r'member|議員')),
+                soup.find_all("td", class_="member-name"),
+                soup.find_all("span", class_="name"),
+                soup.find_all("a", href=re.compile(r"member|議員")),
             ]
 
             for pattern_results in name_patterns:
@@ -334,7 +346,10 @@ class HouseOfRepresentativesVotingScraper:
 
                     # Clean up the name
                     name = re.sub(
-                        r'[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF]', '', name_text)
+                        r"[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\u3400-\u4DBF]",
+                        "",
+                        name_text,
+                    )
 
                     # Validate name (should be 2-4 Japanese characters typically)
                     if 2 <= len(name) <= 6 and name not in member_names:
@@ -345,7 +360,8 @@ class HouseOfRepresentativesVotingScraper:
                 # Look for patterns that look like Japanese names
                 all_text = soup.get_text()
                 potential_names = re.findall(
-                    r'[\u4E00-\u9FAF]{2,4}[\u3040-\u309F]*[\u4E00-\u9FAF]*', all_text)
+                    r"[\u4E00-\u9FAF]{2,4}[\u3040-\u309F]*[\u4E00-\u9FAF]*", all_text
+                )
 
                 for name in potential_names:
                     if 2 <= len(name) <= 6:
@@ -359,9 +375,7 @@ class HouseOfRepresentativesVotingScraper:
             return []
 
     async def _process_pdfs_with_resilience(
-        self,
-        pdf_urls: list[str],
-        member_names: list[str]
+        self, pdf_urls: list[str], member_names: list[str]
     ) -> list[PDFVotingSession]:
         """Process PDFs using resilient scraper"""
         voting_sessions = []
@@ -385,8 +399,7 @@ class HouseOfRepresentativesVotingScraper:
 
             # Process all PDFs concurrently
             results = await asyncio.gather(
-                *[process_single_pdf(url) for url in pdf_urls],
-                return_exceptions=True
+                *[process_single_pdf(url) for url in pdf_urls], return_exceptions=True
             )
 
             # Collect successful results
@@ -403,9 +416,7 @@ class HouseOfRepresentativesVotingScraper:
             return []
 
     async def _process_pdfs_sequential(
-        self,
-        pdf_urls: list[str],
-        member_names: list[str]
+        self, pdf_urls: list[str], member_names: list[str]
     ) -> list[PDFVotingSession]:
         """Process PDFs sequentially as fallback"""
         voting_sessions = []
@@ -437,9 +448,13 @@ class HouseOfRepresentativesVotingScraper:
         """Get scraper statistics"""
         stats = {
             "pdf_processor": self.pdf_processor.get_processing_statistics(),
-            "member_names_cached": len(
-                self._member_names_cache) if self._member_names_cache else 0,
-            "cache_expires": self._cache_expiry.isoformat() if self._cache_expiry else None}
+            "member_names_cached": (
+                len(self._member_names_cache) if self._member_names_cache else 0
+            ),
+            "cache_expires": (
+                self._cache_expiry.isoformat() if self._cache_expiry else None
+            ),
+        }
 
         if self._resilient_scraper:
             stats["resilient_scraper"] = self._resilient_scraper.get_statistics()

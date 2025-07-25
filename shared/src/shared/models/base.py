@@ -10,9 +10,7 @@ class BaseRecord(BaseModel):
     """Base class for all Airtable record models."""
 
     airtable_record_id: str | None = Field(None, description="Airtable record ID")
-    created_at: datetime | None = Field(
-        None, description="Record creation timestamp"
-    )
+    created_at: datetime | None = Field(None, description="Record creation timestamp")
     updated_at: datetime | None = Field(
         None, description="Record last update timestamp"
     )
@@ -55,9 +53,7 @@ class WeaviateEmbedding(BaseModel):
     weaviate_object_id: str | None = Field(None, description="Weaviate object ID")
     airtable_record_id: str = Field(..., description="Corresponding Airtable record ID")
     content: str = Field(..., description="Text content for embedding")
-    embedding_vector: list[float] | None = Field(
-        None, description="Vector embedding"
-    )
+    embedding_vector: list[float] | None = Field(None, description="Vector embedding")
     metadata: dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata"
     )

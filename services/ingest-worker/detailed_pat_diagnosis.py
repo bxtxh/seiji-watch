@@ -18,9 +18,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -30,8 +30,8 @@ def detailed_pat_analysis():
     print("🔬 PAT詳細分析")
     print("=" * 50)
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     if not pat:
         print("❌ AIRTABLE_PAT環境変数なし")
@@ -48,7 +48,7 @@ def detailed_pat_analysis():
     print(f"  前後3文字: '[{pat[:3]}...{pat[-3:]}]'")
 
     # バイト表現で隠れた文字を確認
-    pat_bytes = pat.encode('utf-8')
+    pat_bytes = pat.encode("utf-8")
     print(f"  バイト長: {len(pat_bytes)} bytes")
     print(f"  先頭5バイト: {pat_bytes[:5]}")
     print(f"  末尾5バイト: {pat_bytes[-5:]}")
@@ -60,12 +60,12 @@ def detailed_pat_analysis():
     print(f"  末尾空白: {trailing_spaces}文字")
 
     # 改行文字チェック
-    has_newlines = '\n' in pat or '\r' in pat
+    has_newlines = "\n" in pat or "\r" in pat
     print(f"  改行文字含有: {has_newlines}")
 
     if has_newlines:
-        newline_positions = [i for i, c in enumerate(pat) if c == '\n']
-        carriage_positions = [i for i, c in enumerate(pat) if c == '\r']
+        newline_positions = [i for i, c in enumerate(pat) if c == "\n"]
+        carriage_positions = [i for i, c in enumerate(pat) if c == "\r"]
         print(f"  \\n位置: {newline_positions}")
         print(f"  \\r位置: {carriage_positions}")
 
@@ -99,7 +99,7 @@ def test_clean_authentication(clean_pat, clean_base_id):
 
     headers = {
         "Authorization": f"Bearer {clean_pat}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     print("🌐 リクエスト詳細:")
@@ -116,14 +116,14 @@ def test_clean_authentication(clean_pat, clean_base_id):
 
         if response.status_code == 200:
             data = response.json()
-            tables = data.get('tables', [])
+            tables = data.get("tables", [])
             print("  ✅ 認証成功!")
             print(f"  テーブル数: {len(tables)}")
 
             print("\n📋 利用可能テーブル:")
             for table in tables:
-                table_id = table.get('id', 'Unknown')
-                table_name = table.get('name', 'Unknown')
+                table_id = table.get("id", "Unknown")
+                table_name = table.get("name", "Unknown")
                 print(f"    - {table_name} (ID: {table_id})")
 
             return True

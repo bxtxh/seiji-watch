@@ -10,7 +10,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def test_direct_airtable_access():
@@ -25,10 +25,7 @@ async def test_direct_airtable_access():
         print(f"  BASE_ID found: {'Yes' if base_id else 'No'}")
         return False
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
@@ -42,7 +39,7 @@ async def test_direct_airtable_access():
         ("IssueTags (課題タグ)", "🏷️"),
         ("Parties (政党)", "🏛️"),
         ("Meetings (会議)", "📅"),
-        ("IssueCategories (課題カテゴリ)", "📂")
+        ("IssueCategories (課題カテゴリ)", "📂"),
     ]
 
     async with aiohttp.ClientSession() as session:
@@ -60,14 +57,14 @@ async def test_direct_airtable_access():
                 async with session.get(
                     f"{base_url}/{table_name}",
                     headers=headers,
-                    params={"maxRecords": 3}
+                    params={"maxRecords": 3},
                 ) as response:
 
                     print(f"  Status: {response.status}")
 
                     if response.status == 200:
                         data = await response.json()
-                        records = data.get('records', [])
+                        records = data.get("records", [])
                         count = len(records)
                         total_records += count
                         success_count += 1
@@ -76,9 +73,10 @@ async def test_direct_airtable_access():
 
                         if count > 0:
                             sample = records[0]
-                            fields = list(sample['fields'].keys())
+                            fields = list(sample["fields"].keys())
                             print(
-                                f"  Fields: {fields[:3]}{'...' if len(fields) > 3 else ''}")
+                                f"  Fields: {fields[:3]}{'...' if len(fields) > 3 else ''}"
+                            )
 
                     elif response.status == 403:
                         print("  ❌ PERMISSION DENIED (403)")
@@ -102,27 +100,24 @@ async def test_direct_airtable_access():
             test_data = {
                 "fields": {
                     "Name": "TEST: Data Access Verification",
-                    "Notes": f"権限テスト - {asyncio.get_event_loop().time()}"
+                    "Notes": f"権限テスト - {asyncio.get_event_loop().time()}",
                 }
             }
 
             async with session.post(
-                f"{base_url}/Bills (法案)",
-                headers=headers,
-                json=test_data
+                f"{base_url}/Bills (法案)", headers=headers, json=test_data
             ) as response:
 
                 print(f"  Write Status: {response.status}")
 
                 if response.status == 200:
                     result = await response.json()
-                    record_id = result.get('id')
+                    record_id = result.get("id")
                     print(f"  ✅ WRITE SUCCESS: Created record {record_id}")
 
                     # Clean up test record
                     async with session.delete(
-                        f"{base_url}/Bills (法案)/{record_id}",
-                        headers=headers
+                        f"{base_url}/Bills (法案)/{record_id}", headers=headers
                     ) as delete_response:
                         if delete_response.status == 200:
                             print("  🗑️  Test record cleaned up")
@@ -175,6 +170,7 @@ async def main():
         print("🔧 需要进一步权限配置")
 
     return result
+
 
 if __name__ == "__main__":
     result = asyncio.run(main())

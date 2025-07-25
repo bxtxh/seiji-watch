@@ -10,8 +10,7 @@ from fastapi.responses import JSONResponse
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ app = FastAPI(
     description="API Gateway for Diet Issue Tracker MVP",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS middleware
@@ -30,14 +29,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
-        "http://localhost:8080"],
+        "http://localhost:8080",
+    ],
     allow_credentials=False,
-    allow_methods=[
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=[
         "accept",
         "accept-language",
@@ -46,9 +41,11 @@ app.add_middleware(
         "content-type",
         "x-requested-with",
         "x-csrf-token",
-        "x-request-id"],
+        "x-request-id",
+    ],
     expose_headers=["X-Total-Count"],
-    max_age=600)
+    max_age=600,
+)
 
 # Root endpoint
 
@@ -59,8 +56,9 @@ async def root():
     return {
         "message": "Diet Issue Tracker API Gateway - MVP Demo",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
+
 
 # Health check endpoint
 
@@ -72,8 +70,9 @@ async def health_check():
         "status": "healthy",
         "service": "api-gateway",
         "version": "1.0.0",
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
+
 
 # Mock Issue Category API endpoints
 
@@ -92,8 +91,8 @@ async def get_categories(max_records: int = 100):
                     "Title_JA": "マクロ経済学",
                     "Title_EN": "Macroeconomics",
                     "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_civil_rights",
@@ -103,8 +102,8 @@ async def get_categories(max_records: int = 100):
                     "Title_JA": "市民権・自由・少数者問題",
                     "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
                     "Summary_150JA": "基本的人権、差別問題、個人の自由、少数者の権利保護に関する政策分野",
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l1_health",
@@ -114,9 +113,9 @@ async def get_categories(max_records: int = 100):
                     "Title_JA": "健康",
                     "Title_EN": "Health",
                     "Summary_150JA": "医療制度、公衆衛生、健康保険、医療研究に関する政策分野",
-                    "Is_Seed": True
-                }
-            }
+                    "Is_Seed": True,
+                },
+            },
         ]
         return mock_categories[:max_records]
     except Exception as e:
@@ -137,8 +136,8 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "マクロ経済学",
                         "Title_EN": "Macroeconomics",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_civil_rights",
@@ -147,8 +146,8 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "市民権・自由・少数者問題",
                         "Title_EN": "Civil Rights, Minority Issues and Civil Liberties",
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l1_health",
@@ -157,9 +156,9 @@ async def get_category_tree():
                         "Layer": "L1",
                         "Title_JA": "健康",
                         "Title_EN": "Health",
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
             "L2": [
                 {
@@ -170,8 +169,8 @@ async def get_category_tree():
                         "Title_JA": "国内マクロ経済問題",
                         "Title_EN": "General Domestic Macroeconomic Issues",
                         "Parent_Category": ["rec_l1_macroeconomics"],
-                        "Is_Seed": True
-                    }
+                        "Is_Seed": True,
+                    },
                 },
                 {
                     "id": "rec_l2_general_civil_rights",
@@ -181,11 +180,11 @@ async def get_category_tree():
                         "Title_JA": "一般的市民権・自由",
                         "Title_EN": "General Civil Rights and Liberties",
                         "Parent_Category": ["rec_l1_civil_rights"],
-                        "Is_Seed": True
-                    }
-                }
+                        "Is_Seed": True,
+                    },
+                },
             ],
-            "L3": []
+            "L3": [],
         }
     except Exception as e:
         logger.error(f"Failed to get category tree: {e}")
@@ -205,7 +204,9 @@ async def get_category_detail(category_id: str):
                 "Title_JA": "マクロ経済学",
                 "Title_EN": "Macroeconomics",
                 "Summary_150JA": "経済全体の動向、財政政策、金融政策、経済成長に関する政策分野です。GDP、インフレ、雇用率などの主要経済指標と関連する政策を含みます。",
-                "Is_Seed": True}}
+                "Is_Seed": True,
+            },
+        }
         return mock_category
     except Exception as e:
         logger.error(f"Failed to get category {category_id}: {e}")
@@ -226,8 +227,8 @@ async def get_category_children(category_id: str):
                     "Title_JA": "国内マクロ経済問題",
                     "Title_EN": "General Domestic Macroeconomic Issues",
                     "Parent_Category": [category_id],
-                    "Is_Seed": True
-                }
+                    "Is_Seed": True,
+                },
             },
             {
                 "id": "rec_l2_inflation_prices",
@@ -237,9 +238,9 @@ async def get_category_children(category_id: str):
                     "Title_JA": "インフレ・物価・デフレ",
                     "Title_EN": "Inflation, Prices, and Deflation",
                     "Parent_Category": [category_id],
-                    "Is_Seed": True
-                }
-            }
+                    "Is_Seed": True,
+                },
+            },
         ]
         return mock_children
     except Exception as e:
@@ -259,11 +260,13 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Bill_Number": f"第213回国会第{i}号",
                     "Title": f"経済政策関連法案{i}",
                     "Summary": f"これは法案{i}の要約です。マクロ経済学に関する重要な政策が含まれています。",
-                    "Status": "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決",
+                    "Status": (
+                        "審議中" if i % 3 == 0 else "成立" if i % 3 == 1 else "否決"
+                    ),
                     "Category": "マクロ経済学",
                     "Diet_Session": "第213回国会",
-                    "Submitted_Date": "2024-01-15"
-                }
+                    "Submitted_Date": "2024-01-15",
+                },
             }
             for i in range(1, min(max_records + 1, 11))
         ]
@@ -271,13 +274,16 @@ async def get_bills(max_records: int = 100, category: str | None = None):
         # Filter by category if specified
         if category:
             mock_bills = [
-                bill for bill in mock_bills if category in bill["fields"].get(
-                    "Category", "")]
+                bill
+                for bill in mock_bills
+                if category in bill["fields"].get("Category", "")
+            ]
 
         return mock_bills
     except Exception as e:
         logger.error(f"Failed to get bills: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch bills")
+
 
 # Global exception handler
 
@@ -286,13 +292,12 @@ async def get_bills(max_records: int = 100, category: str | None = None):
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={"error": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"error": "Internal server error"})
+
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.getenv("PORT", 8081))  # Use 8081 to avoid conflicts
     # Bind to all interfaces (covers both IPv4 and IPv6)
     uvicorn.run(app, host="::", port=port)

@@ -16,7 +16,7 @@ from services.ingest_worker.src.migration.data_migration_service import (
 from services.ingest_worker.src.migration.data_quality_auditor import DataQualityAuditor
 
 # Add the project root to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
 
 def setup_logging():
@@ -25,17 +25,17 @@ def setup_logging():
 
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('migration.log')
-        ]
+            logging.FileHandler("migration.log"),
+        ],
     )
 
 
 def get_database_url() -> str:
     """Get database URL from environment or config"""
-    database_url = os.getenv('DATABASE_URL')
+    database_url = os.getenv("DATABASE_URL")
     if not database_url:
         # Default for development
         database_url = "postgresql://localhost:5432/seiji_watch"
@@ -57,7 +57,8 @@ def cmd_audit(args):
         print("\n📊 Quality Audit Summary:")
         print(f"  Total bills: {report.total_bills}")
         print(
-            f"  Overall quality score: {report.overall_metrics.overall_quality_score:.2f}")
+            f"  Overall quality score: {report.overall_metrics.overall_quality_score:.2f}"
+        )
         print(f"  Completeness rate: {report.overall_metrics.completeness_rate:.2f}")
         print(f"  Accuracy rate: {report.overall_metrics.accuracy_rate:.2f}")
         print(f"  Issues found: {len(report.issues)}")
@@ -84,7 +85,7 @@ def cmd_audit(args):
             exported = auditor.export_report(report, args.format)
             output_file = f"quality_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{args.format}"
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(exported, f, indent=2, ensure_ascii=False, default=str)
 
             print(f"\n📄 Report exported to: {output_file}")
@@ -105,7 +106,7 @@ def cmd_plan(args):
 
     try:
         # Create migration plan
-        target_bills = args.bills.split(',') if args.bills else None
+        target_bills = args.bills.split(",") if args.bills else None
         plan = service.create_migration_plan(target_bills)
 
         # Display plan summary
@@ -137,29 +138,29 @@ def cmd_plan(args):
         # Export plan if requested
         if args.export:
             plan_data = {
-                'plan_id': plan.plan_id,
-                'created_at': plan.created_at.isoformat(),
-                'total_bills': plan.total_bills,
-                'total_tasks': plan.total_tasks,
-                'estimated_time_hours': plan.estimated_time_hours,
-                'priority_breakdown': plan.priority_breakdown,
-                'phases': [phase.value for phase in plan.phases],
-                'completion_tasks': [
+                "plan_id": plan.plan_id,
+                "created_at": plan.created_at.isoformat(),
+                "total_bills": plan.total_bills,
+                "total_tasks": plan.total_tasks,
+                "estimated_time_hours": plan.estimated_time_hours,
+                "priority_breakdown": plan.priority_breakdown,
+                "phases": [phase.value for phase in plan.phases],
+                "completion_tasks": [
                     {
-                        'task_id': task.task_id,
-                        'bill_id': task.bill_id,
-                        'strategy': task.strategy.value,
-                        'priority': task.priority.value,
-                        'target_fields': task.target_fields,
-                        'description': task.description,
-                        'estimated_effort': task.estimated_effort
+                        "task_id": task.task_id,
+                        "bill_id": task.bill_id,
+                        "strategy": task.strategy.value,
+                        "priority": task.priority.value,
+                        "target_fields": task.target_fields,
+                        "description": task.description,
+                        "estimated_effort": task.estimated_effort,
                     }
                     for task in plan.completion_tasks
-                ]
+                ],
             }
 
             output_file = f"migration_plan_{plan.plan_id}.json"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(plan_data, f, indent=2, ensure_ascii=False, default=str)
 
             print(f"\n📄 Plan exported to: {output_file}")
@@ -181,7 +182,7 @@ def cmd_execute(args):
     try:
         # Load plan if provided
         if args.plan_file:
-            with open(args.plan_file, encoding='utf-8') as f:
+            with open(args.plan_file, encoding="utf-8") as f:
                 plan_data = json.load(f)
 
             # Recreate plan (simplified)
@@ -195,29 +196,29 @@ def cmd_execute(args):
             )
 
             plan = MigrationPlan(
-                plan_id=plan_data['plan_id'],
-                total_bills=plan_data['total_bills'],
-                total_tasks=plan_data['total_tasks'],
-                estimated_time_hours=plan_data['estimated_time_hours'],
-                priority_breakdown=plan_data['priority_breakdown'],
+                plan_id=plan_data["plan_id"],
+                total_bills=plan_data["total_bills"],
+                total_tasks=plan_data["total_tasks"],
+                estimated_time_hours=plan_data["estimated_time_hours"],
+                priority_breakdown=plan_data["priority_breakdown"],
                 phases=[],  # Will be set by service
                 completion_tasks=[
                     CompletionTask(
-                        bill_id=task['bill_id'],
-                        strategy=CompletionStrategy(task['strategy']),
-                        priority=CompletionPriority(task['priority']),
-                        target_fields=task['target_fields'],
-                        description=task['description'],
-                        estimated_effort=task['estimated_effort']
+                        bill_id=task["bill_id"],
+                        strategy=CompletionStrategy(task["strategy"]),
+                        priority=CompletionPriority(task["priority"]),
+                        target_fields=task["target_fields"],
+                        description=task["description"],
+                        estimated_effort=task["estimated_effort"],
                     )
-                    for task in plan_data['completion_tasks']
-                ]
+                    for task in plan_data["completion_tasks"]
+                ],
             )
 
             print(f"📋 Loaded plan: {plan.plan_id}")
         else:
             # Create new plan
-            target_bills = args.bills.split(',') if args.bills else None
+            target_bills = args.bills.split(",") if args.bills else None
             plan = service.create_migration_plan(target_bills)
             print(f"📋 Created new plan: {plan.plan_id}")
 
@@ -226,7 +227,7 @@ def cmd_execute(args):
             print(f"\n⚠️  About to execute migration with {plan.total_tasks} tasks")
             print(f"   Estimated time: {plan.estimated_time_hours:.2f} hours")
 
-            if input("Continue? (y/N): ").lower() != 'y':
+            if input("Continue? (y/N): ").lower() != "y":
                 print("Migration cancelled.")
                 return
 
@@ -257,7 +258,7 @@ def cmd_execute(args):
             for error in execution.errors:
                 print(f"  - {error}")
 
-        if execution.status.value == 'completed':
+        if execution.status.value == "completed":
             print("\n✅ Migration completed successfully!")
         else:
             print(f"\n⚠️  Migration ended with status: {execution.status.value}")
@@ -285,21 +286,22 @@ def cmd_status(args):
 
         # Show configuration
         print("\n⚙️  Configuration:")
-        for key, value in report['configuration'].items():
+        for key, value in report["configuration"].items():
             print(f"  {key}: {value}")
 
         # Show recent executions
-        if report['recent_executions']:
+        if report["recent_executions"]:
             print("\n📈 Recent executions:")
-            for exec_data in report['recent_executions']:
-                status = exec_data['status']
-                completed = exec_data['tasks_completed']
-                failed = exec_data['tasks_failed']
+            for exec_data in report["recent_executions"]:
+                status = exec_data["status"]
+                completed = exec_data["tasks_completed"]
+                failed = exec_data["tasks_failed"]
                 print(
-                    f"  {exec_data['execution_id']}: {status} ({completed} completed, {failed} failed)")
+                    f"  {exec_data['execution_id']}: {status} ({completed} completed, {failed} failed)"
+                )
 
         # Show statistics
-        stats = report['statistics']
+        stats = report["statistics"]
         print("\n📊 Statistics (last 30 days):")
         print(f"  Total migrations: {stats['total_migrations']}")
         print(f"  Successful migrations: {stats['successful_migrations']}")
@@ -347,13 +349,13 @@ def cmd_trend(args):
         print(f"\n📊 Quality Trend (last {days} days):")
         print(f"  Trend: {trend['trend']}")
 
-        if 'overall_average' in trend:
+        if "overall_average" in trend:
             print(f"  Overall average: {trend['overall_average']:.2f}")
 
-        if 'total_bills' in trend:
+        if "total_bills" in trend:
             print(f"  Total bills analyzed: {trend['total_bills']}")
 
-        if 'message' in trend:
+        if "message" in trend:
             print(f"  Message: {trend['message']}")
 
         print("\n✅ Quality trend analysis completed!")
@@ -387,63 +389,58 @@ Examples:
 
   # Show quality trend
   python migration_cli.py trend --days=30
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Audit command
-    audit_parser = subparsers.add_parser('audit', help='Run data quality audit')
+    audit_parser = subparsers.add_parser("audit", help="Run data quality audit")
     audit_parser.add_argument(
-        '--export',
-        action='store_true',
-        help='Export audit report')
+        "--export", action="store_true", help="Export audit report"
+    )
     audit_parser.add_argument(
-        '--format',
-        default='json',
-        choices=['json'],
-        help='Export format')
+        "--format", default="json", choices=["json"], help="Export format"
+    )
     audit_parser.set_defaults(func=cmd_audit)
 
     # Plan command
-    plan_parser = subparsers.add_parser('plan', help='Generate migration plan')
+    plan_parser = subparsers.add_parser("plan", help="Generate migration plan")
     plan_parser.add_argument(
-        '--bills',
-        help='Comma-separated list of bill IDs to target')
+        "--bills", help="Comma-separated list of bill IDs to target"
+    )
     plan_parser.add_argument(
-        '--export',
-        action='store_true',
-        help='Export migration plan')
+        "--export", action="store_true", help="Export migration plan"
+    )
     plan_parser.set_defaults(func=cmd_plan)
 
     # Execute command
-    execute_parser = subparsers.add_parser('execute', help='Execute migration')
-    execute_parser.add_argument('--plan-file', help='Path to migration plan file')
+    execute_parser = subparsers.add_parser("execute", help="Execute migration")
+    execute_parser.add_argument("--plan-file", help="Path to migration plan file")
     execute_parser.add_argument(
-        '--bills', help='Comma-separated list of bill IDs to target')
+        "--bills", help="Comma-separated list of bill IDs to target"
+    )
     execute_parser.add_argument(
-        '--yes',
-        action='store_true',
-        help='Skip confirmation prompt')
+        "--yes", action="store_true", help="Skip confirmation prompt"
+    )
     execute_parser.set_defaults(func=cmd_execute)
 
     # Status command
-    status_parser = subparsers.add_parser('status', help='Show migration system status')
+    status_parser = subparsers.add_parser("status", help="Show migration system status")
     status_parser.set_defaults(func=cmd_status)
 
     # Cleanup command
-    cleanup_parser = subparsers.add_parser('cleanup', help='Clean up old reports')
+    cleanup_parser = subparsers.add_parser("cleanup", help="Clean up old reports")
     cleanup_parser.add_argument(
-        '--days',
-        type=int,
-        default=90,
-        help='Report retention days')
+        "--days", type=int, default=90, help="Report retention days"
+    )
     cleanup_parser.set_defaults(func=cmd_cleanup)
 
     # Trend command
-    trend_parser = subparsers.add_parser('trend', help='Show quality trend')
-    trend_parser.add_argument('--days', type=int, default=30,
-                              help='Analysis period in days')
+    trend_parser = subparsers.add_parser("trend", help="Show quality trend")
+    trend_parser.add_argument(
+        "--days", type=int, default=30, help="Analysis period in days"
+    )
     trend_parser.set_defaults(func=cmd_trend)
 
     # Parse arguments
@@ -467,5 +464,5 @@ Examples:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

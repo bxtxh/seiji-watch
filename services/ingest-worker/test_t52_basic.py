@@ -16,7 +16,7 @@ def setup_logging():
     """Setup logging for test"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
 
@@ -50,11 +50,11 @@ async def test_diet_scraper_basic():
         # Test scraper statistics
         print("\n📈 Scraper Statistics:")
         stats = scraper.get_scraper_statistics()
-        traditional = stats.get('traditional_scraper', {})
+        traditional = stats.get("traditional_scraper", {})
         print(f"  ⏱️  Delay: {traditional.get('delay_seconds', 'N/A')}s")
         print(f"  🤖 Robots.txt: {traditional.get('robots_parser_enabled', 'N/A')}")
 
-        resilient = stats.get('resilient_scraper', {})
+        resilient = stats.get("resilient_scraper", {})
         print(f"  🛡️  Resilient scraper: {resilient.get('status', 'disabled')}")
 
         return True, len(bills)
@@ -62,6 +62,7 @@ async def test_diet_scraper_basic():
     except Exception as e:
         print(f"❌ Diet scraper test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False, 0
 
@@ -98,6 +99,7 @@ async def test_voting_scraper_basic():
     except Exception as e:
         print(f"❌ Voting scraper test failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False, 0
 
@@ -114,21 +116,22 @@ async def test_pipeline_configuration():
 
         # Simulate T52 target configuration
         start_date = datetime(2025, 6, 2)  # Monday
-        end_date = datetime(2025, 6, 8)    # Sunday
+        end_date = datetime(2025, 6, 8)  # Sunday
 
         config = {
-            'start_date': start_date,
-            'end_date': end_date,
-            'max_bills': 30,
-            'max_voting_sessions': 10,
-            'max_speeches': 50,
-            'enable_stt': False,
-            'enable_embeddings': True
+            "start_date": start_date,
+            "end_date": end_date,
+            "max_bills": 30,
+            "max_voting_sessions": 10,
+            "max_speeches": 50,
+            "enable_stt": False,
+            "enable_embeddings": True,
         }
 
         print("📅 Target Configuration:")
         print(
-            f"  📅 Date Range: {config['start_date'].date()} to {config['end_date'].date()}")
+            f"  📅 Date Range: {config['start_date'].date()} to {config['end_date'].date()}"
+        )
         print(f"  📊 Max Bills: {config['max_bills']}")
         print(f"  🗳️  Max Voting Sessions: {config['max_voting_sessions']}")
         print(f"  🎤 Max Speeches: {config['max_speeches']}")
@@ -186,7 +189,8 @@ async def test_rate_limiting():
         print(f"  ⏱️  Total time: {total_time:.2f}s")
         print(f"  ⏱️  Average delay: {total_time / 3:.2f}s per request")
         print(
-            f"  ✅ Rate limiting: {'Working' if total_time >= 2.0 else 'May be too fast'}")
+            f"  ✅ Rate limiting: {'Working' if total_time >= 2.0 else 'May be too fast'}"
+        )
 
         return True, total_time
 
@@ -202,11 +206,11 @@ async def simulate_t52_execution():
     print("=" * 60)
 
     results = {
-        'bills_collected': 0,
-        'voting_sessions_collected': 0,
-        'speeches_processed': 0,
-        'embeddings_generated': 0,
-        'errors': []
+        "bills_collected": 0,
+        "voting_sessions_collected": 0,
+        "speeches_processed": 0,
+        "embeddings_generated": 0,
+        "errors": [],
     }
 
     start_time = datetime.now()
@@ -216,41 +220,44 @@ async def simulate_t52_execution():
         print("📄 Phase 1: Bill Collection")
         diet_success, bill_count = await test_diet_scraper_basic()
         if diet_success:
-            results['bills_collected'] = min(bill_count, 30)  # Apply T52 limit
+            results["bills_collected"] = min(bill_count, 30)  # Apply T52 limit
             print(
-                f"  ✅ Collected {results['bills_collected']} bills (limited from {bill_count})")
+                f"  ✅ Collected {results['bills_collected']} bills (limited from {bill_count})"
+            )
         else:
-            results['errors'].append("Bill collection failed")
+            results["errors"].append("Bill collection failed")
             print("  ❌ Bill collection failed")
 
         # Phase 2: Voting data collection
         print("\n🗳️  Phase 2: Voting Data Collection")
         voting_success, session_count = await test_voting_scraper_basic()
         if voting_success:
-            results['voting_sessions_collected'] = min(
-                session_count, 10)  # Apply T52 limit
+            results["voting_sessions_collected"] = min(
+                session_count, 10
+            )  # Apply T52 limit
             print(
-                f"  ✅ Collected {results['voting_sessions_collected']} sessions (limited from {session_count})")
+                f"  ✅ Collected {results['voting_sessions_collected']} sessions (limited from {session_count})"
+            )
         else:
-            results['errors'].append("Voting data collection failed")
+            results["errors"].append("Voting data collection failed")
             print("  ❌ Voting data collection failed")
 
         # Phase 3: Speech processing (simulated)
         print("\n🎤 Phase 3: Speech Processing (Simulated)")
         print("  ⏭️  Skipped: STT disabled for cost control")
-        results['speeches_processed'] = 0
+        results["speeches_processed"] = 0
 
         # Phase 4: Embedding generation (simulated)
         print("\n🧠 Phase 4: Embedding Generation (Simulated)")
-        if results['bills_collected'] > 0:
+        if results["bills_collected"] > 0:
             # Simulate embedding generation
-            results['embeddings_generated'] = results['bills_collected']
+            results["embeddings_generated"] = results["bills_collected"]
             print(f"  ✅ Would generate {results['embeddings_generated']} embeddings")
         else:
             print("  ⏭️  Skipped: No bills to process")
 
     except Exception as e:
-        results['errors'].append(f"Simulation error: {str(e)}")
+        results["errors"].append(f"Simulation error: {str(e)}")
         print(f"❌ Simulation failed: {e}")
 
     end_time = datetime.now()
@@ -265,7 +272,7 @@ async def simulate_t52_execution():
     print(f"  🧠 Embeddings: {results['embeddings_generated']}")
     print(f"  ❌ Errors: {len(results['errors'])}")
 
-    success = len(results['errors']) == 0
+    success = len(results["errors"]) == 0
     return success, results
 
 
@@ -318,8 +325,10 @@ async def main():
     except Exception as e:
         print(f"\n❌ Test suite failed: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

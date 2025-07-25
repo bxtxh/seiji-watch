@@ -29,6 +29,7 @@ _local = threading.local()
 
 class LogLevel(Enum):
     """Log severity levels."""
+
     DEBUG = "DEBUG"
     INFO = "INFO"
     WARNING = "WARNING"
@@ -38,6 +39,7 @@ class LogLevel(Enum):
 
 class LogCategory(Enum):
     """Log event categories."""
+
     SYSTEM = "system"
     PROCESSING = "processing"
     SECURITY = "security"
@@ -50,6 +52,7 @@ class LogCategory(Enum):
 @dataclass
 class LogContext:
     """Contextual information for logging."""
+
     request_id: str | None = None
     session_id: str | None = None
     user_id: str | None = None
@@ -65,6 +68,7 @@ class LogContext:
 @dataclass
 class StructuredLogEntry:
     """Structured log entry."""
+
     timestamp: str
     level: str
     message: str
@@ -110,7 +114,7 @@ class StructuredLogger:
 
     def _get_context(self) -> LogContext:
         """Get current logging context."""
-        return getattr(_local, 'context', LogContext())
+        return getattr(_local, "context", LogContext())
 
     def _create_entry(
         self,
@@ -119,20 +123,20 @@ class StructuredLogger:
         category: LogCategory,
         data: dict[str, Any] = None,
         performance: dict[str, float] = None,
-        error: dict[str, Any] = None
+        error: dict[str, Any] = None,
     ) -> StructuredLogEntry:
         """Create a structured log entry."""
         context = self._get_context()
 
         return StructuredLogEntry(
-            timestamp=datetime.utcnow().isoformat() + 'Z',
+            timestamp=datetime.utcnow().isoformat() + "Z",
             level=level.value,
             message=message,
             category=category.value,
             context=context.to_dict() if context else None,
             data=data,
             performance=performance,
-            error=error
+            error=error,
         )
 
     def debug(self, message: str, category: LogCategory = LogCategory.SYSTEM, **kwargs):
@@ -146,10 +150,8 @@ class StructuredLogger:
         self.logger.info(entry.to_json())
 
     def warning(
-            self,
-            message: str,
-            category: LogCategory = LogCategory.SYSTEM,
-            **kwargs):
+        self, message: str, category: LogCategory = LogCategory.SYSTEM, **kwargs
+    ):
         """Log warning message."""
         entry = self._create_entry(LogLevel.WARNING, message, category, **kwargs)
         self.logger.warning(entry.to_json())
@@ -160,10 +162,8 @@ class StructuredLogger:
         self.logger.error(entry.to_json())
 
     def critical(
-            self,
-            message: str,
-            category: LogCategory = LogCategory.ERROR,
-            **kwargs):
+        self, message: str, category: LogCategory = LogCategory.ERROR, **kwargs
+    ):
         """Log critical message."""
         entry = self._create_entry(LogLevel.CRITICAL, message, category, **kwargs)
         self.logger.critical(entry.to_json())
@@ -173,14 +173,13 @@ class StructuredLogger:
         exception: Exception,
         message: str = None,
         category: LogCategory = LogCategory.ERROR,
-        **kwargs
-
+        **kwargs,
     ):
         """Log an exception with full context."""
         error_data = {
-            'exception_type': type(exception).__name__,
-            'exception_message': str(exception),
-            'stack_trace': traceback.format_exc()
+            "exception_type": type(exception).__name__,
+            "exception_message": str(exception),
+            "stack_trace": traceback.format_exc(),
         }
 
         log_message = message or f"Exception occurred: {type(exception).__name__}"
@@ -192,14 +191,13 @@ class StructuredLogger:
         operation: str,
         duration: float,
         details: dict[str, Any] = None,
-        success: bool = True
-
+        success: bool = True,
     ):
         """Log performance metrics."""
         performance_data = {
-            'duration_seconds': duration,
-            'operation': operation,
-            'success': success
+            "duration_seconds": duration,
+            "operation": operation,
+            "success": success,
         }
 
         message = f"Operation {operation} completed in {duration:.3f}s"
@@ -207,60 +205,44 @@ class StructuredLogger:
             message += " (failed)"
 
         self.info(
-            message,
-            LogCategory.PERFORMANCE,
-            data=details,
-            performance=performance_data
+            message, LogCategory.PERFORMANCE, data=details, performance=performance_data
         )
 
-    def log_audit(
-        self,
-        action: str,
-        resource: str,
-        details: dict[str, Any] = None
-
-    ):
+    def log_audit(self, action: str, resource: str, details: dict[str, Any] = None):
         """Log audit event."""
         audit_data = {
-            'action': action,
-            'resource': resource,
-            'timestamp': datetime.utcnow().isoformat()
+            "action": action,
+            "resource": resource,
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
         if details:
             audit_data.update(details)
 
-        self.info(
-            f"Audit: {action} on {resource}",
-            LogCategory.AUDIT,
-            data=audit_data
-        )
+        self.info(f"Audit: {action} on {resource}", LogCategory.AUDIT, data=audit_data)
 
     def log_security_event(
-        self,
-        event_type: str,
-        severity: str,
-        details: dict[str, Any] = None
-
+        self, event_type: str, severity: str, details: dict[str, Any] = None
     ):
         """Log security event."""
         security_data = {
-            'event_type': event_type,
-            'severity': severity,
-            'timestamp': datetime.utcnow().isoformat()
+            "event_type": event_type,
+            "severity": severity,
+            "timestamp": datetime.utcnow().isoformat(),
         }
 
         if details:
             security_data.update(details)
 
-        log_level = LogLevel.WARNING if severity in [
-            'medium', 'high'] else LogLevel.INFO
+        log_level = (
+            LogLevel.WARNING if severity in ["medium", "high"] else LogLevel.INFO
+        )
 
         entry = self._create_entry(
             log_level,
             f"Security event: {event_type}",
             LogCategory.SECURITY,
-            data=security_data
+            data=security_data,
         )
 
         getattr(self.logger, log_level.value.lower())(entry.to_json())
@@ -272,25 +254,25 @@ class StructuredLogger:
         output_count: int,
         success: bool = True,
         duration: float | None = None,
-        quality_score: float | None = None
-
+        quality_score: float | None = None,
     ):
         """Log data processing operation."""
         processing_data = {
-            'operation': operation,
-            'input_count': input_count,
-            'output_count': output_count,
-            'success': success,
-            'efficiency_ratio': output_count / input_count if input_count > 0 else 0
+            "operation": operation,
+            "input_count": input_count,
+            "output_count": output_count,
+            "success": success,
+            "efficiency_ratio": output_count / input_count if input_count > 0 else 0,
         }
 
         if duration:
-            processing_data['duration_seconds'] = duration
-            processing_data['throughput_per_second'] = input_count / \
-                duration if duration > 0 else 0
+            processing_data["duration_seconds"] = duration
+            processing_data["throughput_per_second"] = (
+                input_count / duration if duration > 0 else 0
+            )
 
         if quality_score:
-            processing_data['quality_score'] = quality_score
+            processing_data["quality_score"] = quality_score
 
         message = f"Data processing: {operation} processed {input_count} items, produced {output_count} results"
         if not success:
@@ -300,7 +282,7 @@ class StructuredLogger:
             message,
             LogCategory.PROCESSING,
             data=processing_data,
-            performance={'duration_seconds': duration} if duration else None
+            performance={"duration_seconds": duration} if duration else None,
         )
 
 
@@ -319,8 +301,7 @@ def logging_context(
     user_id: str = None,
     operation_id: str = None,
     trace_id: str = None,
-    component: str = None
-
+    component: str = None,
 ):
     """Context manager for setting logging context."""
     # Generate IDs if not provided
@@ -337,11 +318,11 @@ def logging_context(
         user_id=user_id,
         operation_id=operation_id,
         trace_id=trace_id,
-        component=component
+        component=component,
     )
 
     # Store in thread-local storage
-    old_context = getattr(_local, 'context', None)
+    old_context = getattr(_local, "context", None)
     _local.context = context
 
     try:
@@ -358,9 +339,8 @@ def timed_operation(logger: StructuredLogger, operation_name: str, **kwargs):
 
     with logging_context(operation_id=operation_id, component=operation_name):
         logger.info(
-            f"Starting operation: {operation_name}",
-            LogCategory.PROCESSING,
-            data=kwargs)
+            f"Starting operation: {operation_name}", LogCategory.PROCESSING, data=kwargs
+        )
 
         success = True
         try:
@@ -400,7 +380,8 @@ def log_exception(exception: Exception, message: str = None, **kwargs):
 def log_processing(operation: str, input_count: int, output_count: int, **kwargs):
     """Log data processing operation."""
     processing_logger.log_data_processing(
-        operation, input_count, output_count, **kwargs)
+        operation, input_count, output_count, **kwargs
+    )
 
 
 def log_security(event_type: str, severity: str, **kwargs):

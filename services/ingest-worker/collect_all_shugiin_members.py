@@ -13,12 +13,13 @@ import aiohttp
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 @dataclass
 class ShugiinMemberData:
     """Shugiin member data structure"""
+
     name: str
     name_kana: str | None = None
     constituency: str | None = None
@@ -44,7 +45,7 @@ class ShugiinMemberCollector:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
@@ -53,7 +54,8 @@ class ShugiinMemberCollector:
 
         # Session for web scraping
         self.scraping_headers = {
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'}
+            "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
+        }
 
     async def _rate_limited_request(
         self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
@@ -92,7 +94,7 @@ class ShugiinMemberCollector:
             # 会派別名簿
             "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/kaiha_m.htm",
             # 選挙区別名簿
-            "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/senkyoku_m.htm"
+            "https://www.shugiin.go.jp/internet/itdb_annai.nsf/html/statics/shiryo/senkyoku_m.htm",
         ]
 
         all_members = []
@@ -104,7 +106,7 @@ class ShugiinMemberCollector:
                 async with session.get(url, headers=self.scraping_headers) as response:
                     if response.status == 200:
                         html = await response.text()
-                        soup = BeautifulSoup(html, 'html.parser')
+                        soup = BeautifulSoup(html, "html.parser")
 
                         members = await self._parse_shugiin_page(soup, url)
                         all_members.extend(members)
@@ -145,16 +147,16 @@ class ShugiinMemberCollector:
         members = []
 
         # Look for member tables
-        tables = soup.find_all('table')
+        tables = soup.find_all("table")
 
         for table in tables:
-            rows = table.find_all('tr')
+            rows = table.find_all("tr")
 
             current_party = None
             current_constituency = None
 
             for row in rows:
-                cells = row.find_all(['td', 'th'])
+                cells = row.find_all(["td", "th"])
 
                 if not cells:
                     continue
@@ -162,35 +164,43 @@ class ShugiinMemberCollector:
                 # Check if this row contains party/group header
                 if len(cells) == 1:
                     cell_text = cells[0].get_text(strip=True)
-                    if any(keyword in cell_text for keyword in ['党', '会', '組合', '無所属']):
+                    if any(
+                        keyword in cell_text
+                        for keyword in ["党", "会", "組合", "無所属"]
+                    ):
                         current_party = cell_text
                         continue
 
                 # Check if this row contains constituency header
-                if "区" in cells[0].get_text(
-                        strip=True) or "県" in cells[0].get_text(
-                        strip=True):
+                if "区" in cells[0].get_text(strip=True) or "県" in cells[0].get_text(
+                    strip=True
+                ):
                     current_constituency = cells[0].get_text(strip=True)
                     continue
 
                 # Extract member information
                 for cell in cells:
-                    links = cell.find_all('a')
+                    links = cell.find_all("a")
 
                     for link in links:
                         name = link.get_text(strip=True)
-                        profile_url = link.get('href', '')
+                        profile_url = link.get("href", "")
 
                         # Clean and validate name
-                        name = re.sub(r'[（）()0-9\s]', '', name)
+                        name = re.sub(r"[（）()0-9\s]", "", name)
 
                         if self._is_valid_member_name(name):
                             member = ShugiinMemberData(
                                 name=name,
                                 constituency=current_constituency,
                                 party_name=current_party,
-                                profile_url=profile_url if profile_url.startswith('http') else None,
-                                is_active=True)
+                                profile_url=(
+                                    profile_url
+                                    if profile_url.startswith("http")
+                                    else None
+                                ),
+                                is_active=True,
+                            )
                             members.append(member)
 
                 # Also check for names in plain text (no links)
@@ -200,17 +210,20 @@ class ShugiinMemberCollector:
 
                     if name_cell:
                         name = name_cell.get_text(strip=True)
-                        party = party_cell.get_text(
-                            strip=True) if party_cell else current_party
+                        party = (
+                            party_cell.get_text(strip=True)
+                            if party_cell
+                            else current_party
+                        )
 
-                        name = re.sub(r'[（）()0-9\s]', '', name)
+                        name = re.sub(r"[（）()0-9\s]", "", name)
 
                         if self._is_valid_member_name(name):
                             member = ShugiinMemberData(
                                 name=name,
                                 party_name=party,
                                 constituency=current_constituency,
-                                is_active=True
+                                is_active=True,
                             )
                             members.append(member)
 
@@ -224,10 +237,39 @@ class ShugiinMemberCollector:
 
         # Exclude common non-name patterns
         invalid_patterns = [
-            '議員', '委員', '会長', '総理', '大臣', '長官', '選挙区', '比例',
-            '党', '会', '組合', '無所属', '代表', '幹事', '政調', '国対',
-            '年', '月', '日', '第', '回', '次', '号', '条', '項', '款',
-            'HP', 'URL', 'http', 'www', '.jp', '.html', '.htm'
+            "議員",
+            "委員",
+            "会長",
+            "総理",
+            "大臣",
+            "長官",
+            "選挙区",
+            "比例",
+            "党",
+            "会",
+            "組合",
+            "無所属",
+            "代表",
+            "幹事",
+            "政調",
+            "国対",
+            "年",
+            "月",
+            "日",
+            "第",
+            "回",
+            "次",
+            "号",
+            "条",
+            "項",
+            "款",
+            "HP",
+            "URL",
+            "http",
+            "www",
+            ".jp",
+            ".html",
+            ".htm",
         ]
 
         for pattern in invalid_patterns:
@@ -235,11 +277,11 @@ class ShugiinMemberCollector:
                 return False
 
         # Must contain at least one kanji character
-        if not re.search(r'[\u4e00-\u9faf]', name):
+        if not re.search(r"[\u4e00-\u9faf]", name):
             return False
 
         # Must not be all numbers or symbols
-        if re.match(r'^[0-9\s\-_\(\)（）]+$', name):
+        if re.match(r"^[0-9\s\-_\(\)（）]+$", name):
             return False
 
         return True
@@ -252,92 +294,275 @@ class ShugiinMemberCollector:
         # Current Shugiin members (public information) - 465 total seats
         known_members = [
             # 自由民主党 (Liberal Democratic Party) - Major figures
-            ShugiinMemberData("安倍晋三", constituency="山口県第4区", party_name="自由民主党"),
-            ShugiinMemberData("岸田文雄", constituency="広島県第1区", party_name="自由民主党"),
-            ShugiinMemberData("菅義偉", constituency="神奈川県第2区", party_name="自由民主党"),
-            ShugiinMemberData("麻生太郎", constituency="福岡県第8区", party_name="自由民主党"),
-            ShugiinMemberData("石破茂", constituency="鳥取県第1区", party_name="自由民主党"),
-            ShugiinMemberData("河野太郎", constituency="神奈川県第15区", party_name="自由民主党"),
-            ShugiinMemberData("小泉進次郎", constituency="神奈川県第11区", party_name="自由民主党"),
-            ShugiinMemberData("高市早苗", constituency="奈良県第2区", party_name="自由民主党"),
-            ShugiinMemberData("野田聖子", constituency="岐阜県第1区", party_name="自由民主党"),
-            ShugiinMemberData("茂木敏充", constituency="栃木県第5区", party_name="自由民主党"),
-            ShugiinMemberData("甘利明", constituency="神奈川県第13区", party_name="自由民主党"),
-            ShugiinMemberData("細田博之", constituency="島根県第1区", party_name="自由民主党"),
-            ShugiinMemberData("林芳正", constituency="山口県第4区", party_name="自由民主党"),
-            ShugiinMemberData("加藤勝信", constituency="岡山県第5区", party_name="自由民主党"),
-            ShugiinMemberData("岸信夫", constituency="山口県第2区", party_name="自由民主党"),
-
+            ShugiinMemberData(
+                "安倍晋三", constituency="山口県第4区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "岸田文雄", constituency="広島県第1区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "菅義偉", constituency="神奈川県第2区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "麻生太郎", constituency="福岡県第8区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "石破茂", constituency="鳥取県第1区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "河野太郎", constituency="神奈川県第15区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "小泉進次郎", constituency="神奈川県第11区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "高市早苗", constituency="奈良県第2区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "野田聖子", constituency="岐阜県第1区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "茂木敏充", constituency="栃木県第5区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "甘利明", constituency="神奈川県第13区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "細田博之", constituency="島根県第1区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "林芳正", constituency="山口県第4区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "加藤勝信", constituency="岡山県第5区", party_name="自由民主党"
+            ),
+            ShugiinMemberData(
+                "岸信夫", constituency="山口県第2区", party_name="自由民主党"
+            ),
             # 立憲民主党 (Constitutional Democratic Party)
-            ShugiinMemberData("泉健太", constituency="京都府第3区", party_name="立憲民主党"),
-            ShugiinMemberData("枝野幸男", constituency="埼玉県第5区", party_name="立憲民主党"),
-            ShugiinMemberData("辻元清美", constituency="大阪府第10区", party_name="立憲民主党"),
-            ShugiinMemberData("長妻昭", constituency="東京都第7区", party_name="立憲民主党"),
-            ShugiinMemberData("原口一博", constituency="佐賀県第1区", party_name="立憲民主党"),
-            ShugiinMemberData("野田佳彦", constituency="千葉県第4区", party_name="立憲民主党"),
-            ShugiinMemberData("海江田万里", constituency="東京都第1区", party_name="立憲民主党"),
-            ShugiinMemberData("菅直人", constituency="東京都第18区", party_name="立憲民主党"),
-            ShugiinMemberData("岡田克也", constituency="三重県第3区", party_name="立憲民主党"),
-            ShugiinMemberData("小川淳也", constituency="香川県第1区", party_name="立憲民主党"),
-
+            ShugiinMemberData(
+                "泉健太", constituency="京都府第3区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "枝野幸男", constituency="埼玉県第5区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "辻元清美", constituency="大阪府第10区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "長妻昭", constituency="東京都第7区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "原口一博", constituency="佐賀県第1区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "野田佳彦", constituency="千葉県第4区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "海江田万里", constituency="東京都第1区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "菅直人", constituency="東京都第18区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "岡田克也", constituency="三重県第3区", party_name="立憲民主党"
+            ),
+            ShugiinMemberData(
+                "小川淳也", constituency="香川県第1区", party_name="立憲民主党"
+            ),
             # 日本維新の会 (Japan Innovation Party)
-            ShugiinMemberData("馬場伸幸", constituency="大阪府第17区", party_name="日本維新の会"),
-            ShugiinMemberData("松井一郎", constituency="大阪府第1区", party_name="日本維新の会"),
-            ShugiinMemberData("藤田文武", constituency="大阪府第7区", party_name="日本維新の会"),
-            ShugiinMemberData("足立康史", constituency="大阪府第9区", party_name="日本維新の会"),
-            ShugiinMemberData("串田誠一", constituency="大阪府第2区", party_name="日本維新の会"),
-            ShugiinMemberData("遠藤敬", constituency="大阪府第12区", party_name="日本維新の会"),
-
+            ShugiinMemberData(
+                "馬場伸幸", constituency="大阪府第17区", party_name="日本維新の会"
+            ),
+            ShugiinMemberData(
+                "松井一郎", constituency="大阪府第1区", party_name="日本維新の会"
+            ),
+            ShugiinMemberData(
+                "藤田文武", constituency="大阪府第7区", party_name="日本維新の会"
+            ),
+            ShugiinMemberData(
+                "足立康史", constituency="大阪府第9区", party_name="日本維新の会"
+            ),
+            ShugiinMemberData(
+                "串田誠一", constituency="大阪府第2区", party_name="日本維新の会"
+            ),
+            ShugiinMemberData(
+                "遠藤敬", constituency="大阪府第12区", party_name="日本維新の会"
+            ),
             # 公明党 (Komeito)
             ShugiinMemberData("石井啓一", constituency="比例代表", party_name="公明党"),
-            ShugiinMemberData("北側一雄", constituency="大阪府第16区", party_name="公明党"),
-            ShugiinMemberData("太田昭宏", constituency="東京都第12区", party_name="公明党"),
-            ShugiinMemberData("斉藤鉄夫", constituency="広島県第3区", party_name="公明党"),
-            ShugiinMemberData("佐藤茂樹", constituency="大阪府第11区", party_name="公明党"),
-
+            ShugiinMemberData(
+                "北側一雄", constituency="大阪府第16区", party_name="公明党"
+            ),
+            ShugiinMemberData(
+                "太田昭宏", constituency="東京都第12区", party_name="公明党"
+            ),
+            ShugiinMemberData(
+                "斉藤鉄夫", constituency="広島県第3区", party_name="公明党"
+            ),
+            ShugiinMemberData(
+                "佐藤茂樹", constituency="大阪府第11区", party_name="公明党"
+            ),
             # 日本共産党 (Japanese Communist Party)
-            ShugiinMemberData("志位和夫", constituency="比例代表", party_name="日本共産党"),
-            ShugiinMemberData("赤嶺政賢", constituency="沖縄県第1区", party_name="日本共産党"),
-            ShugiinMemberData("穀田恵二", constituency="京都府第1区", party_name="日本共産党"),
-            ShugiinMemberData("塩川鉄也", constituency="埼玉県第3区", party_name="日本共産党"),
-
+            ShugiinMemberData(
+                "志位和夫", constituency="比例代表", party_name="日本共産党"
+            ),
+            ShugiinMemberData(
+                "赤嶺政賢", constituency="沖縄県第1区", party_name="日本共産党"
+            ),
+            ShugiinMemberData(
+                "穀田恵二", constituency="京都府第1区", party_name="日本共産党"
+            ),
+            ShugiinMemberData(
+                "塩川鉄也", constituency="埼玉県第3区", party_name="日本共産党"
+            ),
             # 国民民主党 (Democratic Party For the People)
-            ShugiinMemberData("玉木雄一郎", constituency="香川県第2区", party_name="国民民主党"),
-            ShugiinMemberData("前原誠司", constituency="京都府第2区", party_name="国民民主党"),
-            ShugiinMemberData("古川元久", constituency="愛知県第2区", party_name="国民民主党"),
-
+            ShugiinMemberData(
+                "玉木雄一郎", constituency="香川県第2区", party_name="国民民主党"
+            ),
+            ShugiinMemberData(
+                "前原誠司", constituency="京都府第2区", party_name="国民民主党"
+            ),
+            ShugiinMemberData(
+                "古川元久", constituency="愛知県第2区", party_name="国民民主党"
+            ),
             # れいわ新選組 (Reiwa Shinsengumi)
-            ShugiinMemberData("山本太郎", constituency="比例代表", party_name="れいわ新選組"),
-
+            ShugiinMemberData(
+                "山本太郎", constituency="比例代表", party_name="れいわ新選組"
+            ),
             # 無所属・その他
-            ShugiinMemberData("河村たかし", constituency="愛知県第1区", party_name="無所属"),
+            ShugiinMemberData(
+                "河村たかし", constituency="愛知県第1区", party_name="無所属"
+            ),
         ]
 
         # Generate additional realistic member data to reach closer to 465 total
         additional_members = []
         prefectures = [
-            "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
-            "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
-            "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
-            "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
-            "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
-            "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
-            "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+            "北海道",
+            "青森県",
+            "岩手県",
+            "宮城県",
+            "秋田県",
+            "山形県",
+            "福島県",
+            "茨城県",
+            "栃木県",
+            "群馬県",
+            "埼玉県",
+            "千葉県",
+            "東京都",
+            "神奈川県",
+            "新潟県",
+            "富山県",
+            "石川県",
+            "福井県",
+            "山梨県",
+            "長野県",
+            "岐阜県",
+            "静岡県",
+            "愛知県",
+            "三重県",
+            "滋賀県",
+            "京都府",
+            "大阪府",
+            "兵庫県",
+            "奈良県",
+            "和歌山県",
+            "鳥取県",
+            "島根県",
+            "岡山県",
+            "広島県",
+            "山口県",
+            "徳島県",
+            "香川県",
+            "愛媛県",
+            "高知県",
+            "福岡県",
+            "佐賀県",
+            "長崎県",
+            "熊本県",
+            "大分県",
+            "宮崎県",
+            "鹿児島県",
+            "沖縄県",
         ]
 
-        parties = ["自由民主党", "立憲民主党", "日本維新の会", "公明党", "国民民主党", "日本共産党", "無所属"]
+        parties = [
+            "自由民主党",
+            "立憲民主党",
+            "日本維新の会",
+            "公明党",
+            "国民民主党",
+            "日本共産党",
+            "無所属",
+        ]
 
         # Common Japanese surnames and given names for realistic data
         surnames = [
-            "田中", "鈴木", "佐藤", "高橋", "渡辺", "伊藤", "山本", "中村", "小林", "加藤",
-            "吉田", "山田", "佐々木", "山口", "松本", "井上", "木村", "林", "斎藤", "清水",
-            "山崎", "森", "池田", "橋本", "石川", "中川", "小川", "前田", "岡田", "長谷川"
+            "田中",
+            "鈴木",
+            "佐藤",
+            "高橋",
+            "渡辺",
+            "伊藤",
+            "山本",
+            "中村",
+            "小林",
+            "加藤",
+            "吉田",
+            "山田",
+            "佐々木",
+            "山口",
+            "松本",
+            "井上",
+            "木村",
+            "林",
+            "斎藤",
+            "清水",
+            "山崎",
+            "森",
+            "池田",
+            "橋本",
+            "石川",
+            "中川",
+            "小川",
+            "前田",
+            "岡田",
+            "長谷川",
         ]
 
         given_names = [
-            "太郎", "次郎", "三郎", "一郎", "二郎", "健", "誠", "明", "博", "正",
-            "宏", "修", "秀", "茂", "豊", "勝", "勇", "実", "進", "清",
-            "敏", "和", "弘", "隆", "浩", "貴", "智", "仁", "義", "信"
+            "太郎",
+            "次郎",
+            "三郎",
+            "一郎",
+            "二郎",
+            "健",
+            "誠",
+            "明",
+            "博",
+            "正",
+            "宏",
+            "修",
+            "秀",
+            "茂",
+            "豊",
+            "勝",
+            "勇",
+            "実",
+            "進",
+            "清",
+            "敏",
+            "和",
+            "弘",
+            "隆",
+            "浩",
+            "貴",
+            "智",
+            "仁",
+            "義",
+            "信",
         ]
 
         # Generate additional members (400+ more to simulate full chamber)
@@ -352,7 +577,11 @@ class ShugiinMemberCollector:
 
             constituency_base = prefectures[i % len(prefectures)]
             district_num = (i % 10) + 1
-            constituency = f"{constituency_base}第{district_num}区" if "都府県" in constituency_base else f"{constituency_base}第{district_num}区"
+            constituency = (
+                f"{constituency_base}第{district_num}区"
+                if "都府県" in constituency_base
+                else f"{constituency_base}第{district_num}区"
+            )
 
             # Some seats are proportional representation
             if i % 10 == 0:
@@ -364,7 +593,7 @@ class ShugiinMemberCollector:
                 party_name=parties[i % len(parties)],
                 first_elected=str(2010 + (i % 12)),
                 terms_served=(i % 5) + 1,
-                is_active=True
+                is_active=True,
             )
             additional_members.append(member)
 
@@ -374,7 +603,8 @@ class ShugiinMemberCollector:
         return all_members
 
     async def clear_existing_shugiin_members(
-            self, session: aiohttp.ClientSession) -> int:
+        self, session: aiohttp.ClientSession
+    ) -> int:
         """Clear existing Shugiin members from database"""
 
         print("  🗑️  既存衆議院議員データクリア...")
@@ -422,11 +652,12 @@ class ShugiinMemberCollector:
 
         return party_id_map
 
-    async def insert_shugiin_members(self,
-                                     session: aiohttp.ClientSession,
-                                     members: list[ShugiinMemberData],
-                                     party_id_map: dict[str,
-                                                        str]) -> int:
+    async def insert_shugiin_members(
+        self,
+        session: aiohttp.ClientSession,
+        members: list[ShugiinMemberData],
+        party_id_map: dict[str, str],
+    ) -> int:
         """Insert Shugiin member data into Airtable"""
 
         print("  💾 衆議院議員データ投入...")
@@ -436,7 +667,7 @@ class ShugiinMemberCollector:
         batch_size = 10  # Process in smaller batches for better error handling
 
         for i in range(0, len(members), batch_size):
-            batch = members[i:i + batch_size]
+            batch = members[i : i + batch_size]
 
             for j, member in enumerate(batch, 1):
                 try:
@@ -449,7 +680,7 @@ class ShugiinMemberCollector:
                         "Terms_Served": member.terms_served,
                         "Is_Active": member.is_active,
                         "Created_At": datetime.now().isoformat(),
-                        "Updated_At": datetime.now().isoformat()
+                        "Updated_At": datetime.now().isoformat(),
                     }
 
                     # Add party link
@@ -457,18 +688,22 @@ class ShugiinMemberCollector:
                         member_fields["Party"] = [party_id_map[member.party_name]]
 
                     # Remove None values
-                    member_fields = {k: v for k,
-                                     v in member_fields.items() if v is not None}
+                    member_fields = {
+                        k: v for k, v in member_fields.items() if v is not None
+                    }
 
                     data = {"fields": member_fields}
 
-                    await self._rate_limited_request(session, "POST", members_url, json=data)
+                    await self._rate_limited_request(
+                        session, "POST", members_url, json=data
+                    )
                     success_count += 1
 
                     current_index = i + j
                     if current_index <= 20 or current_index % 50 == 0:
                         print(
-                            f"    ✅ {current_index:03d}: {member.name} ({member.constituency}) - {member.party_name}")
+                            f"    ✅ {current_index:03d}: {member.name} ({member.constituency}) - {member.party_name}"
+                        )
 
                 except Exception as e:
                     print(f"    ❌ 投入失敗: {member.name} - {e}")
@@ -495,7 +730,7 @@ class ShugiinMemberCollector:
             "members_collected": 0,
             "members_inserted": 0,
             "members_cleared": 0,
-            "start_time": start_time.isoformat()
+            "start_time": start_time.isoformat(),
         }
 
         try:
@@ -531,7 +766,9 @@ class ShugiinMemberCollector:
 
                 # Step 4: Insert member data
                 print("\n💾 Step 4: 衆議院議員データ投入...")
-                success_count = await self.insert_shugiin_members(session, members, party_id_map)
+                success_count = await self.insert_shugiin_members(
+                    session, members, party_id_map
+                )
 
                 # Results
                 end_time = datetime.now()
@@ -575,11 +812,12 @@ async def main():
         collector = ShugiinMemberCollector()
         result = await collector.collect_all_shugiin_members()
 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         result_file = f"all_shugiin_members_collection_{timestamp}.json"
 
         import json
-        with open(result_file, 'w', encoding='utf-8') as f:
+
+        with open(result_file, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 結果保存: {result_file}")
@@ -589,8 +827,10 @@ async def main():
     except Exception as e:
         print(f"💥 実行エラー: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

@@ -19,12 +19,13 @@ from dotenv import load_dotenv
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "shared" / "src"))
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 @dataclass
 class IssueData:
     """イシューデータ構造"""
+
     title: str
     description: str
     category_l1: str  # L1カテゴリ（大分類）
@@ -54,19 +55,16 @@ class IssueDataGenerator:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
         self._request_semaphore = asyncio.Semaphore(3)
         self._last_request_time = 0
 
-    async def _rate_limited_request(self,
-                                    session: aiohttp.ClientSession,
-                                    method: str,
-                                    url: str,
-                                    **kwargs) -> dict[str,
-                                                      Any]:
+    async def _rate_limited_request(
+        self, session: aiohttp.ClientSession, method: str, url: str, **kwargs
+    ) -> dict[str, Any]:
         """Rate-limited request to Airtable API"""
         async with self._request_semaphore:
             # Ensure 300ms between requests
@@ -75,25 +73,32 @@ class IssueDataGenerator:
             if time_since_last < 0.3:
                 await asyncio.sleep(0.3 - time_since_last)
 
-            async with session.request(method, url, headers=self.headers, **kwargs) as response:
+            async with session.request(
+                method, url, headers=self.headers, **kwargs
+            ) as response:
                 self._last_request_time = asyncio.get_event_loop().time()
 
                 if response.status == 429:
                     retry_after = int(response.headers.get("Retry-After", 30))
                     await asyncio.sleep(retry_after)
-                    return await self._rate_limited_request(session, method, url, **kwargs)
+                    return await self._rate_limited_request(
+                        session, method, url, **kwargs
+                    )
 
                 response.raise_for_status()
                 return await response.json()
 
     async def get_bills_for_analysis(
-            self, session: aiohttp.ClientSession) -> list[dict[str, Any]]:
+        self, session: aiohttp.ClientSession
+    ) -> list[dict[str, Any]]:
         """分析用の法案データを取得"""
         bills = []
 
         try:
             bills_url = f"{self.base_url}/Bills (法案)"
-            response = await self._rate_limited_request(session, "GET", bills_url, params={"maxRecords": 20})
+            response = await self._rate_limited_request(
+                session, "GET", bills_url, params={"maxRecords": 20}
+            )
 
             for record in response.get("records", []):
                 fields = record["fields"]
@@ -103,7 +108,7 @@ class IssueDataGenerator:
                     "summary": fields.get("Summary", ""),
                     "description": fields.get("Description", ""),
                     "category": fields.get("Category", ""),
-                    "status": fields.get("Status", "")
+                    "status": fields.get("Status", ""),
                 }
                 bills.append(bill)
 
@@ -113,7 +118,8 @@ class IssueDataGenerator:
         return bills
 
     async def extract_issues_from_bills(
-            self, bills: list[dict[str, Any]]) -> list[IssueData]:
+        self, bills: list[dict[str, Any]]
+    ) -> list[IssueData]:
         """法案からイシューを抽出（LLM風の分析シミュレーション）"""
 
         # 実際の実装ではOpenAI GPT-4やClaude APIを使用してイシュー抽出
@@ -125,9 +131,14 @@ class IssueDataGenerator:
             "経済・産業": ["税制改革", "企業支援", "雇用対策", "中小企業支援"],
             "外交・国際": ["安全保障", "国際協力", "貿易政策", "外国人政策"],
             "教育・文化": ["義務教育", "高等教育", "文化保護", "スポーツ振興"],
-            "環境・エネルギー": ["温暖化対策", "再生可能エネルギー", "廃棄物処理", "自然保護"],
+            "環境・エネルギー": [
+                "温暖化対策",
+                "再生可能エネルギー",
+                "廃棄物処理",
+                "自然保護",
+            ],
             "司法・行政": ["司法制度", "行政改革", "地方分権", "公務員制度"],
-            "インフラ・交通": ["道路整備", "公共交通", "通信インフラ", "住宅政策"]
+            "インフラ・交通": ["道路整備", "公共交通", "通信インフラ", "住宅政策"],
         }
 
         issues = []
@@ -139,7 +150,8 @@ class IssueDataGenerator:
 
             # 法案名とカテゴリーからイシューを抽出
             extracted_issues = self._analyze_bill_content(
-                bill_name, bill_summary, bill_category, l1_categories)
+                bill_name, bill_summary, bill_category, l1_categories
+            )
 
             for issue_info in extracted_issues:
                 issue = IssueData(
@@ -156,7 +168,7 @@ class IssueDataGenerator:
                     estimated_timeline=issue_info.get("timeline", "1年"),
                     ai_confidence=issue_info.get("confidence", 0.8),
                     tags=issue_info.get("tags", []),
-                    related_keywords=issue_info.get("keywords", [])
+                    related_keywords=issue_info.get("keywords", []),
                 )
                 issues.append(issue)
 
@@ -167,13 +179,13 @@ class IssueDataGenerator:
         print(f"✅ イシューデータ生成完了: {len(issues)}件")
         return issues
 
-    def _analyze_bill_content(self,
-                              bill_name: str,
-                              summary: str,
-                              category: str,
-                              l1_categories: dict[str,
-                                                  list[str]]) -> list[dict[str,
-                                                                           Any]]:
+    def _analyze_bill_content(
+        self,
+        bill_name: str,
+        summary: str,
+        category: str,
+        l1_categories: dict[str, list[str]],
+    ) -> list[dict[str, Any]]:
         """法案内容の分析（LLM分析のシミュレーション）"""
 
         issues = []
@@ -181,35 +193,60 @@ class IssueDataGenerator:
         # キーワードベースの分析ルール
         analysis_rules = {
             "予算": {
-                "l1": "経済・産業", "l2": "税制改革", "l3": "予算配分最適化",
-                "priority": "high", "impact": "high", "timeline": "1年",
-                "stakeholders": ["財務省", "各省庁", "国民"], "tags": ["予算", "財政"],
-                "keywords": ["予算", "財政", "税収", "支出"]
+                "l1": "経済・産業",
+                "l2": "税制改革",
+                "l3": "予算配分最適化",
+                "priority": "high",
+                "impact": "high",
+                "timeline": "1年",
+                "stakeholders": ["財務省", "各省庁", "国民"],
+                "tags": ["予算", "財政"],
+                "keywords": ["予算", "財政", "税収", "支出"],
             },
             "税": {
-                "l1": "経済・産業", "l2": "税制改革", "l3": "税制見直し",
-                "priority": "high", "impact": "high", "timeline": "2年",
-                "stakeholders": ["財務省", "企業", "個人"], "tags": ["税制", "改革"],
-                "keywords": ["税金", "課税", "控除", "税率"]
+                "l1": "経済・産業",
+                "l2": "税制改革",
+                "l3": "税制見直し",
+                "priority": "high",
+                "impact": "high",
+                "timeline": "2年",
+                "stakeholders": ["財務省", "企業", "個人"],
+                "tags": ["税制", "改革"],
+                "keywords": ["税金", "課税", "控除", "税率"],
             },
             "社会保障": {
-                "l1": "社会保障", "l2": "健康保険制度", "l3": "社会保障制度改革",
-                "priority": "high", "impact": "high", "timeline": "3年",
-                "stakeholders": ["厚生労働省", "保険組合", "国民"], "tags": ["社会保障", "医療"],
-                "keywords": ["保険", "年金", "医療", "介護"]
+                "l1": "社会保障",
+                "l2": "健康保険制度",
+                "l3": "社会保障制度改革",
+                "priority": "high",
+                "impact": "high",
+                "timeline": "3年",
+                "stakeholders": ["厚生労働省", "保険組合", "国民"],
+                "tags": ["社会保障", "医療"],
+                "keywords": ["保険", "年金", "医療", "介護"],
             },
             "外交": {
-                "l1": "外交・国際", "l2": "国際協力", "l3": "外交政策強化",
-                "priority": "medium", "impact": "medium", "timeline": "2年",
-                "stakeholders": ["外務省", "国際機関", "諸外国"], "tags": ["外交", "国際"],
-                "keywords": ["条約", "協定", "国際", "外国"]
+                "l1": "外交・国際",
+                "l2": "国際協力",
+                "l3": "外交政策強化",
+                "priority": "medium",
+                "impact": "medium",
+                "timeline": "2年",
+                "stakeholders": ["外務省", "国際機関", "諸外国"],
+                "tags": ["外交", "国際"],
+                "keywords": ["条約", "協定", "国際", "外国"],
             },
             "教育": {
-                "l1": "教育・文化", "l2": "義務教育", "l3": "教育制度改革",
-                "priority": "medium", "impact": "medium", "timeline": "5年",
-                "stakeholders": ["文部科学省", "学校", "教員", "学生"], "tags": ["教育", "学校"],
-                "keywords": ["学校", "教育", "授業", "学習"]
-            }
+                "l1": "教育・文化",
+                "l2": "義務教育",
+                "l3": "教育制度改革",
+                "priority": "medium",
+                "impact": "medium",
+                "timeline": "5年",
+                "stakeholders": ["文部科学省", "学校", "教員", "学生"],
+                "tags": ["教育", "学校"],
+                "keywords": ["学校", "教育", "授業", "学習"],
+            },
         }
 
         # 法案名とサマリーからキーワードマッチング
@@ -229,7 +266,8 @@ class IssueDataGenerator:
                     "stakeholders": rule["stakeholders"],
                     "tags": rule["tags"],
                     "keywords": rule["keywords"],
-                    "confidence": 0.85}
+                    "confidence": 0.85,
+                }
                 issues.append(issue)
 
         # 法案名のみからもイシュー生成
@@ -246,14 +284,15 @@ class IssueDataGenerator:
                 "stakeholders": ["関係省庁", "実施機関"],
                 "tags": ["法案実施", "制度"],
                 "keywords": ["法案", "制度", "実施"],
-                "confidence": 0.7
+                "confidence": 0.7,
             }
             issues.append(default_issue)
 
         return issues
 
     def _generate_additional_issues(
-            self, l1_categories: dict[str, list[str]]) -> list[IssueData]:
+        self, l1_categories: dict[str, list[str]]
+    ) -> list[IssueData]:
         """追加イシュー生成（50件達成のため）"""
 
         additional_issues = []
@@ -261,35 +300,50 @@ class IssueDataGenerator:
         # 各カテゴリーから体系的にイシューを生成
         issue_templates = [
             {
-                "l1": "社会保障", "l2": "健康保険制度", "l3": "保険料負担軽減",
+                "l1": "社会保障",
+                "l2": "健康保険制度",
+                "l3": "保険料負担軽減",
                 "title": "健康保険料の負担軽減策検討",
                 "description": "高齢化に伴う保険料負担増に対する持続可能な軽減策の検討と実施。",
-                "priority": "high", "impact": "high"
+                "priority": "high",
+                "impact": "high",
             },
             {
-                "l1": "経済・産業", "l2": "中小企業支援", "l3": "資金調達支援",
+                "l1": "経済・産業",
+                "l2": "中小企業支援",
+                "l3": "資金調達支援",
                 "title": "中小企業の資金調達環境改善",
                 "description": "中小企業の事業継続と成長のための多様な資金調達手段の整備。",
-                "priority": "high", "impact": "medium"
+                "priority": "high",
+                "impact": "medium",
             },
             {
-                "l1": "環境・エネルギー", "l2": "温暖化対策", "l3": "カーボンニュートラル",
+                "l1": "環境・エネルギー",
+                "l2": "温暖化対策",
+                "l3": "カーボンニュートラル",
                 "title": "2050年カーボンニュートラル実現",
                 "description": "温室効果ガス排出量実質ゼロに向けた包括的な政策パッケージの策定。",
-                "priority": "high", "impact": "high"
+                "priority": "high",
+                "impact": "high",
             },
             {
-                "l1": "教育・文化", "l2": "高等教育", "l3": "大学改革",
+                "l1": "教育・文化",
+                "l2": "高等教育",
+                "l3": "大学改革",
                 "title": "大学教育の質的向上と国際競争力強化",
                 "description": "グローバル人材育成のための大学教育制度改革と研究力向上。",
-                "priority": "medium", "impact": "medium"
+                "priority": "medium",
+                "impact": "medium",
             },
             {
-                "l1": "インフラ・交通", "l2": "公共交通", "l3": "地方交通維持",
+                "l1": "インフラ・交通",
+                "l2": "公共交通",
+                "l3": "地方交通維持",
                 "title": "地方公共交通の維持・活性化",
                 "description": "人口減少地域における持続可能な公共交通システムの構築。",
-                "priority": "medium", "impact": "medium"
-            }
+                "priority": "medium",
+                "impact": "medium",
+            },
         ]
 
         # テンプレートから複数バリエーション生成
@@ -308,16 +362,15 @@ class IssueDataGenerator:
                     estimated_timeline=f"{1+(j%3)}年",
                     ai_confidence=0.7 + (j * 0.01),
                     tags=[template["l2"], "政策課題"],
-                    related_keywords=[template["l2"], template["l3"], "政策"]
+                    related_keywords=[template["l2"], template["l3"], "政策"],
                 )
                 additional_issues.append(issue)
 
         return additional_issues
 
     async def create_issues(
-            self,
-            session: aiohttp.ClientSession,
-            issues: list[IssueData]) -> int:
+        self, session: aiohttp.ClientSession, issues: list[IssueData]
+    ) -> int:
         """イシューデータをAirtableに投入"""
 
         issues_url = f"{self.base_url}/Issues (課題)"
@@ -335,23 +388,29 @@ class IssueDataGenerator:
                     "Priority": issue.priority,
                     "Source_Bill_ID": issue.source_bill_id,
                     "Impact_Level": issue.impact_level,
-                    "Stakeholders": ", ".join(
-                        issue.stakeholders) if issue.stakeholders else None,
+                    "Stakeholders": (
+                        ", ".join(issue.stakeholders) if issue.stakeholders else None
+                    ),
                     "Estimated_Timeline": issue.estimated_timeline,
                     "AI_Confidence": issue.ai_confidence,
-                    "Tags": ", ".join(
-                        issue.tags) if issue.tags else None,
-                    "Related_Keywords": ", ".join(
-                        issue.related_keywords) if issue.related_keywords else None,
+                    "Tags": ", ".join(issue.tags) if issue.tags else None,
+                    "Related_Keywords": (
+                        ", ".join(issue.related_keywords)
+                        if issue.related_keywords
+                        else None
+                    ),
                     "Created_At": datetime.now().isoformat(),
-                    "Updated_At": datetime.now().isoformat()}
+                    "Updated_At": datetime.now().isoformat(),
+                }
 
                 # None値を除去
                 issue_fields = {k: v for k, v in issue_fields.items() if v is not None}
 
                 data = {"fields": issue_fields}
 
-                response = await self._rate_limited_request(session, "POST", issues_url, json=data)
+                response = await self._rate_limited_request(
+                    session, "POST", issues_url, json=data
+                )
                 record_id = response["id"]
                 success_count += 1
 
@@ -380,7 +439,7 @@ class IssueDataGenerator:
             "issues_generated": 0,
             "issues_inserted": 0,
             "errors": [],
-            "start_time": start_time.isoformat()
+            "start_time": start_time.isoformat(),
         }
 
         try:
@@ -444,10 +503,10 @@ async def main():
         result = await generator.execute_issue_generation()
 
         # 結果をJSONファイルに保存
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         result_file = f"t110_issue_generation_result_{timestamp}.json"
 
-        with open(result_file, 'w', encoding='utf-8') as f:
+        with open(result_file, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 結果保存: {result_file}")
@@ -457,8 +516,10 @@ async def main():
     except Exception as e:
         print(f"💥 T110 実行エラー: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

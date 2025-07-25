@@ -20,7 +20,7 @@ class IssueExtractor:
 
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Predefined categories for consistency
@@ -33,7 +33,7 @@ class IssueExtractor:
             "司法・法務",
             "行政・公務員",
             "インフラ・交通",
-            "その他"
+            "その他",
         ]
 
     async def extract_issues_from_bill(
@@ -46,8 +46,7 @@ class IssueExtractor:
 
         # Limit content length to avoid token limits
         content_preview = (
-            bill_content[:2000] + "..." if len(bill_content) > 2000
-            else bill_content
+            bill_content[:2000] + "..." if len(bill_content) > 2000 else bill_content
         )
 
         prompt = f"""
@@ -89,21 +88,18 @@ class IssueExtractor:
                             "content": (
                                 "あなたは日本の政策分析専門家です。"
                                 "法案から重要な政策イシューを客観的に抽出してください。"
-                            )
+                            ),
                         },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
+                        {"role": "user", "content": prompt},
                     ],
                     "max_tokens": 1000,
-                    "temperature": 0.3
+                    "temperature": 0.3,
                 }
 
                 async with session.post(
                     "https://api.openai.com/v1/chat/completions",
                     headers=self.headers,
-                    json=payload
+                    json=payload,
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
@@ -195,7 +191,10 @@ class IssueExtractor:
 
         category_tags = {
             "環境・エネルギー": [
-                "カーボンニュートラル", "再生可能エネルギー", "環境保護", "気候変動"
+                "カーボンニュートラル",
+                "再生可能エネルギー",
+                "環境保護",
+                "気候変動",
             ],
             "経済・産業": ["経済成長", "産業政策", "中小企業支援", "デジタル化"],
             "社会保障・福祉": ["年金制度", "医療保険", "介護", "子育て支援"],
@@ -204,7 +203,7 @@ class IssueExtractor:
             "司法・法務": ["司法制度", "法改正", "人権保護", "犯罪対策"],
             "行政・公務員": ["行政改革", "公務員制度", "規制緩和", "地方自治"],
             "インフラ・交通": ["交通政策", "都市計画", "公共工事", "災害対策"],
-            "その他": ["政治改革", "選挙制度", "情報公開", "市民参加"]
+            "その他": ["政治改革", "選挙制度", "情報公開", "市民参加"],
         }
 
         return category_tags.get(category, ["政策課題", "改革", "制度"])

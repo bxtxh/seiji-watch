@@ -9,7 +9,7 @@ import os
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def verify_kana_results():
@@ -19,10 +19,7 @@ async def verify_kana_results():
     base_id = os.getenv("AIRTABLE_BASE_ID")
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     print("🔍 Verifying Name_Kana Fix Results...")
 
@@ -37,16 +34,14 @@ async def verify_kana_results():
                 params["offset"] = offset
 
             async with session.get(
-                f"{base_url}/Members (議員)",
-                headers=headers,
-                params=params
+                f"{base_url}/Members (議員)", headers=headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -56,51 +51,42 @@ async def verify_kana_results():
         print(f"📊 Total records: {len(all_records)}")
 
         # Analyze final state
-        analysis = {
-            "good_kana": 0,
-            "empty": 0,
-            "placeholder": 0,
-            "total_with_name": 0
-        }
+        analysis = {"good_kana": 0, "empty": 0, "placeholder": 0, "total_with_name": 0}
 
         good_examples = []
         problem_examples = []
 
         for record in all_records:
-            fields = record.get('fields', {})
-            name = fields.get('Name', '')
-            name_kana = fields.get('Name_Kana', '')
+            fields = record.get("fields", {})
+            name = fields.get("Name", "")
+            name_kana = fields.get("Name_Kana", "")
 
             if name:
                 analysis["total_with_name"] += 1
 
                 if not name_kana or name_kana.strip() == "":
                     analysis["empty"] += 1
-                    problem_examples.append({
-                        'name': name,
-                        'kana': name_kana,
-                        'issue': 'empty'
-                    })
+                    problem_examples.append(
+                        {"name": name, "kana": name_kana, "issue": "empty"}
+                    )
                 elif "たなかたろう" in name_kana.lower():
                     analysis["placeholder"] += 1
-                    problem_examples.append({
-                        'name': name,
-                        'kana': name_kana,
-                        'issue': 'placeholder'
-                    })
+                    problem_examples.append(
+                        {"name": name, "kana": name_kana, "issue": "placeholder"}
+                    )
                 else:
                     analysis["good_kana"] += 1
                     if len(good_examples) < 10:
-                        good_examples.append({
-                            'name': name,
-                            'kana': name_kana
-                        })
+                        good_examples.append({"name": name, "kana": name_kana})
 
         # Calculate quality metrics
         total_good = analysis["good_kana"]
         analysis["empty"] + analysis["placeholder"]
         completeness = (
-            total_good / analysis["total_with_name"]) * 100 if analysis["total_with_name"] > 0 else 0
+            (total_good / analysis["total_with_name"]) * 100
+            if analysis["total_with_name"] > 0
+            else 0
+        )
 
         print("\n📊 Final Analysis:")
         print(f"   ✅ Good Name_Kana: {analysis['good_kana']}")
@@ -135,8 +121,9 @@ async def verify_kana_results():
             "good_kana": analysis["good_kana"],
             "empty": analysis["empty"],
             "placeholder": analysis["placeholder"],
-            "completeness": completeness
+            "completeness": completeness,
         }
+
 
 if __name__ == "__main__":
     asyncio.run(verify_kana_results())

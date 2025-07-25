@@ -23,7 +23,7 @@ from services.policy_issue_extractor import (
     PolicyIssueExtractor,
 )
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 @pytest.mark.asyncio
@@ -42,7 +42,7 @@ class TestCompleteExtractionWorkflow:
                 expected_effects="介護費用の削減と質の向上",
                 key_provisions=["自己負担率見直し", "サービス体制強化"],
                 submitter="厚生労働省",
-                category="社会保障"
+                category="社会保障",
             ),
             BillData(
                 id="bill_002",
@@ -52,8 +52,8 @@ class TestCompleteExtractionWorkflow:
                 expected_effects="CO2削減と環境改善",
                 key_provisions=["排出規制強化", "再エネ推進"],
                 submitter="環境省",
-                category="環境・エネルギー"
-            )
+                category="環境・エネルギー",
+            ),
         ]
 
     @pytest.fixture
@@ -63,11 +63,13 @@ class TestCompleteExtractionWorkflow:
         mock_openai_client = AsyncMock()
         mock_response = Mock()
         mock_response.choices = [Mock()]
-        mock_response.choices[0].message.content = json.dumps({
-            "label_lv1": "政策課題を解決する",
-            "label_lv2": "包括的な政策課題の解決を図る",
-            "confidence": 0.85
-        })
+        mock_response.choices[0].message.content = json.dumps(
+            {
+                "label_lv1": "政策課題を解決する",
+                "label_lv2": "包括的な政策課題の解決を図る",
+                "confidence": 0.85,
+            }
+        )
         mock_openai_client.chat.completions.create.return_value = mock_response
 
         # Mock Airtable client
@@ -75,7 +77,7 @@ class TestCompleteExtractionWorkflow:
         mock_airtable_client.base_url = "https://api.airtable.com/v0/test"
         mock_airtable_client._rate_limited_request.return_value = {
             "id": "rec_123",
-            "fields": {}
+            "fields": {},
         }
         mock_airtable_client.health_check.return_value = True
 
@@ -87,7 +89,7 @@ class TestCompleteExtractionWorkflow:
         return {
             "openai_client": mock_openai_client,
             "airtable_client": mock_airtable_client,
-            "discord_bot": mock_discord_bot
+            "discord_bot": mock_discord_bot,
         }
 
     async def test_single_bill_extraction_workflow(self, sample_bills, mock_components):
@@ -95,7 +97,7 @@ class TestCompleteExtractionWorkflow:
         bill = sample_bills[0]
 
         # Setup components with mocks
-        with patch('openai.AsyncOpenAI', return_value=mock_components["openai_client"]):
+        with patch("openai.AsyncOpenAI", return_value=mock_components["openai_client"]):
             extractor = PolicyIssueExtractor()
             extractor.client = mock_components["openai_client"]
 
@@ -111,12 +113,10 @@ class TestCompleteExtractionWorkflow:
         # Step 2: Create issue pairs in Airtable
         mock_components["airtable_client"]._rate_limited_request.side_effect = [
             {"id": "rec_lv1_123", "fields": {}},
-            {"id": "rec_lv2_456", "fields": {}}
+            {"id": "rec_lv2_456", "fields": {}},
         ]
 
-        lv1_id, lv2_id = await issue_manager.create_issue_pair(
-            issues[0], bill.id, 0.8
-        )
+        lv1_id, lv2_id = await issue_manager.create_issue_pair(issues[0], bill.id, 0.8)
 
         assert lv1_id == "rec_lv1_123"
         assert lv2_id == "rec_lv2_456"
@@ -138,7 +138,7 @@ class TestCompleteExtractionWorkflow:
     async def test_batch_extraction_workflow(self, sample_bills, mock_components):
         """Test batch extraction workflow for multiple bills."""
 
-        with patch('openai.AsyncOpenAI', return_value=mock_components["openai_client"]):
+        with patch("openai.AsyncOpenAI", return_value=mock_components["openai_client"]):
             extractor = PolicyIssueExtractor()
             extractor.client = mock_components["openai_client"]
 
@@ -147,9 +147,7 @@ class TestCompleteExtractionWorkflow:
         # Mock responses for batch
         mock_components["airtable_client"]._rate_limited_request.side_effect = [
             {"id": f"rec_lv1_{i}", "fields": {}} for i in range(4)
-        ] + [
-            {"id": f"rec_lv2_{i}", "fields": {}} for i in range(4)
-        ]
+        ] + [{"id": f"rec_lv2_{i}", "fields": {}} for i in range(4)]
 
         # Extract issues from multiple bills
         results = await extractor.batch_extract_issues(sample_bills)
@@ -181,16 +179,18 @@ class TestCompleteExtractionWorkflow:
         discord_bot.airtable_manager = issue_manager
 
         # Mock Discord webhook
-        with patch('aiohttp.ClientSession') as mock_session:
+        with patch("aiohttp.ClientSession") as mock_session:
             mock_response = AsyncMock()
             mock_response.status = 204
-            mock_session.return_value.__aenter__.return_value.post.return_value.__aenter__.return_value = mock_response
+            mock_session.return_value.__aenter__.return_value.post.return_value.__aenter__.return_value = (
+                mock_response
+            )
 
             # Step 1: Get pending issues count
             mock_components["airtable_client"]._rate_limited_request.return_value = {
                 "records": [
                     {"id": "rec_1", "fields": {"Status": "pending"}},
-                    {"id": "rec_2", "fields": {"Status": "pending"}}
+                    {"id": "rec_2", "fields": {"Status": "pending"}},
                 ]
             }
 
@@ -203,7 +203,8 @@ class TestCompleteExtractionWorkflow:
 
             # Step 3: Update issue status (simulating human review)
             mock_components["airtable_client"]._rate_limited_request.return_value = {
-                "id": "rec_1"}
+                "id": "rec_1"
+            }
 
             success = await issue_manager.update_issue_status(
                 "rec_1", "approved", "High quality issue"
@@ -211,7 +212,9 @@ class TestCompleteExtractionWorkflow:
             assert success is True
 
             # Verify status update call
-            calls = mock_components["airtable_client"]._rate_limited_request.call_args_list
+            calls = mock_components[
+                "airtable_client"
+            ]._rate_limited_request.call_args_list
             status_update_call = calls[-1]  # Last call should be status update
             update_data = status_update_call[1]["json"]["fields"]
             assert update_data["Status"] == "approved"
@@ -232,7 +235,7 @@ class TestCompleteExtractionWorkflow:
             label_lv1="初期の政策課題",
             label_lv2="初期の詳細な政策課題",
             confidence=0.8,
-            status="pending"
+            status="pending",
         )
 
         # Step 1: Create initial version
@@ -249,7 +252,7 @@ class TestCompleteExtractionWorkflow:
             label_lv1="更新された政策課題",
             label_lv2="更新された詳細な政策課題",
             confidence=0.9,
-            status="approved"
+            status="approved",
         )
 
         from services.issue_versioning_service import VersionChangeType
@@ -259,7 +262,7 @@ class TestCompleteExtractionWorkflow:
             updated_record,
             VersionChangeType.CONTENT_UPDATE,
             "Manual review update",
-            "reviewer_001"
+            "reviewer_001",
         )
 
         assert new_version.version_number == 2
@@ -284,8 +287,10 @@ class TestCompleteExtractionWorkflow:
                 CircuitBreaker,
                 CircuitBreakerConfig,
             )
+
             config = CircuitBreakerConfig(
-                failure_threshold=2, success_threshold=1, timeout=1.0)
+                failure_threshold=2, success_threshold=1, timeout=1.0
+            )
             circuit_breaker = CircuitBreaker("airtable_api", config)
             error_recovery_system.circuit_breakers["airtable_api"] = circuit_breaker
 
@@ -297,6 +302,7 @@ class TestCompleteExtractionWorkflow:
 
         # Circuit should now be open
         from monitoring.error_recovery_system import CircuitBreakerState
+
         assert circuit_breaker.state == CircuitBreakerState.OPEN
         assert circuit_breaker.can_execute() is False
 
@@ -321,7 +327,8 @@ class TestCompleteExtractionWorkflow:
             return True
 
         monitoring_system.health_checker.register_check(
-            "test_component", test_component_health)
+            "test_component", test_component_health
+        )
 
         # Run health checks
         health_results = await monitoring_system.health_checker.run_all_checks()
@@ -331,7 +338,8 @@ class TestCompleteExtractionWorkflow:
 
         # Test metrics collection
         monitoring_system.metrics_collector.increment_counter(
-            "test_extraction_count", 1)
+            "test_extraction_count", 1
+        )
         monitoring_system.metrics_collector.set_gauge("test_confidence_score", 0.85)
 
         metrics = monitoring_system.metrics_collector.get_all_metrics(5)
@@ -350,7 +358,7 @@ class TestCompleteExtractionWorkflow:
             title="Test Alert",
             description="This is a test alert",
             severity=AlertSeverity.INFO,
-            component="test_component"
+            component="test_component",
         )
 
         await monitoring_system.alert_manager.trigger_alert(test_alert)
@@ -365,18 +373,12 @@ class TestCompleteExtractionWorkflow:
         batch_processor = IssueRelationshipBatchProcessor(
             airtable_client=mock_components["airtable_client"],
             issue_manager=AirtableIssueManager(mock_components["airtable_client"]),
-            discord_bot=DiscordNotificationBot()
+            discord_bot=DiscordNotificationBot(),
         )
 
         # Mock bill and issue data
         mock_components["airtable_client"].list_bills.return_value = [
-            {
-                "id": "bill_001",
-                "fields": {
-                    "Name": "テスト法案",
-                    "Notes": "法案の内容"
-                }
-            }
+            {"id": "bill_001", "fields": {"Name": "テスト法案", "Notes": "法案の内容"}}
         ]
 
         mock_issues = [
@@ -385,8 +387,8 @@ class TestCompleteExtractionWorkflow:
                 "fields": {
                     "Label_Lv1": "政策課題",
                     "Source_Bill_ID": None,
-                    "Status": "approved"
-                }
+                    "Status": "approved",
+                },
             }
         ]
 
@@ -395,8 +397,7 @@ class TestCompleteExtractionWorkflow:
 
         # Test relationship update
         result = await batch_processor._update_bill_issue_relationships(
-            mock_components["airtable_client"].list_bills.return_value[0],
-            mock_issues
+            mock_components["airtable_client"].list_bills.return_value[0], mock_issues
         )
 
         assert "bill_id" in result
@@ -417,16 +418,14 @@ class TestPerformanceAndScalability:
     async def test_concurrent_extraction(self, mock_components):
         """Test concurrent issue extraction performance."""
 
-        with patch('openai.AsyncOpenAI', return_value=mock_components["openai_client"]):
+        with patch("openai.AsyncOpenAI", return_value=mock_components["openai_client"]):
             extractor = PolicyIssueExtractor()
             extractor.client = mock_components["openai_client"]
 
         # Create multiple bills for concurrent processing
         bills = [
             BillData(
-                id=f"bill_{i:03d}",
-                title=f"テスト法案{i}",
-                outline=f"法案{i}の概要"
+                id=f"bill_{i:03d}", title=f"テスト法案{i}", outline=f"法案{i}の概要"
             )
             for i in range(10)
         ]
@@ -434,10 +433,7 @@ class TestPerformanceAndScalability:
         # Test concurrent extraction
         start_time = asyncio.get_event_loop().time()
 
-        tasks = [
-            extractor.extract_dual_level_issues(bill)
-            for bill in bills
-        ]
+        tasks = [extractor.extract_dual_level_issues(bill) for bill in bills]
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -458,7 +454,9 @@ class TestPerformanceAndScalability:
 
         # Mock responses for batch operations
         mock_responses = [{"id": f"rec_{i}", "fields": {}} for i in range(20)]
-        mock_components["airtable_client"]._rate_limited_request.side_effect = mock_responses
+        mock_components["airtable_client"]._rate_limited_request.side_effect = (
+            mock_responses
+        )
 
         # Create test issues for batch processing
         dual_issues = [
@@ -466,9 +464,9 @@ class TestPerformanceAndScalability:
                 DualLevelIssue(
                     label_lv1=f"政策課題{i}を解決する",
                     label_lv2=f"詳細な政策課題{i}を包括的に解決する",
-                    confidence=0.8
+                    confidence=0.8,
                 ),
-                f"bill_{i:03d}"
+                f"bill_{i:03d}",
             )
             for i in range(10)
         ]
@@ -508,8 +506,8 @@ class TestDataConsistency:
                         "Label_Lv1": "親の政策課題",
                         "Parent_ID": None,
                         "Confidence": 0.8,
-                        "Status": "approved"
-                    }
+                        "Status": "approved",
+                    },
                 },
                 {
                     "id": "rec_child_1",
@@ -518,13 +516,15 @@ class TestDataConsistency:
                         "Label_Lv2": "子の政策課題",
                         "Parent_ID": "rec_parent_1",
                         "Confidence": 0.7,
-                        "Status": "approved"
-                    }
-                }
+                        "Status": "approved",
+                    },
+                },
             ]
         }
 
-        mock_components["airtable_client"]._rate_limited_request.return_value = mock_tree_response
+        mock_components["airtable_client"]._rate_limited_request.return_value = (
+            mock_tree_response
+        )
 
         # Get issue tree
         tree = await issue_manager.get_issue_tree("approved")
@@ -554,7 +554,7 @@ class TestDataConsistency:
                 label_lv1=f"バージョン{i}の政策課題",
                 label_lv2=f"バージョン{i}の詳細課題",
                 confidence=0.8 + i * 0.1,
-                status="pending"
+                status="pending",
             )
             for i in range(3)
         ]
@@ -571,7 +571,7 @@ class TestDataConsistency:
                 record,
                 VersionChangeType.CONTENT_UPDATE,
                 f"Update {i}",
-                "system"
+                "system",
             )
 
             # Verify version linking

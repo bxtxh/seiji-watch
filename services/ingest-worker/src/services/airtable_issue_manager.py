@@ -21,9 +21,9 @@ class AirtableIssueRecord:
     """Airtable Issues table structure for dual-level issues."""
 
     # Core fields
-    issue_id: str           # UUID (PK)
-    label_lv1: str         # High school level (≤60 chars, verb ending)
-    label_lv2: str         # General reader level (≤60 chars, verb ending)
+    issue_id: str  # UUID (PK)
+    label_lv1: str  # High school level (≤60 chars, verb ending)
+    label_lv2: str  # General reader level (≤60 chars, verb ending)
     parent_id: str | None = None  # Self-relation (null for lv1)
     confidence: float = 0.0  # LLM confidence score (0-1)
 
@@ -45,20 +45,20 @@ class AirtableIssueRecord:
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API serialization."""
         return {
-            'issue_id': self.issue_id,
-            'label_lv1': self.label_lv1,
-            'label_lv2': self.label_lv2,
-            'parent_id': self.parent_id,
-            'confidence': self.confidence,
-            'status': self.status,
-            'valid_from': self.valid_from.isoformat() if self.valid_from else None,
-            'valid_to': self.valid_to.isoformat() if self.valid_to else None,
-            'source_bill_id': self.source_bill_id,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            'reviewer_notes': self.reviewer_notes,
-            'quality_score': self.quality_score,
-            'extraction_version': self.extraction_version
+            "issue_id": self.issue_id,
+            "label_lv1": self.label_lv1,
+            "label_lv2": self.label_lv2,
+            "parent_id": self.parent_id,
+            "confidence": self.confidence,
+            "status": self.status,
+            "valid_from": self.valid_from.isoformat() if self.valid_from else None,
+            "valid_to": self.valid_to.isoformat() if self.valid_to else None,
+            "source_bill_id": self.source_bill_id,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "reviewer_notes": self.reviewer_notes,
+            "quality_score": self.quality_score,
+            "extraction_version": self.extraction_version,
         }
 
 
@@ -74,8 +74,9 @@ class AirtableIssueManager:
         self.batch_size = 10  # Airtable limit
         self.batch_delay = 0.3  # Seconds between batches
 
-    async def create_issue_pair(self, dual_issue: DualLevelIssue, bill_id: str,
-                                quality_score: float = 0.0) -> tuple[str, str]:
+    async def create_issue_pair(
+        self, dual_issue: DualLevelIssue, bill_id: str, quality_score: float = 0.0
+    ) -> tuple[str, str]:
         """Create linked lv1 and lv2 issue records."""
 
         # Generate UUIDs for both records
@@ -100,9 +101,9 @@ class AirtableIssueManager:
                         "Quality_Score": quality_score,
                         "Extraction_Version": "1.0.0",
                         "Created_At": datetime.now().isoformat(),
-                        "Updated_At": datetime.now().isoformat()
+                        "Updated_At": datetime.now().isoformat(),
                     }
-                }
+                },
             )
 
             # Create lv2 issue (child)
@@ -122,13 +123,14 @@ class AirtableIssueManager:
                         "Quality_Score": quality_score,
                         "Extraction_Version": "1.0.0",
                         "Created_At": datetime.now().isoformat(),
-                        "Updated_At": datetime.now().isoformat()
+                        "Updated_At": datetime.now().isoformat(),
                     }
-                }
+                },
             )
 
             self.logger.info(
-                f"Created issue pair: lv1={lv1_record['id']}, lv2={lv2_record['id']}")
+                f"Created issue pair: lv1={lv1_record['id']}, lv2={lv2_record['id']}"
+            )
             return lv1_record["id"], lv2_record["id"]
 
         except Exception as e:
@@ -141,68 +143,66 @@ class AirtableIssueManager:
         unclassified_issue = DualLevelIssue(
             label_lv1="未分類の課題を扱う",
             label_lv2="分類が困難な政策課題を処理する",
-            confidence=0.1  # Low confidence for unclassified
+            confidence=0.1,  # Low confidence for unclassified
         )
 
-        return await self.create_issue_pair(unclassified_issue, bill_id, quality_score=0.1)
+        return await self.create_issue_pair(
+            unclassified_issue, bill_id, quality_score=0.1
+        )
 
     async def get_issue_record(self, record_id: str) -> AirtableIssueRecord | None:
         """Get issue record by Airtable record ID."""
         try:
             response = await self.client._rate_limited_request(
-                "GET",
-                f"{self.client.base_url}/{self.table_name}/{record_id}"
+                "GET", f"{self.client.base_url}/{self.table_name}/{record_id}"
             )
 
             fields = response.get("fields", {})
 
             return AirtableIssueRecord(
-                issue_id=fields.get(
-                    "Issue_ID",
-                    ""),
-                label_lv1=fields.get(
-                    "Label_Lv1",
-                    ""),
-                label_lv2=fields.get(
-                    "Label_Lv2",
-                    ""),
+                issue_id=fields.get("Issue_ID", ""),
+                label_lv1=fields.get("Label_Lv1", ""),
+                label_lv2=fields.get("Label_Lv2", ""),
                 parent_id=fields.get("Parent_ID"),
-                confidence=fields.get(
-                    "Confidence",
-                    0.0),
-                status=fields.get(
-                    "Status",
-                    "pending"),
-                valid_from=datetime.fromisoformat(
-                    fields["Valid_From"]).date() if fields.get("Valid_From") else date.today(),
-                valid_to=datetime.fromisoformat(
-                    fields["Valid_To"]).date() if fields.get("Valid_To") else None,
+                confidence=fields.get("Confidence", 0.0),
+                status=fields.get("Status", "pending"),
+                valid_from=(
+                    datetime.fromisoformat(fields["Valid_From"]).date()
+                    if fields.get("Valid_From")
+                    else date.today()
+                ),
+                valid_to=(
+                    datetime.fromisoformat(fields["Valid_To"]).date()
+                    if fields.get("Valid_To")
+                    else None
+                ),
                 source_bill_id=fields.get("Source_Bill_ID"),
-                created_at=datetime.fromisoformat(
-                    fields["Created_At"]) if fields.get("Created_At") else datetime.now(),
-                updated_at=datetime.fromisoformat(
-                    fields["Updated_At"]) if fields.get("Updated_At") else datetime.now(),
+                created_at=(
+                    datetime.fromisoformat(fields["Created_At"])
+                    if fields.get("Created_At")
+                    else datetime.now()
+                ),
+                updated_at=(
+                    datetime.fromisoformat(fields["Updated_At"])
+                    if fields.get("Updated_At")
+                    else datetime.now()
+                ),
                 reviewer_notes=fields.get("Reviewer_Notes"),
-                quality_score=fields.get(
-                    "Quality_Score",
-                    0.0),
-                extraction_version=fields.get(
-                    "Extraction_Version",
-                    "1.0.0"))
+                quality_score=fields.get("Quality_Score", 0.0),
+                extraction_version=fields.get("Extraction_Version", "1.0.0"),
+            )
 
         except Exception as e:
             self.logger.error(f"Failed to get issue record {record_id}: {e}")
             return None
 
-    async def update_issue_status(self, record_id: str, status: str,
-                                  reviewer_notes: str | None = None) -> bool:
+    async def update_issue_status(
+        self, record_id: str, status: str, reviewer_notes: str | None = None
+    ) -> bool:
         """Update issue status (for human review workflow)."""
         try:
             update_data = {
-                "fields": {
-                    "Status": status,
-                    "Updated_At": datetime.now().isoformat()
-                }
+                "fields": {"Status": status, "Updated_At": datetime.now().isoformat()}
             }
 
             if reviewer_notes:
@@ -211,7 +211,7 @@ class AirtableIssueManager:
             await self.client._rate_limited_request(
                 "PATCH",
                 f"{self.client.base_url}/{self.table_name}/{record_id}",
-                json=update_data
+                json=update_data,
             )
 
             self.logger.info(f"Updated issue {record_id} status to {status}")
@@ -222,7 +222,8 @@ class AirtableIssueManager:
             return False
 
     async def list_issues_by_status(
-            self, status: str, max_records: int = 100) -> list[dict[str, Any]]:
+        self, status: str, max_records: int = 100
+    ) -> list[dict[str, Any]]:
         """List issues by status with Airtable record metadata."""
         try:
             filter_formula = f"{{Status}} = '{status}'"
@@ -230,10 +231,7 @@ class AirtableIssueManager:
             response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={
-                    "filterByFormula": filter_formula,
-                    "maxRecords": max_records
-                }
+                params={"filterByFormula": filter_formula, "maxRecords": max_records},
             )
 
             return response.get("records", [])
@@ -256,8 +254,8 @@ class AirtableIssueManager:
                 f"{self.client.base_url}/{self.table_name}",
                 params={
                     "filterByFormula": filter_formula,
-                    "maxRecords": 1000  # Reasonable limit for counting
-                }
+                    "maxRecords": 1000,  # Reasonable limit for counting
+                },
             )
 
             return len(response.get("records", []))
@@ -266,8 +264,9 @@ class AirtableIssueManager:
             self.logger.error(f"Failed to count pending issues: {e}")
             return 0
 
-    async def get_issues_by_level(self, level: int, status: str = "approved",
-                                  max_records: int = 100) -> list[dict[str, Any]]:
+    async def get_issues_by_level(
+        self, level: int, status: str = "approved", max_records: int = 100
+    ) -> list[dict[str, Any]]:
         """Get issues filtered by level (1 or 2)."""
         try:
             if level == 1:
@@ -282,10 +281,7 @@ class AirtableIssueManager:
             response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={
-                    "filterByFormula": filter_formula,
-                    "maxRecords": max_records
-                }
+                params={"filterByFormula": filter_formula, "maxRecords": max_records},
             )
 
             return response.get("records", [])
@@ -303,10 +299,7 @@ class AirtableIssueManager:
             response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={
-                    "filterByFormula": filter_formula,
-                    "maxRecords": 1000
-                }
+                params={"filterByFormula": filter_formula, "maxRecords": 1000},
             )
 
             all_issues = response.get("records", [])
@@ -324,7 +317,7 @@ class AirtableIssueManager:
                         "label_lv1": fields.get("Label_Lv1", ""),
                         "confidence": fields.get("Confidence", 0.0),
                         "source_bill_id": fields.get("Source_Bill_ID"),
-                        "children": []
+                        "children": [],
                     }
 
             # Second pass: add children
@@ -332,12 +325,14 @@ class AirtableIssueManager:
                 fields = issue.get("fields", {})
                 parent_id = fields.get("Parent_ID")
                 if parent_id and parent_id in tree:  # lv2 issue
-                    tree[parent_id]["children"].append({
-                        "issue_id": fields.get("Issue_ID"),
-                        "label_lv2": fields.get("Label_Lv2", ""),
-                        "confidence": fields.get("Confidence", 0.0),
-                        "source_bill_id": fields.get("Source_Bill_ID")
-                    })
+                    tree[parent_id]["children"].append(
+                        {
+                            "issue_id": fields.get("Issue_ID"),
+                            "label_lv2": fields.get("Label_Lv2", ""),
+                            "confidence": fields.get("Confidence", 0.0),
+                            "source_bill_id": fields.get("Source_Bill_ID"),
+                        }
+                    )
 
             return tree
 
@@ -346,7 +341,8 @@ class AirtableIssueManager:
             return {}
 
     async def get_issues_by_bill(
-            self, bill_id: str, status: str = "approved") -> list[dict[str, Any]]:
+        self, bill_id: str, status: str = "approved"
+    ) -> list[dict[str, Any]]:
         """Get all issues related to a specific bill."""
         try:
             filter_formula = f"AND({{Status}} = '{status}', {{Source_Bill_ID}} = '{bill_id}', {{Valid_To}} = BLANK())"
@@ -354,10 +350,7 @@ class AirtableIssueManager:
             response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={
-                    "filterByFormula": filter_formula,
-                    "maxRecords": 100
-                }
+                params={"filterByFormula": filter_formula, "maxRecords": 100},
             )
 
             return response.get("records", [])
@@ -367,9 +360,8 @@ class AirtableIssueManager:
             return []
 
     async def invalidate_issues(
-            self,
-            issue_ids: list[str],
-            reason: str = "structural_change") -> bool:
+        self, issue_ids: list[str], reason: str = "structural_change"
+    ) -> bool:
         """Invalidate existing issues by setting valid_to date (for versioning)."""
         try:
             today = date.today().isoformat()
@@ -382,9 +374,9 @@ class AirtableIssueManager:
                         "fields": {
                             "Valid_To": today,
                             "Updated_At": datetime.now().isoformat(),
-                            "Reviewer_Notes": f"Invalidated: {reason}"
+                            "Reviewer_Notes": f"Invalidated: {reason}",
                         }
-                    }
+                    },
                 )
 
             self.logger.info(f"Invalidated {len(issue_ids)} issues: {reason}")
@@ -394,11 +386,11 @@ class AirtableIssueManager:
             self.logger.error(f"Failed to invalidate issues: {e}")
             return False
 
-    async def batch_create_issue_pairs(self,
-                                       dual_issues: list[tuple[DualLevelIssue,
-                                                               str]],
-                                       quality_scores: list[float] | None = None) -> list[tuple[str,
-                                                                                                str]]:
+    async def batch_create_issue_pairs(
+        self,
+        dual_issues: list[tuple[DualLevelIssue, str]],
+        quality_scores: list[float] | None = None,
+    ) -> list[tuple[str, str]]:
         """Batch create multiple issue pairs for efficiency."""
 
         if quality_scores is None:
@@ -408,19 +400,19 @@ class AirtableIssueManager:
 
         # Process in batches to respect Airtable limits
         for i in range(
-                0,
-                len(dual_issues),
-                self.batch_size //
-                2):  # Divide by 2 since we create 2 records per issue
-            batch = dual_issues[i:i + self.batch_size // 2]
-            batch_scores = quality_scores[i:i + self.batch_size // 2]
+            0, len(dual_issues), self.batch_size // 2
+        ):  # Divide by 2 since we create 2 records per issue
+            batch = dual_issues[i : i + self.batch_size // 2]
+            batch_scores = quality_scores[i : i + self.batch_size // 2]
 
             batch_results = []
 
             for j, (dual_issue, bill_id) in enumerate(batch):
                 try:
                     quality_score = batch_scores[j]
-                    lv1_id, lv2_id = await self.create_issue_pair(dual_issue, bill_id, quality_score)
+                    lv1_id, lv2_id = await self.create_issue_pair(
+                        dual_issue, bill_id, quality_score
+                    )
                     batch_results.append((lv1_id, lv2_id))
 
                     # Small delay between individual creates within batch
@@ -439,7 +431,8 @@ class AirtableIssueManager:
 
         successful_pairs = [pair for pair in results if pair[0] is not None]
         self.logger.info(
-            f"Batch created {len(successful_pairs)}/{len(dual_issues)} issue pairs")
+            f"Batch created {len(successful_pairs)}/{len(dual_issues)} issue pairs"
+        )
 
         return results
 
@@ -450,7 +443,7 @@ class AirtableIssueManager:
             all_issues_response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={"maxRecords": 1000}
+                params={"maxRecords": 1000},
             )
 
             all_issues = all_issues_response.get("records", [])
@@ -467,7 +460,7 @@ class AirtableIssueManager:
                 "average_confidence": 0.0,
                 "average_quality_score": 0.0,
                 "bills_with_issues": set(),
-                "issues_by_bill": {}
+                "issues_by_bill": {},
             }
 
             confidence_scores = []
@@ -506,20 +499,24 @@ class AirtableIssueManager:
                 bill_id = fields.get("Source_Bill_ID")
                 if bill_id:
                     stats["bills_with_issues"].add(bill_id)
-                    stats["issues_by_bill"][bill_id] = stats["issues_by_bill"].get(
-                        bill_id, 0) + 1
+                    stats["issues_by_bill"][bill_id] = (
+                        stats["issues_by_bill"].get(bill_id, 0) + 1
+                    )
 
             # Calculate averages
             if confidence_scores:
-                stats["average_confidence"] = sum(
-                    confidence_scores) / len(confidence_scores)
+                stats["average_confidence"] = sum(confidence_scores) / len(
+                    confidence_scores
+                )
             if quality_scores:
-                stats["average_quality_score"] = sum(
-                    quality_scores) / len(quality_scores)
+                stats["average_quality_score"] = sum(quality_scores) / len(
+                    quality_scores
+                )
 
             stats["unique_bills_count"] = len(stats["bills_with_issues"])
             stats["bills_with_issues"] = list(
-                stats["bills_with_issues"])  # Convert set to list for JSON
+                stats["bills_with_issues"]
+            )  # Convert set to list for JSON
 
             return stats
 
@@ -527,12 +524,13 @@ class AirtableIssueManager:
             self.logger.error(f"Failed to get issue statistics: {e}")
             return {}
 
-    async def search_issues(self,
-                            query: str,
-                            level: int | None = None,
-                            status: str = "approved",
-                            max_records: int = 50) -> list[dict[str,
-                                                                Any]]:
+    async def search_issues(
+        self,
+        query: str,
+        level: int | None = None,
+        status: str = "approved",
+        max_records: int = 50,
+    ) -> list[dict[str, Any]]:
         """Search issues by text query."""
         try:
             # Build search filter
@@ -553,10 +551,7 @@ class AirtableIssueManager:
             response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={
-                    "filterByFormula": filter_formula,
-                    "maxRecords": max_records
-                }
+                params={"filterByFormula": filter_formula, "maxRecords": max_records},
             )
 
             return response.get("records", [])
@@ -572,7 +567,7 @@ class AirtableIssueManager:
             response = await self.client._rate_limited_request(
                 "GET",
                 f"{self.client.base_url}/{self.table_name}",
-                params={"maxRecords": 1}
+                params={"maxRecords": 1},
             )
 
             return "records" in response

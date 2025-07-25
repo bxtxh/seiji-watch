@@ -21,12 +21,14 @@ async def inspect_table_schema(table_name: str, table_id: str):
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     async with aiohttp.ClientSession() as session:
         # Use metadata API to get table schema
-        metadata_url = f"https://api.airtable.com/v0/meta/bases/{AIRTABLE_BASE_ID}/tables"
+        metadata_url = (
+            f"https://api.airtable.com/v0/meta/bases/{AIRTABLE_BASE_ID}/tables"
+        )
 
         try:
             async with session.get(metadata_url, headers=headers) as response:
@@ -89,7 +91,7 @@ async def main():
     tables_to_inspect = [
         ("IssueCategories", "tbl6wK8L9K5ny1dDm"),
         ("Bills", "tblQjh6zvKLYa9fPn"),
-        ("Issues", "tbllqAfZMz6QNaMfF")
+        ("Issues", "tbllqAfZMz6QNaMfF"),
     ]
 
     for table_name, table_id in tables_to_inspect:
@@ -97,6 +99,7 @@ async def main():
         print()
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

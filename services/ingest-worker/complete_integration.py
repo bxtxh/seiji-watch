@@ -18,9 +18,9 @@ def load_env_file(env_file_path):
     with open(env_file_path) as f:
         for line in f:
             line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                value = value.strip('"\'')
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                value = value.strip("\"'")
                 os.environ[key] = value
     return True
 
@@ -39,13 +39,13 @@ def get_existing_records(pat, base_id):
             break
 
         data = response.json()
-        records = data.get('records', [])
+        records = data.get("records", [])
         all_records.extend(records)
 
-        offset = data.get('offset')
+        offset = data.get("offset")
         if not offset:
             break
-        params['offset'] = offset
+        params["offset"] = offset
 
     return all_records
 
@@ -77,11 +77,11 @@ def main():
     env_file = Path(__file__).parent / ".env.local"
     load_env_file(env_file)
 
-    pat = os.environ.get('AIRTABLE_PAT')
-    base_id = os.environ.get('AIRTABLE_BASE_ID')
+    pat = os.environ.get("AIRTABLE_PAT")
+    base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     # 法案データ収集
-    sys.path.insert(0, 'src')
+    sys.path.insert(0, "src")
     from scraper.diet_scraper import DietScraper
 
     scraper = DietScraper(enable_resilience=False)
@@ -101,10 +101,10 @@ def main():
     updated_count = 0
 
     for record in existing_records:
-        record_id = record['id']
-        fields = record.get('fields', {})
-        name = fields.get('Name', '')
-        current_bill_id = fields.get('Bill_ID', '')
+        record_id = record["id"]
+        fields = record.get("fields", {})
+        name = fields.get("Name", "")
+        current_bill_id = fields.get("Bill_ID", "")
 
         if current_bill_id:
             continue  # 既にBill_IDが設定済み
@@ -132,8 +132,9 @@ def main():
 
     # 未統合の法案を新規作成
     print("\n➕ 未統合法案の新規作成")
-    existing_names = {record.get('fields', {}).get('Name', '')
-                      for record in existing_records}
+    existing_names = {
+        record.get("fields", {}).get("Name", "") for record in existing_records
+    }
 
     new_bills = []
     for bill in bills:
@@ -149,15 +150,16 @@ def main():
                 "Name": bill.title,
                 "Bill_ID": bill.bill_id,
                 "Diet_Session": "217",
-                "Bill_Status": bill.status or 'N/A',
-                "Category": bill.category or 'N/A',
-                "Submitter": bill.submitter or 'N/A'
+                "Bill_Status": bill.status or "N/A",
+                "Category": bill.category or "N/A",
+                "Submitter": bill.submitter or "N/A",
             }
 
             if create_record(pat, base_id, fields):
                 created_count += 1
                 print(
-                    f"  ✅ {i+1}/{len(new_bills)}: {bill.bill_id} - {bill.title[:40]}...")
+                    f"  ✅ {i+1}/{len(new_bills)}: {bill.bill_id} - {bill.title[:40]}..."
+                )
             else:
                 print(f"  ❌ {i+1}/{len(new_bills)}: {bill.bill_id} - 作成失敗")
 
@@ -170,7 +172,7 @@ def main():
 
     # 最終確認
     final_records = get_existing_records(pat, base_id)
-    bill_id_filled = sum(1 for r in final_records if r.get('fields', {}).get('Bill_ID'))
+    bill_id_filled = sum(1 for r in final_records if r.get("fields", {}).get("Bill_ID"))
 
     print("\n🎯 最終結果:")
     print(f"  📋 総レコード数: {len(final_records)}")

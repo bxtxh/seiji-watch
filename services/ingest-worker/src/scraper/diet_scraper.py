@@ -2,6 +2,7 @@
 Diet website scraper for bill and session data collection.
 Enhanced with resilience and optimization features.
 """
+
 import logging
 import re
 import time
@@ -20,6 +21,7 @@ from .resilience import CacheConfig, RateLimitConfig, ResilientScraper
 @dataclass
 class BillData:
     """Diet bill metadata structure"""
+
     bill_id: str
     title: str
     submission_date: datetime | None
@@ -40,9 +42,11 @@ class DietScraper:
     def __init__(self, delay_seconds: float = 1.5, enable_resilience: bool = True):
         # Traditional session for backward compatibility
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)'
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (compatible; DietTracker/1.0; +https://github.com/diet-tracker)"
+            }
+        )
         self.delay_seconds = delay_seconds
         self.logger = logging.getLogger(__name__)
         self._last_request_time = 0
@@ -63,7 +67,7 @@ class DietScraper:
                 requests_per_second=0.5,  # Conservative: 1 request per 2 seconds
                 burst_size=3,  # Small burst allowance
                 cooldown_seconds=15.0,  # Longer cooldown if rate limited
-                respect_retry_after=True
+                respect_retry_after=True,
             )
 
             # Configure caching for duplicate detection
@@ -72,14 +76,14 @@ class DietScraper:
                 cache_dir="/tmp/diet_scraper_cache",
                 max_age_hours=24,  # Cache for 24 hours
                 max_size_mb=50,  # Limit cache size
-                hash_algorithm="sha256"
+                hash_algorithm="sha256",
             )
 
             self._resilient_scraper = ResilientScraper(
                 rate_limit_config=rate_config,
                 cache_config=cache_config,
                 max_concurrent_requests=3,  # Conservative concurrency
-                request_timeout=30
+                request_timeout=30,
             )
 
             self.logger.info("Resilient scraper initialized with optimized settings")
@@ -91,7 +95,7 @@ class DietScraper:
     def _init_robots_parser(self):
         """Initialize robots.txt parser"""
         try:
-            robots_url = urljoin(self.BASE_URL, '/robots.txt')
+            robots_url = urljoin(self.BASE_URL, "/robots.txt")
             self._robots_parser = RobotFileParser()
             self._robots_parser.set_url(robots_url)
             self._robots_parser.read()
@@ -105,7 +109,7 @@ class DietScraper:
         if not self._robots_parser:
             return True
 
-        user_agent = self.session.headers.get('User-Agent', '*')
+        user_agent = self.session.headers.get("User-Agent", "*")
         return self._robots_parser.can_fetch(user_agent, url)
 
     def _rate_limit(self):
@@ -143,22 +147,24 @@ class DietScraper:
         try:
             response = self._make_request(self.BILLS_URL, timeout=30)
 
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.content, "html.parser")
             bills = []
 
             # Debug: Print page structure
             self.logger.info(
-                f"Page title: {soup.title.string if soup.title else 'No title'}")
+                f"Page title: {soup.title.string if soup.title else 'No title'}"
+            )
 
             # Look for various table structures
-            bill_tables = soup.find_all('table')
+            bill_tables = soup.find_all("table")
             self.logger.info(f"Found {len(bill_tables)} tables on page")
 
             for i, table in enumerate(bill_tables):
                 self.logger.info(
-                    f"Table {i}: classes={table.get('class')}, rows={len(table.find_all('tr'))}")
+                    f"Table {i}: classes={table.get('class')}, rows={len(table.find_all('tr'))}"
+                )
 
-                rows = table.find_all('tr')
+                rows = table.find_all("tr")
                 if len(rows) <= 1:  # Skip tables with no data rows
                     continue
 
@@ -166,22 +172,22 @@ class DietScraper:
                 if i == 1 and self.logger.level <= logging.DEBUG:
                     self.logger.debug(f"Debugging Table {i}:")
                     for j, row in enumerate(rows[:3]):
-                        cells = row.find_all(['td', 'th'])
+                        cells = row.find_all(["td", "th"])
                         cell_texts = [
-                            c.get_text(
-                                strip=True)[
-                                :20] +
-                            '...' if len(
-                                c.get_text(
-                                    strip=True)) > 20 else c.get_text(
-                                strip=True) for c in cells]
+                            (
+                                c.get_text(strip=True)[:20] + "..."
+                                if len(c.get_text(strip=True)) > 20
+                                else c.get_text(strip=True)
+                            )
+                            for c in cells
+                        ]
                         self.logger.debug(f"  Row {j}: {cell_texts}")
 
                 # Skip header row if exists
-                data_rows = rows[1:] if rows[0].find('th') else rows
+                data_rows = rows[1:] if rows[0].find("th") else rows
 
                 for row in data_rows:
-                    cells = row.find_all(['td', 'th'])
+                    cells = row.find_all(["td", "th"])
                     if len(cells) >= 3:  # Minimum required cells
                         bill = self._parse_bill_row(cells)
                         if bill:
@@ -206,14 +212,14 @@ class DietScraper:
             title_cell = cells[2]
 
             # Check if this is a header row
-            if not diet_session or diet_session in ['提出回次', '回次']:
+            if not diet_session or diet_session in ["提出回次", "回次"]:
                 return None
 
             # Extract title and URL
-            title_link = title_cell.find('a')
+            title_link = title_cell.find("a")
             if title_link:
                 title = title_link.get_text(strip=True)
-                url = urljoin(self.BASE_URL, title_link.get('href'))
+                url = urljoin(self.BASE_URL, title_link.get("href"))
             else:
                 title = title_cell.get_text(strip=True)
                 url = ""
@@ -227,7 +233,9 @@ class DietScraper:
 
             # Extract status from remaining cells
             status = cells[3].get_text(strip=True) if len(cells) > 3 else "審議中"
-            bill_type = cells[4].get_text(strip=True) if len(cells) > 4 else "提出法律案"
+            bill_type = (
+                cells[4].get_text(strip=True) if len(cells) > 4 else "提出法律案"
+            )
 
             # Determine submitter based on bill type and context
             submitter = "政府" if "政府" in bill_type else "議員"
@@ -244,7 +252,7 @@ class DietScraper:
                 stage=stage,
                 submitter=submitter,
                 category=category,
-                url=url
+                url=url,
             )
 
         except Exception as e:
@@ -282,14 +290,14 @@ class DietScraper:
         try:
             response = self._make_request(bill_url, timeout=30)
 
-            soup = BeautifulSoup(response.content, 'html.parser')
+            soup = BeautifulSoup(response.content, "html.parser")
 
             # Extract detailed information
             details = {
-                'summary': self._extract_summary(soup),
-                'submission_date': self._extract_submission_date(soup),
-                'committee': self._extract_committee(soup),
-                'related_documents': self._extract_documents(soup)
+                "summary": self._extract_summary(soup),
+                "submission_date": self._extract_submission_date(soup),
+                "committee": self._extract_committee(soup),
+                "related_documents": self._extract_documents(soup),
             }
 
             return details
@@ -300,14 +308,14 @@ class DietScraper:
 
     def _extract_summary(self, soup: BeautifulSoup) -> str:
         """Extract bill summary from detail page"""
-        summary_section = soup.find('div', class_='summary')
+        summary_section = soup.find("div", class_="summary")
         if summary_section:
             return summary_section.get_text(strip=True)
         return ""
 
     def _extract_submission_date(self, soup: BeautifulSoup) -> datetime | None:
         """Extract submission date from detail page"""
-        date_pattern = r'(\d{4})年(\d{1,2})月(\d{1,2})日'
+        date_pattern = r"(\d{4})年(\d{1,2})月(\d{1,2})日"
         text = soup.get_text()
         match = re.search(date_pattern, text)
 
@@ -318,7 +326,7 @@ class DietScraper:
 
     def _extract_committee(self, soup: BeautifulSoup) -> str:
         """Extract committee information"""
-        committee_section = soup.find(text=re.compile(r'委員会'))
+        committee_section = soup.find(text=re.compile(r"委員会"))
         if committee_section:
             return committee_section.strip()
         return ""
@@ -326,10 +334,10 @@ class DietScraper:
     def _extract_documents(self, soup: BeautifulSoup) -> list[str]:
         """Extract related document URLs"""
         documents = []
-        doc_links = soup.find_all('a', href=re.compile(r'\.(pdf|doc|docx)$'))
+        doc_links = soup.find_all("a", href=re.compile(r"\.(pdf|doc|docx)$"))
 
         for link in doc_links:
-            doc_url = urljoin(self.BASE_URL, link.get('href'))
+            doc_url = urljoin(self.BASE_URL, link.get("href"))
             documents.append(doc_url)
 
         return documents
@@ -337,7 +345,8 @@ class DietScraper:
     # Enhanced resilience and optimization methods
 
     async def fetch_current_bills_async(
-            self, force_refresh: bool = False) -> list[BillData]:
+        self, force_refresh: bool = False
+    ) -> list[BillData]:
         """
         Async version of fetch_current_bills with resilience features
 
@@ -350,7 +359,8 @@ class DietScraper:
         if not self._resilient_scraper:
             # Fall back to synchronous method if resilient scraper not available
             self.logger.warning(
-                "Resilient scraper not available, falling back to sync method")
+                "Resilient scraper not available, falling back to sync method"
+            )
             return self.fetch_current_bills()
 
         try:
@@ -359,14 +369,12 @@ class DietScraper:
                 job = scraper.create_job(
                     job_type="fetch_bills",
                     url=self.BILLS_URL,
-                    metadata={"force_refresh": force_refresh}
+                    metadata={"force_refresh": force_refresh},
                 )
 
                 # Fetch main bills page
                 content = await scraper.fetch_with_resilience(
-                    self.BILLS_URL,
-                    job=job,
-                    skip_duplicates=not force_refresh
+                    self.BILLS_URL, job=job, skip_duplicates=not force_refresh
                 )
 
                 if content is None:
@@ -381,14 +389,15 @@ class DietScraper:
                     # Only fetch details for bills we haven't seen before
                     detail_urls = []
                     for bill in bills:
-                        if hasattr(bill, 'url') and bill.url:
+                        if hasattr(bill, "url") and bill.url:
                             # Create detail URL
                             detail_url = urljoin(self.BASE_URL, bill.url)
                             detail_urls.append(detail_url)
 
                     if detail_urls:
                         self.logger.info(
-                            f"Fetching details for {len(detail_urls)} bills")
+                            f"Fetching details for {len(detail_urls)} bills"
+                        )
 
                         # Fetch details with progress tracking
                         def progress_callback(progress: float):
@@ -398,7 +407,7 @@ class DietScraper:
                             detail_urls[:10],  # Limit to first 10 for performance
                             job_type="fetch_bill_details",
                             skip_duplicates=not force_refresh,
-                            progress_callback=progress_callback
+                            progress_callback=progress_callback,
                         )
 
                         # Process detail results and enhance bill data
@@ -410,17 +419,21 @@ class DietScraper:
                                     # Parse and enhance bill with details
                                     try:
                                         soup = BeautifulSoup(
-                                            detail_content, 'html.parser')
+                                            detail_content, "html.parser"
+                                        )
                                         enhanced_summary = self._extract_summary(soup)
                                         if enhanced_summary and len(
-                                                enhanced_summary) > len(bill.summary or ""):
+                                            enhanced_summary
+                                        ) > len(bill.summary or ""):
                                             bill.summary = enhanced_summary
                                     except Exception as e:
                                         self.logger.warning(
-                                            f"Failed to parse details for {bill.bill_id}: {e}")
+                                            f"Failed to parse details for {bill.bill_id}: {e}"
+                                        )
 
                 self.logger.info(
-                    f"Successfully fetched {len(bills)} bills with resilience features")
+                    f"Successfully fetched {len(bills)} bills with resilience features"
+                )
                 return bills
 
         except Exception as e:
@@ -433,21 +446,21 @@ class DietScraper:
         bills = []
 
         try:
-            soup = BeautifulSoup(html_content, 'html.parser')
+            soup = BeautifulSoup(html_content, "html.parser")
 
             # Look for various table structures
-            bill_tables = soup.find_all('table')
+            bill_tables = soup.find_all("table")
 
             for table in bill_tables:
-                rows = table.find_all('tr')
+                rows = table.find_all("tr")
                 if len(rows) <= 1:  # Skip tables with no data rows
                     continue
 
                 # Skip header row if exists
-                data_rows = rows[1:] if rows[0].find('th') else rows
+                data_rows = rows[1:] if rows[0].find("th") else rows
 
                 for row in data_rows:
-                    cells = row.find_all(['td', 'th'])
+                    cells = row.find_all(["td", "th"])
                     if len(cells) >= 3:  # Minimum required cells
                         bill = self._parse_bill_row(cells)
                         if bill:
@@ -459,7 +472,8 @@ class DietScraper:
         return bills
 
     async def fetch_bill_details_async(
-            self, bill_url: str, force_refresh: bool = False) -> dict[str, Any]:
+        self, bill_url: str, force_refresh: bool = False
+    ) -> dict[str, Any]:
         """
         Async version of fetch_bill_details with resilience features
 
@@ -477,29 +491,29 @@ class DietScraper:
         try:
             async with self._resilient_scraper as scraper:
                 content = await scraper.fetch_with_resilience(
-                    bill_url,
-                    skip_duplicates=not force_refresh
+                    bill_url, skip_duplicates=not force_refresh
                 )
 
                 if content is None:
                     self.logger.info(f"Bill details skipped (duplicate): {bill_url}")
                     return {}
 
-                soup = BeautifulSoup(content, 'html.parser')
+                soup = BeautifulSoup(content, "html.parser")
 
                 details = {
-                    'title': soup.title.string if soup.title else '',
-                    'summary': self._extract_summary(soup),
-                    'submission_date': self._extract_submission_date(soup),
-                    'committee': self._extract_committee(soup),
-                    'related_documents': self._extract_documents(soup)
+                    "title": soup.title.string if soup.title else "",
+                    "summary": self._extract_summary(soup),
+                    "submission_date": self._extract_submission_date(soup),
+                    "committee": self._extract_committee(soup),
+                    "related_documents": self._extract_documents(soup),
                 }
 
                 return details
 
         except Exception as e:
             self.logger.error(
-                f"Failed to fetch bill details with resilient scraper: {e}")
+                f"Failed to fetch bill details with resilient scraper: {e}"
+            )
             return self.fetch_bill_details(bill_url)
 
     def get_scraper_statistics(self) -> dict[str, Any]:
@@ -507,7 +521,7 @@ class DietScraper:
         stats = {
             "traditional_scraper": {
                 "delay_seconds": self.delay_seconds,
-                "robots_parser_enabled": self._robots_parser is not None
+                "robots_parser_enabled": self._robots_parser is not None,
             }
         }
 

@@ -18,10 +18,11 @@ try:
 except ImportError:
     print("Installing pykakasi for kana conversion...")
     import subprocess
-    subprocess.check_call(['python3', '-m', 'pip', 'install', 'pykakasi'])
+
+    subprocess.check_call(["python3", "-m", "pip", "install", "pykakasi"])
     import pykakasi
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class MembersNameKanaFixer:
@@ -34,12 +35,12 @@ class MembersNameKanaFixer:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Initialize pykakasi for kanji to kana conversion
         self.kks = pykakasi.kakasi()
-        self.kks.setMode('J', 'H')  # Kanji to Hiragana
+        self.kks.setMode("J", "H")  # Kanji to Hiragana
         self.conv = self.kks.getConverter()
 
         # Known politician name corrections (for better accuracy)
@@ -59,7 +60,7 @@ class MembersNameKanaFixer:
             "加藤勝信": "かとうかつのぶ",
             "茂木敏充": "もてぎとしみつ",
             "河野太郎": "こうのたろう",
-            "小泉進次郎": "こいずみしんじろう"
+            "小泉進次郎": "こいずみしんじろう",
         }
 
         self.results = {
@@ -68,7 +69,7 @@ class MembersNameKanaFixer:
             "empty_fixed": 0,
             "already_good": 0,
             "errors": 0,
-            "backup_created": False
+            "backup_created": False,
         }
 
     async def get_all_members(self, session):
@@ -82,16 +83,14 @@ class MembersNameKanaFixer:
                 params["offset"] = offset
 
             async with session.get(
-                f"{self.base_url}/Members (議員)",
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/Members (議員)", headers=self.headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -121,8 +120,13 @@ class MembersNameKanaFixer:
 
         # Check for placeholder patterns
         placeholder_patterns = [
-            "たなかたろう", "田中太郎", "tanaka", "taro",
-            "さとうはなこ", "佐藤花子", "hanako"
+            "たなかたろう",
+            "田中太郎",
+            "tanaka",
+            "taro",
+            "さとうはなこ",
+            "佐藤花子",
+            "hanako",
         ]
 
         if any(pattern in name_kana.lower() for pattern in placeholder_patterns):
@@ -139,34 +143,30 @@ class MembersNameKanaFixer:
         successful_updates = 0
 
         for record in records_to_fix:
-            name = record['name']
-            new_kana = record['new_kana']
-            record_id = record['id']
+            name = record["name"]
+            new_kana = record["new_kana"]
+            record_id = record["id"]
 
             try:
-                update_data = {
-                    "fields": {
-                        "Name_Kana": new_kana
-                    }
-                }
+                update_data = {"fields": {"Name_Kana": new_kana}}
 
                 async with session.patch(
                     f"{self.base_url}/Members (議員)/{record_id}",
                     headers=self.headers,
-                    json=update_data
+                    json=update_data,
                 ) as response:
                     if response.status == 200:
                         successful_updates += 1
-                        if record['fix_type'] == 'placeholder':
-                            self.results['placeholder_fixed'] += 1
-                        elif record['fix_type'] == 'empty':
-                            self.results['empty_fixed'] += 1
+                        if record["fix_type"] == "placeholder":
+                            self.results["placeholder_fixed"] += 1
+                        elif record["fix_type"] == "empty":
+                            self.results["empty_fixed"] += 1
                     else:
-                        self.results['errors'] += 1
+                        self.results["errors"] += 1
                         print(f"   ❌ Error updating {name}: {response.status}")
 
             except Exception as e:
-                self.results['errors'] += 1
+                self.results["errors"] += 1
                 print(f"   ❌ Exception updating {name}: {e}")
 
             # Rate limiting
@@ -194,17 +194,12 @@ class MembersNameKanaFixer:
             print("\n🔍 Analyzing Name_Kana field state...")
 
             records_to_fix = []
-            analysis = {
-                "empty": 0,
-                "placeholder": 0,
-                "too_short": 0,
-                "good": 0
-            }
+            analysis = {"empty": 0, "placeholder": 0, "too_short": 0, "good": 0}
 
             for record in all_records:
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                name_kana = fields.get('Name_Kana', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                name_kana = fields.get("Name_Kana", "")
 
                 if name:
                     needs_fix, fix_type = self.needs_kana_fix(name, name_kana)
@@ -212,13 +207,15 @@ class MembersNameKanaFixer:
 
                     if needs_fix:
                         new_kana = self.generate_kana_reading(name)
-                        records_to_fix.append({
-                            'id': record['id'],
-                            'name': name,
-                            'current_kana': name_kana,
-                            'new_kana': new_kana,
-                            'fix_type': fix_type
-                        })
+                        records_to_fix.append(
+                            {
+                                "id": record["id"],
+                                "name": name,
+                                "current_kana": name_kana,
+                                "new_kana": new_kana,
+                                "fix_type": fix_type,
+                            }
+                        )
 
             print("📊 Analysis Results:")
             print(f"   ✅ Good kana: {analysis['good']}")
@@ -237,11 +234,13 @@ class MembersNameKanaFixer:
                 "backup_date": datetime.now().isoformat(),
                 "records_to_fix": len(records_to_fix),
                 "analysis": analysis,
-                "records": [item for item in records_to_fix]
+                "records": [item for item in records_to_fix],
             }
 
-            backup_filename = f"members_kana_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(backup_filename, 'w', encoding='utf-8') as f:
+            backup_filename = (
+                f"members_kana_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            )
+            with open(backup_filename, "w", encoding="utf-8") as f:
                 json.dump(backup_data, f, indent=2, ensure_ascii=False)
 
             self.results["backup_created"] = True
@@ -264,12 +263,13 @@ class MembersNameKanaFixer:
             total_fixed = 0
 
             for i in range(0, len(records_to_fix), batch_size):
-                batch = records_to_fix[i:i + batch_size]
+                batch = records_to_fix[i : i + batch_size]
                 batch_fixed = await self.fix_name_kana_batch(session, batch)
                 total_fixed += batch_fixed
 
                 print(
-                    f"   ✅ Batch {i//batch_size + 1}: Fixed {batch_fixed}/{len(batch)} records")
+                    f"   ✅ Batch {i//batch_size + 1}: Fixed {batch_fixed}/{len(batch)} records"
+                )
 
             self.results["total_processed"] = len(records_to_fix)
             self.results["already_good"] = analysis["good"]
@@ -282,9 +282,9 @@ class MembersNameKanaFixer:
             remaining_issues = 0
 
             for record in verification_records[:100]:  # Sample check
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                name_kana = fields.get('Name_Kana', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                name_kana = fields.get("Name_Kana", "")
 
                 if name:
                     needs_fix, _ = self.needs_kana_fix(name, name_kana)
@@ -309,16 +309,21 @@ class MembersNameKanaFixer:
         print(f"❌ Errors: {self.results['errors']}")
         print(f"💾 Backup created: {'✅' if self.results['backup_created'] else '❌'}")
 
-        self.results['already_good'] + \
-            self.results['placeholder_fixed'] + self.results['empty_fixed']
-        if self.results['total_processed'] > 0:
+        (
+            self.results["already_good"]
+            + self.results["placeholder_fixed"]
+            + self.results["empty_fixed"]
+        )
+        if self.results["total_processed"] > 0:
             success_rate = (
-                (self.results['placeholder_fixed'] + self.results['empty_fixed']) / self.results['total_processed']) * 100
+                (self.results["placeholder_fixed"] + self.results["empty_fixed"])
+                / self.results["total_processed"]
+            ) * 100
             print(f"\n📈 Fix Success Rate: {success_rate:.1f}%")
 
-        if self.results['errors'] == 0 and self.results['total_processed'] > 0:
+        if self.results["errors"] == 0 and self.results["total_processed"] > 0:
             print("🎉 SUCCESS! All Name_Kana fields have been fixed!")
-        elif self.results['errors'] < 10:
+        elif self.results["errors"] < 10:
             print(f"👍 Mostly successful - {self.results['errors']} minor errors")
         else:
             print(f"⚠️ Some issues - {self.results['errors']} errors need attention")
@@ -332,14 +337,19 @@ async def main():
     print("\n✅ Members Name_Kana fix completed!")
 
     # Save final report
-    report_filename = f"members_kana_fix_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(report_filename, 'w', encoding='utf-8') as f:
-        json.dump({
-            "completion_date": datetime.now().isoformat(),
-            "results": results
-        }, f, indent=2, ensure_ascii=False)
+    report_filename = (
+        f"members_kana_fix_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    )
+    with open(report_filename, "w", encoding="utf-8") as f:
+        json.dump(
+            {"completion_date": datetime.now().isoformat(), "results": results},
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     print(f"💾 Final report saved: {report_filename}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

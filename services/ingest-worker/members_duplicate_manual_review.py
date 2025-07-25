@@ -12,7 +12,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 class MembersDuplicateReviewer:
@@ -29,7 +29,7 @@ class MembersDuplicateReviewer:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Key fields for duplicate detection
@@ -42,11 +42,12 @@ class MembersDuplicateReviewer:
             "Constituency": 0.20,
             "House": 0.15,
             "Party": 0.10,
-            "Terms_Served": 0.10
+            "Terms_Served": 0.10,
         }
 
     async def get_all_members_records(
-            self, session: aiohttp.ClientSession) -> list[dict]:
+        self, session: aiohttp.ClientSession
+    ) -> list[dict]:
         """Fetch all Members records"""
         all_records = []
         offset = None
@@ -60,14 +61,14 @@ class MembersDuplicateReviewer:
                 async with session.get(
                     f"{self.base_url}/{self.table_name}",
                     headers=self.headers,
-                    params=params
+                    params=params,
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        records = data.get('records', [])
+                        records = data.get("records", [])
                         all_records.extend(records)
 
-                        offset = data.get('offset')
+                        offset = data.get("offset")
                         if not offset:
                             break
 
@@ -105,8 +106,8 @@ class MembersDuplicateReviewer:
         name_groups = {}
 
         for record in records:
-            fields = record.get('fields', {})
-            name = fields.get('Name', '').strip()
+            fields = record.get("fields", {})
+            name = fields.get("Name", "").strip()
 
             if name:
                 if name not in name_groups:
@@ -114,8 +115,9 @@ class MembersDuplicateReviewer:
                 name_groups[name].append(record)
 
         # Keep only groups with multiple records
-        exact_duplicates = {name: group for name, group in name_groups.items()
-                            if len(group) > 1}
+        exact_duplicates = {
+            name: group for name, group in name_groups.items() if len(group) > 1
+        }
 
         return exact_duplicates
 
@@ -124,13 +126,13 @@ class MembersDuplicateReviewer:
         potential_groups = {}
 
         for record in records:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
 
             # Create composite key from multiple fields
-            name = fields.get('Name', '').strip()
-            name_kana = fields.get('Name_Kana', '').strip()
-            constituency = fields.get('Constituency', '').strip()
-            house = fields.get('House', '').strip()
+            name = fields.get("Name", "").strip()
+            name_kana = fields.get("Name_Kana", "").strip()
+            constituency = fields.get("Constituency", "").strip()
+            house = fields.get("House", "").strip()
 
             # Skip if essential data is missing
             if not name or not house:
@@ -157,8 +159,9 @@ class MembersDuplicateReviewer:
                 potential_groups[key].append(record)
 
         # Keep only groups with multiple records
-        potential_duplicates = {key: group for key, group in potential_groups.items()
-                                if len(group) > 1}
+        potential_duplicates = {
+            key: group for key, group in potential_groups.items() if len(group) > 1
+        }
 
         return potential_duplicates
 
@@ -170,19 +173,19 @@ class MembersDuplicateReviewer:
             "recommended_action": "manual_review",
             "quality_scores": [],
             "suggested_keep": None,
-            "merge_conflicts": []
+            "merge_conflicts": [],
         }
 
         for record in group:
-            fields = record.get('fields', {})
+            fields = record.get("fields", {})
             quality_score = self.calculate_record_quality_score(fields)
 
             record_info = {
-                "id": record['id'],
+                "id": record["id"],
                 "fields": fields,
                 "quality_score": quality_score,
-                "created_at": fields.get('Created_At', ''),
-                "updated_at": fields.get('Updated_At', '')
+                "created_at": fields.get("Created_At", ""),
+                "updated_at": fields.get("Updated_At", ""),
             }
 
             analysis["records"].append(record_info)
@@ -206,10 +209,9 @@ class MembersDuplicateReviewer:
 
         for field, values in field_values.items():
             if len(values) > 1:
-                analysis["merge_conflicts"].append({
-                    "field": field,
-                    "values": list(values)
-                })
+                analysis["merge_conflicts"].append(
+                    {"field": field, "values": list(values)}
+                )
 
         # Determine recommended action
         if len(analysis["merge_conflicts"]) == 0:
@@ -221,8 +223,9 @@ class MembersDuplicateReviewer:
 
         return analysis
 
-    def print_duplicate_analysis(self, duplicate_type: str,
-                                 groups: dict[str, list[dict]]):
+    def print_duplicate_analysis(
+        self, duplicate_type: str, groups: dict[str, list[dict]]
+    ):
         """Print detailed duplicate analysis"""
         print(f"\n{'='*80}")
         print(f"🔍 {duplicate_type.upper()} ANALYSIS")
@@ -248,9 +251,14 @@ class MembersDuplicateReviewer:
 
             # Show each record in group
             for j, record_info in enumerate(analysis["records"]):
-                marker = "🟢 KEEP" if record_info["id"] == analysis["suggested_keep"] else "🔴 REMOVE"
+                marker = (
+                    "🟢 KEEP"
+                    if record_info["id"] == analysis["suggested_keep"]
+                    else "🔴 REMOVE"
+                )
                 print(
-                    f"   {marker} Record {j+1} (Q:{record_info['quality_score']}): {record_info['id']}")
+                    f"   {marker} Record {j+1} (Q:{record_info['quality_score']}): {record_info['id']}"
+                )
 
                 fields = record_info["fields"]
                 print(f"      Name: {fields.get('Name', 'N/A')}")
@@ -265,7 +273,8 @@ class MembersDuplicateReviewer:
                     print(f"      {conflict['field']}: {', '.join(conflict['values'])}")
 
     async def save_duplicate_analysis_report(
-            self, exact_groups: dict, potential_groups: dict):
+        self, exact_groups: dict, potential_groups: dict
+    ):
         """Save comprehensive duplicate analysis report"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -284,37 +293,73 @@ class MembersDuplicateReviewer:
             "summary": {
                 "exact_duplicate_groups": len(exact_groups),
                 "potential_duplicate_groups": len(potential_groups),
-                "total_exact_duplicates": sum(len(group) - 1 for group in exact_groups.values()),
-                "total_potential_duplicates": sum(len(group) - 1 for group in potential_groups.values())
+                "total_exact_duplicates": sum(
+                    len(group) - 1 for group in exact_groups.values()
+                ),
+                "total_potential_duplicates": sum(
+                    len(group) - 1 for group in potential_groups.values()
+                ),
             },
             "exact_duplicates": {
                 "groups": exact_analyses,
                 "action_summary": {
-                    "auto_merge": sum(1 for a in exact_analyses.values() if a["recommended_action"] == "auto_merge"),
-                    "simple_merge": sum(1 for a in exact_analyses.values() if a["recommended_action"] == "simple_merge"),
-                    "complex_merge": sum(1 for a in exact_analyses.values() if a["recommended_action"] == "complex_merge"),
-                    "manual_review": sum(1 for a in exact_analyses.values() if a["recommended_action"] == "manual_review")
-                }
+                    "auto_merge": sum(
+                        1
+                        for a in exact_analyses.values()
+                        if a["recommended_action"] == "auto_merge"
+                    ),
+                    "simple_merge": sum(
+                        1
+                        for a in exact_analyses.values()
+                        if a["recommended_action"] == "simple_merge"
+                    ),
+                    "complex_merge": sum(
+                        1
+                        for a in exact_analyses.values()
+                        if a["recommended_action"] == "complex_merge"
+                    ),
+                    "manual_review": sum(
+                        1
+                        for a in exact_analyses.values()
+                        if a["recommended_action"] == "manual_review"
+                    ),
+                },
             },
             "potential_duplicates": {
                 "groups": potential_analyses,
                 "action_summary": {
-                    "auto_merge": sum(1 for a in potential_analyses.values() if a["recommended_action"] == "auto_merge"),
-                    "simple_merge": sum(1 for a in potential_analyses.values() if a["recommended_action"] == "simple_merge"),
-                    "complex_merge": sum(1 for a in potential_analyses.values() if a["recommended_action"] == "complex_merge"),
-                    "manual_review": sum(1 for a in potential_analyses.values() if a["recommended_action"] == "manual_review")
-                }
+                    "auto_merge": sum(
+                        1
+                        for a in potential_analyses.values()
+                        if a["recommended_action"] == "auto_merge"
+                    ),
+                    "simple_merge": sum(
+                        1
+                        for a in potential_analyses.values()
+                        if a["recommended_action"] == "simple_merge"
+                    ),
+                    "complex_merge": sum(
+                        1
+                        for a in potential_analyses.values()
+                        if a["recommended_action"] == "complex_merge"
+                    ),
+                    "manual_review": sum(
+                        1
+                        for a in potential_analyses.values()
+                        if a["recommended_action"] == "manual_review"
+                    ),
+                },
             },
             "recommendations": [
                 "Review exact duplicates first (higher confidence)",
                 "Auto-merge records with no conflicts",
                 "Manually review complex merges",
-                "Use quality scores to select best records"
-            ]
+                "Use quality scores to select best records",
+            ],
         }
 
         filename = f"members_duplicate_analysis_{timestamp}.json"
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Duplicate analysis report saved: {filename}")
@@ -340,7 +385,9 @@ class MembersDuplicateReviewer:
             self.print_duplicate_analysis("potential duplicates", potential_duplicates)
 
             # Save comprehensive report
-            report = await self.save_duplicate_analysis_report(exact_duplicates, potential_duplicates)
+            report = await self.save_duplicate_analysis_report(
+                exact_duplicates, potential_duplicates
+            )
 
             # Summary
             print(f"\n{'='*80}")
@@ -350,20 +397,25 @@ class MembersDuplicateReviewer:
             print(f"🔍 Exact Duplicate Groups: {len(exact_duplicates)}")
             print(f"🔍 Potential Duplicate Groups: {len(potential_duplicates)}")
             print(
-                f"🗑️ Total Records to Review: {report['summary']['total_exact_duplicates'] + report['summary']['total_potential_duplicates']}")
+                f"🗑️ Total Records to Review: {report['summary']['total_exact_duplicates'] + report['summary']['total_potential_duplicates']}"
+            )
 
             print("\n🎯 RECOMMENDED ACTIONS:")
             exact_summary = report["exact_duplicates"]["action_summary"]
             potential_summary = report["potential_duplicates"]["action_summary"]
 
             print(
-                f"   ✅ Auto-merge ready: {exact_summary['auto_merge']} exact + {potential_summary['auto_merge']} potential")
+                f"   ✅ Auto-merge ready: {exact_summary['auto_merge']} exact + {potential_summary['auto_merge']} potential"
+            )
             print(
-                f"   🔧 Simple merge needed: {exact_summary['simple_merge']} exact + {potential_summary['simple_merge']} potential")
+                f"   🔧 Simple merge needed: {exact_summary['simple_merge']} exact + {potential_summary['simple_merge']} potential"
+            )
             print(
-                f"   🧠 Complex review needed: {exact_summary['complex_merge']} exact + {potential_summary['complex_merge']} potential")
+                f"   🧠 Complex review needed: {exact_summary['complex_merge']} exact + {potential_summary['complex_merge']} potential"
+            )
             print(
-                f"   👥 Manual review: {exact_summary['manual_review']} exact + {potential_summary['manual_review']} potential")
+                f"   👥 Manual review: {exact_summary['manual_review']} exact + {potential_summary['manual_review']} potential"
+            )
 
 
 async def main():
@@ -377,6 +429,7 @@ async def main():
     print("   2. Start with auto-merge candidates")
     print("   3. Manually review complex cases")
     print("   4. Implement merge operations")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

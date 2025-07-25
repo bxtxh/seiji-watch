@@ -14,7 +14,7 @@ from datetime import datetime
 def load_bills_data():
     """既存の法案データを読み込み"""
     print("📄 法案データ読み込み")
-    sys.path.insert(0, 'src')
+    sys.path.insert(0, "src")
     from scraper.diet_scraper import DietScraper
 
     scraper = DietScraper(enable_resilience=False)
@@ -33,7 +33,7 @@ def bill_to_airtable_row(bill):
         "外交・国際": "foreign_affairs",
         "予算・決算": "budget",
         "経済・産業": "economy",
-        "その他": "other"
+        "その他": "other",
     }
 
     # ステータスマッピング
@@ -43,7 +43,7 @@ def bill_to_airtable_row(bill):
         "採決待ち": "pending_vote",
         "成立": "passed",
         "否決": "rejected",
-        "": "backlog"
+        "": "backlog",
     }
 
     return {
@@ -56,9 +56,11 @@ def bill_to_airtable_row(bill):
         "Bill_Type": bill.submitter or "議員",
         "Diet_URL": bill.url or "",
         "Summary": bill.summary or "",
-        "Submitted_Date": bill.submission_date.isoformat() if bill.submission_date else "",
+        "Submitted_Date": (
+            bill.submission_date.isoformat() if bill.submission_date else ""
+        ),
         "Created_At": datetime.now().isoformat(),
-        "Updated_At": datetime.now().isoformat()
+        "Updated_At": datetime.now().isoformat(),
     }
 
 
@@ -78,10 +80,10 @@ def export_bills_to_csv(bills, output_path):
         "Summary",
         "Submitted_Date",
         "Created_At",
-        "Updated_At"
+        "Updated_At",
     ]
 
-    with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+    with open(output_path, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         # ヘッダー行を書き込み
@@ -101,16 +103,19 @@ def export_bills_to_json(bills, output_path):
     bills_data = []
     for bill in bills:
         bill_dict = {
-            'bill_id': bill.bill_id,
-            'title': bill.title,
-            'status': bill.status,
-            'stage': bill.stage,
-            'submitter': bill.submitter,
-            'category': bill.category,
-            'url': bill.url,
-            'summary': bill.summary,
-            'submission_date': bill.submission_date.isoformat() if bill.submission_date else None,
-            'collected_at': datetime.now().isoformat()}
+            "bill_id": bill.bill_id,
+            "title": bill.title,
+            "status": bill.status,
+            "stage": bill.stage,
+            "submitter": bill.submitter,
+            "category": bill.category,
+            "url": bill.url,
+            "summary": bill.summary,
+            "submission_date": (
+                bill.submission_date.isoformat() if bill.submission_date else None
+            ),
+            "collected_at": datetime.now().isoformat(),
+        }
         bills_data.append(bill_dict)
 
     export_data = {
@@ -119,12 +124,12 @@ def export_bills_to_json(bills, output_path):
             "total_bills": len(bills_data),
             "diet_session": "217",
             "source": "参議院",
-            "purpose": "MVP manual Airtable import"
+            "purpose": "MVP manual Airtable import",
         },
-        "bills": bills_data
+        "bills": bills_data,
     }
 
-    with open(output_path, 'w', encoding='utf-8') as jsonfile:
+    with open(output_path, "w", encoding="utf-8") as jsonfile:
         json.dump(export_data, jsonfile, ensure_ascii=False, indent=2)
 
     print(f"✅ JSONファイル作成完了: {output_path}")
@@ -145,7 +150,7 @@ def main():
             return 1
 
         # 2. ファイル名生成
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_filename = f"diet_bills_217_for_airtable_{timestamp}.csv"
         json_filename = f"diet_bills_217_backup_{timestamp}.json"
 
@@ -173,6 +178,7 @@ def main():
     except Exception as e:
         print(f"❌ エクスポートエラー: {str(e)}")
         import traceback
+
         traceback.print_exc()
         return 1
 

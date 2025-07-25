@@ -13,7 +13,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 
 async def cleanup_member_names():
@@ -23,10 +23,7 @@ async def cleanup_member_names():
     base_id = os.getenv("AIRTABLE_BASE_ID")
     base_url = f"https://api.airtable.com/v0/{base_id}"
 
-    headers = {
-        "Authorization": f"Bearer {pat}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
 
     print("🧹 Starting Members Name Cleanup...")
     print("🎯 Target: Remove trailing numbers from 247 affected names")
@@ -35,7 +32,7 @@ async def cleanup_member_names():
         "names_cleaned": 0,
         "records_updated": 0,
         "errors": 0,
-        "backup_created": False
+        "backup_created": False,
     }
 
     async with aiohttp.ClientSession() as session:
@@ -51,16 +48,14 @@ async def cleanup_member_names():
                 params["offset"] = offset
 
             async with session.get(
-                f"{base_url}/Members (議員)",
-                headers=headers,
-                params=params
+                f"{base_url}/Members (議員)", headers=headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -74,17 +69,19 @@ async def cleanup_member_names():
 
         records_to_clean = []
         for record in all_records:
-            name = record.get('fields', {}).get('Name', '')
+            name = record.get("fields", {}).get("Name", "")
 
             # Check if name ends with a digit
-            if re.search(r'\d+$', name):
-                base_name = re.sub(r'\d+$', '', name).strip()
+            if re.search(r"\d+$", name):
+                base_name = re.sub(r"\d+$", "", name).strip()
                 if base_name != name:  # Only if there's actually a change
-                    records_to_clean.append({
-                        'record': record,
-                        'current_name': name,
-                        'clean_name': base_name
-                    })
+                    records_to_clean.append(
+                        {
+                            "record": record,
+                            "current_name": name,
+                            "clean_name": base_name,
+                        }
+                    )
 
         print(f"🔍 Found {len(records_to_clean)} records with trailing numbers")
 
@@ -94,11 +91,11 @@ async def cleanup_member_names():
         backup_data = {
             "backup_date": datetime.now().isoformat(),
             "total_records": len(records_to_clean),
-            "records": [item['record'] for item in records_to_clean]
+            "records": [item["record"] for item in records_to_clean],
         }
 
         backup_filename = f"members_name_cleanup_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        with open(backup_filename, 'w', encoding='utf-8') as f:
+        with open(backup_filename, "w", encoding="utf-8") as f:
             json.dump(backup_data, f, indent=2, ensure_ascii=False)
 
         cleanup_results["backup_created"] = True
@@ -131,21 +128,17 @@ async def cleanup_member_names():
         print("\n🚀 Executing name cleanup...")
 
         for i, item in enumerate(records_to_clean):
-            record = item['record']
-            clean_name = item['clean_name']
+            record = item["record"]
+            clean_name = item["clean_name"]
 
             try:
                 # Update the record with cleaned name
-                update_data = {
-                    "fields": {
-                        "Name": clean_name
-                    }
-                }
+                update_data = {"fields": {"Name": clean_name}}
 
                 async with session.patch(
                     f"{base_url}/Members (議員)/{record['id']}",
                     headers=headers,
-                    json=update_data
+                    json=update_data,
                 ) as response:
                     if response.status == 200:
                         cleanup_results["names_cleaned"] += 1
@@ -153,7 +146,8 @@ async def cleanup_member_names():
 
                         if (i + 1) % 25 == 0:
                             print(
-                                f"   ✅ Cleaned {i + 1}/{len(records_to_clean)} names...")
+                                f"   ✅ Cleaned {i + 1}/{len(records_to_clean)} names..."
+                            )
                     else:
                         cleanup_results["errors"] += 1
                         print(f"   ❌ Error updating {record['id']}: {response.status}")
@@ -178,27 +172,27 @@ async def cleanup_member_names():
                 params["offset"] = offset
 
             async with session.get(
-                f"{base_url}/Members (議員)",
-                headers=headers,
-                params=params
+                f"{base_url}/Members (議員)", headers=headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     verification_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
 
         # Count remaining names with trailing numbers
         remaining_issues = 0
         for record in verification_records:
-            name = record.get('fields', {}).get('Name', '')
-            if re.search(r'\d+$', name):
+            name = record.get("fields", {}).get("Name", "")
+            if re.search(r"\d+$", name):
                 remaining_issues += 1
 
-        print(f"📊 Verification: {remaining_issues} records still have trailing numbers")
+        print(
+            f"📊 Verification: {remaining_issues} records still have trailing numbers"
+        )
 
     # Generate final report
     print(f"\n{'='*70}")
@@ -211,9 +205,10 @@ async def cleanup_member_names():
     print(f"🔍 Remaining issues: {remaining_issues}")
 
     success_rate = (
-        cleanup_results['names_cleaned'] /
-        len(records_to_clean) *
-        100) if records_to_clean else 0
+        (cleanup_results["names_cleaned"] / len(records_to_clean) * 100)
+        if records_to_clean
+        else 0
+    )
     print(f"\n📈 Success Rate: {success_rate:.1f}%")
 
     if remaining_issues == 0:
@@ -230,16 +225,19 @@ async def cleanup_member_names():
         "initial_issues": len(records_to_clean),
         "remaining_issues": remaining_issues,
         "success_rate": success_rate,
-        "backup_filename": backup_filename
+        "backup_filename": backup_filename,
     }
 
-    report_filename = f"members_name_cleanup_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(report_filename, 'w', encoding='utf-8') as f:
+    report_filename = (
+        f"members_name_cleanup_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    )
+    with open(report_filename, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
 
     print(f"💾 Cleanup report saved: {report_filename}")
 
     return cleanup_results
+
 
 if __name__ == "__main__":
     asyncio.run(cleanup_member_names())

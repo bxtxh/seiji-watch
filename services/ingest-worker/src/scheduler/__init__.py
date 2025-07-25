@@ -17,5 +17,5 @@ __all__ = [
     "TaskExecution",
     "TaskType",
     "TaskStatus",
-    "SchedulerConfig"
+    "SchedulerConfig",
 ]

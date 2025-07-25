@@ -12,7 +12,7 @@ from datetime import datetime
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/shogen/seiji-watch/.env.local')
+load_dotenv("/Users/shogen/seiji-watch/.env.local")
 
 # Known correct readings for prominent Japanese politicians
 CORRECT_POLITICIAN_READINGS = {
@@ -27,7 +27,6 @@ CORRECT_POLITICIAN_READINGS = {
     "福田康夫": "ふくだやすお",
     "小泉純一郎": "こいずみじゅんいちろう",
     "小泉進次郎": "こいずみしんじろう",
-
     # Current party leaders and prominent figures
     "枝野幸男": "えだのゆきお",
     "志位和夫": "しいかずお",
@@ -35,7 +34,6 @@ CORRECT_POLITICIAN_READINGS = {
     "玉木雄一郎": "たまきゆういちろう",
     "福島みずほ": "ふくしまみずほ",
     "立憲民主": "りっけんみんしゅ",
-
     # Cabinet ministers and key figures
     "河野太郎": "こうのたろう",
     "茂木敏充": "もてぎとしみつ",
@@ -43,7 +41,6 @@ CORRECT_POLITICIAN_READINGS = {
     "田村憲久": "たむらのりひさ",
     "西村康稔": "にしむらやすとし",
     "丸川珠代": "まるかわたまよ",
-
     # Other known politicians with specific readings
     "羽田雄一郎": "はたゆういちろう",
     "蓮舫": "れんほう",
@@ -55,7 +52,6 @@ CORRECT_POLITICIAN_READINGS = {
     "川田龍平": "かわだりゅうへい",
     "浜田昌良": "はまだまさよし",
     "吉田忠智": "よしだただとも",
-
     # Names that are commonly mispronounced
     "畑野君枝": "はたのきみえ",
     "桝屋敬悟": "ますやけいご",
@@ -77,7 +73,7 @@ CORRECT_POLITICIAN_READINGS = {
     "平井卓也": "ひらいたくや",
     "坂本哲志": "さかもとてつし",
     "井上信治": "いのうえしんじ",
-    "小此木八郎": "おこのぎはちろう"
+    "小此木八郎": "おこのぎはちろう",
 }
 
 
@@ -91,7 +87,7 @@ class KanaAccuracyAnalyzer:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         self.analysis_results = {
@@ -100,7 +96,7 @@ class KanaAccuracyAnalyzer:
             "probably_wrong": [],
             "placeholder_issues": [],
             "verified_correct": [],
-            "corrections_needed": 0
+            "corrections_needed": 0,
         }
 
     async def get_all_members(self, session):
@@ -114,16 +110,14 @@ class KanaAccuracyAnalyzer:
                 params["offset"] = offset
 
             async with session.get(
-                f"{self.base_url}/Members (議員)",
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/Members (議員)", headers=self.headers, params=params
             ) as response:
                 if response.status == 200:
                     data = await response.json()
-                    records = data.get('records', [])
+                    records = data.get("records", [])
                     all_records.extend(records)
 
-                    offset = data.get('offset')
+                    offset = data.get("offset")
                     if not offset:
                         break
                 else:
@@ -149,7 +143,11 @@ class KanaAccuracyAnalyzer:
 
         # Check for obvious placeholder patterns
         placeholder_patterns = [
-            "たなかたろう", "さとうはなこ", "やまだ", "田中太郎", "佐藤花子"
+            "たなかたろう",
+            "さとうはなこ",
+            "やまだ",
+            "田中太郎",
+            "佐藤花子",
         ]
         if any(pattern in name_kana.lower() for pattern in placeholder_patterns):
             return "placeholder", f"Placeholder pattern detected: {name_kana}"
@@ -160,7 +158,10 @@ class KanaAccuracyAnalyzer:
             (len(name_kana) > 12, "Too long for typical Japanese name"),
             (name_kana == name, "Kana same as kanji name"),
             (any(char in name_kana for char in "0123456789"), "Contains numbers"),
-            (any(char in name_kana for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"), "Contains English"),
+            (
+                any(char in name_kana for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+                "Contains English",
+            ),
         ]
 
         for condition, reason in suspicious_patterns:
@@ -201,11 +202,11 @@ class KanaAccuracyAnalyzer:
             print("\n🔍 Analyzing Name_Kana accuracy...")
 
             for record in all_records:
-                fields = record.get('fields', {})
-                name = fields.get('Name', '')
-                name_kana = fields.get('Name_Kana', '')
-                constituency = fields.get('Constituency', '')
-                house = fields.get('House', '')
+                fields = record.get("fields", {})
+                name = fields.get("Name", "")
+                name_kana = fields.get("Name_Kana", "")
+                constituency = fields.get("Constituency", "")
+                house = fields.get("House", "")
 
                 if name:
                     self.analysis_results["total_analyzed"] += 1
@@ -213,12 +214,12 @@ class KanaAccuracyAnalyzer:
                     accuracy_type, reason = self.analyze_kana_accuracy(name, name_kana)
 
                     record_info = {
-                        'id': record['id'],
-                        'name': name,
-                        'current_kana': name_kana,
-                        'house': house,
-                        'constituency': constituency,
-                        'reason': reason
+                        "id": record["id"],
+                        "name": name,
+                        "current_kana": name_kana,
+                        "house": house,
+                        "constituency": constituency,
+                        "reason": reason,
                     }
 
                     if accuracy_type == "definitely_wrong":
@@ -258,30 +259,30 @@ class KanaAccuracyAnalyzer:
         print(f"   🎯 Total corrections needed: {results['corrections_needed']}")
 
         # Show definitely wrong examples
-        if results['definitely_wrong']:
+        if results["definitely_wrong"]:
             print("\n❌ DEFINITELY WRONG READINGS (Top 10):")
-            for i, item in enumerate(results['definitely_wrong'][:10], 1):
+            for i, item in enumerate(results["definitely_wrong"][:10], 1):
                 print(f"   {i:2d}. {item['name']} → '{item['current_kana']}'")
                 print(f"       {item['reason']}")
                 print(f"       ({item['house']}, {item['constituency']})")
 
         # Show probably wrong examples
-        if results['probably_wrong']:
+        if results["probably_wrong"]:
             print("\n⚠️ PROBABLY WRONG READINGS (Top 5):")
-            for i, item in enumerate(results['probably_wrong'][:5], 1):
+            for i, item in enumerate(results["probably_wrong"][:5], 1):
                 print(f"   {i:2d}. {item['name']} → '{item['current_kana']}'")
                 print(f"       {item['reason']}")
 
         # Show verified correct examples
-        if results['verified_correct']:
+        if results["verified_correct"]:
             print("\n✅ VERIFIED CORRECT READINGS (Sample):")
-            for i, item in enumerate(results['verified_correct'][:5], 1):
+            for i, item in enumerate(results["verified_correct"][:5], 1):
                 print(f"   {i:2d}. {item['name']} → {item['current_kana']} ✓")
 
         # Calculate accuracy percentage
-        total_checked = len(results['verified_correct']) + results['corrections_needed']
+        total_checked = len(results["verified_correct"]) + results["corrections_needed"]
         if total_checked > 0:
-            accuracy_rate = (len(results['verified_correct']) / total_checked) * 100
+            accuracy_rate = (len(results["verified_correct"]) / total_checked) * 100
             print("\n📈 ACCURACY METRICS:")
             print(f"   Current accuracy rate: {accuracy_rate:.1f}%")
 
@@ -306,13 +307,26 @@ class KanaAccuracyAnalyzer:
                 "total_analyzed": self.analysis_results["total_analyzed"],
                 "corrections_needed": self.analysis_results["corrections_needed"],
                 "verified_correct": len(self.analysis_results["verified_correct"]),
-                "accuracy_rate": (len(self.analysis_results["verified_correct"]) /
-                                  (len(self.analysis_results["verified_correct"]) + self.analysis_results["corrections_needed"]) * 100)
-                if (len(self.analysis_results["verified_correct"]) + self.analysis_results["corrections_needed"]) > 0 else 0
-            }
+                "accuracy_rate": (
+                    (
+                        len(self.analysis_results["verified_correct"])
+                        / (
+                            len(self.analysis_results["verified_correct"])
+                            + self.analysis_results["corrections_needed"]
+                        )
+                        * 100
+                    )
+                    if (
+                        len(self.analysis_results["verified_correct"])
+                        + self.analysis_results["corrections_needed"]
+                    )
+                    > 0
+                    else 0
+                ),
+            },
         }
 
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(analysis_data, f, indent=2, ensure_ascii=False)
 
         print(f"\n💾 Detailed analysis saved: {filename}")
@@ -334,6 +348,7 @@ async def main():
         print("\n🎯 Target: Achieve >95% Name_Kana accuracy")
     else:
         print("🎉 All Name_Kana readings appear to be accurate!")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -16,7 +16,7 @@ async def test_airtable_tables():
     base_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}"
     headers = {
         "Authorization": f"Bearer {AIRTABLE_PAT}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     # Tables to test
@@ -29,7 +29,7 @@ async def test_airtable_tables():
         "Parties",
         "Speeches",
         "Votes (投票)",
-        "Bills_PolicyCategories"  # Our target table
+        "Bills_PolicyCategories",  # Our target table
     ]
 
     async with aiohttp.ClientSession() as session:
@@ -67,6 +67,7 @@ async def main():
     await test_airtable_tables()
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

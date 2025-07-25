@@ -27,7 +27,7 @@ class AirtableClient:
 
         self.headers = {
             "Authorization": f"Bearer {self.pat}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting: Airtable allows 5 requests per second
@@ -84,7 +84,7 @@ class AirtableClient:
                 "Color_Code": party_data.get("color_code"),
                 "Is_Active": party_data.get("is_active", True),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -107,7 +107,7 @@ class AirtableClient:
         data = {
             "fields": {
                 "Updated_At": datetime.now().isoformat(),
-                **{k: v for k, v in party_data.items() if v is not None}
+                **{k: v for k, v in party_data.items() if v is not None},
             }
         }
 
@@ -152,7 +152,7 @@ class AirtableClient:
                 "Is_Active": member_data.get("is_active", True),
                 "Status": member_data.get("status", "active"),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -179,7 +179,7 @@ class AirtableClient:
         data = {
             "fields": {
                 "Updated_At": datetime.now().isoformat(),
-                **{k: v for k, v in member_data.items() if v is not None}
+                **{k: v for k, v in member_data.items() if v is not None},
             }
         }
 
@@ -225,7 +225,7 @@ class AirtableClient:
                 "Is_Controversial": bill_data.get("is_controversial", False),
                 "Priority_Level": bill_data.get("priority_level", "normal"),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -291,7 +291,7 @@ class AirtableClient:
                 "STT_Completed": meeting_data.get("stt_completed", False),
                 "Is_Cancelled": meeting_data.get("is_cancelled", False),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -337,7 +337,7 @@ class AirtableClient:
                 "Is_Processed": speech_data.get("is_processed", False),
                 "Needs_Review": speech_data.get("needs_review", False),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -402,7 +402,7 @@ class AirtableClient:
                 "Review_Notes": issue_data.get("review_notes"),
                 "Is_LLM_Generated": issue_data.get("is_llm_generated", False),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -447,7 +447,7 @@ class AirtableClient:
         data = {
             "fields": {
                 "Updated_At": datetime.now().isoformat(),
-                **{k: v for k, v in issue_data.items() if v is not None}
+                **{k: v for k, v in issue_data.items() if v is not None},
             }
         }
 
@@ -465,7 +465,7 @@ class AirtableClient:
                 "Category": tag_data["category"],
                 "Description": tag_data.get("description"),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -553,7 +553,7 @@ class AirtableClient:
                 "Notes": vote_data.get("notes"),
                 "Is_Final_Vote": vote_data.get("is_final_vote", False),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -602,18 +602,14 @@ class AirtableClient:
 
         return members[0] if members else None
 
-    async def find_party_by_name(
-        self, party_name: str
-    ) -> dict[str, Any] | None:
+    async def find_party_by_name(self, party_name: str) -> dict[str, Any] | None:
         """Find party by name."""
         filter_formula = f"{{Name}} = '{party_name}'"
         parties = await self.list_parties(filter_formula=filter_formula, max_records=1)
 
         return parties[0] if parties else None
 
-    async def find_bill_by_number(
-        self, bill_number: str
-    ) -> dict[str, Any] | None:
+    async def find_bill_by_number(self, bill_number: str) -> dict[str, Any] | None:
         """Find bill by bill number."""
         filter_formula = f"{{Bill_Number}} = '{bill_number}'"
         bills = await self.list_bills(filter_formula=filter_formula, max_records=1)
@@ -635,7 +631,7 @@ class AirtableClient:
                 "Summary_150JA": category_data.get("summary_150ja", ""),
                 "Is_Seed": category_data.get("is_seed", False),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -679,7 +675,7 @@ class AirtableClient:
         data = {
             "fields": {
                 "Updated_At": datetime.now().isoformat(),
-                **{k: v for k, v in category_data.items() if v is not None}
+                **{k: v for k, v in category_data.items() if v is not None},
             }
         }
 
@@ -695,16 +691,12 @@ class AirtableClient:
 
     async def get_category_children(self, parent_id: str) -> list[dict[str, Any]]:
         """Get child categories for a specific parent category."""
-        filter_formula = (
-            f"FIND('{parent_id}', ARRAYJOIN({{Parent_Category}})) > 0"
-        )
+        filter_formula = f"FIND('{parent_id}', ARRAYJOIN({{Parent_Category}})) > 0"
         return await self.list_issue_categories(
             filter_formula=filter_formula, max_records=1000
         )
 
-    async def find_category_by_cap_code(
-        self, cap_code: str
-    ) -> dict[str, Any] | None:
+    async def find_category_by_cap_code(self, cap_code: str) -> dict[str, Any] | None:
         """Find category by CAP code."""
         filter_formula = f"{{CAP_Code}} = '{cap_code}'"
         categories = await self.list_issue_categories(
@@ -729,9 +721,7 @@ class AirtableClient:
 
         # Sort by CAP code for consistent ordering
         for layer in tree:
-            tree[layer].sort(
-                key=lambda x: x.get("fields", {}).get("CAP_Code", "")
-            )
+            tree[layer].sort(key=lambda x: x.get("fields", {}).get("CAP_Code", ""))
 
         return tree
 
@@ -751,7 +741,7 @@ class AirtableClient:
                 "Is_Manual": relationship_data.get("is_manual", False),
                 "Source": relationship_data.get("source", "auto_migration"),
                 "Created_At": datetime.now().isoformat(),
-                "Updated_At": datetime.now().isoformat()
+                "Updated_At": datetime.now().isoformat(),
             }
         }
 
@@ -800,9 +790,7 @@ class AirtableClient:
         self, bill_record_id: str
     ) -> list[dict[str, Any]]:
         """Get all policy categories linked to a specific bill."""
-        filter_formula = (
-            f"FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0"
-        )
+        filter_formula = f"FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0"
         return await self.list_bill_policy_category_relationships(
             filter_formula=filter_formula
         )
@@ -829,7 +817,7 @@ class AirtableClient:
         data = {
             "fields": {
                 "Updated_At": datetime.now().isoformat(),
-                **{k: v for k, v in relationship_data.items() if v is not None}
+                **{k: v for k, v in relationship_data.items() if v is not None},
             }
         }
 
@@ -871,7 +859,7 @@ class AirtableClient:
 
         # Process in batches of 10 (Airtable limit)
         for i in range(0, len(relationships), 10):
-            batch = relationships[i:i + 10]
+            batch = relationships[i : i + 10]
 
             url = f"{self.base_url}/Bills_PolicyCategories"
             records_data = []
@@ -885,7 +873,7 @@ class AirtableClient:
                         "Is_Manual": rel.get("is_manual", False),
                         "Source": rel.get("source", "bulk_migration"),
                         "Created_At": datetime.now().isoformat(),
-                        "Updated_At": datetime.now().isoformat()
+                        "Updated_At": datetime.now().isoformat(),
                     }
                 }
 
@@ -902,8 +890,7 @@ class AirtableClient:
 
                 # Remove None values
                 record_data["fields"] = {
-                    k: v for k, v in record_data["fields"].items()
-                    if v is not None
+                    k: v for k, v in record_data["fields"].items() if v is not None
                 }
                 records_data.append(record_data)
 
@@ -928,9 +915,7 @@ class AirtableClient:
             filter_formula=filter_formula
         )
 
-    async def get_policy_categories_by_bill(
-        self, bill_id: str
-    ) -> list[dict[str, Any]]:
+    async def get_policy_categories_by_bill(self, bill_id: str) -> list[dict[str, Any]]:
         """Get all policy categories linked to a specific bill by Bill_ID."""
         filter_formula = f"{{Bill_ID}} = '{bill_id}'"
         return await self.list_bill_policy_category_relationships(

@@ -70,7 +70,7 @@ def run_migrations(revision: str = "head") -> None:
             cwd=shared_dir,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         logger.info(f"Migrations completed successfully: {result.stdout}")
@@ -112,7 +112,7 @@ def get_migration_status() -> dict:
             cwd=shared_dir,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         current_revision = result.stdout.strip()
@@ -123,7 +123,7 @@ def get_migration_status() -> dict:
             cwd=shared_dir,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         head_revision = result.stdout.strip()
@@ -131,7 +131,7 @@ def get_migration_status() -> dict:
         return {
             "current": current_revision,
             "head": head_revision,
-            "up_to_date": current_revision == head_revision
+            "up_to_date": current_revision == head_revision,
         }
 
     except subprocess.CalledProcessError as e:
