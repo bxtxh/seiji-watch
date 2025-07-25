@@ -5,12 +5,14 @@ import os
 import time
 from collections import defaultdict
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from .middleware.auth import require_admin_access
+from .utils.error_sanitizer import sanitize_error_for_api
 from .routes import (
     airtable_webhooks,
     batch_management,
@@ -551,7 +553,9 @@ async def search_bills(request: Request):
 
 
 @app.post("/admin/members/collect")
-async def collect_member_profiles(request: Request):
+async def collect_member_profiles(
+    request: Request, current_user: dict = Depends(require_admin_access)
+):
     """Manually trigger member profile collection."""
     try:
         body = await request.json()
@@ -583,7 +587,7 @@ async def collect_member_profiles(request: Request):
 
 
 @app.post("/admin/cache/warmup")
-async def warmup_cache():
+async def warmup_cache(current_user: dict = Depends(require_admin_access)):
     """Manually trigger cache warmup."""
     try:
         warmup_result = await member_service.warmup_member_cache()
@@ -627,7 +631,9 @@ async def get_cache_stats():
 
 
 @app.post("/admin/batch/member-statistics")
-async def schedule_member_statistics_batch(request: Request):
+async def schedule_member_statistics_batch(
+    request: Request, current_user: dict = Depends(require_admin_access)
+):
     """Schedule batch calculation of member statistics."""
     try:
         body = await request.json()
@@ -663,7 +669,9 @@ async def schedule_member_statistics_batch(request: Request):
 
 
 @app.post("/admin/batch/policy-stance")
-async def schedule_policy_stance_analysis(request: Request):
+async def schedule_policy_stance_analysis(
+    request: Request, current_user: dict = Depends(require_admin_access)
+):
     """Schedule policy stance analysis for a member."""
     try:
         body = await request.json()
@@ -1210,8 +1218,11 @@ async def get_bill_detail(bill_id: str):
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     """Global exception handler."""
-    logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"error": "Internal server error"})
+    # Use sanitized error handling to prevent information leakage
+    sanitized_message = sanitize_error_for_api(exc, "Internal server error")
+    return JSONResponse(
+        status_code=500, content={"error": sanitized_message, "success": False}
+    )
 
 
 if __name__ == "__main__":

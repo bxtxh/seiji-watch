@@ -16,14 +16,12 @@ except ImportError:
     JWT_AVAILABLE = False
     print("⚠️  PyJWT library not available. Install with: pip install PyJWT")
 
-# 本番用: GitHub Secretsに登録するJWT_SECRET_KEY
-PRODUCTION_SECRET_KEY = "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
-
 # テスト用: CI/CDで使用する統一されたJWT_SECRET_KEY
 TEST_SECRET_KEY = "test-jwt-secret-unified-for-ci-cd"
 
-# 使用する秘密鍵を選択（環境変数から取得、フォールバックはテスト用）
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", TEST_SECRET_KEY)
+# SECURITY: No hardcoded production secrets!
+# 使用する秘密鍵を環境変数から取得（プロダクション用はJWT_SECRET_KEY_PROD）
+SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("JWT_SECRET_KEY_PROD") or TEST_SECRET_KEY
 
 
 def generate_ci_bearer_token(secret_key: str, hours: int = 24) -> str:

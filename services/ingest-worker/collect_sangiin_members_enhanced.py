@@ -12,9 +12,10 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 
 import aiohttp
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
-load_dotenv("/Users/shogen/seiji-watch/.env.local")
+# Load environment variables from project root
+load_dotenv(find_dotenv())
 
 
 @dataclass
