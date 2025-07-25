@@ -15,7 +15,8 @@
 - **EPIC 16: Bills ↔ PolicyCategory関連付けシステム** ✅ **COMPLETED** (5/5 tickets) → **Bills ↔ PolicyCategory integration fully implemented**
 - **EPIC 17: フロントエンド UI 改善** ✅ **COMPLETED** (3/3 tickets) → **UI improvements based on user feedback**
 - **EPIC 18: Code Quality - E501 Compliance** 🚧 **PENDING** (0/4 tickets) → **1,242 line length errors for post-MVP cleanup**
-- **EPIC 19: CI/CD Lint Error Fixes** 🚧 **PENDING** (0/4 tickets) → **Emergency lint fixes blocking deployment**
+- **EPIC 19: CI/CD Lint Error Fixes** ✅ **COMPLETED** (4/4 tickets) → **All CI/CD pipeline issues resolved**
+- **EPIC 20: 外部関係者共同手動テスト** 🚧 **PENDING** (5/5 tickets) → **Comprehensive external user testing before MVP launch**
 
 ### Milestones
 - ✅ **Infrastructure Ready** (July 1, 2025) - 3 days ahead of schedule
@@ -2506,3 +2507,110 @@ CI/CDパイプラインで複数のlintエラーが発生し、deployment が bl
 - **Total Effort**: 1.75 hours
 - **Implementation Strategy**: Immediate emergency fix
 - **Risk**: Very Low (lint fixes only)
+
+---
+
+## 🧪 EPIC 20: 外部関係者共同手動テスト
+**Target: July 25 - August 8, 2025** | **Status: PENDING**
+
+### 目的
+ステージング環境での外部関係者との包括的な手動テスト実施により、MVP Launch前の最終品質保証を行う。政治専門家、アクセシビリティ専門家、一般ユーザー代表、法務専門家の視点から多角的な検証を実施。
+
+### 実施体制
+- **政治専門家・ジャーナリスト**: データ正確性・中立性検証
+- **アクセシビリティ専門家**: WCAG 2.1 AA準拠確認・障害者対応評価
+- **一般ユーザー代表**: 使いやすさ・理解しやすさ評価
+- **法務・コンプライアンス専門家**: 選挙法・著作権法遵守確認
+
+### テストフェーズ構成
+1. **Phase 1**: システム基盤検証（2日間）- 認証・API・マイクロサービス連携
+2. **Phase 2**: データ品質・正確性検証（3日間）- 政治データ・CAP分類・中立性
+3. **Phase 3**: ユーザビリティ・アクセシビリティ（3日間）- PWA・WCAG・情報設計
+4. **Phase 4**: 高負荷・パフォーマンス（2日間）- 負荷耐性・Lighthouse・Core Web Vitals
+5. **Phase 5**: セキュリティ・コンプライアンス（2日間）- 認証・法的要件
+6. **Phase 6**: 統合シナリオテスト（2日間）- エンドツーエンドユースケース
+
+### 成功基準
+- [ ] 全主要機能の正常動作確認
+- [ ] モバイル200ms読み込み、Lighthouse >90
+- [ ] WCAG 2.1 AA準拠
+- [ ] 選挙法・著作権法完全遵守
+- [ ] 外部関係者による本番準備完了承認
+
+### Tickets
+
+#### T20-1: ステージング環境構築・テストデータ準備
+**Priority:** P0 | **Estimate:** 16 hours
+- [ ] 本番同等ステージング環境構築（GCP Cloud Run + Cloud SQL + Cloud Storage）
+- [ ] 第217回国会データ完全セット準備（法案・議員・委員会・議事録）
+- [ ] テストアカウント・権限設定（一般ユーザー・管理者・API）
+- [ ] JWT tokens・API keys プロビジョニング
+- [ ] 外部関係者アクセス用認証設定
+**DoD:** ステージング環境が本番と同等の機能・データで稼働
+
+#### T20-2: テストドキュメント・手順書作成
+**Priority:** P0 | **Estimate:** 8 hours
+- [ ] 各Phase詳細テストケース作成（チェックリスト形式）
+- [ ] 外部関係者向け操作マニュアル（日本語・視覚的）
+- [ ] API仕様書・エンドポイント説明（OpenAPI 3.0）
+- [ ] 緊急連絡先・エスカレーション手順書
+- [ ] データサンプル・テストシナリオ集
+**DoD:** 外部関係者が独立してテスト実施可能な包括的ドキュメント
+
+#### T20-3: Phase 1-3実施（基盤・データ・UX）
+**Priority:** P0 | **Estimate:** 64 hours (8日間)
+- [ ] **基盤検証**: マイクロサービス連携・API Gateway・認証フロー
+- [ ] **データ検証**: 第217回国会データ正確性・CAP分類システム・LLM課題抽出
+- [ ] **中立性検証**: 政党バランス・選挙法遵守・情報源透明性
+- [ ] **PWA検証**: モバイル最適化・オフライン機能・レスポンシブデザイン
+- [ ] **アクセシビリティ**: WCAG 2.1 AA・キーボードナビ・スクリーンリーダー
+- [ ] **情報設計**: 3層ナビゲーション・検索・法案詳細表示
+**DoD:** 基盤・データ・UXの全領域で外部専門家による品質承認
+
+#### T20-4: Phase 4-6実施（パフォーマンス・セキュリティ・統合）
+**Priority:** P0 | **Estimate:** 48 hours (6日間)
+- [ ] **負荷テスト**: 1000同時接続・大量データ処理・検索負荷
+- [ ] **パフォーマンス**: Lighthouse >90・Core Web Vitals・200ms読み込み
+- [ ] **セキュリティ**: JWT脆弱性・管理者権限・CSP・HTTPS
+- [ ] **法的要件**: 著作権・プライバシー・選挙法・データ保持
+- [ ] **統合シナリオ**: 政策関心者・ジャーナリスト・研究者・一般市民ユースケース
+- [ ] **緊急時対応**: システム障害・データ遅延・高トラフィック対応
+**DoD:** 本番運用に耐えうるパフォーマンス・セキュリティ・可用性の確認
+
+#### T20-5: テスト結果分析・改善提案作成
+**Priority:** P0 | **Estimate:** 16 hours
+- [ ] 各Phase結果レポート作成（定量・定性データ）
+- [ ] 優先度付き改善提案リスト（Critical/High/Medium/Low）
+- [ ] 本番移行判定・GO/NO-GO決定根拠
+- [ ] 運用手順書・監視項目定義
+- [ ] 緊急時対応・インシデント対応フロー
+- [ ] 外部関係者フィードバック統合・反映計画
+**DoD:** データ駆動な本番移行判定と改善ロードマップ
+
+### Technical Requirements
+
+#### ステージング環境仕様
+- **Infrastructure**: GCP Cloud Run (staging) + Cloud SQL + Cloud Storage
+- **Domains**: `staging.diet-issue-tracker.jp` 
+- **Authentication**: JWT + Google OAuth (テスト用)
+- **Data**: 第217回国会完全データセット (2024-2025)
+- **Monitoring**: Cloud Logging + Cloud Monitoring + Alerts
+
+#### テストデータ品質
+- **法案データ**: 全217回国会法案（~200件）完全性・最新性確認
+- **議員データ**: 衆参両院議員（~700名）正確性・所属確認
+- **議事録データ**: 主要委員会議事録（~50時間）音声認識精度確認
+- **分類データ**: CAP 3層分類（L1:25, L2:200, L3:500）網羅性確認
+
+#### 品質基準
+- **Performance**: Mobile First Index <200ms, Lighthouse >90
+- **Accessibility**: WCAG 2.1 AA準拠、全機能キーボード操作可能
+- **Security**: OWASP Top 10対応、CSP, HTTPS Everywhere
+- **Legal**: 著作権法Article 40準拠、選挙法中立性、GDPR-準拠プライバシー
+
+**EPIC 20 Summary:**
+- **Total Tickets**: 5
+- **Total Effort**: 152 hours (約19日間)
+- **Critical Path**: ステージング環境構築 → テスト実施 → 結果分析
+- **Success Metrics**: 外部専門家承認 + 品質基準クリア + 本番移行GO判定
+- **Risk Mitigation**: 3日間の修正バッファ + 段階的品質ゲート
