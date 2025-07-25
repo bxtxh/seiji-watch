@@ -19,9 +19,8 @@ from enum import Enum
 from typing import Any
 
 try:
-    from google.api_core import retry
     from google.cloud import pubsub_v1, scheduler_v1
-    from google.cloud.scheduler_v1 import HttpTarget, Job, PubsubTarget
+    from google.cloud.scheduler_v1 import Job, PubsubTarget
 
     GOOGLE_CLOUD_AVAILABLE = True
 except ImportError:

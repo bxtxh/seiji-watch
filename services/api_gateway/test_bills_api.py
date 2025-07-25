@@ -232,7 +232,7 @@ async def test_airtable_connection():
                     return False
 
             # Test IssueCategories table (use table ID for reliable access)
-            url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/tbl6wK8L9K5ny1dDm?maxRecords=1"
+            url = f"https://api.airtable.com/v0/{airtable_base_id}/tbl6wK8L9K5ny1dDm?maxRecords=1"
             async with session.get(url, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()

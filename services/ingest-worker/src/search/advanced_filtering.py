@@ -547,21 +547,21 @@ class AdvancedFilterEngine:
             elif isinstance(value, date):
                 return value
 
-        elif field_type == float:
+        elif field_type is float:
             try:
                 return float(value)
             except (ValueError, TypeError):
                 self.logger.warning(f"Invalid float value: {value}")
                 return value
 
-        elif field_type == int:
+        elif field_type is int:
             try:
                 return int(value)
             except (ValueError, TypeError):
                 self.logger.warning(f"Invalid integer value: {value}")
                 return value
 
-        elif field_type == str:
+        elif field_type is str:
             return str(value)
 
         return value
@@ -569,8 +569,8 @@ class AdvancedFilterEngine:
     def _apply_grouping(self, query: Select, group_by: list[str]) -> Select:
         """Apply GROUP BY clause"""
         group_columns = []
-        for field in group_by:
-            column_name = self.field_mappings.get(field, field)
+        for group_field in group_by:
+            column_name = self.field_mappings.get(group_field, group_field)
             group_columns.append(text(column_name))
 
         return query.group_by(*group_columns)
@@ -650,9 +650,9 @@ class AdvancedFilterEngine:
                 errors.append(f"Invalid sort field: {criteria.field}")
 
         # Validate group by fields
-        for field in query.group_by:
-            if field not in self.field_mappings:
-                errors.append(f"Invalid group by field: {field}")
+        for group_field in query.group_by:
+            if group_field not in self.field_mappings:
+                errors.append(f"Invalid group by field: {group_field}")
 
         # Validate having clause
         if query.having:
@@ -714,7 +714,7 @@ class AdvancedFilterEngine:
                     f"Operator {condition.operator.value} not supported for date field {condition.field}"
                 )
 
-        elif field_type == float:
+        elif field_type is float:
             if condition.operator not in [
                 FilterOperator.EQUALS,
                 FilterOperator.NOT_EQUALS,
@@ -853,7 +853,7 @@ class AdvancedFilterEngine:
                             result.max_date.isoformat() if result.max_date else None
                         )
 
-                elif field_type == float:
+                elif field_type is float:
                     numeric_stats_query = text(
                         f"""
                         SELECT
@@ -888,7 +888,7 @@ class AdvancedFilterEngine:
                             else None
                         )
 
-                elif field_type == str:
+                elif field_type is str:
                     text_stats_query = text(
                         f"""
                         SELECT

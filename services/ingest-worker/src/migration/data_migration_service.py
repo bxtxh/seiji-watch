@@ -474,8 +474,8 @@ class DataMigrationService:
         # Field completion recommendations
         failed_fields = {}
         for result in batch_result.tasks_results:
-            for field in result.fields_failed:
-                failed_fields[field] = failed_fields.get(field, 0) + 1
+            for field_name in result.fields_failed:
+                failed_fields[field_name] = failed_fields.get(field_name, 0) + 1
 
         if failed_fields:
             most_failed = max(failed_fields.items(), key=lambda x: x[1])

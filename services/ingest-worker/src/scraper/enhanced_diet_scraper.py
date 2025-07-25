@@ -488,9 +488,9 @@ class EnhancedDietScraper(DietScraper):
 
         # Core fields (weight: 2)
         core_fields = ["bill_id", "title", "status", "stage", "submitter"]
-        for field in core_fields:
+        for field_name in core_fields:
             total_fields += 2
-            if getattr(bill_data, field):
+            if getattr(bill_data, field_name):
                 score += 2
 
         # Enhanced fields (weight: 1)
@@ -507,9 +507,9 @@ class EnhancedDietScraper(DietScraper):
             "committee_assignments",
             "voting_results",
         ]
-        for field in enhanced_fields:
+        for field_name in enhanced_fields:
             total_fields += 1
-            value = getattr(bill_data, field)
+            value = getattr(bill_data, field_name)
             if value:
                 if isinstance(value, list | dict):
                     if len(value) > 0:

@@ -692,9 +692,9 @@ class DataCompletionProcessor:
         max_score = 0.0
 
         # Score based on field completeness and quality
-        for field, weight in self.field_priorities.items():
+        for field_name, weight in self.field_priorities.items():
             max_score += weight
-            value = getattr(bill, field, None)
+            value = getattr(bill, field_name, None)
 
             if value is not None:
                 if isinstance(value, str) and len(value.strip()) > 10:

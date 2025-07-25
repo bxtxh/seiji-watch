@@ -533,8 +533,8 @@ class BillProgressTracker:
         ]
 
         complete_count = 0
-        for field in completeness_fields:
-            value = getattr(bill_data, field, None)
+        for field_name in completeness_fields:
+            value = getattr(bill_data, field_name, None)
             if value:
                 complete_count += 1
 

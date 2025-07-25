@@ -853,9 +853,9 @@ class ShugiinScraper:
 
         # Core fields (weight: 2)
         core_fields = ["bill_id", "title", "status", "stage", "submitter"]
-        for field in core_fields:
+        for field_name in core_fields:
             total_fields += 2
-            value = getattr(bill_data, field, None)
+            value = getattr(bill_data, field_name, None)
             if value and value not in ["取得中", "エラー", "不明"]:
                 score += 2
 
@@ -874,9 +874,9 @@ class ShugiinScraper:
             "voting_results",
             "amendments",
         ]
-        for field in enhanced_fields:
+        for field_name in enhanced_fields:
             total_fields += 1
-            value = getattr(bill_data, field, None)
+            value = getattr(bill_data, field_name, None)
             if value:
                 if isinstance(value, list | dict):
                     if len(value) > 0:

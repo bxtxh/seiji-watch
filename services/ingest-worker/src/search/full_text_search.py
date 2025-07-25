@@ -654,14 +654,14 @@ class FullTextSearchEngine:
         matched_fields = []
         query_terms = self.text_processor.tokenize_japanese(query.query)
 
-        for field in [
+        for field_name in [
             "title",
             "bill_outline",
             "background_context",
             "expected_effects",
             "summary",
         ]:
-            field_value = getattr(row, field, "")
+            field_value = getattr(row, field_name, "")
             if field_value and any(term in field_value for term in query_terms):
                 matched_fields.append(field)
 
