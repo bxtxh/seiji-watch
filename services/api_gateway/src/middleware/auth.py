@@ -74,7 +74,7 @@ def verify_token(token: str) -> dict:
 
     except jwt.ExpiredSignatureError:
         raise AuthenticationError("Token has expired")
-    except jwt.JWTError as e:
+    except jwt.JWTError:
         raise AuthenticationError("Invalid token")
 
 
@@ -89,7 +89,7 @@ async def get_current_user(
             "email": payload.get("email"),
             "scopes": payload.get("scopes", []),
         }
-    except AuthenticationError as e:
+    except AuthenticationError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",

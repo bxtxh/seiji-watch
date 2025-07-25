@@ -15,6 +15,7 @@
 - **EPIC 16: Bills ↔ PolicyCategory関連付けシステム** ✅ **COMPLETED** (5/5 tickets) → **Bills ↔ PolicyCategory integration fully implemented**
 - **EPIC 17: フロントエンド UI 改善** ✅ **COMPLETED** (3/3 tickets) → **UI improvements based on user feedback**
 - **EPIC 18: Code Quality - E501 Compliance** 🚧 **PENDING** (0/4 tickets) → **1,242 line length errors for post-MVP cleanup**
+- **EPIC 19: CI/CD Lint Error Fixes** 🚧 **PENDING** (0/4 tickets) → **Emergency lint fixes blocking deployment**
 
 ### Milestones
 - ✅ **Infrastructure Ready** (July 1, 2025) - 3 days ahead of schedule
@@ -2442,3 +2443,66 @@ autopep8とblackによる自動フォーマット後も1,242件のE501エラー�
 - **Total Effort**: 14 hours
 - **Implementation Strategy**: Gradual, priority-based
 - **Risk**: Low (code style only, no functionality changes)
+
+---
+
+## EPIC 19: CI/CD Lint Error Fixes - Immediate
+**Target: Emergency Fix** | **Priority: P0** | **Status: 🚧 PENDING**
+
+*Critical CI/CD pipeline failures due to multiple linting errors blocking deployment*
+
+### Background
+CI/CDパイプラインで複数のlintエラーが発生し、deployment が blocking されている状態。即座に修正が必要な以下の問題:
+
+### Current CI Failures
+1. **W293**: Blank line contains whitespace in error_sanitizer.py
+2. **F401**: Unused imports in main.py (error_sanitizer functions)
+3. **F841**: Unused variable `e` in auth.py exception handling 
+4. **N802**: Function naming `do_GET` in simple_demo_server.py
+5. **N815/N806**: Variable naming violations in airtable_webhooks.py, test_bills_api.py
+6. **W292**: No newline at end of file in error_sanitizer.py
+7. **Deprecated Action**: actions/upload-artifact@v3 → v4
+8. **Terraform**: Exit code 3 (changes present) treated as failure
+
+### Tickets
+
+#### T139 - Fix Critical Lint Errors (W293, W292, F401, F841)
+**Priority:** P0 | **Estimate:** 30 minutes
+- [ ] Remove whitespace from blank lines in error_sanitizer.py
+- [ ] Add newline at end of error_sanitizer.py
+- [ ] Remove unused imports from main.py
+- [ ] Fix unused variables in auth.py (use `_` or log error)
+
+#### T140 - Fix Naming Convention Errors (N802, N815, N806)
+**Priority:** P0 | **Estimate:** 45 minutes
+- [ ] Add `# noqa: N802` to `do_GET` method (HTTP standard naming)
+- [ ] Fix mixedCase variables in airtable_webhooks.py with Field aliases
+- [ ] Convert UPPERCASE variables to lowercase in test_bills_api.py
+
+#### T141 - Update GitHub Actions and Terraform
+**Priority:** P1 | **Estimate:** 15 minutes
+- [ ] Update actions/upload-artifact@v3 to @v4 in workflows
+- [ ] Fix Terraform plan exit code handling (accept code 3)
+
+#### T142 - Test and Validate Fixes
+**Priority:** P0 | **Estimate:** 15 minutes
+- [ ] Run ruff locally to verify all fixes
+- [ ] Commit and push changes
+- [ ] Verify CI pipeline passes
+
+### Success Criteria
+- All CI/CD pipeline checks pass
+- No blocking lint errors
+- Security fixes from previous EPIC remain intact
+- API functionality unaffected
+
+### Technical Notes
+- Use Field aliases in pydantic models to maintain API compatibility
+- Standard HTTP methods like `do_GET` require special handling
+- Error handling should log exceptions internally but not expose to users
+
+**EPIC 19 Summary:**
+- **Total Tickets**: 4
+- **Total Effort**: 1.75 hours
+- **Implementation Strategy**: Immediate emergency fix
+- **Risk**: Very Low (lint fixes only)

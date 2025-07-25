@@ -153,7 +153,7 @@ jobs:
       continue-on-error: true
       
     - name: Upload plan artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-dev
         path: infra/tfplan-dev
@@ -283,7 +283,7 @@ jobs:
           -out=tfplan-staging
           
     - name: Upload plan artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-staging
         path: infra/tfplan-staging
@@ -347,7 +347,7 @@ jobs:
           -out=tfplan-prod
           
     - name: Upload plan artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-prod
         path: infra/tfplan-prod

@@ -218,7 +218,7 @@ DEMO_HTML = """
 
 
 class DemoHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
+    def do_GET(self):  # noqa: N802
         parsed_path = urllib.parse.urlparse(self.path)
         path = parsed_path.path
 
