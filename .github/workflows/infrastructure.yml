@@ -146,14 +146,33 @@ jobs:
     - name: Terraform Plan
       working-directory: infra
       run: |
+        # Execute terraform plan and capture exit code
         terraform plan \
           -var="environment=dev" \
           -out=tfplan-dev \
-          -detailed-exitcode
-      continue-on-error: true
+          -detailed-exitcode || PLAN_EXIT_CODE=$?
+        
+        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
+        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
+        
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+        
+        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+        case $PLAN_EXIT_CODE in
+          0)
+            echo "✅ No infrastructure changes detected"
+            ;;
+          2|3)
+            echo "📋 Infrastructure changes detected (this is expected for PR review)"
+            ;;
+          *)
+            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+            exit 1
+            ;;
+        esac
       
     - name: Upload plan artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-dev
         path: infra/tfplan-dev
@@ -278,12 +297,33 @@ jobs:
     - name: Terraform Plan
       working-directory: infra
       run: |
+        # Execute terraform plan and capture exit code
         terraform plan \
           -var="environment=staging" \
-          -out=tfplan-staging
+          -out=tfplan-staging \
+          -detailed-exitcode || PLAN_EXIT_CODE=$?
+        
+        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
+        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
+        
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+        
+        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+        case $PLAN_EXIT_CODE in
+          0)
+            echo "✅ No infrastructure changes detected"
+            ;;
+          2|3)
+            echo "📋 Infrastructure changes detected (this is expected for PR review)"
+            ;;
+          *)
+            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+            exit 1
+            ;;
+        esac
           
     - name: Upload plan artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-staging
         path: infra/tfplan-staging
@@ -342,12 +382,33 @@ jobs:
     - name: Terraform Plan
       working-directory: infra
       run: |
+        # Execute terraform plan and capture exit code
         terraform plan \
           -var="environment=prod" \
-          -out=tfplan-prod
+          -out=tfplan-prod \
+          -detailed-exitcode || PLAN_EXIT_CODE=$?
+        
+        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
+        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
+        
+        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+        
+        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+        case $PLAN_EXIT_CODE in
+          0)
+            echo "✅ No infrastructure changes detected"
+            ;;
+          2|3)
+            echo "📋 Infrastructure changes detected (this is expected for PR review)"
+            ;;
+          *)
+            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+            exit 1
+            ;;
+        esac
           
     - name: Upload plan artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-prod
         path: infra/tfplan-prod

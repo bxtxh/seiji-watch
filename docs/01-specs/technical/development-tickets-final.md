@@ -13,6 +13,9 @@
 - **EPIC 9: 法的コンプライアンス** ✅ **COMPLETED** (3/3 tickets) → **利用規約・プライバシーポリシー実装完了**
 - **EPIC 15: Issue Notification System** ❌ **NOT IMPLEMENTED** (0/4 tickets) → **Email alerts & watch functionality PENDING**
 - **EPIC 16: Bills ↔ PolicyCategory関連付けシステム** ✅ **COMPLETED** (5/5 tickets) → **Bills ↔ PolicyCategory integration fully implemented**
+- **EPIC 17: フロントエンド UI 改善** ✅ **COMPLETED** (3/3 tickets) → **UI improvements based on user feedback**
+- **EPIC 18: Code Quality - E501 Compliance** 🚧 **PENDING** (0/4 tickets) → **1,242 line length errors for post-MVP cleanup**
+- **EPIC 19: CI/CD Lint Error Fixes** 🚧 **PENDING** (0/4 tickets) → **Emergency lint fixes blocking deployment**
 
 ### Milestones
 - ✅ **Infrastructure Ready** (July 1, 2025) - 3 days ahead of schedule
@@ -2374,3 +2377,132 @@ FOREIGN_AFFAIRS → L1: 外交・国際 (rec_L1_foreign_policy)
 *EPIC 16 Added: July 15, 2025 - Bills ↔ PolicyCategory関連付けシステム - Critical architectural fix for accurate category-based bill discovery*
 *EPIC 16 Progress Update: July 16, 2025 - T127-T130 COMPLETED (Infrastructure, API, Migration, Frontend). Full Bills ↔ PolicyCategory integration complete.*
 *EPIC 17 Added: July 17, 2025 - フロントエンド UI 改善 - Issue detail page interface improvements based on user feedback*
+*EPIC 18 Added: July 25, 2025 - Code Quality E501 Compliance - Post-MVP cleanup of 1,242 line length errors for better maintainability*
+
+---
+
+## EPIC 18: Code Quality - E501 Line Length Compliance
+**Target: Post-MVP** | **Priority: P3** | **Status: 🚧 PENDING**
+
+*Gradual resolution of 1,242 E501 line-too-long errors for better code maintainability*
+
+### Background
+autopep8とblackによる自動フォーマット後も1,242件のE501エラー（88文字超過）が残存。これらは主に長い文字列リテラル、URL、秘密鍵、日本語テキストで、自動ツールでは安全に修正できない。現在はruff設定でE501を無視してCIを通しているが、コードの可読性とメンテナンス性向上のため段階的に解消すべき。
+
+### Current State
+- **Total E501 errors**: 1,242 (reduced from 2,694)
+- **Temporary solution**: E501 ignored in pyproject.toml
+- **Main issues**: 
+  - Long JWT secret keys (112+ chars)
+  - Japanese text in logs/messages
+  - Long URLs and API endpoints
+  - Complex function calls
+
+### Tickets
+
+#### T135 - Critical Security Files E501 Fix
+**Priority:** P1 | **Estimate:** 3 hours
+- [ ] Fix E501 in scripts/generate_api_bearer_token.py (JWT keys)
+- [ ] Fix E501 in scripts/verify_jwt_consistency.py (security validation)
+- [ ] Fix E501 in services/api_gateway/src/middleware/auth.py
+- [ ] Use string concatenation or environment variables for long secrets
+
+#### T136 - API Gateway Core Files E501 Fix  
+**Priority:** P2 | **Estimate:** 4 hours
+- [ ] Fix E501 in services/api_gateway/src/main*.py files
+- [ ] Fix E501 in services/api_gateway/src/routes/*.py
+- [ ] Break long function calls into multiple lines
+- [ ] Refactor complex expressions
+
+#### T137 - Data Processing Files E501 Fix
+**Priority:** P3 | **Estimate:** 5 hours
+- [ ] Fix E501 in services/ingest-worker/src files
+- [ ] Handle long Japanese text with proper line breaks
+- [ ] Refactor log messages to use multiple f-strings
+
+#### T138 - Demo/Test Files E501 Assessment
+**Priority:** P4 | **Estimate:** 2 hours
+- [ ] Review E501 in demo/test files
+- [ ] Decide which files can permanently ignore E501
+- [ ] Document exceptions in code style guide
+
+### Success Criteria
+- High-priority security files have zero E501 errors
+- Core API files follow 88-character line limit
+- Japanese text handling guidelines documented
+- E501 can be removed from ruff ignore list for critical paths
+
+### Notes
+- Prioritize files by security impact and maintenance frequency
+- Japanese text may need special handling (consider 全角 character width)
+- Some demo files may permanently ignore E501
+- Consider team code review for string splitting approaches
+
+**EPIC 18 Summary:**
+- **Total Tickets**: 4
+- **Total Effort**: 14 hours
+- **Implementation Strategy**: Gradual, priority-based
+- **Risk**: Low (code style only, no functionality changes)
+
+---
+
+## EPIC 19: CI/CD Lint Error Fixes - Immediate
+**Target: Emergency Fix** | **Priority: P0** | **Status: 🚧 PENDING**
+
+*Critical CI/CD pipeline failures due to multiple linting errors blocking deployment*
+
+### Background
+CI/CDパイプラインで複数のlintエラーが発生し、deployment が blocking されている状態。即座に修正が必要な以下の問題:
+
+### Current CI Failures
+1. **W293**: Blank line contains whitespace in error_sanitizer.py
+2. **F401**: Unused imports in main.py (error_sanitizer functions)
+3. **F841**: Unused variable `e` in auth.py exception handling 
+4. **N802**: Function naming `do_GET` in simple_demo_server.py
+5. **N815/N806**: Variable naming violations in airtable_webhooks.py, test_bills_api.py
+6. **W292**: No newline at end of file in error_sanitizer.py
+7. **Deprecated Action**: actions/upload-artifact@v3 → v4
+8. **Terraform**: Exit code 3 (changes present) treated as failure
+
+### Tickets
+
+#### T139 - Fix Critical Lint Errors (W293, W292, F401, F841)
+**Priority:** P0 | **Estimate:** 30 minutes
+- [ ] Remove whitespace from blank lines in error_sanitizer.py
+- [ ] Add newline at end of error_sanitizer.py
+- [ ] Remove unused imports from main.py
+- [ ] Fix unused variables in auth.py (use `_` or log error)
+
+#### T140 - Fix Naming Convention Errors (N802, N815, N806)
+**Priority:** P0 | **Estimate:** 45 minutes
+- [ ] Add `# noqa: N802` to `do_GET` method (HTTP standard naming)
+- [ ] Fix mixedCase variables in airtable_webhooks.py with Field aliases
+- [ ] Convert UPPERCASE variables to lowercase in test_bills_api.py
+
+#### T141 - Update GitHub Actions and Terraform
+**Priority:** P1 | **Estimate:** 15 minutes
+- [ ] Update actions/upload-artifact@v3 to @v4 in workflows
+- [ ] Fix Terraform plan exit code handling (accept code 3)
+
+#### T142 - Test and Validate Fixes
+**Priority:** P0 | **Estimate:** 15 minutes
+- [ ] Run ruff locally to verify all fixes
+- [ ] Commit and push changes
+- [ ] Verify CI pipeline passes
+
+### Success Criteria
+- All CI/CD pipeline checks pass
+- No blocking lint errors
+- Security fixes from previous EPIC remain intact
+- API functionality unaffected
+
+### Technical Notes
+- Use Field aliases in pydantic models to maintain API compatibility
+- Standard HTTP methods like `do_GET` require special handling
+- Error handling should log exceptions internally but not expose to users
+
+**EPIC 19 Summary:**
+- **Total Tickets**: 4
+- **Total Effort**: 1.75 hours
+- **Implementation Strategy**: Immediate emergency fix
+- **Risk**: Very Low (lint fixes only)

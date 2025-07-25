@@ -3,25 +3,25 @@ Batch processing queue package
 """
 
 from .batch_processor import (
+    BatchConfig,
     BatchProcessor,
     BatchTask,
-    TaskProcessor,
     EmbeddingTaskProcessor,
-    TranscriptionTaskProcessor,
-    BatchConfig,
-    TaskType,
+    TaskPriority,
+    TaskProcessor,
     TaskStatus,
-    TaskPriority
+    TaskType,
+    TranscriptionTaskProcessor,
 )
 
 __all__ = [
     "BatchProcessor",
     "BatchTask",
-    "TaskProcessor", 
+    "TaskProcessor",
     "EmbeddingTaskProcessor",
     "TranscriptionTaskProcessor",
     "BatchConfig",
     "TaskType",
     "TaskStatus",
-    "TaskPriority"
+    "TaskPriority",
 ]

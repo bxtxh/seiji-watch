@@ -46,8 +46,9 @@
 
 **本番環境用の値:**
 ```
-JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w
+[REDACTED - USE ENVIRONMENT VARIABLE JWT_SECRET_KEY_PROD]
 ```
+⚠️ **セキュリティ警告**: プロダクションシークレットはコードやドキュメントにハードコードしてはいけません。
 
 **設定手順:**
 1. GitHub Repository → Settings → Secrets and variables → Actions
@@ -97,8 +98,8 @@ import jwt
 import datetime
 import os
 
-# GitHub Secretsと同じ値を使用
-SECRET_KEY = "JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
+# SECURITY: Use environment variable instead of hardcoded secrets!
+SECRET_KEY = os.getenv("JWT_SECRET_KEY_PROD") or "YOUR_SECRET_KEY_HERE"
 
 # ⚠️ 重要: サーバー側が期待する正確なペイロード形式
 payload = {
@@ -184,7 +185,8 @@ claude_env: |
 
 2. **ローカルでテスト:**
    ```bash
-   export JWT_SECRET_KEY="JuuqsKGh63LuvjXGoVgOgofPpn-mnDqPooTw8VT3zvmhBTrfWcpu815EDZDw9hBp2qMULqTJiu4o_-Gqu4Z73w"
+   # SECURITY: Never use hardcoded production secrets!
+   export JWT_SECRET_KEY_PROD="YOUR_PRODUCTION_SECRET_FROM_SECURE_STORAGE"
    python3 scripts/verify_jwt_consistency.py
    ```
 

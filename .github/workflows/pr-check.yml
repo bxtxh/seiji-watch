@@ -51,7 +51,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api-gateway, ingest-worker]
+        service: [api_gateway, ingest-worker]
     
     steps:
     - name: Checkout code
@@ -106,7 +106,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api-gateway, ingest-worker]
+        service: [api_gateway, ingest-worker]
         python-version: ['3.11']
     
     steps:
@@ -153,7 +153,7 @@ jobs:
       continue-on-error: true
       
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results-${{ matrix.service }}-${{ matrix.python-version }}
@@ -221,7 +221,7 @@ jobs:
       run: npm run build --workspace=services/web-frontend
       
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build
         path: services/web-frontend/.next

@@ -1,25 +1,18 @@
 """Alembic environment configuration for Diet Issue Tracker."""
 
-import asyncio
 import os
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import create_engine, pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
-
 from alembic import context
+from sqlalchemy import create_engine, pool
+
+from shared.models.base import Base
 
 # Add the src directory to the path so we can import our models
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # Import all models to ensure they are registered with SQLAlchemy
-from shared.models.base import Base
-from shared.models.member import Party, Member
-from shared.models.bill import Bill
-from shared.models.meeting import Meeting, Speech
-from shared.models.vote import Vote
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -46,14 +39,14 @@ def get_database_url() -> str:
     database_url = os.getenv("DATABASE_URL")
     if database_url:
         return database_url
-    
+
     # Fallback to individual components
     db_host = os.getenv("DB_HOST", "localhost")
     db_port = os.getenv("DB_PORT", "5432")
     db_name = os.getenv("DB_NAME", "seiji_watch")
     db_user = os.getenv("DB_USER", "seiji_watch_user")
     db_password = os.getenv("DB_PASSWORD", "seiji_watch_pass")
-    
+
     return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 
@@ -92,10 +85,10 @@ def run_migrations_online() -> None:
     """
     # Get database URL
     database_url = get_database_url()
-    
+
     # Override the sqlalchemy.url in the config
     config.set_main_option("sqlalchemy.url", database_url)
-    
+
     connectable = create_engine(
         database_url,
         poolclass=pool.NullPool,
