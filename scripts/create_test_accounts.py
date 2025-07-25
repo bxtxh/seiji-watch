@@ -16,29 +16,16 @@ import jwt
 import requests
 
 
-# Test user profiles for external user testing (3 non-technical reviewers)
+# Test user profiles for external user testing (starting with 1 reviewer)
 TEST_USERS = {
     "external_reviewer_1": {
         "email": "g.nakamura703@gmail.com",
-        "name": "外部レビュワー1",
+        "name": "外部レビュワー（中村様）",
         "role": "external_reviewer",
         "permissions": ["view_all", "browser_testing"],
-        "description": "External reviewer 1 for browser-based usability testing",
-    },
-    "external_reviewer_2": {
-        "email": "external.reviewer.2@example.com",  # 要更新: 実際のメールアドレス取得後
-        "name": "外部レビュワー2",
-        "role": "external_reviewer",
-        "permissions": ["view_all", "browser_testing"],
-        "description": "External reviewer 2 for browser-based usability testing",
-    },
-    "internal_reviewer": {
-        "email": "internal.reviewer@example.com",  # 要更新: 実際のメールアドレス取得後
-        "name": "内部レビュワー",
-        "role": "internal_reviewer",
-        "permissions": ["view_all", "browser_testing", "admin_access"],
-        "description": "Internal team reviewer for comprehensive testing",
+        "description": "External reviewer for browser-based usability testing",
     }
+    # Note: 残り2名のアカウントは後日追加予定
 }
 
 
@@ -185,36 +172,37 @@ class TestAccountManager:
                     }
                 }
                 
-        # Add testing instructions (simplified for 3 non-technical reviewers)
+        # Add testing instructions (pilot test with 1 reviewer)
         credentials['testing_instructions'] = {
+            'pilot_test_note': '1名での先行テスト実施中。残り2名は後日参加予定。',
             'phases': [
                 {
                     'phase': 1,
                     'name': '基本機能検証',
                     'duration': '1日',
                     'focus': 'ログイン・ナビゲーション・基本操作',
-                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
+                    'participants': ['external_reviewer_1']
                 },
                 {
                     'phase': 2, 
                     'name': '実用シナリオ検証',
                     'duration': '2日',
                     'focus': '法案検索・詳細閲覧・データ理解度',
-                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
+                    'participants': ['external_reviewer_1']
                 },
                 {
                     'phase': 3,
                     'name': 'ユーザビリティ評価',
                     'duration': '1日', 
                     'focus': '使いやすさ・情報の見つけやすさ',
-                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
+                    'participants': ['external_reviewer_1']
                 },
                 {
                     'phase': 4,
-                    'name': '総合評価',
+                    'name': '総合評価・初期フィードバック',
                     'duration': '1日',
-                    'focus': '全体的な使い勝手・改善提案・本番承認',
-                    'participants': ['external_reviewer_1', 'external_reviewer_2', 'internal_reviewer']
+                    'focus': '全体的な使い勝手・改善提案・初期評価',
+                    'participants': ['external_reviewer_1']
                 }
             ],
             'contact': {
