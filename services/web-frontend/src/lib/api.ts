@@ -12,7 +12,7 @@ import {
 import { observability } from "@/lib/observability";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://seiji-watch-api-gateway-staging-pfepe5d77a-an.a.run.app";
 
 // Rate limiter for API requests (development: increased for frequent health checks)
 const apiRateLimiter = new RateLimiter(60000, 1000);
@@ -160,7 +160,7 @@ class ApiClient {
     }
   }
 
-  // Search bills
+  // Search bills with fallback to local API
   async searchBills(
     query: string,
     limit: number = 10,
@@ -190,23 +190,20 @@ class ApiClient {
         offset: "0",
       });
 
-      // Define the actual API response type
-      interface ApiSearchResponse {
-        success: boolean;
-        results: any[];
-        query: string;
-        total_found: number;
-        search_method: string;
+      // Try external API first, then fallback to local mock API
+      let apiResponse;
+      try {
+        // Try external API Gateway
+        apiResponse = await this.request<any>(`/api/bills/search?${queryParams}`);
+      } catch (error) {
+        console.warn("External API failed, using local mock API:", error);
+        // Fallback to local Next.js API
+        const response = await fetch(`/api/bills/search?${queryParams}`);
+        if (!response.ok) {
+          throw new Error(`Local API error: ${response.status}`);
+        }
+        apiResponse = await response.json();
       }
-
-      const apiResponse = await this.request<ApiSearchResponse>(`/search`, {
-        method: "POST",
-        body: JSON.stringify({
-          query: sanitizedQuery,
-          limit: sanitizedLimit,
-          offset: 0,
-        }),
-      });
 
       // Convert API response to expected SearchResult format
       const result: SearchResult = {
@@ -215,15 +212,15 @@ class ApiClient {
         results: apiResponse.results.map((item: any) => {
           console.log("Mapping API item:", item);
           return {
-            id: item.bill_id || "", // Use bill_id from airtable response
-            bill_number: item.bill_id || "",
-            title: item.title || "",
-            summary: item.summary || "",
-            category: item.category || "",
-            status: item.status || "審議中",
-            diet_url: item.url || "",
-            relevance_score: item.relevance_score || 1.0,
-            search_method: item.search_method || "airtable",
+            id: item.id || "",
+            bill_number: item.fields?.Bill_Number || "",
+            title: item.fields?.Name || "",
+            summary: item.fields?.Summary || "",
+            category: item.fields?.Category || "",
+            status: item.fields?.Bill_Status || "審議中",
+            diet_url: "",
+            relevance_score: 1.0,
+            search_method: "mock",
           };
         }),
         total_found: apiResponse.total_found,
