@@ -35,12 +35,12 @@ async def test_correct_airtable_integration():
     print("=" * 50)
 
     # 環境変数の正規化 (AIRTABLE_PATに統一)
-    api_key_from_old = os.environ.get("AIRTABLE_API_KEY")
+    api_key_from_old = os.environ.get("AIRTABLE_PAT")
     pat_from_new = os.environ.get("AIRTABLE_PAT")
     base_id = os.environ.get("AIRTABLE_BASE_ID")
 
     print("🔍 環境変数確認:")
-    print(f"  AIRTABLE_API_KEY: {'存在' if api_key_from_old else '未設定'}")
+    print(f"  AIRTABLE_PAT: {'存在' if api_key_from_old else '未設定'}")
     print(f"  AIRTABLE_PAT: {'存在' if pat_from_new else '未設定'}")
     print(f"  AIRTABLE_BASE_ID: {'存在' if base_id else '未設定'}")
 

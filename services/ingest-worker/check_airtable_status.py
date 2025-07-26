@@ -16,7 +16,7 @@ load_dotenv("/Users/shogen/seiji-watch/.env.local")
 async def check_airtable_status():
     """Check current status of Airtable tables"""
 
-    api_key = os.getenv("AIRTABLE_API_KEY")
+    api_key = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}

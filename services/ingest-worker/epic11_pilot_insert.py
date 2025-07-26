@@ -17,7 +17,7 @@ load_dotenv("/Users/shogen/seiji-watch/.env.local")
 async def create_test_bill():
     """Create a test bill record to understand the table structure"""
 
-    api_key = os.getenv("AIRTABLE_API_KEY")
+    api_key = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
@@ -104,7 +104,7 @@ async def create_test_bill():
 async def create_test_vote():
     """Create a test vote record"""
 
-    api_key = os.getenv("AIRTABLE_API_KEY")
+    api_key = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}

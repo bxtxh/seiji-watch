@@ -1,9 +1,9 @@
 # External services configuration: Airtable + Weaviate Cloud
 # Replaces Cloud SQL setup for cost optimization and simplicity
 
-# Airtable API secrets
-resource "google_secret_manager_secret" "airtable_api_key" {
-  secret_id = "${var.app_name}-airtable-api-key-${var.environment}"
+# Airtable PAT (Personal Access Token) secrets
+resource "google_secret_manager_secret" "airtable_pat" {
+  secret_id = "${var.app_name}-airtable-pat-${var.environment}"
   
   replication {
     user_managed {
@@ -16,9 +16,9 @@ resource "google_secret_manager_secret" "airtable_api_key" {
   depends_on = [google_project_service.required_apis]
 }
 
-resource "google_secret_manager_secret_version" "airtable_api_key" {
-  secret      = google_secret_manager_secret.airtable_api_key.id
-  secret_data = "PLACEHOLDER_AIRTABLE_API_KEY"
+resource "google_secret_manager_secret_version" "airtable_pat" {
+  secret      = google_secret_manager_secret.airtable_pat.id
+  secret_data = "PLACEHOLDER_AIRTABLE_PAT"
   
   lifecycle {
     ignore_changes = [secret_data]

@@ -12,6 +12,7 @@ Development Environment & Commands
 	•	Testing: Run tests with python3 -m pytest in each service directory
 	•	Linting: Use ruff check . and ruff format . for Python code
 	•	Type Checking: Run mypy . in each service directory
+	•	Airtable Authentication: Use Personal Access Token (PAT) - API Keys deprecated Feb 1, 2024
 
 Code Style & Standards
 	•	Python: Follow PEP 8, use 4-space indentation

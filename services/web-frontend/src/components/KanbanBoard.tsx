@@ -84,7 +84,29 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
         }
 
         const data = await response.json();
-        setKanbanData(data);
+        
+        // Transform API response to match expected format
+        if (data.success && data.data) {
+          const transformedData: KanbanData = {
+            metadata: {
+              total_issues: data.metadata?.total_issues || 0,
+              last_updated: data.metadata?.last_updated || new Date().toISOString(),
+              date_range: {
+                from: "2025-07-01", // Default values for now
+                to: "2025-07-26"
+              }
+            },
+            stages: {
+              審議前: data.data.stages?.backlog || [],
+              審議中: data.data.stages?.in_progress || [],
+              採決待ち: data.data.stages?.in_review || [],
+              成立: data.data.stages?.completed || []
+            }
+          };
+          setKanbanData(transformedData);
+        } else {
+          throw new Error('Invalid API response format');
+        }
       } catch (err) {
         console.error("Failed to fetch Kanban data:", err);
         setError(
@@ -120,7 +142,7 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
 
   // Memoize stage columns rendering - always call this hook
   const stageColumns = useMemo(() => {
-    if (!kanbanData) return null;
+    if (!kanbanData || !kanbanData.stages) return null;
 
     return Object.keys(kanbanData.stages)
       .filter((stageKey) => stageKey !== "審議前") // Hide 審議前 stage

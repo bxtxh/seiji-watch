@@ -244,7 +244,7 @@ logging.basicConfig(
 
 class AirtableBackup:
     def __init__(self):
-        self.api_key = os.environ['AIRTABLE_API_KEY']
+        self.api_key = os.environ['AIRTABLE_PAT']
         self.base_id = os.environ['AIRTABLE_BASE_ID']
         self.backup_dir = '/opt/backups/airtable'
         self.gcs_bucket = 'seiji-watch-backups'
@@ -382,7 +382,7 @@ from google.cloud import storage
 
 class AirtableSchemaBackup:
     def __init__(self):
-        self.api_key = os.environ['AIRTABLE_API_KEY']
+        self.api_key = os.environ['AIRTABLE_PAT']
         self.base_id = os.environ['AIRTABLE_BASE_ID']
         self.headers = {
             'Authorization': f'Bearer {self.api_key}',

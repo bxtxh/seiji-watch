@@ -39,7 +39,7 @@ class SimpleAirtableClient:
     """Simple Airtable client for testing"""
 
     def __init__(self):
-        self.api_key = os.getenv("AIRTABLE_API_KEY")
+        self.api_key = os.getenv("AIRTABLE_PAT")
         self.base_id = os.getenv("AIRTABLE_BASE_ID")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         self.headers = {

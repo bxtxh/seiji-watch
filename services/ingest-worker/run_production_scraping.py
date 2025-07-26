@@ -370,7 +370,7 @@ async def main():
         print("⚠️  No .env.local file found - continuing with system environment")
 
     # Check critical environment variables
-    critical_vars = ["OPENAI_API_KEY", "AIRTABLE_API_KEY", "WEAVIATE_API_KEY"]
+    critical_vars = ["OPENAI_API_KEY", "AIRTABLE_PAT", "WEAVIATE_API_KEY"]
     missing_vars = [var for var in critical_vars if not os.environ.get(var)]
 
     if missing_vars:

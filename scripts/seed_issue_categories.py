@@ -316,12 +316,12 @@ async def main():
     script_dir = Path(__file__).parent
 
     # Check environment variables
-    api_key = os.getenv("AIRTABLE_API_KEY")
+    api_key = os.getenv("AIRTABLE_PAT")
     base_id = os.getenv("AIRTABLE_BASE_ID")
 
     if not api_key or not base_id:
         logger.error("❌ Missing required environment variables:")
-        logger.error("   AIRTABLE_API_KEY and AIRTABLE_BASE_ID must be set")
+        logger.error("   AIRTABLE_PAT and AIRTABLE_BASE_ID must be set")
         sys.exit(1)
 
     try:

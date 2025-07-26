@@ -20,7 +20,7 @@ def event_loop():
 def mock_env_vars(monkeypatch):
     """Mock environment variables for testing."""
     monkeypatch.setenv("OPENAI_API_KEY", "test-openai-key")
-    monkeypatch.setenv("AIRTABLE_API_KEY", "test-airtable-key")
+    monkeypatch.setenv("AIRTABLE_PAT", "test-airtable-key")
     monkeypatch.setenv("AIRTABLE_BASE_ID", "test-base-id")
     monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret-unified-for-ci-cd")
     monkeypatch.setenv("ENVIRONMENT", "testing")

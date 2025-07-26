@@ -1,0 +1,24 @@
+project_id = "${PROJECT_ID}"
+region = "${REGION}"
+zone = "${ZONE}"
+environment = "${ENVIRONMENT}"
+app_name = "${APP_NAME}"
+
+# Database configuration
+db_tier = "${DB_TIER}"
+db_disk_size = ${DB_DISK_SIZE}
+db_backup_enabled = ${DB_BACKUP_ENABLED}
+
+# Cloud Run configuration
+cloud_run_cpu = "${CLOUD_RUN_CPU}"
+cloud_run_memory = "${CLOUD_RUN_MEMORY}"
+cloud_run_min_instances = ${CLOUD_RUN_MIN_INSTANCES}
+cloud_run_max_instances = ${CLOUD_RUN_MAX_INSTANCES}
+
+# Storage configuration
+storage_location = "${STORAGE_LOCATION}"
+storage_class = "${STORAGE_CLASS}"
+
+# Security configuration
+data_anonymization = ${DATA_ANONYMIZATION}
+allowed_cors_origins = [${ALLOWED_CORS_ORIGINS}]

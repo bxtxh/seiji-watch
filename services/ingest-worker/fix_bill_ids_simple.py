@@ -35,7 +35,7 @@ class SimpleAirtableClient:
 
     def __init__(self):
         self.base_id = os.getenv("AIRTABLE_BASE_ID", "appQMZFZXAiGmjI0N")
-        self.api_key = os.getenv("AIRTABLE_API_KEY", "")
+        self.api_key = os.getenv("AIRTABLE_PAT", "")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -209,8 +209,8 @@ async def main():
     print("=" * 50)
 
     # 環境変数チェック
-    if not os.getenv("AIRTABLE_API_KEY"):
-        print("❌ AIRTABLE_API_KEY環境変数が設定されていません")
+    if not os.getenv("AIRTABLE_PAT"):
+        print("❌ AIRTABLE_PAT環境変数が設定されていません")
         return 1
 
     try:

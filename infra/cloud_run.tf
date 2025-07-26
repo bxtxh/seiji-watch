@@ -2,7 +2,7 @@
 
 # Service Account for Cloud Run
 resource "google_service_account" "cloud_run" {
-  account_id   = "${var.app_name}-cloud-run-${var.environment}"
+  account_id   = "seiji-cr-${substr(var.environment, 0, 15)}"
   display_name = "Cloud Run Service Account for ${var.app_name} ${var.environment}"
   description  = "Service account used by Cloud Run services"
 }
@@ -89,10 +89,10 @@ resource "google_cloud_run_service" "api_gateway" {
         }
 
         env {
-          name = "AIRTABLE_API_KEY"
+          name = "AIRTABLE_PAT"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.airtable_api_key.secret_id
+              name = google_secret_manager_secret.airtable_pat.secret_id
               key  = "latest"
             }
           }
@@ -206,10 +206,10 @@ resource "google_cloud_run_service" "ingest_worker" {
         }
 
         env {
-          name = "AIRTABLE_API_KEY"
+          name = "AIRTABLE_PAT"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.airtable_api_key.secret_id
+              name = google_secret_manager_secret.airtable_pat.secret_id
               key  = "latest"
             }
           }
@@ -266,7 +266,7 @@ resource "google_cloud_run_service" "ingest_worker" {
 
 # VPC Connector for Cloud Run services
 resource "google_vpc_access_connector" "connector" {
-  name          = "seiji-watch-vpc-conn-${var.environment}"
+  name          = "vpc-conn-${substr(var.environment, 0, 10)}"
   ip_cidr_range = "10.8.0.0/28"
   network       = google_compute_network.vpc.name
   region        = var.region

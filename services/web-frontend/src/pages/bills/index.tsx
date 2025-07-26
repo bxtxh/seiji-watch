@@ -91,7 +91,6 @@ const BillsPage = () => {
     selectedStage,
     selectedCategory,
     currentPage,
-    fetchBills,
   ]);
 
   const fetchCategory = async (categoryId: string) => {

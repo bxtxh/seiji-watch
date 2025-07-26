@@ -2,7 +2,7 @@
 
 # Service Account for GitHub Actions
 resource "google_service_account" "github_actions" {
-  account_id   = "${var.app_name}-github-actions-${var.environment}"
+  account_id   = "seiji-gha-${substr(var.environment, 0, 14)}"
   display_name = "GitHub Actions Service Account for ${var.app_name} ${var.environment}"
   description  = "Service account used by GitHub Actions for CI/CD"
 }

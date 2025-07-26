@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 os.environ.update(
     {
         "OPENAI_API_KEY": "test_openai_key",
-        "AIRTABLE_API_KEY": "test_airtable_key",
+        "AIRTABLE_PAT": "test_airtable_key",
         "AIRTABLE_BASE_ID": "test_base_id",
         "DISCORD_WEBHOOK_URL": "https://discord.com/api/webhooks/test",
         "DISCORD_NOTIFICATIONS_ENABLED": "false",  # Disable for tests

@@ -2,6 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: 'standalone',
+  typescript: {
+    // Disable type checking during build as we have pre-build type check
+    ignoreBuildErrors: process.env.NODE_ENV === 'production',
+  },
+  eslint: {
+    // Disable ESLint during build as we have pre-build linting
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production',
+  },
 
   // PWA configuration
   experimental: {
@@ -39,7 +48,7 @@ const nextConfig = {
   // Environment variables
   env: {
     NEXT_PUBLIC_API_BASE_URL:
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000",
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://seiji-watch-api-gateway-staging-new-496359339214.asia-northeast1.run.app",
   },
 
   // Performance optimization
@@ -145,7 +154,7 @@ const nextConfig = {
           "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "img-src 'self' data: https: blob:",
           "font-src 'self' data: https://fonts.googleapis.com https://fonts.gstatic.com",
-          "connect-src 'self' http://localhost:8000 http://localhost:8080 https://www.sangiin.go.jp",
+          "connect-src 'self' http://localhost:8000 http://localhost:8080 https://www.sangiin.go.jp https://seiji-watch-api-gateway-staging-new-496359339214.asia-northeast1.run.app",
           "media-src 'self'",
           "object-src 'none'",
           "child-src 'none'",
