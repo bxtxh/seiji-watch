@@ -12,7 +12,7 @@ import {
 import { observability } from "@/lib/observability";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://seiji-watch-api-gateway-staging-pfepe5d77a-an.a.run.app";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://seiji-watch-api-gateway-staging-new-496359339214.asia-northeast1.run.app";
 
 // Rate limiter for API requests (development: increased for frequent health checks)
 const apiRateLimiter = new RateLimiter(60000, 1000);
@@ -26,8 +26,8 @@ class ApiClient {
       new URL(baseUrl);
       this.baseUrl = baseUrl;
     } catch (error) {
-      console.warn(`Invalid API base URL: ${baseUrl}, using default`);
-      this.baseUrl = "http://localhost:8080";
+      console.warn(`Invalid API base URL: ${baseUrl}, using API Gateway fallback`);
+      this.baseUrl = "https://seiji-watch-api-gateway-staging-new-496359339214.asia-northeast1.run.app";
     }
   }
 
