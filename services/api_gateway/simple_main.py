@@ -146,16 +146,25 @@ async def api_health_check():
     return {"status": "healthy", "service": "api-gateway", "environment": "staging"}
 
 @app.get("/debug/env")
-async def debug_env():
-    """Debug endpoint to check environment variables"""
-    pat = os.getenv("AIRTABLE_PAT")
-    base_id = os.getenv("AIRTABLE_BASE_ID")
+async def debug_env(request: Request):
+    """Debug endpoint to check environment variables - protected"""
+    # Only allow in development environment
+    if os.getenv("ENVIRONMENT", "staging") != "development":
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    # Check for debug token
+    debug_token = request.headers.get("X-Debug-Token")
+    expected_token = os.getenv("DEBUG_API_TOKEN")
+    
+    if not expected_token or debug_token != expected_token:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    # Return sanitized information only
     return {
-        "airtable_pat_present": bool(pat),
-        "airtable_pat_prefix": pat[:10] if pat else None,
-        "airtable_base_id_present": bool(base_id),
-        "airtable_base_id": base_id if base_id else None,
-        "env_vars_count": len([k for k in os.environ.keys() if k.startswith("AIRTABLE")])
+        "environment": os.getenv("ENVIRONMENT", "unknown"),
+        "airtable_configured": bool(os.getenv("AIRTABLE_PAT")) and bool(os.getenv("AIRTABLE_BASE_ID")),
+        "api_version": "1.0.0",
+        "debug_mode": True
     }
 
 

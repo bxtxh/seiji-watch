@@ -262,7 +262,7 @@ class TestAccountManager:
             
         self.logger.info(f"Test credentials saved to: {output_file}")
         
-        # Write secure tokens to a separate file with restricted permissions
+        # Write secure tokens to a temporary file for Secret Manager upload
         secure_file = output_file.replace('.json', '-tokens.json')
         secure_data = {
             'created_at': datetime.utcnow().isoformat(),
@@ -278,7 +278,7 @@ class TestAccountManager:
                     'expires_at': (datetime.utcnow() + timedelta(days=7)).isoformat()
                 }
         
-        # Write secure file with restricted permissions
+        # Write temporary file with restricted permissions
         with open(secure_file, 'w') as f:
             json.dump(secure_data, f, indent=2)
         
@@ -286,7 +286,15 @@ class TestAccountManager:
         import stat
         os.chmod(secure_file, stat.S_IRUSR)
         
-        self.logger.info(f"Secure tokens written to: {secure_file} (owner read-only)")
+        self.logger.info(f"Temporary tokens file created: {secure_file}")
+        
+        # Provide instructions for storing in Secret Manager
+        print(f"\n⚠️  IMPORTANT: Store tokens securely using:")
+        print(f"python scripts/store_tokens_secret_manager.py \\")
+        print(f"  --project-id {os.getenv('GCP_PROJECT_ID', '<PROJECT_ID>')} \\")
+        print(f"  --environment {self.environment} \\")
+        print(f"  --tokens-file {secure_file}")
+        print(f"\nThis will upload tokens to Google Secret Manager and delete the local file.")
 
 
 def main():
