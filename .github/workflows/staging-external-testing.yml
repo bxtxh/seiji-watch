@@ -119,7 +119,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -143,7 +144,7 @@ jobs:
         CLOUD_RUN_MAX_INSTANCES: 50
         STORAGE_LOCATION: ASIA-NORTHEAST1
         STORAGE_CLASS: STANDARD
-        DATA_ANONYMIZATION: true
+        DATA_ANONYMIZATION: \"true\"
         ALLOWED_CORS_ORIGINS: '"https://staging.politics-watch.jp"'
         
     - name: Terraform Init
@@ -216,7 +217,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -381,7 +383,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
         
     - name: Terraform Init
       working-directory: ${{ env.TERRAFORM_DIR }}

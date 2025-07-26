@@ -30,9 +30,7 @@ domain_name = "staging-test.diet-issue-tracker.jp"
 
 # Security configuration for external access
 cors_origins = [
-  "https://staging-test.diet-issue-tracker.jp",
-  "http://localhost:3000",  # For local development testing
-  "http://localhost:8080"   # For debug testing
+  "https://staging-test.diet-issue-tracker.jp"
 ]
 
 # Performance testing configuration
@@ -52,7 +50,7 @@ enable_jwt_auth = true
 # Test data configuration
 include_full_diet_217_data = true
 enable_sample_data = true
-data_anonymization = false  # Real data needed for accuracy testing
+data_anonymization = true  # Enable data anonymization for external testing
 
 # Legal compliance testing
 enable_gdpr_mode = true
