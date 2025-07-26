@@ -18,11 +18,12 @@ import requests
 
 
 # Test user profiles for external user testing (starting with 1 reviewer)
+# Email addresses should be provided via environment variables or config file
 TEST_USERS = {
     "external_reviewer_1": {
-        "email": "g.nakamura703@gmail.com",
-        "name": "外部レビュワー（中村様）",
-        "role": "external_reviewer",
+        "email": os.getenv("EXTERNAL_REVIEWER_1_EMAIL", "reviewer1@example.com"),
+        "name": "外部レビュワー１",
+        "role": "external_reviewer", 
         "permissions": ["view_all", "browser_testing"],
         "description": "External reviewer for browser-based usability testing",
     }
@@ -305,6 +306,13 @@ def main():
             print("Error: GCP_PROJECT_ID environment variable required if --api-url not provided")
             sys.exit(1)
         args.api_url = f"https://api-gateway-{args.environment}-{project_id}.a.run.app"
+    
+    # Validate GCP_PROJECT_ID matches terraform configuration if provided
+    expected_project_id = os.getenv('TERRAFORM_PROJECT_ID', os.getenv('GCP_PROJECT_ID'))
+    actual_project_id = os.getenv('GCP_PROJECT_ID')
+    if expected_project_id and actual_project_id and expected_project_id != actual_project_id:
+        print(f"Warning: GCP_PROJECT_ID mismatch - Expected: {expected_project_id}, Actual: {actual_project_id}")
+        print("This may cause deployment issues. Please verify your configuration.")
     
     # Create test account manager
     manager = TestAccountManager(args.environment, args.api_url)

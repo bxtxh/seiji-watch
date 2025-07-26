@@ -228,6 +228,8 @@ jobs:
         docker push $SERVICE_IMAGE
         
         # Deploy to Cloud Run with staging-specific configuration
+        # Note: --allow-unauthenticated is required for external testing access
+        # Production deployments should use proper authentication (e.g., IAP)
         gcloud run deploy ${{ matrix.service }}-staging-external-test \
           --image $SERVICE_IMAGE \
           --platform managed \
