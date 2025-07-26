@@ -9,7 +9,8 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from typing import Dict, List
 
 import jwt
@@ -35,7 +36,18 @@ class TestAccountManager:
     def __init__(self, environment: str, api_base_url: str):
         self.environment = environment
         self.api_base_url = api_base_url
+        
+        # Validate required environment variables
         self.jwt_secret = os.getenv('JWT_SECRET_KEY')
+        if not self.jwt_secret:
+            raise ValueError("JWT_SECRET_KEY environment variable is required")
+            
+        # Validate other required environment variables
+        required_vars = ['GCP_PROJECT_ID']
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+            
         self.logger = self._setup_logging()
         
     def _setup_logging(self) -> logging.Logger:
@@ -57,7 +69,7 @@ class TestAccountManager:
             'role': user_data['role'],
             'permissions': user_data['permissions'],
             'iat': datetime.utcnow().timestamp(),
-            'exp': datetime.utcnow().timestamp() + (30 * 24 * 3600),  # 30 days
+            'exp': datetime.utcnow().timestamp() + (7 * 24 * 3600),  # 7 days for testing
             'iss': f'diet-tracker-{self.environment}',
             'aud': 'external-testing'
         }
@@ -81,14 +93,39 @@ class TestAccountManager:
                 'created_for': 'external_user_testing'
             }
             
-            # Make API request to create user
+            # Make API request with retry logic
             headers = {'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
-            response = requests.post(
-                f'{self.api_base_url}/admin/users',
-                json=user_payload,
-                headers=headers,
-                timeout=30
-            )
+            
+            max_retries = 3
+            retry_delay = 2  # seconds
+            
+            for attempt in range(max_retries):
+                try:
+                    response = requests.post(
+                        f'{self.api_base_url}/admin/users',
+                        json=user_payload,
+                        headers=headers,
+                        timeout=30
+                    )
+                    
+                    # If successful or client error (4xx), don't retry
+                    if response.status_code < 500:
+                        break
+                        
+                except requests.exceptions.Timeout:
+                    if attempt < max_retries - 1:
+                        self.logger.warning(f"Request timeout for {user_id}, retrying in {retry_delay}s... (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                    else:
+                        raise
+                except requests.exceptions.ConnectionError as e:
+                    if attempt < max_retries - 1:
+                        self.logger.warning(f"Connection error for {user_id}, retrying in {retry_delay}s... (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2
+                    else:
+                        raise
             
             if response.status_code == 201:
                 self.logger.info(f"Created test user: {user_id} ({user_data['email']})")
@@ -164,13 +201,19 @@ class TestAccountManager:
                     'email': user_data['email'], 
                     'name': user_data['name'],
                     'role': user_data['role'],
-                    'access_token': user_data['token'],
+                    'access_token': '[REDACTED - Contact admin for token]',
                     'login_instructions': {
-                        'web_ui': f"Use email: {user_data['email']} with provided token",
-                        'api_access': f"Include 'Authorization: Bearer {user_data['token']}' header",
-                        'token_expiry': '30 days from creation'
+                        'web_ui': f"Use email: {user_data['email']} with secure token",
+                        'api_access': "Include 'Authorization: Bearer <token>' header",
+                        'token_expiry': '7 days from creation',
+                        'note': 'Actual tokens are stored securely. Contact admin for access.'
                     }
                 }
+                
+                # Store the actual token in a secure location (e.g., environment variable or secret manager)
+                # This is just a placeholder - implement secure storage based on your infrastructure
+                secure_token_key = f"TEST_TOKEN_{user_id.upper()}"
+                self.logger.info(f"Secure token should be stored as: {secure_token_key}={user_data['token'][:10]}...")
                 
         # Add testing instructions (pilot test with 1 reviewer)
         credentials['testing_instructions'] = {
@@ -212,10 +255,37 @@ class TestAccountManager:
             }
         }
         
+        # Write credentials file (without sensitive tokens)
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(credentials, f, indent=2, ensure_ascii=False)
             
         self.logger.info(f"Test credentials saved to: {output_file}")
+        
+        # Write secure tokens to a separate file with restricted permissions
+        secure_file = output_file.replace('.json', '-tokens.json')
+        secure_data = {
+            'created_at': datetime.utcnow().isoformat(),
+            'environment': self.environment,
+            'tokens': {}
+        }
+        
+        for user_id, user_data in results['users'].items():
+            if user_data['status'] == 'created':
+                secure_data['tokens'][user_id] = {
+                    'email': user_data['email'],
+                    'token': user_data['token'],
+                    'expires_at': (datetime.utcnow() + timedelta(days=7)).isoformat()
+                }
+        
+        # Write secure file with restricted permissions
+        with open(secure_file, 'w') as f:
+            json.dump(secure_data, f, indent=2)
+        
+        # Set file permissions to owner read-only
+        import stat
+        os.chmod(secure_file, stat.S_IRUSR)
+        
+        self.logger.info(f"Secure tokens written to: {secure_file} (owner read-only)")
 
 
 def main():

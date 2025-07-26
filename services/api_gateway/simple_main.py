@@ -19,14 +19,22 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+# Get allowed origins from environment variable with defaults
+allowed_origins = os.getenv("ALLOWED_CORS_ORIGINS", "").split(",")
+if not allowed_origins or allowed_origins == ['']:
+    # Default origins for staging environment
+    allowed_origins = [
+        "https://seiji-watch-web-frontend-staging-496359339214.asia-northeast1.run.app",
+        "https://staging.politics-watch.jp"
+    ]
+
+# Add localhost only for local development
+if os.getenv("ENVIRONMENT", "staging") == "development":
+    allowed_origins.append("http://localhost:3000")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://seiji-watch-web-frontend-staging-496359339214.asia-northeast1.run.app",
-        "https://staging.politics-watch.jp",
-        "*"  # Temporary wildcard for debugging
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

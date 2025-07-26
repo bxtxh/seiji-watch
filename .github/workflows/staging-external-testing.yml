@@ -76,21 +76,21 @@ jobs:
       if: matrix.service != 'web-frontend'
       working-directory: services/${{ matrix.service }}
       run: |
-        python -m pytest tests/ --verbose || echo "Tests completed with issues"
+        python -m pytest tests/ --verbose
         
     - name: Run Node.js tests
       if: matrix.service == 'web-frontend'
       working-directory: services/${{ matrix.service }}
       run: |
-        npm run test || echo "Tests completed with issues"
+        npm run test
         
     - name: Run linting
       working-directory: services/${{ matrix.service }}
       run: |
         if [ "${{ matrix.service }}" = "web-frontend" ]; then
-          npm run lint || echo "Linting completed with issues"
+          npm run lint
         else
-          python -m ruff check . || echo "Linting completed with issues"
+          python -m ruff check .
         fi
 
   # Deploy infrastructure for external testing
@@ -114,36 +114,31 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
-      if: env.GCP_SERVICE_ACCOUNT_JSON != ''
-      env:
-        GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
       
-    - name: Create terraform.tfvars for staging
+    - name: Create terraform.tfvars from template
       working-directory: ${{ env.TERRAFORM_DIR }}
       run: |
-        cat > terraform.tfvars << EOF
-        project_id = "${{ secrets.GCP_PROJECT_ID }}"
-        region = "asia-northeast1"
-        zone = "asia-northeast1-a"
-        environment = "staging-external-test"
-        app_name = "seiji-watch"
-        
-        # Enhanced resources for external testing
-        db_tier = "db-custom-2-7680"
-        db_disk_size = 100
-        db_backup_enabled = true
-        
-        cloud_run_cpu = "2"
-        cloud_run_memory = "2Gi"
-        cloud_run_min_instances = 1
-        cloud_run_max_instances = 50
-        
-        storage_location = "ASIA-NORTHEAST1"
-        storage_class = "STANDARD"
-        EOF
+        envsubst < terraform.tfvars.template > terraform.tfvars
+      env:
+        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        REGION: asia-northeast1
+        ZONE: asia-northeast1-a
+        ENVIRONMENT: staging-external-test
+        APP_NAME: seiji-watch
+        DB_TIER: db-custom-2-7680
+        DB_DISK_SIZE: 100
+        DB_BACKUP_ENABLED: true
+        CLOUD_RUN_CPU: "2"
+        CLOUD_RUN_MEMORY: 2Gi
+        CLOUD_RUN_MIN_INSTANCES: 1
+        CLOUD_RUN_MAX_INSTANCES: 50
+        STORAGE_LOCATION: ASIA-NORTHEAST1
+        STORAGE_CLASS: STANDARD
+        DATA_ANONYMIZATION: true
+        ALLOWED_CORS_ORIGINS: '"https://staging.politics-watch.jp"'
         
     - name: Terraform Init
       working-directory: ${{ env.TERRAFORM_DIR }}
@@ -160,30 +155,23 @@ jobs:
     - name: Terraform Plan
       working-directory: ${{ env.TERRAFORM_DIR }}
       run: |
-        # Execute terraform plan and capture exit code
+        set +e  # Don't exit on non-zero return code
         terraform plan \
           -var="environment=staging-external-test" \
           -out=tfplan-staging-external-test \
-          -detailed-exitcode || PLAN_EXIT_CODE=$?
+          -detailed-exitcode
+        PLAN_EXIT_CODE=$?
+        set -e  # Re-enable exit on error
         
-        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
-        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
-        
-        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
-        
-        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
-        case $PLAN_EXIT_CODE in
-          0)
-            echo "✅ No infrastructure changes detected"
-            ;;
-          2|3)
-            echo "📋 Infrastructure changes detected for staging environment"
-            ;;
-          *)
-            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
-            exit 1
-            ;;
-        esac
+        # Exit codes: 0=no changes, 1=error, 2=changes present
+        if [ $PLAN_EXIT_CODE -eq 0 ]; then
+          echo "✅ No infrastructure changes detected"
+        elif [ $PLAN_EXIT_CODE -eq 2 ]; then
+          echo "📋 Infrastructure changes detected for staging environment"
+        else
+          echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+          exit 1
+        fi
         
     - name: Terraform Apply
       if: github.event_name == 'push' || github.event.inputs.action == 'deploy'
@@ -223,9 +211,6 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
-      if: env.GCP_SERVICE_ACCOUNT_JSON != ''
-      env:
-        GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
@@ -280,6 +265,36 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
+    - name: Wait for services to be healthy
+      run: |
+        echo "Waiting for services to be ready..."
+        API_URL="https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+        
+        # Function to check service health
+        check_health() {
+          local url=$1
+          local service=$2
+          for i in {1..30}; do
+            if curl -sf "${url}/health" > /dev/null; then
+              echo "✅ ${service} is healthy"
+              return 0
+            fi
+            echo "⏳ Waiting for ${service}... (attempt $i/30)"
+            sleep 10
+          done
+          echo "❌ ${service} health check failed after 5 minutes"
+          return 1
+        }
+        
+        # Check API Gateway health
+        check_health "$API_URL" "API Gateway" || exit 1
+        
+        # Check other critical services
+        WEB_URL="https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+        check_health "$WEB_URL" "Web Frontend" || exit 1
+        
+        echo "✅ All services are healthy and ready"
+        
     - name: Initialize 217th Diet Session Data
       working-directory: services/ingest-worker
       env:
@@ -310,9 +325,6 @@ jobs:
     if: always() && (needs.deploy-services.result == 'success')
     
     steps:
-    - name: Wait for services to be ready
-      run: sleep 60
-      
     - name: Check API Gateway Health
       run: |
         API_URL="https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
@@ -362,9 +374,6 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
-      if: env.GCP_SERVICE_ACCOUNT_JSON != ''
-      env:
-        GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         
     - name: Terraform Init
       working-directory: ${{ env.TERRAFORM_DIR }}
