@@ -24,7 +24,7 @@ steps:
       '--port', '8000',
       '--memory', '1Gi',
       '--cpu', '1',
-      '--set-env-vars', 'AIRTABLE_PAT=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-pat-staging/versions/latest:value,AIRTABLE_BASE_ID=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-base-id-staging/versions/latest:value',
+      '--set-env-vars', 'AIRTABLE_PAT=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-api-key-staging/versions/latest:value,AIRTABLE_BASE_ID=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-base-id-staging/versions/latest:value',
       '--service-account', 'seiji-cr-staging@gen-lang-client-0458605339.iam.gserviceaccount.com',
       '--allow-unauthenticated'
     ]

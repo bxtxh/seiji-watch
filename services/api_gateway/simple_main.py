@@ -25,6 +25,7 @@ app.add_middleware(
         "http://localhost:3000",
         "https://seiji-watch-web-frontend-staging-496359339214.asia-northeast1.run.app",
         "https://staging.politics-watch.jp",
+        "*"  # Temporary wildcard for debugging
     ],
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -55,7 +56,7 @@ class AirtableClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{self.base_url}/Bills",
+                f"{self.base_url}/Bills%20(%E6%B3%95%E6%A1%88)",
                 headers=self.headers,
                 params=params,
             ) as response:
@@ -87,7 +88,7 @@ class AirtableClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{self.base_url}/Bills",
+                f"{self.base_url}/Bills%20(%E6%B3%95%E6%A1%88)",
                 headers=self.headers,
                 params=params,
             ) as response:
@@ -104,7 +105,7 @@ class AirtableClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{self.base_url}/Members",
+                f"{self.base_url}/Members%20(%E8%AD%B0%E5%93%A1)",
                 headers=self.headers,
                 params=params,
             ) as response:
@@ -116,14 +117,38 @@ class AirtableClient:
                 return await response.json()
 
 
-# Initialize Airtable client
-airtable_client = AirtableClient()
+# Initialize Airtable client lazily
+_airtable_client = None
+
+def get_airtable_client():
+    global _airtable_client
+    if _airtable_client is None:
+        _airtable_client = AirtableClient()
+    return _airtable_client
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "api-gateway", "environment": "staging"}
+
+@app.get("/api/health")
+async def api_health_check():
+    """API Health check endpoint"""
+    return {"status": "healthy", "service": "api-gateway", "environment": "staging"}
+
+@app.get("/debug/env")
+async def debug_env():
+    """Debug endpoint to check environment variables"""
+    pat = os.getenv("AIRTABLE_PAT")
+    base_id = os.getenv("AIRTABLE_BASE_ID")
+    return {
+        "airtable_pat_present": bool(pat),
+        "airtable_pat_prefix": pat[:10] if pat else None,
+        "airtable_base_id_present": bool(base_id),
+        "airtable_base_id": base_id if base_id else None,
+        "env_vars_count": len([k for k in os.environ.keys() if k.startswith("AIRTABLE")])
+    }
 
 
 @app.get("/api/bills/search")
@@ -142,9 +167,9 @@ async def search_bills(
             filters["stage"] = stage
 
         if q:
-            result = await airtable_client.search_bills(q, filters)
+            result = await get_airtable_client().search_bills(q, filters)
         else:
-            result = await airtable_client.list_bills(limit)
+            result = await get_airtable_client().list_bills(limit)
 
         # Transform Airtable response to frontend format
         bills = []
@@ -182,8 +207,8 @@ async def get_bill(bill_id: str):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{airtable_client.base_url}/Bills/{bill_id}",
-                headers=airtable_client.headers,
+                f"{get_airtable_client().base_url}/Bills/{bill_id}",
+                headers=get_airtable_client().headers,
             ) as response:
                 if response.status == 404:
                     raise HTTPException(status_code=404, detail="Bill not found")
@@ -214,7 +239,7 @@ async def list_members(
 ):
     """List members"""
     try:
-        result = await airtable_client.list_members(limit)
+        result = await get_airtable_client().list_members(limit)
 
         # Transform Airtable response to frontend format
         members = []
@@ -247,8 +272,8 @@ async def get_member(member_id: str):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{airtable_client.base_url}/Members/{member_id}",
-                headers=airtable_client.headers,
+                f"{get_airtable_client().base_url}/Members/{member_id}",
+                headers=get_airtable_client().headers,
             ) as response:
                 if response.status == 404:
                     raise HTTPException(status_code=404, detail="Member not found")
@@ -271,6 +296,36 @@ async def get_member(member_id: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching member: {str(e)}")
+
+
+@app.get("/api/issues/kanban")
+async def get_issues_kanban(
+    range: str = Query("30d", description="Time range for issues"),
+    max_per_stage: int = Query(8, description="Maximum issues per stage"),
+):
+    """Get issues in kanban format"""
+    try:
+        # Return structure that matches frontend expectations
+        return {
+            "success": True,
+            "data": {
+                "stages": {
+                    "backlog": [],
+                    "in_progress": [],
+                    "in_review": [],
+                    "completed": []
+                }
+            },
+            "metadata": {
+                "total_issues": 0,
+                "range": range,
+                "max_per_stage": max_per_stage,
+                "last_updated": "2025-07-26T00:00:00Z"
+            },
+            "message": "Kanban data structure ready"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching kanban data: {str(e)}")
 
 
 if __name__ == "__main__":
