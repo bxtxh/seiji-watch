@@ -89,10 +89,10 @@ resource "google_cloud_run_service" "api_gateway" {
         }
 
         env {
-          name = "AIRTABLE_API_KEY"
+          name = "AIRTABLE_PAT"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.airtable_api_key.secret_id
+              name = google_secret_manager_secret.airtable_pat.secret_id
               key  = "latest"
             }
           }
@@ -206,10 +206,10 @@ resource "google_cloud_run_service" "ingest_worker" {
         }
 
         env {
-          name = "AIRTABLE_API_KEY"
+          name = "AIRTABLE_PAT"
           value_from {
             secret_key_ref {
-              name = google_secret_manager_secret.airtable_api_key.secret_id
+              name = google_secret_manager_secret.airtable_pat.secret_id
               key  = "latest"
             }
           }

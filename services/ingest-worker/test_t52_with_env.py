@@ -30,7 +30,7 @@ def check_api_keys():
     """Check if all required API keys are set"""
     required_keys = {
         "OPENAI_API_KEY": "sk-",
-        "AIRTABLE_API_KEY": "pat",
+        "AIRTABLE_PAT": "pat",
         "AIRTABLE_BASE_ID": "app",
         "WEAVIATE_URL": "https://",
         "WEAVIATE_API_KEY": "",
@@ -69,7 +69,7 @@ async def test_external_services():
         print(f"❌ OpenAI: {e}")
 
     # Test Airtable (simple check)
-    airtable_key = os.getenv("AIRTABLE_API_KEY")
+    airtable_key = os.getenv("AIRTABLE_PAT")
     airtable_base = os.getenv("AIRTABLE_BASE_ID")
     if airtable_key and airtable_base:
         print("✅ Airtable: Configuration present")

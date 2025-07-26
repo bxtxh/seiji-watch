@@ -53,7 +53,7 @@ def main():
       --port=8000 \\
       --memory=1Gi \\
       --cpu=1 \\
-      --update-env-vars=AIRTABLE_API_KEY=dummy,AIRTABLE_BASE_ID=dummy \\
+      --update-env-vars=AIRTABLE_PAT=dummy,AIRTABLE_BASE_ID=dummy \\
       --service-account=seiji-cr-staging@{project_id}.iam.gserviceaccount.com \\
       --allow-unauthenticated
     """

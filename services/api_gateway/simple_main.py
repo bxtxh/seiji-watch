@@ -36,10 +36,10 @@ class AirtableClient:
     """Simple Airtable client for staging environment"""
 
     def __init__(self):
-        self.api_key = os.getenv("AIRTABLE_API_KEY")
+        self.api_key = os.getenv("AIRTABLE_PAT")
         self.base_id = os.getenv("AIRTABLE_BASE_ID")
         if not self.api_key or not self.base_id:
-            raise ValueError("AIRTABLE_API_KEY and AIRTABLE_BASE_ID must be set")
+            raise ValueError("AIRTABLE_PAT and AIRTABLE_BASE_ID must be set")
         
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
         self.headers = {

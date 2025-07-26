@@ -563,7 +563,7 @@ curl -H "Authorization: Bearer $OPENAI_API_KEY" \
   https://api.openai.com/v1/models
 
 # 3. Check Airtable API status
-curl -H "Authorization: Bearer $AIRTABLE_API_KEY" \
+curl -H "Authorization: Bearer $AIRTABLE_PAT" \
   https://api.airtable.com/v0/$AIRTABLE_BASE_ID
 
 # 4. Monitor metrics dashboard
@@ -597,7 +597,7 @@ kubectl set env deployment/ingest-worker OPENAI_MODEL=gpt-3.5-turbo-16k
 **Response Steps**:
 ```bash
 # 1. Check current rate limit status
-curl -H "Authorization: Bearer $AIRTABLE_API_KEY" \
+curl -H "Authorization: Bearer $AIRTABLE_PAT" \
   https://api.airtable.com/v0/$AIRTABLE_BASE_ID/Issues | grep -i rate
 
 # 2. Enable rate limiting
