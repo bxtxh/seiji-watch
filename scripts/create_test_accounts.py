@@ -262,39 +262,84 @@ class TestAccountManager:
             
         self.logger.info(f"Test credentials saved to: {output_file}")
         
-        # Write secure tokens to a temporary file for Secret Manager upload
-        secure_file = output_file.replace('.json', '-tokens.json')
-        secure_data = {
-            'created_at': datetime.utcnow().isoformat(),
-            'environment': self.environment,
-            'tokens': {}
-        }
-        
-        for user_id, user_data in results['users'].items():
-            if user_data['status'] == 'created':
-                secure_data['tokens'][user_id] = {
-                    'email': user_data['email'],
-                    'token': user_data['token'],
-                    'expires_at': (datetime.utcnow() + timedelta(days=7)).isoformat()
+        # Store tokens directly in Secret Manager - never write to filesystem
+        try:
+            from google.cloud import secretmanager
+            
+            # Initialize Secret Manager client
+            client = secretmanager.SecretManagerServiceClient()
+            project_id = os.getenv('GCP_PROJECT_ID')
+            
+            if not project_id:
+                raise ValueError("GCP_PROJECT_ID environment variable required for Secret Manager")
+            
+            # Prepare secure token data
+            secure_data = {
+                'created_at': datetime.utcnow().isoformat(),
+                'environment': self.environment,
+                'tokens': {}
+            }
+            
+            for user_id, user_data in results['users'].items():
+                if user_data['status'] == 'created':
+                    secure_data['tokens'][user_id] = {
+                        'email': user_data['email'],
+                        'token': user_data['token'],
+                        'expires_at': (datetime.utcnow() + timedelta(days=7)).isoformat()
+                    }
+            
+            # Create or update secret
+            secret_id = f"external-test-tokens-{self.environment}"
+            parent = f"projects/{project_id}"
+            
+            try:
+                # Try to create the secret
+                secret = client.create_secret(
+                    request={
+                        "parent": parent,
+                        "secret_id": secret_id,
+                        "secret": {
+                            "replication": {
+                                "automatic": {}
+                            }
+                        }
+                    }
+                )
+                self.logger.info(f"Created new secret: {secret_id}")
+            except Exception:
+                # Secret already exists, that's fine
+                self.logger.info(f"Using existing secret: {secret_id}")
+            
+            # Add new secret version
+            secret_name = f"{parent}/secrets/{secret_id}"
+            secret_payload = json.dumps(secure_data, indent=2).encode('UTF-8')
+            
+            version = client.add_secret_version(
+                request={
+                    "parent": secret_name,
+                    "payload": {
+                        "data": secret_payload
+                    }
                 }
-        
-        # Write temporary file with restricted permissions
-        with open(secure_file, 'w') as f:
-            json.dump(secure_data, f, indent=2)
-        
-        # Set file permissions to owner read-only
-        import stat
-        os.chmod(secure_file, stat.S_IRUSR)
-        
-        self.logger.info(f"Temporary tokens file created: {secure_file}")
-        
-        # Provide instructions for storing in Secret Manager
-        print(f"\n⚠️  IMPORTANT: Store tokens securely using:")
-        print(f"python scripts/store_tokens_secret_manager.py \\")
-        print(f"  --project-id {os.getenv('GCP_PROJECT_ID', '<PROJECT_ID>')} \\")
-        print(f"  --environment {self.environment} \\")
-        print(f"  --tokens-file {secure_file}")
-        print(f"\nThis will upload tokens to Google Secret Manager and delete the local file.")
+            )
+            
+            self.logger.info(f"Tokens securely stored in Secret Manager: {version.name}")
+            
+            print(f"\n✅ Tokens securely stored in Google Secret Manager")
+            print(f"Secret ID: {secret_id}")
+            print(f"Version: {version.name.split('/')[-1]}")
+            print(f"\nTo retrieve tokens:")
+            print(f"gcloud secrets versions access latest --secret={secret_id}")
+            
+        except ImportError:
+            self.logger.error("google-cloud-secret-manager not installed. Tokens NOT saved.")
+            print("\n❌ ERROR: Cannot store tokens securely without google-cloud-secret-manager")
+            print("Install with: pip install google-cloud-secret-manager")
+            raise
+        except Exception as e:
+            self.logger.error(f"Failed to store tokens in Secret Manager: {str(e)}")
+            print(f"\n❌ ERROR: Failed to store tokens securely: {str(e)}")
+            raise
 
 
 def main():

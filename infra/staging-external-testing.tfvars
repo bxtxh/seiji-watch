@@ -1,7 +1,8 @@
 # Terraform variables for external user testing staging environment
 # This configuration provides enhanced resources for comprehensive testing
 
-project_id = "diet-issue-tracker"  # Replace with actual project ID
+# project_id should be provided via environment variable or terraform command line
+# e.g., terraform apply -var="project_id=$GCP_PROJECT_ID"
 region = "asia-northeast1"
 zone = "asia-northeast1-a"
 environment = "staging-external-test"

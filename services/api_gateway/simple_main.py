@@ -4,6 +4,7 @@ Simple API Gateway for staging deployment
 """
 
 import os
+from datetime import datetime
 from typing import Any, List, Optional
 
 import aiohttp
@@ -147,24 +148,26 @@ async def api_health_check():
 
 @app.get("/debug/env")
 async def debug_env(request: Request):
-    """Debug endpoint to check environment variables - protected"""
-    # Only allow in development environment
-    if os.getenv("ENVIRONMENT", "staging") != "development":
+    """Debug endpoint - disabled in production environments"""
+    environment = os.getenv("ENVIRONMENT", "staging")
+    
+    # Completely disable in production environments
+    if environment in ["production", "staging", "staging-external-test"]:
         raise HTTPException(status_code=404, detail="Not found")
     
-    # Check for debug token
+    # Only in development environment with token
     debug_token = request.headers.get("X-Debug-Token")
     expected_token = os.getenv("DEBUG_API_TOKEN")
     
     if not expected_token or debug_token != expected_token:
         raise HTTPException(status_code=403, detail="Forbidden")
     
-    # Return sanitized information only
+    # Return minimal sanitized information only
     return {
-        "environment": os.getenv("ENVIRONMENT", "unknown"),
+        "environment": environment,
         "airtable_configured": bool(os.getenv("AIRTABLE_PAT")) and bool(os.getenv("AIRTABLE_BASE_ID")),
         "api_version": "1.0.0",
-        "debug_mode": True
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 

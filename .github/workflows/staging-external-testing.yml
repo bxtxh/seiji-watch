@@ -236,13 +236,12 @@ jobs:
         docker push $SERVICE_IMAGE
         
         # Deploy to Cloud Run with staging-specific configuration
-        # Note: --allow-unauthenticated is required for external testing access
-        # Production deployments should use proper authentication (e.g., IAP)
+        # Using IAP (Identity-Aware Proxy) for authentication
         gcloud run deploy ${{ matrix.service }}-staging-external-test \
           --image $SERVICE_IMAGE \
           --platform managed \
           --region asia-northeast1 \
-          --allow-unauthenticated \
+          --no-allow-unauthenticated \
           --memory 2Gi \
           --cpu 2 \
           --min-instances 1 \
@@ -251,6 +250,8 @@ jobs:
           --set-env-vars="ENVIRONMENT=staging-external-test" \
           --set-env-vars="LOG_LEVEL=INFO" \
           --set-env-vars="ENABLE_DETAILED_LOGGING=true" \
+          --set-env-vars="JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
+          --set-secrets="AIRTABLE_PAT=airtable-pat:latest" \
           --project ${{ secrets.GCP_PROJECT_ID }}
 
   # Initialize test data
