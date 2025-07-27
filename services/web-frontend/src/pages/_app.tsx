@@ -8,7 +8,7 @@ import {
   PWAPerformanceMonitor,
 } from "@/utils/pwa";
 import { SecurityProvider } from "@/contexts/SecurityContext";
-import { observability } from "@/lib/observability";
+import { observability, ObservabilityProvider } from "@/lib/observability";
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -122,8 +122,10 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.events]);
 
   return (
-    <SecurityProvider>
-      <Component {...pageProps} />
-    </SecurityProvider>
+    <ObservabilityProvider>
+      <SecurityProvider>
+        <Component {...pageProps} />
+      </SecurityProvider>
+    </ObservabilityProvider>
   );
 }

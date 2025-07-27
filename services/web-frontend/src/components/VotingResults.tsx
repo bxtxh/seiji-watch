@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { VotingSession, VoteResult } from "@/types";
 
 interface VotingResultsProps {
@@ -15,9 +15,9 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
 
   useEffect(() => {
     fetchVotingData();
-  }, [billNumber]);
+  }, [billNumber, fetchVotingData]);
 
-  const fetchVotingData = async () => {
+  const fetchVotingData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -77,7 +77,7 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
       setError("投票データの取得に失敗しました");
       setLoading(false);
     }
-  };
+  }, [billNumber]);
 
   const getVoteResultBadge = (result: string) => {
     const badgeClasses = {

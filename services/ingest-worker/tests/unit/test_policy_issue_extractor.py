@@ -5,23 +5,17 @@ Tests dual-level extraction, validation, and quality assessment.
 
 import asyncio
 import json
-import os
-
-# Import the components to test
-import sys
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from services.policy_issue_extractor import (
+from src.services.policy_issue_extractor import (
     BillData,
     DualLevelIssue,
     PolicyIssueExtractor,
     VerbEndingValidator,
     VocabularyLevelValidator,
 )
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 
 class TestDualLevelIssue:

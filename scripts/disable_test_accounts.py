@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from datetime import datetime
-from typing import Dict, List
+from typing import Any
 
 import requests
 
@@ -37,7 +37,7 @@ class TestAccountDisabler:
         )
         return logging.getLogger(__name__)
     
-    def disable_user(self, user_email: str) -> Dict:
+    def disable_user(self, user_email: str) -> dict[str, Any]:
         """Disable a single test user account."""
         try:
             headers = {
@@ -76,7 +76,7 @@ class TestAccountDisabler:
                 'error': str(e)
             }
     
-    def disable_all_test_accounts(self, credentials_file: str) -> Dict:
+    def disable_all_test_accounts(self, credentials_file: str) -> dict[str, Any]:
         """Disable all test accounts from credentials file."""
         # Load test accounts from credentials file
         try:
@@ -114,7 +114,7 @@ class TestAccountDisabler:
         
         return results
     
-    def generate_disable_report(self, results: Dict, output_file: str):
+    def generate_disable_report(self, results: dict[str, Any], output_file: str):
         """Generate report of disabled accounts."""
         report = {
             'disable_report': {

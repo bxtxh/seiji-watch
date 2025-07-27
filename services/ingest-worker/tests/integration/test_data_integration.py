@@ -8,24 +8,24 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from ..src.processor.bill_data_merger import (
+from src.processor.bill_data_merger import (
     BillDataMerger,
     MergeResult,
     MergeStrategy,
 )
-from ..src.processor.bill_data_validator import (
+from src.processor.bill_data_validator import (
     BillDataValidator,
     ValidationCategory,
     ValidationResult,
     ValidationSeverity,
 )
-from ..src.processor.bill_progress_tracker import (
+from src.processor.bill_progress_tracker import (
     AlertType,
     BillProgressTracker,
     ProgressUpdateResult,
     StageTransition,
 )
-from ..src.processor.data_integration_manager import (
+from src.processor.data_integration_manager import (
     DataIntegrationManager,
 )
 

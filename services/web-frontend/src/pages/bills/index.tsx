@@ -91,6 +91,7 @@ const BillsPage = () => {
     selectedStage,
     selectedCategory,
     currentPage,
+    fetchBills,
   ]);
 
   const fetchCategory = async (categoryId: string) => {
@@ -155,7 +156,7 @@ const BillsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedStatus, selectedStage, selectedCategory, currentPage]);
+  }, [searchQuery, selectedStatus, selectedStage, selectedCategory, currentPage, itemsPerPage]);
 
   const convertBillRecordToBill = (billRecord: BillRecord): Bill => {
     return {

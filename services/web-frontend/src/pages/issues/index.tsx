@@ -32,7 +32,7 @@ const IssuesPage = () => {
   useEffect(() => {
     fetchIssues();
     fetchIssueTags();
-  }, []);
+  }, [fetchIssues, fetchIssueTags]);
 
   const fetchIssues = useCallback(async () => {
     try {

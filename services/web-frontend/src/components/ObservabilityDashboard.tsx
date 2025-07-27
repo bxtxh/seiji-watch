@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useObservability } from "@/lib/observability";
 
 /**
@@ -28,6 +28,11 @@ export default function ObservabilityDashboard({
     null,
   );
 
+  const updateData = useCallback(() => {
+    setWebVitals(getWebVitals());
+    setSessionSummary(getSessionSummary());
+  }, [getWebVitals, getSessionSummary]);
+
   useEffect(() => {
     if (isOpen) {
       // Update data immediately when opened
@@ -46,12 +51,7 @@ export default function ObservabilityDashboard({
         setRefreshInterval(null);
       }
     }
-  }, [isOpen]);
-
-  const updateData = () => {
-    setWebVitals(getWebVitals());
-    setSessionSummary(getSessionSummary());
-  };
+  }, [isOpen, updateData, refreshInterval]);
 
   const getVitalRating = (
     vital: string,

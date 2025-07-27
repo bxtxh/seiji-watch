@@ -4,20 +4,14 @@ Tests hierarchical issue management, status updates, and batch operations.
 """
 
 import asyncio
-import os
-
-# Import the components to test
-import sys
 import uuid
 from datetime import date, datetime
 from unittest.mock import AsyncMock
 
 import pytest
 
-from services.airtable_issue_manager import AirtableIssueManager, AirtableIssueRecord
-from services.policy_issue_extractor import DualLevelIssue
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+from src.services.airtable_issue_manager import AirtableIssueManager, AirtableIssueRecord
+from src.services.policy_issue_extractor import DualLevelIssue
 
 
 class TestAirtableIssueRecord:

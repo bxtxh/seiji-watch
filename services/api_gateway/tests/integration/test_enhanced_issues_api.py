@@ -3,17 +3,11 @@ API tests for Enhanced Issues endpoints.
 Tests the level-specific API endpoints and issue management functionality.
 """
 
-import os
-
-# Import the FastAPI app
-import sys
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient
-from main import app
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+from src.main import app
 
 
 class TestEnhancedIssuesAPI:

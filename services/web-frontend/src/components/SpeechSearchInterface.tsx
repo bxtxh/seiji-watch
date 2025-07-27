@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiClient, handleApiError } from "@/lib/api";
 import { Speech } from "@/types";
 import SpeechCard from "./SpeechCard";
@@ -65,7 +65,7 @@ export default function SpeechSearchInterface() {
   const { recordInteraction, recordError, recordMetric, startTimer } =
     useObservability();
 
-  const handleSearch = async (searchQuery: string, topics: string[] = []) => {
+  const handleSearch = useCallback(async (searchQuery: string, topics: string[] = []) => {
     const stopTimer = startTimer("speech_search_operation");
 
     // Clear previous errors
@@ -224,7 +224,7 @@ export default function SpeechSearchInterface() {
       setLoading(false);
       stopTimer();
     }
-  };
+  }, [recordInteraction, recordError, recordMetric, logSecurityEvent, startTimer, secureForm]);
 
   // Debounced search
   useEffect(() => {
@@ -235,7 +235,7 @@ export default function SpeechSearchInterface() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [query, selectedTopics]);
+  }, [query, selectedTopics, handleSearch]);
 
   const handleTopicToggle = (topic: string) => {
     setSelectedTopics((prev) =>
