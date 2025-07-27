@@ -49,9 +49,21 @@ interface ObservabilityContextType {
   startTimer: (name: string) => () => void;
 }
 
-// Generate a simple session ID
+// Generate a cryptographically secure session ID
 const generateSessionId = () => {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Use crypto.randomUUID() for secure random generation
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return `session_${Date.now()}_${crypto.randomUUID().replace(/-/g, '').substr(0, 9)}`;
+  }
+  // Fallback for environments without crypto.randomUUID (should not happen in modern browsers)
+  const array = new Uint8Array(9);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(array);
+    return `session_${Date.now()}_${Array.from(array, byte => byte.toString(36)).join('')}`;
+  }
+  // Final fallback (should never be reached in production)
+  console.warn('Secure random generation not available, using Date.now() only');
+  return `session_${Date.now()}_${Date.now().toString(36)}`;
 };
 
 // Context
