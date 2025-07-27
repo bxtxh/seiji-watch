@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 
-from ....shared.src.shared.clients.airtable import AirtableClient
+from shared.clients.airtable import AirtableClient
 from .policy_issue_extractor import DualLevelIssue
 
 logger = logging.getLogger(__name__)

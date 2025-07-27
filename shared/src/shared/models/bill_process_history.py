@@ -1,7 +1,7 @@
 """Models for bill process history tracking."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, Optional
 
 from pydantic import Field
 
@@ -17,14 +17,14 @@ class BillProcessHistory(BaseRecord):
     # Process information
     stage: str = Field(..., description="審議段階")
     house: str = Field(..., description="議院 (参議院/衆議院)")
-    committee: str | None = Field(None, description="委員会")
+    committee: Optional[str] = Field(None, description="委員会")
 
     # Action details
     action_date: datetime = Field(..., description="実施日")
     action_type: str = Field(..., description="アクション種別")
-    result: str | None = Field(None, description="結果")
-    details: dict[str, Any] | None = Field(None, description="詳細情報")
-    notes: str | None = Field(None, description="備考")
+    result: Optional[str] = Field(None, description="結果")
+    details: Optional[Dict[str, Any]] = Field(None, description="詳細情報")
+    notes: Optional[str] = Field(None, description="備考")
 
     def __repr__(self) -> str:
         return (

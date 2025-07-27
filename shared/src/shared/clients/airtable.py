@@ -7,7 +7,7 @@ import json
 import logging
 import os
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class AirtableClient:
     """Async Airtable client for Diet Issue Tracker data management."""
 
-    def __init__(self, pat: str | None = None, base_id: str | None = None):
+    def __init__(self, pat: Optional[str] = None, base_id: Optional[str] = None):
         self.pat = pat or os.getenv("AIRTABLE_PAT")
         self.base_id = base_id or os.getenv("AIRTABLE_BASE_ID")
         self.base_url = f"https://api.airtable.com/v0/{self.base_id}"
@@ -36,7 +36,7 @@ class AirtableClient:
 
     async def _rate_limited_request(
         self, method: str, url: str, **kwargs
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Make rate-limited request to Airtable API."""
         async with self._request_semaphore:
             # Ensure we don't exceed 5 requests per second
@@ -71,7 +71,7 @@ class AirtableClient:
         return value
 
     # Parties table operations
-    async def create_party(self, party_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_party(self, party_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new party record."""
         url = f"{self.base_url}/Parties"
         data = {
@@ -94,14 +94,14 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_party(self, record_id: str) -> dict[str, Any]:
+    async def get_party(self, record_id: str) -> Dict[str, Any]:
         """Get a party record by ID."""
         url = f"{self.base_url}/Parties/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def update_party(
-        self, record_id: str, party_data: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, record_id: str, party_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update a party record."""
         url = f"{self.base_url}/Parties/{record_id}"
         data = {
@@ -116,9 +116,9 @@ class AirtableClient:
 
     async def list_parties(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List party records with optional filtering."""
         url = f"{self.base_url}/Parties"
         params = {"maxRecords": max_records}
@@ -129,7 +129,7 @@ class AirtableClient:
         return response.get("records", [])
 
     # Members table operations
-    async def create_member(self, member_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_member(self, member_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new member record."""
         url = f"{self.base_url}/Members"
         data = {
@@ -166,14 +166,14 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_member(self, record_id: str) -> dict[str, Any]:
+    async def get_member(self, record_id: str) -> Dict[str, Any]:
         """Get a member record by ID."""
         url = f"{self.base_url}/Members/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def update_member(
-        self, record_id: str, member_data: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, record_id: str, member_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update a member record."""
         url = f"{self.base_url}/Members/{record_id}"
         data = {
@@ -188,9 +188,9 @@ class AirtableClient:
 
     async def list_members(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List member records with optional filtering."""
         url = f"{self.base_url}/Members"
         params = {"maxRecords": max_records}
@@ -201,7 +201,7 @@ class AirtableClient:
         return response.get("records", [])
 
     # Bills table operations
-    async def create_bill(self, bill_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_bill(self, bill_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new bill record."""
         url = f"{self.base_url}/Bills (法案)"
         data = {
@@ -247,16 +247,16 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_bill(self, record_id: str) -> dict[str, Any]:
+    async def get_bill(self, record_id: str) -> Dict[str, Any]:
         """Get a bill record by ID."""
         url = f"{self.base_url}/Bills (法案)/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_bills(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List bill records with optional filtering."""
         url = f"{self.base_url}/Bills (法案)"
         params = {"maxRecords": max_records}
@@ -267,7 +267,7 @@ class AirtableClient:
         return response.get("records", [])
 
     # Meetings table operations
-    async def create_meeting(self, meeting_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_meeting(self, meeting_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new meeting record."""
         url = f"{self.base_url}/Meetings"
         data = {
@@ -316,7 +316,7 @@ class AirtableClient:
         return response
 
     # Speeches table operations
-    async def create_speech(self, speech_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_speech(self, speech_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new speech record."""
         url = f"{self.base_url}/Speeches"
         data = {
@@ -369,16 +369,16 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_speech(self, record_id: str) -> dict[str, Any]:
+    async def get_speech(self, record_id: str) -> Dict[str, Any]:
         """Get a speech record by ID."""
         url = f"{self.base_url}/Speeches/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_speeches(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List speech records with optional filtering."""
         url = f"{self.base_url}/Speeches"
         params = {"maxRecords": max_records}
@@ -389,7 +389,7 @@ class AirtableClient:
         return response.get("records", [])
 
     # Issue management operations
-    async def create_issue(self, issue_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_issue(self, issue_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new issue record."""
         url = f"{self.base_url}/Issues"
         data = {
@@ -420,16 +420,16 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_issue(self, record_id: str) -> dict[str, Any]:
+    async def get_issue(self, record_id: str) -> Dict[str, Any]:
         """Get an issue record by ID."""
         url = f"{self.base_url}/Issues/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_issues(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List issue records with optional filtering."""
         url = f"{self.base_url}/Issues"
         params = {"maxRecords": max_records}
@@ -440,8 +440,8 @@ class AirtableClient:
         return response.get("records", [])
 
     async def update_issue(
-        self, record_id: str, issue_data: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, record_id: str, issue_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update an issue record."""
         url = f"{self.base_url}/Issues/{record_id}"
         data = {
@@ -455,7 +455,7 @@ class AirtableClient:
         return response
 
     # Issue Tag operations
-    async def create_issue_tag(self, tag_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_issue_tag(self, tag_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new issue tag record."""
         url = f"{self.base_url}/IssueTags"
         data = {
@@ -475,16 +475,16 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_issue_tag(self, record_id: str) -> dict[str, Any]:
+    async def get_issue_tag(self, record_id: str) -> Dict[str, Any]:
         """Get an issue tag record by ID."""
         url = f"{self.base_url}/IssueTags/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_issue_tags(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List issue tag records with optional filtering."""
         url = f"{self.base_url}/IssueTags"
         params = {"maxRecords": max_records}
@@ -494,7 +494,7 @@ class AirtableClient:
         response = await self._rate_limited_request("GET", url, params=params)
         return response.get("records", [])
 
-    async def get_bills_with_issues(self, bill_id: str) -> dict[str, Any]:
+    async def get_bills_with_issues(self, bill_id: str) -> Dict[str, Any]:
         """Get bill with its related issues and tags."""
         bill = await self.get_bill(bill_id)
 
@@ -534,7 +534,7 @@ class AirtableClient:
         return len(response.get("records", []))
 
     # Votes table operations
-    async def create_vote(self, vote_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_vote(self, vote_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new vote record."""
         url = f"{self.base_url}/Votes (投票)"
         data = {
@@ -569,16 +569,16 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_vote(self, record_id: str) -> dict[str, Any]:
+    async def get_vote(self, record_id: str) -> Dict[str, Any]:
         """Get a vote record by ID."""
         url = f"{self.base_url}/Votes (投票)/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_votes(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List vote records with optional filtering."""
         url = f"{self.base_url}/Votes (投票)"
         params = {"maxRecords": max_records}
@@ -589,8 +589,8 @@ class AirtableClient:
         return response.get("records", [])
 
     async def find_member_by_name(
-        self, member_name: str, party_name: str | None = None
-    ) -> dict[str, Any] | None:
+        self, member_name: str, party_name: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
         """Find member by name and optionally party."""
         filter_parts = [f"{{Name}} = '{member_name}'"]
         if party_name:
@@ -602,14 +602,14 @@ class AirtableClient:
 
         return members[0] if members else None
 
-    async def find_party_by_name(self, party_name: str) -> dict[str, Any] | None:
+    async def find_party_by_name(self, party_name: str) -> Optional[Dict[str, Any]]:
         """Find party by name."""
         filter_formula = f"{{Name}} = '{party_name}'"
         parties = await self.list_parties(filter_formula=filter_formula, max_records=1)
 
         return parties[0] if parties else None
 
-    async def find_bill_by_number(self, bill_number: str) -> dict[str, Any] | None:
+    async def find_bill_by_number(self, bill_number: str) -> Optional[Dict[str, Any]]:
         """Find bill by bill number."""
         filter_formula = f"{{Bill_Number}} = '{bill_number}'"
         bills = await self.list_bills(filter_formula=filter_formula, max_records=1)
@@ -618,8 +618,8 @@ class AirtableClient:
 
     # Issue Category operations
     async def create_issue_category(
-        self, category_data: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, category_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create a new issue category record."""
         url = f"{self.base_url}/IssueCategories"
         data = {
@@ -648,16 +648,16 @@ class AirtableClient:
         response = await self._rate_limited_request("POST", url, json=data)
         return response
 
-    async def get_issue_category(self, record_id: str) -> dict[str, Any]:
+    async def get_issue_category(self, record_id: str) -> Dict[str, Any]:
         """Get an issue category record by ID."""
         url = f"{self.base_url}/IssueCategories/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_issue_categories(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List issue category records with optional filtering."""
         url = f"{self.base_url}/IssueCategories"
         params = {"maxRecords": max_records}
@@ -668,8 +668,8 @@ class AirtableClient:
         return response.get("records", [])
 
     async def update_issue_category(
-        self, record_id: str, category_data: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, record_id: str, category_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Update an issue category record."""
         url = f"{self.base_url}/IssueCategories/{record_id}"
         data = {
@@ -682,21 +682,21 @@ class AirtableClient:
         response = await self._rate_limited_request("PATCH", url, json=data)
         return response
 
-    async def get_categories_by_layer(self, layer: str) -> list[dict[str, Any]]:
+    async def get_categories_by_layer(self, layer: str) -> List[Dict[str, Any]]:
         """Get all categories for a specific layer (L1/L2/L3)."""
         filter_formula = f"{{Layer}} = '{layer}'"
         return await self.list_issue_categories(
             filter_formula=filter_formula, max_records=1000
         )
 
-    async def get_category_children(self, parent_id: str) -> list[dict[str, Any]]:
+    async def get_category_children(self, parent_id: str) -> List[Dict[str, Any]]:
         """Get child categories for a specific parent category."""
         filter_formula = f"FIND('{parent_id}', ARRAYJOIN({{Parent_Category}})) > 0"
         return await self.list_issue_categories(
             filter_formula=filter_formula, max_records=1000
         )
 
-    async def find_category_by_cap_code(self, cap_code: str) -> dict[str, Any] | None:
+    async def find_category_by_cap_code(self, cap_code: str) -> Optional[Dict[str, Any]]:
         """Find category by CAP code."""
         filter_formula = f"{{CAP_Code}} = '{cap_code}'"
         categories = await self.list_issue_categories(
@@ -705,7 +705,7 @@ class AirtableClient:
 
         return categories[0] if categories else None
 
-    async def get_category_tree(self) -> dict[str, Any]:
+    async def get_category_tree(self) -> Dict[str, Any]:
         """Get full category tree structure."""
         # Get all categories
         all_categories = await self.list_issue_categories(max_records=1000)
@@ -727,8 +727,8 @@ class AirtableClient:
 
     # Bills_PolicyCategories relationship table operations
     async def create_bill_policy_category_relationship(
-        self, relationship_data: dict[str, Any]
-    ) -> dict[str, Any]:
+        self, relationship_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Create a new bill-policy category relationship."""
         url = f"{self.base_url}/Bills_PolicyCategories"
         data = {
@@ -767,16 +767,16 @@ class AirtableClient:
 
     async def get_bill_policy_category_relationship(
         self, record_id: str
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Get a bill-policy category relationship by ID."""
         url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
         return await self._rate_limited_request("GET", url)
 
     async def list_bill_policy_category_relationships(
         self,
-        filter_formula: str | None = None,
+        filter_formula: Optional[str] = None,
         max_records: int = 100,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List bill-policy category relationships with optional filtering."""
         url = f"{self.base_url}/Bills_PolicyCategories"
         params = {"maxRecords": max_records}
@@ -788,7 +788,7 @@ class AirtableClient:
 
     async def get_bill_policy_categories(
         self, bill_record_id: str
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """Get all policy categories linked to a specific bill."""
         filter_formula = f"FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0"
         return await self.list_bill_policy_category_relationships(
@@ -797,7 +797,7 @@ class AirtableClient:
 
     async def get_policy_category_bills(
         self, policy_category_record_id: str
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """Get all bills linked to a specific policy category."""
         filter_formula = (
             f"FIND('{policy_category_record_id}', ARRAYJOIN({{PolicyCategory}})) > 0"
@@ -809,8 +809,8 @@ class AirtableClient:
     async def update_bill_policy_category_relationship(
         self,
         record_id: str,
-        relationship_data: dict[str, Any],
-    ) -> dict[str, Any]:
+        relationship_data: Dict[str, Any],
+    ) -> Dict[str, Any]:
         """Update a bill-policy category relationship."""
         url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
         data = {
@@ -825,7 +825,7 @@ class AirtableClient:
 
     async def delete_bill_policy_category_relationship(
         self, record_id: str
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Delete a bill-policy category relationship."""
         url = f"{self.base_url}/Bills_PolicyCategories/{record_id}"
         return await self._rate_limited_request("DELETE", url)
@@ -834,7 +834,7 @@ class AirtableClient:
         self,
         bill_record_id: str,
         policy_category_record_id: str,
-    ) -> dict[str, Any] | None:
+    ) -> Optional[Dict[str, Any]]:
         """Find existing relationship between a bill and policy category."""
         filter_formula = (
             f"AND(FIND('{bill_record_id}', ARRAYJOIN({{Bill}})) > 0, "
@@ -848,8 +848,8 @@ class AirtableClient:
         return relationships[0] if relationships else None
 
     async def bulk_create_bill_policy_category_relationships(
-        self, relationships: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+        self, relationships: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Bulk create bill-policy category relationships.
 
         Max 10 at a time due to Airtable limits.
@@ -907,14 +907,14 @@ class AirtableClient:
     # Additional methods for Bills API routes
     async def get_bills_by_policy_category(
         self, policy_category_id: str
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """Get all bills linked to a specific policy category by PolicyCategory_ID."""
         filter_formula = f"{{PolicyCategory_ID}} = '{policy_category_id}'"
         return await self.list_bill_policy_category_relationships(
             filter_formula=filter_formula
         )
 
-    async def get_policy_categories_by_bill(self, bill_id: str) -> list[dict[str, Any]]:
+    async def get_policy_categories_by_bill(self, bill_id: str) -> List[Dict[str, Any]]:
         """Get all policy categories linked to a specific bill by Bill_ID."""
         filter_formula = f"{{Bill_ID}} = '{bill_id}'"
         return await self.list_bill_policy_category_relationships(
@@ -923,7 +923,7 @@ class AirtableClient:
 
     async def list_bills_policy_categories(
         self, max_records: int = 1000
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """List all Bills-PolicyCategory relationships."""
         return await self.list_bill_policy_category_relationships(
             max_records=max_records

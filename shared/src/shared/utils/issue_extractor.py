@@ -3,7 +3,7 @@
 import json
 import logging
 import os
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class IssueExtractor:
     """LLM-powered policy issue extraction from bill content."""
 
-    def __init__(self, api_key: str | None = None):
+    def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("OpenAI API key is required")
@@ -38,7 +38,7 @@ class IssueExtractor:
 
     async def extract_issues_from_bill(
         self, bill_content: str, bill_title: str = ""
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         """Extract policy issues from bill content using OpenAI GPT."""
 
         if not bill_content.strip():
@@ -139,7 +139,7 @@ class IssueExtractor:
             logger.error(f"Failed to extract issues from bill: {e}")
             return []
 
-    def _validate_issue(self, issue: dict[str, Any]) -> bool:
+    def _validate_issue(self, issue: Dict[str, Any]) -> bool:
         """Validate extracted issue data."""
         required_fields = ["title", "description", "category", "priority"]
 
@@ -166,8 +166,8 @@ class IssueExtractor:
         return True
 
     async def suggest_issue_tags(
-        self, issue_title: str, existing_tags: list[str]
-    ) -> list[str]:
+        self, issue_title: str, existing_tags: List[str]
+    ) -> List[str]:
         """Suggest relevant tags for an issue based on existing tags."""
 
         if not existing_tags:
@@ -186,7 +186,7 @@ class IssueExtractor:
 
         return suggestions[:5]  # Return top 5 suggestions
 
-    def generate_default_tags(self, category: str) -> list[str]:
+    def generate_default_tags(self, category: str) -> List[str]:
         """Generate default tag suggestions based on category."""
 
         category_tags = {

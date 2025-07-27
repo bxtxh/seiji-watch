@@ -5,6 +5,7 @@ import enum
 from pydantic import Field
 
 from .base import BaseRecord
+from typing import Optional
 
 
 class VoteResult(enum.Enum):
@@ -33,22 +34,22 @@ class Vote(BaseRecord):
     # Vote session information
     house: str = Field(..., description="House (衆議院/参議院)")
     vote_type: str = Field(..., description="Vote type (本会議/委員会)")
-    vote_stage: str | None = Field(
+    vote_stage: Optional[str] = Field(
         None, description="Vote stage (第一読会/第二読会/最終)"
     )
-    committee_name: str | None = Field(
+    committee_name: Optional[str] = Field(
         None, description="Committee name (for committee votes)"
     )
 
     # Vote session metadata
-    total_votes: int | None = Field(None, description="Total number of votes")
-    yes_votes: int | None = Field(None, description="Number of yes votes")
-    no_votes: int | None = Field(None, description="Number of no votes")
-    abstain_votes: int | None = Field(None, description="Number of abstain votes")
-    absent_votes: int | None = Field(None, description="Number of absent votes")
+    total_votes: Optional[int] = Field(None, description="Total number of votes")
+    yes_votes: Optional[int] = Field(None, description="Number of yes votes")
+    no_votes: Optional[int] = Field(None, description="Number of no votes")
+    abstain_votes: Optional[int] = Field(None, description="Number of abstain votes")
+    absent_votes: Optional[int] = Field(None, description="Number of absent votes")
 
     # Additional information
-    notes: str | None = Field(None, description="Special notes about this vote")
+    notes: Optional[str] = Field(None, description="Special notes about this vote")
     is_final_vote: bool = Field(
         False, description="Whether this is the final vote on the bill"
     )

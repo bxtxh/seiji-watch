@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 
@@ -18,14 +18,14 @@ class SearchResult:
     id: str
     airtable_record_id: str
     content: str
-    metadata: dict[str, Any]
+    metadata: Dict[str, Any]
     similarity: float
 
 
 class WeaviateClient:
     """Async Weaviate client for Diet Issue Tracker vector operations."""
 
-    def __init__(self, api_key: str | None = None, cluster_url: str | None = None):
+    def __init__(self, api_key: Optional[str] = None, cluster_url: Optional[str] = None):
         self.api_key = api_key or os.getenv("WEAVIATE_API_KEY")
         self.cluster_url = cluster_url or os.getenv("WEAVIATE_CLUSTER_URL")
 
@@ -45,7 +45,7 @@ class WeaviateClient:
         self.SPEECH_CLASS = "DietSpeech"
         self.BILL_CLASS = "DietBill"
 
-    async def _request(self, method: str, endpoint: str, **kwargs) -> dict[str, Any]:
+    async def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """Make request to Weaviate API."""
         url = f"{self.cluster_url}/v1/{endpoint}"
 
@@ -186,8 +186,8 @@ class WeaviateClient:
         self,
         airtable_record_id: str,
         content: str,
-        embedding: list[float],
-        metadata: dict[str, Any],
+        embedding: List[float],
+        metadata: Dict[str, Any],
     ) -> str:
         """Add speech embedding to Weaviate."""
 
@@ -213,8 +213,8 @@ class WeaviateClient:
         self,
         airtable_record_id: str,
         content: str,
-        embedding: list[float],
-        metadata: dict[str, Any],
+        embedding: List[float],
+        metadata: Dict[str, Any],
     ) -> str:
         """Add bill embedding to Weaviate."""
 
@@ -239,10 +239,10 @@ class WeaviateClient:
 
     async def search_speeches(
         self,
-        query_vector: list[float],
+        query_vector: List[float],
         limit: int = 10,
-        filters: dict[str, Any] | None = None,
-    ) -> list[SearchResult]:
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> List[SearchResult]:
         """Search for similar speeches using vector similarity."""
 
         where_filter = {}
@@ -320,10 +320,10 @@ class WeaviateClient:
 
     async def search_bills(
         self,
-        query_vector: list[float],
+        query_vector: List[float],
         limit: int = 10,
-        filters: dict[str, Any] | None = None,
-    ) -> list[SearchResult]:
+        filters: Optional[Dict[str, Any]] = None,
+    ) -> List[SearchResult]:
         """Search for similar bills using vector similarity."""
 
         where_filter = {}
@@ -400,11 +400,11 @@ class WeaviateClient:
     async def hybrid_search(
         self,
         query_text: str,
-        query_vector: list[float],
+        query_vector: List[float],
         content_type: str = "speech",
         limit: int = 10,
         alpha: float = 0.7,
-    ) -> list[SearchResult]:
+    ) -> List[SearchResult]:
         """Perform hybrid search combining text and vector similarity."""
 
         class_name = self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
@@ -475,7 +475,7 @@ class WeaviateClient:
 
         return results
 
-    async def update_object(self, object_id: str, properties: dict[str, Any]) -> None:
+    async def update_object(self, object_id: str, properties: Dict[str, Any]) -> None:
         """Update an existing object in Weaviate."""
         await self._request(
             "PATCH", f"objects/{object_id}", json={"properties": properties}
@@ -489,7 +489,7 @@ class WeaviateClient:
         self,
         airtable_record_id: str,
         content_type: str = "speech",
-    ) -> dict[str, Any] | None:
+    ) -> Optional[Dict[str, Any]]:
         """Get Weaviate object by Airtable record ID."""
 
         class_name = self.SPEECH_CLASS if content_type == "speech" else self.BILL_CLASS
@@ -534,11 +534,11 @@ class WeaviateClient:
             logger.error(f"Weaviate health check failed: {e}")
             return False
 
-    async def get_schema_info(self) -> dict[str, Any]:
+    async def get_schema_info(self) -> Dict[str, Any]:
         """Get current schema information."""
         return await self._request("GET", "schema")
 
-    async def get_object_count(self, class_name: str | None = None) -> dict[str, int]:
+    async def get_object_count(self, class_name: Optional[str] = None) -> Dict[str, int]:
         """Get object count for classes."""
         counts = {}
 

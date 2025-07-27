@@ -8,8 +8,7 @@ from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from ..database.base import create_engine
-from ..models.base import Base
+from ..database.base import Base, create_engine
 
 logger = logging.getLogger(__name__)
 

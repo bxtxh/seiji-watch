@@ -12,10 +12,11 @@ from typing import Any
 
 import pytz
 
-from ....shared.src.shared.clients.airtable import AirtableClient
-from ..services.airtable_issue_manager import AirtableIssueManager
-from ..services.discord_notification_bot import DiscordNotificationBot
-from ..services.issue_versioning_service import IssueVersioningService
+from shared.clients.airtable import AirtableClient
+from services.airtable_issue_manager import AirtableIssueManager
+# TODO: Replace with proper service-to-service communication (HTTP/message queue)
+# from services.discord_notification_bot import DiscordNotificationBot
+from services.issue_versioning_service import IssueVersioningService
 
 logger = logging.getLogger(__name__)
 
@@ -142,12 +143,12 @@ class IssueRelationshipBatchProcessor:
         airtable_client: AirtableClient | None = None,
         issue_manager: AirtableIssueManager | None = None,
         versioning_service: IssueVersioningService | None = None,
-        discord_bot: DiscordNotificationBot | None = None,
+        discord_bot: Any | None = None,  # TODO: Replace with HTTP client for notifications-worker
     ):
         self.airtable_client = airtable_client or AirtableClient()
         self.issue_manager = issue_manager or AirtableIssueManager()
         self.versioning_service = versioning_service or IssueVersioningService()
-        self.discord_bot = discord_bot or DiscordNotificationBot()
+        self.discord_bot = discord_bot  # TODO: Initialize HTTP client for notifications service
 
         self.logger = logger
         self.timezone = pytz.timezone("Asia/Tokyo")
@@ -635,7 +636,11 @@ class IssueRelationshipBatchProcessor:
                 if execution.error_messages:
                     message += f"\n**最新エラー:** {execution.error_messages[-1][:200]}"
 
-            await self.discord_bot.send_custom_notification(title, message, color)
+            # TODO: Replace with HTTP call to notifications-worker service
+            if self.discord_bot:
+                await self.discord_bot.send_custom_notification(title, message, color)
+            else:
+                self.logger.info(f"Notification (would send): {title} - {message}")
 
         except Exception as e:
             self.logger.error(f"Failed to send job notification: {e}")

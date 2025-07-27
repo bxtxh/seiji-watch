@@ -1,6 +1,7 @@
 """Bills Issue Categories relationship model."""
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import Field
 
@@ -17,8 +18,8 @@ class BillsPolicyCategory(BaseRecord):
     )
 
     # Airtable record IDs for actual linking
-    bill_record_id: str | None = Field(None, description="Airtable Bills record ID")
-    policy_category_record_id: str | None = Field(
+    bill_record_id: Optional[str] = Field(None, description="Airtable Bills record ID")
+    policy_category_record_id: Optional[str] = Field(
         None, description="Airtable IssueCategories record ID"
     )
 
@@ -60,8 +61,8 @@ class BillsPolicyCategory(BaseRecord):
         confidence_score: float = 0.8,
         is_manual: bool = False,
         source: str = "auto_migration",
-        bill_record_id: str | None = None,
-        policy_category_record_id: str | None = None,
+        bill_record_id: Optional[str] = None,
+        policy_category_record_id: Optional[str] = None,
     ) -> "BillsPolicyCategory":
         """Create a new bill-category relationship."""
         now = datetime.now()

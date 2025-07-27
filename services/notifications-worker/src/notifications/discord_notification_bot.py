@@ -13,7 +13,8 @@ from typing import Any
 import aiohttp
 import pytz
 
-from .airtable_issue_manager import AirtableIssueManager
+# TODO: Replace with HTTP client to communicate with data-processor service
+# from .airtable_issue_manager import AirtableIssueManager
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class DiscordNotificationBot:
 
     def __init__(self, config: DiscordNotificationConfig | None = None):
         self.config = config or self._load_config_from_env()
-        self.airtable_manager = AirtableIssueManager()
+        # TODO: Replace with HTTP client for data-processor service API calls
+        self.airtable_manager = None
         self.logger = logger
 
         # Task tracking
@@ -167,13 +169,11 @@ class DiscordNotificationBot:
         try:
             self.logger.info("Preparing daily Discord notification")
 
-            # Get pending issue count (exclude failed validation)
-            pending_count = await self.airtable_manager.count_pending_issues(
-                exclude_failed_validation=True
-            )
-
-            # Get some statistics for richer notification
-            stats = await self.airtable_manager.get_issue_statistics()
+            # TODO: Replace with HTTP call to data-processor API
+            # pending_count = await self.airtable_manager.count_pending_issues(exclude_failed_validation=True)
+            # stats = await self.airtable_manager.get_issue_statistics()
+            pending_count = 0  # Placeholder - will be from API call
+            stats = {}  # Placeholder - will be from API call
 
             # Create notification message
             message = self._create_notification_message(pending_count, stats)
@@ -335,9 +335,11 @@ class DiscordNotificationBot:
         try:
             self.logger.info("Sending test Discord notification")
 
-            # Get current stats
-            pending_count = await self.airtable_manager.count_pending_issues()
-            stats = await self.airtable_manager.get_issue_statistics()
+            # TODO: Replace with HTTP call to data-processor API
+            # pending_count = await self.airtable_manager.count_pending_issues()
+            # stats = await self.airtable_manager.get_issue_statistics()
+            pending_count = 5  # Placeholder for test notification
+            stats = {"total_issues": 100, "approved_count": 80}  # Placeholder for test
 
             # Create test message
             message = self._create_notification_message(pending_count, stats)

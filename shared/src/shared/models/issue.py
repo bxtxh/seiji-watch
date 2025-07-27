@@ -3,6 +3,7 @@
 from pydantic import Field
 
 from .base import BaseRecord
+from typing import List, Optional
 
 
 class IssueCategory(BaseRecord):
@@ -13,11 +14,11 @@ class IssueCategory(BaseRecord):
     )
     layer: str = Field(..., description="Hierarchy layer (L1/L2/L3)")
     title_ja: str = Field(..., description="Japanese title")
-    title_en: str | None = Field(None, description="English title")
-    summary_150ja: str | None = Field(
+    title_en: Optional[str] = Field(None, description="English title")
+    summary_150ja: Optional[str] = Field(
         "", description="Japanese summary (150 chars max)"
     )
-    parent_category_id: str | None = Field(
+    parent_category_id: Optional[str] = Field(
         None, description="Parent category record ID"
     )
     is_seed: bool = Field(False, description="CAP-derived seed data flag")
@@ -47,7 +48,7 @@ class IssueTag(BaseRecord):
     category: str = Field(
         ..., description="Tag category (環境/経済/社会保障/外交/その他)"
     )
-    description: str | None = Field(None, description="Optional tag description")
+    description: Optional[str] = Field(None, description="Optional tag description")
 
     def __repr__(self) -> str:
         return f"<IssueTag(name='{self.name}', category='{self.category}')>"
@@ -62,19 +63,19 @@ class Issue(BaseRecord):
     status: str = Field("active", description="Issue status (active/reviewed/archived)")
 
     # Relationships
-    related_bills: list[str] | None = Field(
+    related_bills: Optional[List[str]] = Field(
         None, description="List of related Bill record IDs"
     )
-    issue_tags: list[str] | None = Field(
+    issue_tags: Optional[List[str]] = Field(
         None, description="List of related IssueTag record IDs"
     )
-    category_id: str | None = Field(None, description="Related IssueCategory record ID")
+    category_id: Optional[str] = Field(None, description="Related IssueCategory record ID")
 
     # Metadata
-    extraction_confidence: float | None = Field(
+    extraction_confidence: Optional[float] = Field(
         None, description="LLM extraction confidence score"
     )
-    review_notes: str | None = Field(None, description="Admin review notes")
+    review_notes: Optional[str] = Field(None, description="Admin review notes")
     is_llm_generated: bool = Field(
         False, description="Whether this issue was LLM-generated"
     )

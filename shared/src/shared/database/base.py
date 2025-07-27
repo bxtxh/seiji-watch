@@ -1,10 +1,15 @@
 """Database configuration and utilities."""
 
 import os
+from typing import Optional
 
 from sqlalchemy import Engine
 from sqlalchemy import create_engine as sa_create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
+
+# SQLAlchemy declarative base for models
+Base = declarative_base()
 
 
 def get_database_url() -> str:
@@ -25,7 +30,7 @@ def get_database_url() -> str:
     return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 
-def create_engine(database_url: str | None = None, **kwargs) -> Engine:
+def create_engine(database_url: Optional[str] = None, **kwargs) -> Engine:
     """Create SQLAlchemy engine with optimized settings."""
 
     if database_url is None:

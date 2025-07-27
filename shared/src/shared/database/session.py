@@ -6,9 +6,16 @@ from sqlalchemy.orm import Session
 
 from .base import create_engine, get_session
 
-# Create global engine and session factory
-engine = create_engine()
-SessionLocal = get_session(engine)
+# Create global engine and session factory (lazy initialization)
+engine = None
+SessionLocal = None
+
+def _ensure_initialized():
+    """Ensure database engine and session are initialized."""
+    global engine, SessionLocal
+    if engine is None:
+        engine = create_engine()
+        SessionLocal = get_session(engine)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -20,6 +27,7 @@ def get_db() -> Generator[Session, None, None]:
         def read_items(db: Session = Depends(get_db)):
             return db.query(Item).all()
     """
+    _ensure_initialized()
     db = SessionLocal()
     try:
         yield db

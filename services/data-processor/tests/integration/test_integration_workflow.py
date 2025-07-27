@@ -15,7 +15,8 @@ import pytest
 from batch.issue_relationship_batch import IssueRelationshipBatchProcessor
 
 from services.airtable_issue_manager import AirtableIssueManager
-from services.discord_notification_bot import DiscordNotificationBot
+# TODO: Replace with HTTP client mock for notifications-worker service
+# from services.discord_notification_bot import DiscordNotificationBot
 from services.issue_versioning_service import IssueVersioningService
 from services.policy_issue_extractor import (
     BillData,
@@ -175,8 +176,8 @@ class TestCompleteExtractionWorkflow:
         """Test the human review workflow with status updates."""
 
         issue_manager = AirtableIssueManager(mock_components["airtable_client"])
-        discord_bot = DiscordNotificationBot()
-        discord_bot.airtable_manager = issue_manager
+        discord_bot = None  # TODO: Mock HTTP client for notifications-worker
+        # discord_bot.airtable_manager = issue_manager  # Disabled - service separation
 
         # Mock Discord webhook
         with patch("aiohttp.ClientSession") as mock_session:
@@ -371,7 +372,7 @@ class TestCompleteExtractionWorkflow:
         batch_processor = IssueRelationshipBatchProcessor(
             airtable_client=mock_components["airtable_client"],
             issue_manager=AirtableIssueManager(mock_components["airtable_client"]),
-            discord_bot=DiscordNotificationBot(),
+            discord_bot=None,  # TODO: Mock HTTP client
         )
 
         # Mock bill and issue data
