@@ -17,7 +17,7 @@ rq = "^1.16.0"
 python-jose = "^3.3.0"
 passlib = "^1.7.0"
 python-multipart = "^0.0.6"
-# shared = {path = "../../shared", develop = true}
+shared = {path = "../../shared", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
