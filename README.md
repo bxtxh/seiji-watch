@@ -5,18 +5,33 @@ Independent, open-source platform for tracking Diet issues as tickets.
 ## MVP Goal
 Public release before July 22, 2025 (House of Councillors election)
 
-## Architecture (MVP)
+<!-- ## Architecture (MVP) - OUTDATED: This was for the 3-service MVP architecture
 Simplified 3-service architecture for rapid development:
 - **ingest-worker**: Data collection and STT processing
 - **api-gateway**: API with embedded vector operations
 - **web-frontend**: Next.js PWA
+-->
+
+## Architecture
+Microservices architecture with specialized components:
+- **diet-scraper**: Data collection from Diet websites
+- **stt-worker**: Speech-to-text processing
+- **data-processor**: Data normalization and LLM analysis
+- **vector-store**: Embedding generation and semantic search
+- **api-gateway**: RESTful API with authentication
+- **web-frontend**: Next.js PWA frontend
+- **notifications-worker**: Email notification service
 
 ## Repository Structure
 ```
-├── services/           # MVP Services
-│   ├── ingest-worker/  # Scraper + STT processing (combines diet-scraper + stt-worker)
-│   ├── api-gateway/    # API with embedded vector ops (includes vector-store functionality)
-│   └── web-frontend/   # Next.js PWA frontend
+├── services/           # Microservices
+│   ├── diet-scraper/   # Web scraping and data collection
+│   ├── stt-worker/     # Speech-to-text processing with Whisper
+│   ├── data-processor/ # Data normalization and LLM analysis
+│   ├── vector-store/   # Embedding generation and vector search
+│   ├── api-gateway/    # RESTful API gateway
+│   ├── web-frontend/   # Next.js PWA frontend
+│   └── notifications-worker/ # Email notification service
 ├── shared/             # Shared data models and utilities
 ├── infra/              # Infrastructure as code (Terraform)
 ├── docs/               # Documentation
@@ -39,18 +54,24 @@ Simplified 3-service architecture for rapid development:
 
 ### Quick Start
 ```bash
-# Install Python dependencies
-poetry install
+# Install Python dependencies for all services
+cd services && for dir in */; do (cd "$dir" && poetry install); done
 
 # Install frontend dependencies  
-npm install
+cd services/web-frontend && npm install
 
-# Start local development environment
+# Start local development environment (PostgreSQL + pgvector)
 docker-compose up -d
 
-# Run services
-poetry run uvicorn api-gateway.main:app --reload  # API
-npm run dev --workspace=services/web-frontend     # Frontend
+# Run services (from project root)
+cd services/api-gateway && poetry run uvicorn src.main:app --reload  # API Gateway
+cd services/web-frontend && npm run dev                             # Frontend
+
+# Optional: Run other services as needed
+cd services/diet-scraper && poetry run python -m src.main           # Diet Scraper
+cd services/stt-worker && poetry run python -m src.main             # STT Worker
+cd services/data-processor && poetry run python -m src.main         # Data Processor
+cd services/vector-store && poetry run python -m src.main           # Vector Store
 ```
 
 ## Infrastructure Deployment
