@@ -4,6 +4,7 @@ Simple API Gateway for staging deployment
 """
 
 import os
+import sys
 from datetime import datetime
 from typing import Any, List, Optional
 
@@ -11,6 +12,31 @@ import aiohttp
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
+# Import the cached client with connection pooling
+try:
+    from airtable_cache import CachedAirtableClient
+except ImportError:
+    # Fallback if cache module is not available
+    CachedAirtableClient = None
+
+# Import environment validator
+try:
+    from env_validator import EnvironmentValidator
+except ImportError:
+    EnvironmentValidator = None
+
+# Validate environment variables at startup
+if EnvironmentValidator:
+    is_valid, errors = EnvironmentValidator.validate()
+    if not is_valid:
+        print("Environment validation failed:")
+        for error in errors:
+            print(f"  - {error}")
+        sys.exit(1)
+    else:
+        print("Environment validation passed")
+        EnvironmentValidator.print_config(mask_secrets=True)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -43,7 +69,7 @@ app.add_middleware(
 
 
 class AirtableClient:
-    """Simple Airtable client for staging environment"""
+    """Simple Airtable client with connection pooling for staging environment"""
 
     def __init__(self):
         self.api_key = os.getenv("AIRTABLE_PAT")
@@ -56,6 +82,29 @@ class AirtableClient:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        
+        # Connection pooling
+        self._session = None
+        self._connector = aiohttp.TCPConnector(
+            limit=10,  # Total connection pool size
+            limit_per_host=10,  # Per-host connection limit
+            ttl_dns_cache=300,  # DNS cache timeout
+        )
+    
+    async def _get_session(self):
+        """Get or create the aiohttp session with connection pooling"""
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession(
+                connector=self._connector,
+                headers=self.headers,
+                timeout=aiohttp.ClientTimeout(total=30),
+            )
+        return self._session
+    
+    async def close(self):
+        """Close the session and cleanup connections"""
+        if self._session and not self._session.closed:
+            await self._session.close()
 
     async def list_bills(self, limit: int = 100, offset: Optional[str] = None) -> dict:
         """List bills from Airtable"""
@@ -63,18 +112,17 @@ class AirtableClient:
         if offset:
             params["offset"] = offset
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.base_url}/Bills%20(%E6%B3%95%E6%A1%88)",
-                headers=self.headers,
-                params=params,
-            ) as response:
-                if response.status != 200:
-                    raise HTTPException(
-                        status_code=response.status,
-                        detail=f"Airtable API error: {await response.text()}",
-                    )
-                return await response.json()
+        session = await self._get_session()
+        async with session.get(
+            f"{self.base_url}/Bills%20(%E6%B3%95%E6%A1%88)",
+            params=params,
+        ) as response:
+            if response.status != 200:
+                raise HTTPException(
+                    status_code=response.status,
+                    detail=f"Airtable API error: {await response.text()}",
+                )
+            return await response.json()
 
     async def search_bills(self, query: str, filters: dict = None) -> dict:
         """Search bills with query and filters"""
@@ -95,35 +143,59 @@ class AirtableClient:
         if formula:
             params["filterByFormula"] = formula
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.base_url}/Bills%20(%E6%B3%95%E6%A1%88)",
-                headers=self.headers,
-                params=params,
-            ) as response:
-                if response.status != 200:
-                    raise HTTPException(
-                        status_code=response.status,
-                        detail=f"Airtable API error: {await response.text()}",
-                    )
-                return await response.json()
+        session = await self._get_session()
+        async with session.get(
+            f"{self.base_url}/Bills%20(%E6%B3%95%E6%A1%88)",
+            params=params,
+        ) as response:
+            if response.status != 200:
+                raise HTTPException(
+                    status_code=response.status,
+                    detail=f"Airtable API error: {await response.text()}",
+                )
+            return await response.json()
 
     async def list_members(self, limit: int = 100) -> dict:
         """List members from Airtable"""
         params = {"pageSize": min(limit, 100)}
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.base_url}/Members%20(%E8%AD%B0%E5%93%A1)",
-                headers=self.headers,
-                params=params,
-            ) as response:
-                if response.status != 200:
-                    raise HTTPException(
-                        status_code=response.status,
-                        detail=f"Airtable API error: {await response.text()}",
-                    )
-                return await response.json()
+        session = await self._get_session()
+        async with session.get(
+            f"{self.base_url}/Members%20(%E8%AD%B0%E5%93%A1)",
+            params=params,
+        ) as response:
+            if response.status != 200:
+                raise HTTPException(
+                    status_code=response.status,
+                    detail=f"Airtable API error: {await response.text()}",
+                )
+            return await response.json()
+    
+    async def get_bill(self, bill_id: str) -> dict:
+        """Get single bill from Airtable"""
+        session = await self._get_session()
+        async with session.get(f"{self.base_url}/Bills/{bill_id}") as response:
+            if response.status == 404:
+                raise HTTPException(status_code=404, detail="Bill not found")
+            if response.status != 200:
+                raise HTTPException(
+                    status_code=response.status,
+                    detail=f"Airtable API error: {await response.text()}",
+                )
+            return await response.json()
+    
+    async def get_member(self, member_id: str) -> dict:
+        """Get single member from Airtable"""
+        session = await self._get_session()
+        async with session.get(f"{self.base_url}/Members/{member_id}") as response:
+            if response.status == 404:
+                raise HTTPException(status_code=404, detail="Member not found")
+            if response.status != 200:
+                raise HTTPException(
+                    status_code=response.status,
+                    detail=f"Airtable API error: {await response.text()}",
+                )
+            return await response.json()
 
 
 # Initialize Airtable client lazily
@@ -225,27 +297,14 @@ async def search_bills(
 async def get_bill(bill_id: str):
     """Get bill details by ID"""
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{get_airtable_client().base_url}/Bills/{bill_id}",
-                headers=get_airtable_client().headers,
-            ) as response:
-                if response.status == 404:
-                    raise HTTPException(status_code=404, detail="Bill not found")
-                if response.status != 200:
-                    raise HTTPException(
-                        status_code=response.status,
-                        detail=f"Airtable API error: {await response.text()}",
-                    )
-                
-                result = await response.json()
-                return {
-                    "success": True,
-                    "result": {
-                        "id": result["id"],
-                        "fields": result.get("fields", {}),
-                    }
-                }
+        result = await get_airtable_client().get_bill(bill_id)
+        return {
+            "success": True,
+            "result": {
+                "id": result["id"],
+                "fields": result.get("fields", {}),
+            }
+        }
 
     except HTTPException:
         raise
@@ -290,27 +349,14 @@ async def list_members(
 async def get_member(member_id: str):
     """Get member details by ID"""
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{get_airtable_client().base_url}/Members/{member_id}",
-                headers=get_airtable_client().headers,
-            ) as response:
-                if response.status == 404:
-                    raise HTTPException(status_code=404, detail="Member not found")
-                if response.status != 200:
-                    raise HTTPException(
-                        status_code=response.status,
-                        detail=f"Airtable API error: {await response.text()}",
-                    )
-                
-                result = await response.json()
-                return {
-                    "success": True,
-                    "result": {
-                        "id": result["id"],
-                        "fields": result.get("fields", {}),
-                    }
-                }
+        result = await get_airtable_client().get_member(member_id)
+        return {
+            "success": True,
+            "result": {
+                "id": result["id"],
+                "fields": result.get("fields", {}),
+            }
+        }
 
     except HTTPException:
         raise
@@ -346,6 +392,15 @@ async def get_issues_kanban(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching kanban data: {str(e)}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup connections on shutdown"""
+    global _airtable_client
+    if _airtable_client:
+        await _airtable_client.close()
+        _airtable_client = None
 
 
 if __name__ == "__main__":

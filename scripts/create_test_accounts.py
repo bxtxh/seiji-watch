@@ -211,10 +211,10 @@ class TestAccountManager:
                     }
                 }
                 
-                # Store the actual token in a secure location (e.g., environment variable or secret manager)
-                # This is just a placeholder - implement secure storage based on your infrastructure
+                # Store the actual token in a secure location
+                # Never log any part of the token
                 secure_token_key = f"TEST_TOKEN_{user_id.upper()}"
-                self.logger.info(f"Secure token should be stored as: {secure_token_key}={user_data['token'][:10]}...")
+                self.logger.info(f"Secure token created for: {user_id}")
                 
         # Add testing instructions (pilot test with 1 reviewer)
         credentials['testing_instructions'] = {
@@ -265,9 +265,20 @@ class TestAccountManager:
         # Store tokens directly in Secret Manager - never write to filesystem
         try:
             from google.cloud import secretmanager
+            from google.api_core import exceptions as google_exceptions
             
             # Initialize Secret Manager client
-            client = secretmanager.SecretManagerServiceClient()
+            try:
+                client = secretmanager.SecretManagerServiceClient()
+            except Exception as e:
+                self.logger.error(f"Failed to initialize Secret Manager client: {str(e)}")
+                print("\n❌ ERROR: Failed to initialize Secret Manager client")
+                print("Possible causes:")
+                print("  1. Application Default Credentials not configured")
+                print("  2. Run: gcloud auth application-default login")
+                print("  3. Or set GOOGLE_APPLICATION_CREDENTIALS environment variable")
+                raise
+            
             project_id = os.getenv('GCP_PROJECT_ID')
             
             if not project_id:
@@ -288,6 +299,11 @@ class TestAccountManager:
                         'expires_at': (datetime.utcnow() + timedelta(days=7)).isoformat()
                     }
             
+            # If no tokens were created, skip Secret Manager storage
+            if not secure_data['tokens']:
+                self.logger.warning("No tokens to store in Secret Manager")
+                return
+            
             # Create or update secret
             secret_id = f"external-test-tokens-{self.environment}"
             parent = f"projects/{project_id}"
@@ -301,44 +317,87 @@ class TestAccountManager:
                         "secret": {
                             "replication": {
                                 "automatic": {}
+                            },
+                            "labels": {
+                                "environment": self.environment,
+                                "purpose": "external-testing",
+                                "managed-by": "test-account-script"
                             }
                         }
                     }
                 )
                 self.logger.info(f"Created new secret: {secret_id}")
-            except Exception:
+            except google_exceptions.AlreadyExists:
                 # Secret already exists, that's fine
                 self.logger.info(f"Using existing secret: {secret_id}")
+            except google_exceptions.PermissionDenied as e:
+                self.logger.error(f"Permission denied creating secret: {str(e)}")
+                print(f"\n❌ ERROR: Permission denied for Secret Manager")
+                print("Required permissions: secretmanager.secrets.create")
+                print("Grant with: gcloud projects add-iam-policy-binding PROJECT_ID \\")
+                print("  --member=user:YOUR_EMAIL --role=roles/secretmanager.admin")
+                raise
+            except Exception as e:
+                self.logger.error(f"Unexpected error creating secret: {str(e)}")
+                raise
             
             # Add new secret version
             secret_name = f"{parent}/secrets/{secret_id}"
             secret_payload = json.dumps(secure_data, indent=2).encode('UTF-8')
             
-            version = client.add_secret_version(
-                request={
-                    "parent": secret_name,
-                    "payload": {
-                        "data": secret_payload
+            try:
+                version = client.add_secret_version(
+                    request={
+                        "parent": secret_name,
+                        "payload": {
+                            "data": secret_payload
+                        }
                     }
-                }
-            )
-            
-            self.logger.info(f"Tokens securely stored in Secret Manager: {version.name}")
-            
-            print(f"\n✅ Tokens securely stored in Google Secret Manager")
-            print(f"Secret ID: {secret_id}")
-            print(f"Version: {version.name.split('/')[-1]}")
-            print(f"\nTo retrieve tokens:")
-            print(f"gcloud secrets versions access latest --secret={secret_id}")
+                )
+                
+                self.logger.info(f"Tokens securely stored in Secret Manager: {version.name}")
+                
+                print(f"\n✅ Tokens securely stored in Google Secret Manager")
+                print(f"Secret ID: {secret_id}")
+                print(f"Version: {version.name.split('/')[-1]}")
+                print(f"\nTo retrieve tokens:")
+                print(f"gcloud secrets versions access latest --secret={secret_id}")
+                
+            except google_exceptions.PermissionDenied as e:
+                self.logger.error(f"Permission denied adding secret version: {str(e)}")
+                print(f"\n❌ ERROR: Permission denied adding secret version")
+                print("Required permissions: secretmanager.versions.add")
+                raise
+            except google_exceptions.FailedPrecondition as e:
+                self.logger.error(f"Failed precondition: {str(e)}")
+                print(f"\n❌ ERROR: Secret Manager precondition failed")
+                print("Possible cause: Secret might be in deletion state")
+                raise
+            except Exception as e:
+                self.logger.error(f"Unexpected error adding secret version: {str(e)}")
+                raise
             
         except ImportError:
             self.logger.error("google-cloud-secret-manager not installed. Tokens NOT saved.")
             print("\n❌ ERROR: Cannot store tokens securely without google-cloud-secret-manager")
             print("Install with: pip install google-cloud-secret-manager")
+            print("\nFallback options:")
+            print("  1. Install the package: pip install -r scripts/requirements.txt")
+            print("  2. Manually store tokens in Secret Manager via console")
+            raise
+        except ValueError as e:
+            # Re-raise ValueError with original message
             raise
         except Exception as e:
             self.logger.error(f"Failed to store tokens in Secret Manager: {str(e)}")
-            print(f"\n❌ ERROR: Failed to store tokens securely: {str(e)}")
+            print(f"\n❌ ERROR: Failed to store tokens securely")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print("\nTroubleshooting:")
+            print("  1. Check GCP_PROJECT_ID is set correctly")
+            print("  2. Verify you have Secret Manager API enabled")
+            print("  3. Confirm you have necessary IAM permissions")
+            print("  4. Run: gcloud auth application-default login")
             raise
 
 
