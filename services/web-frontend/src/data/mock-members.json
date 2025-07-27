@@ -1,0 +1,52 @@
+[
+  {
+    "id": "mem1234567890",
+    "fields": {
+      "Name": "田中 太郎",
+      "Name_Kana": "タナカ タロウ",
+      "Party": "立憲民主党",
+      "House": "衆議院",
+      "Constituency": "東京1区"
+    }
+  },
+  {
+    "id": "mem2345678901",
+    "fields": {
+      "Name": "佐藤 花子",
+      "Name_Kana": "サトウ ハナコ",
+      "Party": "自由民主党",
+      "House": "参議院",
+      "Constituency": "比例代表"
+    }
+  },
+  {
+    "id": "mem3456789012",
+    "fields": {
+      "Name": "鈴木 次郎",
+      "Name_Kana": "スズキ ジロウ",
+      "Party": "日本維新の会",
+      "House": "衆議院",
+      "Constituency": "大阪3区"
+    }
+  },
+  {
+    "id": "mem4567890123",
+    "fields": {
+      "Name": "高橋 美咲",
+      "Name_Kana": "タカハシ ミサキ",
+      "Party": "公明党",
+      "House": "参議院",
+      "Constituency": "神奈川県"
+    }
+  },
+  {
+    "id": "mem5678901234",
+    "fields": {
+      "Name": "山田 健一",
+      "Name_Kana": "ヤマダ ケンイチ",
+      "Party": "国民民主党",
+      "House": "衆議院",
+      "Constituency": "愛知2区"
+    }
+  }
+]

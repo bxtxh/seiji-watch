@@ -1,0 +1,67 @@
+[
+  {
+    "id": "rec1234567890",
+    "fields": {
+      "Bill_Number": "217-1",
+      "Name": "令和７年度予算案",
+      "Bill_Status": "審議中",
+      "Category": "予算",
+      "Diet_Session": "第217回国会",
+      "Submitted_Date": "2025-01-20",
+      "Summary": "令和7年度の国家予算に関する法案。歳入歳出の総額を定め、国の基本的な政策の方向性を示す重要な法案。",
+      "Stage": "審議中"
+    }
+  },
+  {
+    "id": "rec2345678901",
+    "fields": {
+      "Bill_Number": "217-2",
+      "Name": "デジタル社会推進基本法案",
+      "Bill_Status": "成立",
+      "Category": "科学技術",
+      "Diet_Session": "第217回国会",
+      "Submitted_Date": "2024-12-15",
+      "Summary": "デジタル技術の活用による社会の効率化と国民生活の向上を目的とした基本的な枠組みを定める法案。",
+      "Stage": "成立"
+    }
+  },
+  {
+    "id": "rec3456789012",
+    "fields": {
+      "Bill_Number": "217-3",
+      "Name": "気候変動対策推進法案",
+      "Bill_Status": "採決待ち",
+      "Category": "環境",
+      "Diet_Session": "第217回国会",
+      "Submitted_Date": "2025-01-10",
+      "Summary": "2050年カーボンニュートラル達成に向けた具体的な施策と企業・自治体の責務を定める環境政策の基本法案。",
+      "Stage": "採決待ち"
+    }
+  },
+  {
+    "id": "rec4567890123",
+    "fields": {
+      "Bill_Number": "217-4",
+      "Name": "介護保険制度改革法案",
+      "Bill_Status": "審議中",
+      "Category": "社会保障",
+      "Diet_Session": "第217回国会",
+      "Submitted_Date": "2025-01-05",
+      "Summary": "高齢化社会の進展に対応した介護保険制度の持続可能性確保と利用者負担の見直しを含む包括的な改革法案。",
+      "Stage": "審議中"
+    }
+  },
+  {
+    "id": "rec5678901234",
+    "fields": {
+      "Bill_Number": "217-5",
+      "Name": "教育DX推進法案",
+      "Bill_Status": "審議中",
+      "Category": "教育",
+      "Diet_Session": "第217回国会",
+      "Submitted_Date": "2024-12-20",
+      "Summary": "学校教育におけるデジタル変革を推進し、ICT活用能力の向上と教育格差の解消を目指す教育政策法案。",
+      "Stage": "審議中"
+    }
+  }
+]

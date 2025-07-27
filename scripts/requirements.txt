@@ -1,0 +1,7 @@
+# Requirements for scripts
+requests>=2.32.4  # Fix CVE-2024-35195 and CVE-2024-47081
+PyJWT==2.8.0
+google-cloud-secret-manager==2.16.4
+pandas==2.0.3
+matplotlib==3.7.2
+seaborn==0.12.2

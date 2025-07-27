@@ -37,7 +37,8 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 - **Purpose**: Structured data storage
 - **Format**: `pat...` (Personal Access Token)
 - **Obtain**: https://airtable.com/create/tokens
-- **Environment**: `AIRTABLE_API_KEY=pat...`
+- **Environment**: `AIRTABLE_PAT=pat...`
+- **Note**: API Keys deprecated Feb 1, 2024 - use PAT only
 
 #### Weaviate Cloud
 - **Purpose**: Vector database

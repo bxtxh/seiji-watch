@@ -15,7 +15,8 @@
 - **EPIC 16: Bills ↔ PolicyCategory関連付けシステム** ✅ **COMPLETED** (5/5 tickets) → **Bills ↔ PolicyCategory integration fully implemented**
 - **EPIC 17: フロントエンド UI 改善** ✅ **COMPLETED** (3/3 tickets) → **UI improvements based on user feedback**
 - **EPIC 18: Code Quality - E501 Compliance** 🚧 **PENDING** (0/4 tickets) → **1,242 line length errors for post-MVP cleanup**
-- **EPIC 19: CI/CD Lint Error Fixes** 🚧 **PENDING** (0/4 tickets) → **Emergency lint fixes blocking deployment**
+- **EPIC 19: CI/CD Lint Error Fixes** ✅ **COMPLETED** (4/4 tickets) → **All CI/CD pipeline issues resolved**
+- **EPIC 20: 外部関係者共同手動テスト** 🚧 **PENDING** (5/5 tickets) → **Comprehensive external user testing before MVP launch**
 
 ### Milestones
 - ✅ **Infrastructure Ready** (July 1, 2025) - 3 days ahead of schedule
@@ -2506,3 +2507,129 @@ CI/CDパイプラインで複数のlintエラーが発生し、deployment が bl
 - **Total Effort**: 1.75 hours
 - **Implementation Strategy**: Immediate emergency fix
 - **Risk**: Very Low (lint fixes only)
+
+---
+
+## 🧪 EPIC 20: 外部関係者共同手動テスト
+**Target: July 25 - August 8, 2025** | **Status: PENDING**
+
+### 目的
+ステージング環境での外部関係者との包括的な手動テスト実施により、MVP Launch前の最終品質保証を行う。3名の非技術者レビュワー（外部2名、内部1名）による実用的なユーザビリティ検証を実施。
+
+### 実施体制（簡素化）
+- **外部レビュワー 2名**: 非技術者による実際の利用シーン検証
+- **内部レビュワー 1名**: 内部チームメンバーによる補完的検証
+- **全員非技術者**: ブラウザベースでの実用的評価に特化
+- **データ同期**: 本番データとステージング環境の手動同期実施
+
+### テストフェーズ構成（簡素化）
+1. **Phase 1**: 基本機能検証（1日間）- ログイン・ナビゲーション・基本操作
+2. **Phase 2**: 実用シナリオ検証（2日間）- 法案検索・詳細閲覧・データ理解度
+3. **Phase 3**: ユーザビリティ評価（1日間）- 使いやすさ・情報の見つけやすさ
+4. **Phase 4**: 総合評価（1日間）- 全体的な使い勝手・改善提案
+
+### 成功基準（簡素化）
+- [ ] 3名全員が基本機能を問題なく利用可能
+- [ ] 主要なユーザーシナリオ（法案検索・閲覧）が直感的に実行可能
+- [ ] 非技術者にとって理解しやすいインターフェース
+- [ ] 本番データの正確性・アクセシビリティ
+- [ ] 3名全員による本番利用承認
+
+### Tickets
+
+#### T20-1: 完全なバックエンド環境構築・データ同期  
+**Priority:** P0 | **Estimate:** 18 hours | **Status:** 🔄 IN PROGRESS
+- [x] フロントエンド環境構築（GCP Cloud Run）✅ 完了 
+- [x] カスタムドメイン設定（staging.politics-watch.jp）✅ DNS設定完了
+- [ ] **API Gateway デプロイ**（4-6時間）
+  - [ ] Dockerイメージビルド・Artifact Registry プッシュ
+  - [ ] Cloud Run デプロイ（環境変数・VPC設定）
+  - [ ] api-staging.politics-watch.jp ドメイン設定
+- [ ] **データ処理ワーカー デプロイ**（3-4時間）
+  - [ ] STT Worker Cloud Run デプロイ
+  - [ ] Data Processor Cloud Run デプロイ
+  - [ ] Vector Store (Weaviate) 接続確認
+- [ ] **実データ同期・初期化**（2-3時間）
+  - [ ] Airtable → ステージング環境データ同期（法案・議員・政策カテゴリ）
+  - [ ] ベクトル埋め込み生成・検索インデックス構築
+- [ ] **フロントエンド接続**（1-2時間）
+  - [ ] API URL更新・フロントエンド再デプロイ
+  - [ ] エンドツーエンドテスト・動作確認
+**DoD:** 実データを使用した完全な外部テストが可能なステージング環境
+
+#### T20-2: 非技術者向けテストガイド作成
+**Priority:** P0 | **Estimate:** 6 hours | **Status:** 🟡 PARTIAL
+- [x] 簡潔なブラウザ操作ガイド ✅ external-testing-guide.md 作成済み
+- [x] 問題報告用の簡易テンプレート ✅ 基本フォーマット作成済み
+- [x] 連絡先・サポート情報 ✅ 記載済み
+- [ ] 4フェーズの具体的なテストシナリオ（チェックリスト形式）
+- [ ] よくある質問・トラブルシューティング（詳細版）
+**DoD:** 非技術者が独立してテスト実施可能な分かりやすいガイド
+
+#### T20-3: Phase 1-2実施（基本機能・実用シナリオ）
+**Priority:** P0 | **Estimate:** 24 hours (3日間)
+- [ ] **Phase 1 基本機能検証**: ナビゲーション・レスポンシブデザイン・基本操作（1日間）
+- [ ] **Phase 2 実用シナリオ検証**: 実データでの法案検索・詳細閲覧・データ理解度（2日間）
+  - [ ] 第217回国会法案データ（~200件）での検索テスト
+  - [ ] 議員データ（~700名）の閲覧・理解度評価
+  - [ ] 政策カテゴリ（CAP分類）によるナビゲーション
+- [ ] 3名全員による独立したテスト実施
+- [ ] 実データ品質・情報の分かりやすさ評価
+- [ ] 政治情報サイトとしての実用性評価
+**DoD:** 3名が実データを使用して基本機能と主要シナリオを問題なく実行可能であることを確認
+
+#### T20-4: Phase 3-4実施（ユーザビリティ・総合評価）
+**Priority:** P0 | **Estimate:** 16 hours (2日間)
+- [ ] **Phase 3 ユーザビリティ評価**: 実データでの使いやすさ・情報の見つけやすさ（1日間）
+  - [ ] 実際の法案検索での情報到達性評価
+  - [ ] 政治情報の理解しやすさ・表示の適切性
+  - [ ] 非技術者にとってのナビゲーション直感性
+- [ ] **Phase 4 総合評価**: 政治情報サイトとしての実用性評価（1日間）
+  - [ ] 日常的な政治情報収集での継続利用意向
+  - [ ] 実データ品質・情報の信頼性評価
+  - [ ] 他の政治情報源と比較した優位性
+- [ ] 本番利用に向けた承認・懸念事項の整理
+- [ ] 実用性ベースの改善提案・優先度の協議
+**DoD:** 3名全員による実データベースでの本番利用承認と建設的な改善提案の獲得
+
+#### T20-5: テスト結果分析・本番移行判定
+**Priority:** P0 | **Estimate:** 8 hours
+- [ ] 4フェーズの結果統合・分析レポート作成
+- [ ] 3名からの改善提案の整理・優先度付け
+- [ ] 本番移行GO/NO-GO判定（3名の承認ベース）
+- [ ] Critical問題の特定・修正計画策定
+- [ ] 本番運用時の注意点・監視項目整理
+- [ ] 外部レビュワーへの感謝・フォローアップ計画
+**DoD:** 明確な本番移行判定と優先度付き改善計画の策定
+
+### Technical Requirements
+
+#### ステージング環境仕様（2025年7月25日更新）
+- **Infrastructure**: GCP Cloud Run (staging) ✅ デプロイ済み
+- **Domains**: 
+  - Primary: `staging.politics-watch.jp` ✅ DNS設定完了（SSL証明書待ち）
+  - Direct: `https://seiji-watch-web-frontend-staging-496359339214.asia-northeast1.run.app` ✅ アクセス可能
+- **Authentication**: 認証無効化（テスト簡素化のため）
+- **Data**: 完全なバックエンド環境構築中 → 第217回国会実データ（法案~200件、議員~700名、政策カテゴリ）
+- **Monitoring**: Cloud Logging + Cloud Monitoring ✅ 基本設定済み
+
+#### テストデータ品質
+- **法案データ**: 全217回国会法案（~200件）完全性・最新性確認
+- **議員データ**: 衆参両院議員（~700名）正確性・所属確認
+- **議事録データ**: 主要委員会議事録（~50時間）音声認識精度確認
+- **分類データ**: CAP 3層分類（L1:25, L2:200, L3:500）網羅性確認
+
+#### 品質基準
+- **Performance**: Mobile First Index <200ms, Lighthouse >90
+- **Accessibility**: WCAG 2.1 AA準拠、全機能キーボード操作可能
+- **Security**: OWASP Top 10対応、CSP, HTTPS Everywhere
+- **Legal**: 著作権法Article 40準拠、選挙法中立性、GDPR-準拠プライバシー
+
+**EPIC 20 Summary (Updated):**
+- **Total Tickets**: 5
+- **Total Effort**: 66 hours (約8日間) - 大幅に簡素化
+- **Participants**: 3名（外部2名、内部1名）- 全員非技術者
+- **Testing Method**: ブラウザベース実用性検証 + 本番データ同期
+- **Critical Path**: ステージング構築 → ガイド作成 → 4フェーズテスト → 本番移行判定
+- **Success Metrics**: 3名全員による本番利用承認 + 実用性確認
+- **Risk Mitigation**: 簡素化によりリスク大幅低減 + 迅速な問題対応

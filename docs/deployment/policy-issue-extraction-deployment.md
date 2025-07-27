@@ -29,7 +29,7 @@ OPENAI_MAX_TOKENS=800
 OPENAI_TEMPERATURE=0.2
 
 # Airtable Configuration
-AIRTABLE_API_KEY=keyXXX
+AIRTABLE_PAT=keyXXX
 AIRTABLE_BASE_ID=appXXX
 AIRTABLE_ISSUES_TABLE=tblXXX
 AIRTABLE_RATE_LIMIT_PER_SECOND=5
@@ -371,7 +371,7 @@ services:
       dockerfile: Dockerfile.prod
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - AIRTABLE_API_KEY=${AIRTABLE_API_KEY}
+      - AIRTABLE_PAT=${AIRTABLE_PAT}
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
     depends_on:
       - redis
@@ -457,7 +457,7 @@ spec:
             secretKeyRef:
               name: api-keys
               key: openai-api-key
-        - name: AIRTABLE_API_KEY
+        - name: AIRTABLE_PAT
           valueFrom:
             secretKeyRef:
               name: api-keys
@@ -584,7 +584,7 @@ def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> boo
 ```bash
 # Use secrets management
 export OPENAI_API_KEY=$(gcloud secrets versions access latest --secret="openai-api-key")
-export AIRTABLE_API_KEY=$(gcloud secrets versions access latest --secret="airtable-api-key")
+export AIRTABLE_PAT=$(gcloud secrets versions access latest --secret="airtable-api-key")
 
 # Network security
 gcloud compute firewall-rules create allow-api-gateway \

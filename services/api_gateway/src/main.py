@@ -80,7 +80,7 @@ policy_analysis_service = PolicyAnalysisService(airtable_client, redis_cache)
 
 # Initialize batch processing
 airtable_config = {
-    "api_key": os.getenv("AIRTABLE_API_KEY"),
+    "api_key": os.getenv("AIRTABLE_PAT"),
     "base_id": os.getenv("AIRTABLE_BASE_ID"),
 }
 redis_config = {"url": os.getenv("REDIS_URL", "redis://localhost:6379")}
