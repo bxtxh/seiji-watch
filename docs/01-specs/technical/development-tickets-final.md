@@ -2632,4 +2632,138 @@ CI/CDパイプラインで複数のlintエラーが発生し、deployment が bl
 - **Testing Method**: ブラウザベース実用性検証 + 本番データ同期
 - **Critical Path**: ステージング構築 → ガイド作成 → 4フェーズテスト → 本番移行判定
 - **Success Metrics**: 3名全員による本番利用承認 + 実用性確認
+
+---
+
+## EPIC 21: API Gateway Refactoring and Human Review System
+
+**Goal:** APIゲートウェイのインポートエラーを解決し、法案の人間レビューシステムを実装する  
+**Priority:** P1  
+**Owner:** TBD  
+**Created:** 2025-07-27  
+
+### Background
+- APIゲートウェイが他サービスのコードを直接インポートしようとしてエラーが発生している
+- 現在、Issue（政策課題）レビューシステムは実装済みだが、Bills（法案）レビューシステムは未実装
+- マイクロサービスアーキテクチャの原則に違反している状態で、サービス間の適切な分離が必要
+
+### Current State
+- `airtable_webhooks.py`が`services.airtable_issue_manager`と`services.discord_notification_bot`を直接インポート
+- これらのモジュールは別サービス（data-processor、notifications-worker）に存在
+- バッチ処理基盤とIssueレビューシステムは実装済みで動作している
+
+### Tasks
+
+#### T21-1: APIゲートウェイのインポートエラー修正
+**Priority:** P0 | **Estimate:** 4 hours  
+**Assignee:** Backend Developer
+
+- [ ] airtable_webhooks.pyのインポートエラーを解決
+  - [ ] Option 1: 機能が未使用の場合は削除
+  - [ ] Option 2: サービス間通信をHTTP API経由に変更
+  - [ ] Option 3: 必要な共通機能をsharedパッケージに移動
+- [ ] main.pyからairtable_webhooksの参照を適切に処理
+- [ ] APIゲートウェイの起動確認テスト
+- [ ] エラーハンドリングとログ出力の実装
+
+**DoD:** 
+- APIゲートウェイが正常に起動すること
+- `poetry run uvicorn src.main:app`でエラーが発生しないこと
+- /health エンドポイントが200を返すこと
+
+#### T21-2: 法案レビューシステムの設計
+**Priority:** P1 | **Estimate:** 8 hours  
+**Assignee:** System Architect / Senior Developer
+
+- [ ] 既存のIssueレビューシステムの分析とドキュメント化
+- [ ] 法案レビューの要件定義
+  - [ ] レビュー対象の法案選定基準
+  - [ ] レビューステータス（draft/pending/approved/rejected/archived）
+  - [ ] レビュアーの役割と権限
+- [ ] Airtableスキーマの拡張設計
+  - [ ] Bills テーブルへのレビューフィールド追加
+  - [ ] レビュー履歴テーブルの設計
+- [ ] レビューワークフローの定義
+  - [ ] 自動レビュー依頼のトリガー条件
+  - [ ] エスカレーションルール
+  - [ ] 期限管理
+
+**DoD:** 
+- 設計ドキュメント（docs/design/bill-review-system.md）の完成
+- Airtableスキーマ変更案の作成
+- ステークホルダーレビューと承認
+
+#### T21-3: 法案レビューバッチジョブの実装
+**Priority:** P1 | **Estimate:** 16 hours  
+**Assignee:** Backend Developer
+
+- [ ] BillReviewBatchProcessorクラスの実装
+  - [ ] IssueRelationshipBatchProcessorを参考に基本構造作成
+  - [ ] レビュー待ち法案の抽出ロジック
+  - [ ] 期限切れ法案の検出と通知
+- [ ] バッチジョブの設定
+  - [ ] 実行スケジュール（毎日10:00 JST）
+  - [ ] バッチサイズとタイムアウト設定
+- [ ] Discord通知の拡張
+  - [ ] 法案レビュー用の通知テンプレート
+  - [ ] 優先度別の通知チャンネル設定
+- [ ] エラーハンドリングとリトライ機構
+- [ ] テストケースの作成（単体・統合）
+
+**DoD:** 
+- バッチジョブが定期実行されること
+- レビュー待ち法案がDiscordに通知されること
+- エラー時の適切なログ出力とアラート
+
+#### T21-4: フロントエンドのレビューUI実装
+**Priority:** P2 | **Estimate:** 12 hours  
+**Assignee:** Frontend Developer
+
+- [ ] 法案レビュー画面の作成（/bills/review）
+  - [ ] レビュー待ち法案のリスト表示
+  - [ ] フィルタリング機能（ステータス、提出日、カテゴリ）
+  - [ ] ソート機能
+- [ ] 法案詳細レビュー画面
+  - [ ] 法案情報の表示
+  - [ ] レビューステータス更新UI
+  - [ ] レビュアーノート入力フォーム
+  - [ ] 関連Issue表示
+- [ ] レビュー履歴の表示
+- [ ] アクセシビリティ対応
+- [ ] レスポンシブデザイン
+
+**DoD:** 
+- レビュアーが法案を承認/却下できること
+- レビュー履歴が保存・表示されること
+- Lighthouse スコア90以上
+
+### Technical Requirements
+- **Backend:** FastAPI, Python 3.11+
+- **Frontend:** Next.js 14+, TypeScript
+- **Database:** Airtable (既存スキーマの拡張)
+- **Messaging:** Discord webhooks
+- **Infrastructure:** 既存のマイクロサービスアーキテクチャに準拠
+
+### Success Criteria
+1. APIゲートウェイが安定して動作すること
+2. 法案レビューのバッチ処理が毎日実行されること
+3. レビュアーが効率的に法案をレビューできること
+4. 既存のIssueレビューシステムと整合性のある実装
+
+### Dependencies
+- EPIC 20の完了（外部テスターによる検証）
+- Airtableの権限設定変更
+- Discord webhookの設定
+
+### Risks & Mitigation
+- **Risk:** Airtableのレート制限
+  - **Mitigation:** バッチサイズの調整、キャッシュの活用
+- **Risk:** レビュアーの作業負荷
+  - **Mitigation:** 優先度付けとフィルタリング機能
+
+**EPIC 21 Summary:**
+- **Total Tickets:** 4
+- **Total Effort:** 40 hours (5日間)
+- **Critical Path:** APIゲートウェイ修正 → 設計 → バックエンド実装 → フロントエンド実装
+- **Key Deliverable:** 動作する法案レビューシステム
 - **Risk Mitigation**: 簡素化によりリスク大幅低減 + 迅速な問題対応
