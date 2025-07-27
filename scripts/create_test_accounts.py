@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Any
 
 import jwt
 import requests

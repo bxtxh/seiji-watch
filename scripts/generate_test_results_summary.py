@@ -14,7 +14,7 @@ import sys
 from collections import defaultdict, Counter
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -43,7 +43,7 @@ class TestResultsAnalyzer:
         )
         return logging.getLogger(__name__)
         
-    def load_test_results(self) -> Dict[str, Any]:
+    def load_test_results(self) -> dict[str, Any]:
         """Load all test result files from the results directory."""
         results = {
             'phase_results': {},
@@ -83,7 +83,7 @@ class TestResultsAnalyzer:
         
         return results
         
-    def _load_phase_results(self, phase_dir: Path) -> Dict[str, Any]:
+    def _load_phase_results(self, phase_dir: Path) -> dict[str, Any]:
         """Load test results for a specific phase."""
         phase_results = {
             'test_cases': [],
@@ -119,7 +119,7 @@ class TestResultsAnalyzer:
                 
         return phase_results
         
-    def _load_issue_report(self, issue_file: Path) -> Optional[Dict[str, Any]]:
+    def _load_issue_report(self, issue_file: Path) -> dict[str, Any] | None:
         """Load individual issue report."""
         try:
             if issue_file.suffix == '.json':
@@ -132,7 +132,7 @@ class TestResultsAnalyzer:
             self.logger.error(f"Error loading issue report {issue_file}: {e}")
             return None
             
-    def _parse_markdown_issue(self, md_file: Path) -> Dict[str, Any]:
+    def _parse_markdown_issue(self, md_file: Path) -> dict[str, Any]:
         """Parse markdown issue report to extract structured data."""
         with open(md_file, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -155,7 +155,7 @@ class TestResultsAnalyzer:
         match = re.search(pattern, content, re.IGNORECASE)
         return match.group(1).strip() if match else ""
         
-    def _load_daily_report(self, daily_file: Path) -> Optional[Dict[str, Any]]:
+    def _load_daily_report(self, daily_file: Path) -> dict[str, Any] | None:
         """Load daily progress report."""
         try:
             with open(daily_file, 'r', encoding='utf-8') as f:
@@ -164,7 +164,7 @@ class TestResultsAnalyzer:
             self.logger.error(f"Error loading daily report {daily_file}: {e}")
             return None
             
-    def generate_summary_report(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def generate_summary_report(self, results: dict[str, Any]) -> dict[str, Any]:
         """Generate comprehensive summary report."""
         summary = {
             'test_execution_summary': self._analyze_test_execution(results),
@@ -178,7 +178,7 @@ class TestResultsAnalyzer:
         
         return summary
         
-    def _analyze_test_execution(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _analyze_test_execution(self, results: dict[str, Any]) -> dict[str, Any]:
         """Analyze overall test execution metrics."""
         total_test_cases = 0
         passed_test_cases = 0
@@ -200,7 +200,7 @@ class TestResultsAnalyzer:
             'phases_completed': len(results['phase_results'])
         }
         
-    def _analyze_issues(self, issue_reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _analyze_issues(self, issue_reports: list[dict[str, Any]]) -> dict[str, Any]:
         """Analyze issue distribution and patterns."""
         severity_counts = Counter()
         category_counts = Counter()
@@ -223,7 +223,7 @@ class TestResultsAnalyzer:
             'high_issues': severity_counts.get('High', 0)
         }
         
-    def _analyze_phase_performance(self, phase_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _analyze_phase_performance(self, phase_results: dict[str, Any]) -> dict[str, Any]:
         """Analyze performance of each testing phase."""
         phase_analysis = {}
         
@@ -240,7 +240,7 @@ class TestResultsAnalyzer:
             
         return phase_analysis
         
-    def _check_phase_success_criteria(self, criteria: Dict[str, Any]) -> bool:
+    def _check_phase_success_criteria(self, criteria: dict[str, Any]) -> bool:
         """Check if phase success criteria are met."""
         if not criteria:
             return False
@@ -255,7 +255,7 @@ class TestResultsAnalyzer:
                 
         return True
         
-    def _analyze_participant_feedback(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _analyze_participant_feedback(self, results: dict[str, Any]) -> dict[str, Any]:
         """Analyze feedback from test participants."""
         feedback_summary = {
             'overall_satisfaction': 0.0,
@@ -284,7 +284,7 @@ class TestResultsAnalyzer:
             
         return feedback_summary
         
-    def _evaluate_success_criteria(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _evaluate_success_criteria(self, results: dict[str, Any]) -> dict[str, Any]:
         """Evaluate overall success criteria for go/no-go decision."""
         criteria_evaluation = {
             'functional_requirements': self._check_functional_requirements(results),
@@ -297,7 +297,7 @@ class TestResultsAnalyzer:
         
         return criteria_evaluation
         
-    def _check_functional_requirements(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _check_functional_requirements(self, results: dict[str, Any]) -> dict[str, Any]:
         """Check functional requirements success criteria."""
         # Analyze Phase 1 results for functional requirements
         phase1_data = results['phase_results'].get('phase-1', {})
@@ -315,7 +315,7 @@ class TestResultsAnalyzer:
             'details': f'Functional test pass rate: {pass_rate:.1f}%'
         }
         
-    def _check_performance_requirements(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _check_performance_requirements(self, results: dict[str, Any]) -> dict[str, Any]:
         """Check performance requirements success criteria."""
         # Analyze Phase 4 results for performance requirements
         phase4_data = results['phase_results'].get('phase-4', {})
@@ -337,7 +337,7 @@ class TestResultsAnalyzer:
             'details': 'Performance criteria evaluation'
         }
         
-    def _check_accessibility_requirements(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _check_accessibility_requirements(self, results: dict[str, Any]) -> dict[str, Any]:
         """Check accessibility requirements success criteria."""
         # Analyze Phase 3 results for accessibility requirements
         phase3_data = results['phase_results'].get('phase-3', {})
@@ -353,7 +353,7 @@ class TestResultsAnalyzer:
             'details': 'WCAG 2.1 AA compliance and accessibility scoring'
         }
         
-    def _check_security_requirements(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _check_security_requirements(self, results: dict[str, Any]) -> dict[str, Any]:
         """Check security requirements success criteria."""
         # Analyze Phase 5 results for security requirements
         phase5_data = results['phase_results'].get('phase-5', {})
@@ -369,7 +369,7 @@ class TestResultsAnalyzer:
             'details': 'Security vulnerability and configuration assessment'
         }
         
-    def _check_legal_compliance(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _check_legal_compliance(self, results: dict[str, Any]) -> dict[str, Any]:
         """Check legal compliance requirements."""
         # Analyze legal compliance issues
         legal_issues = [
@@ -389,7 +389,7 @@ class TestResultsAnalyzer:
             'details': 'Election law, copyright, and privacy compliance'
         }
         
-    def _check_expert_approval(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _check_expert_approval(self, results: dict[str, Any]) -> dict[str, Any]:
         """Check expert approval from participants."""
         # Analyze final evaluations from experts
         approvals = {}
@@ -407,7 +407,7 @@ class TestResultsAnalyzer:
             'details': 'Final approval from external experts'
         }
         
-    def _generate_recommendations(self, results: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _generate_recommendations(self, results: dict[str, Any]) -> list[dict[str, Any]]:
         """Generate recommendations based on test results."""
         recommendations = []
         
@@ -442,7 +442,7 @@ class TestResultsAnalyzer:
             
         return recommendations
         
-    def _make_go_no_go_decision(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _make_go_no_go_decision(self, results: dict[str, Any]) -> dict[str, Any]:
         """Make final go/no-go decision based on all criteria."""
         success_criteria = self._evaluate_success_criteria(results)
         issue_analysis = self._analyze_issues(results['issue_reports'])
@@ -477,7 +477,7 @@ class TestResultsAnalyzer:
         }
         
     def _generate_decision_rationale(self, go_decision: bool, critical_issues: int, 
-                                   high_issues: int, success_criteria: Dict[str, Any]) -> str:
+                                   high_issues: int, success_criteria: dict[str, Any]) -> str:
         """Generate rationale for go/no-go decision."""
         if go_decision:
             return (
@@ -504,7 +504,7 @@ class TestResultsAnalyzer:
                 f"These issues must be resolved before launch."
             )
             
-    def _generate_launch_conditions(self, results: Dict[str, Any]) -> List[str]:
+    def _generate_launch_conditions(self, results: dict[str, Any]) -> list[str]:
         """Generate conditions for successful launch."""
         conditions = []
         
@@ -523,7 +523,7 @@ class TestResultsAnalyzer:
         
         return conditions
         
-    def _identify_blocking_issues(self, results: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _identify_blocking_issues(self, results: dict[str, Any]) -> list[dict[str, Any]]:
         """Identify specific issues blocking launch."""
         blocking_issues = []
         
@@ -538,7 +538,7 @@ class TestResultsAnalyzer:
                 
         return blocking_issues
         
-    def export_results(self, summary: Dict[str, Any], output_dir: str):
+    def export_results(self, summary: dict[str, Any], output_dir: str):
         """Export results to various formats."""
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
@@ -558,7 +558,7 @@ class TestResultsAnalyzer:
         # Generate final report document
         self._generate_final_report(summary, output_path)
         
-    def _export_csv_reports(self, summary: Dict[str, Any], output_path: Path):
+    def _export_csv_reports(self, summary: dict[str, Any], output_path: Path):
         """Export data as CSV files for spreadsheet analysis."""
         # Issue summary CSV
         issues_data = []
@@ -576,7 +576,7 @@ class TestResultsAnalyzer:
             issues_df = pd.DataFrame(issues_data)
             issues_df.to_csv(output_path / 'issues_summary.csv', index=False)
             
-    def _generate_visualizations(self, summary: Dict[str, Any], output_path: Path):
+    def _generate_visualizations(self, summary: dict[str, Any], output_path: Path):
         """Generate charts and visualizations."""
         plt.style.use('seaborn-v0_8')
         
@@ -603,7 +603,7 @@ class TestResultsAnalyzer:
             plt.savefig(output_path / 'issue_distribution.png', dpi=300, bbox_inches='tight')
             plt.close()
             
-    def _generate_final_report(self, summary: Dict[str, Any], output_path: Path):
+    def _generate_final_report(self, summary: dict[str, Any], output_path: Path):
         """Generate final markdown report."""
         report_content = f"""# Diet Issue Tracker - External Testing Final Report
 

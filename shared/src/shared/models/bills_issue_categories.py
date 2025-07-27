@@ -31,9 +31,9 @@ class BillsPolicyCategory(BaseRecord):
     )
     source: str = Field("auto_migration", description="Origin of relationship")
 
-    # Timestamps
-    created_at: str = Field(..., description="Creation timestamp (ISO format)")
-    updated_at: str = Field(..., description="Last update timestamp (ISO format)")
+    # Timestamps - Override base class fields to make them required
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
 
     def __repr__(self) -> str:
         return (
@@ -64,7 +64,7 @@ class BillsPolicyCategory(BaseRecord):
         policy_category_record_id: str | None = None,
     ) -> "BillsPolicyCategory":
         """Create a new bill-category relationship."""
-        now = datetime.now().isoformat()
+        now = datetime.now()
         return cls(
             bill_id=bill_id,
             policy_category_id=policy_category_id,

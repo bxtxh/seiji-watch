@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "data-processor"
+version = "0.1.0"
+description = "Diet data ingestion worker (scraper + STT processing)"
+authors = ["Diet Issue Tracker Team"]
+packages = [{include = "*", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.0"
+scrapy = "^2.11.0"
+yt-dlp = "^2023.10.0"
+openai = "^1.0.0"
+psycopg2-binary = "^2.9.0"
+sqlalchemy = "^2.0.0"
+alembic = "^1.13.0"
+pydantic = "^2.5.0"
+google-cloud-storage = "^2.10.0"
+google-cloud-pubsub = "^2.18.0"
+janome = "^0.4.2"
+shared = {path = "../../shared", develop = true}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+ruff = "^0.7.0"
+types-requests = "^2.31.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

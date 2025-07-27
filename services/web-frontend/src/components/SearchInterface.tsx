@@ -185,7 +185,7 @@ export default function SearchInterface() {
       setLoading(false);
       stopTimer();
     }
-  }, [startTimer, recordInteraction, recordError, recordMetric, logSecurityEvent]);
+  }, [startTimer, recordInteraction, recordError, recordMetric, logSecurityEvent, secureForm]);
 
   // Debounced search
   useEffect(() => {

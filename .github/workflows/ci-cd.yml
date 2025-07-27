@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api_gateway, ingest-worker]
+        service: [api-gateway, data-processor]
     
     steps:
     - name: Checkout code
@@ -151,7 +151,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api_gateway, ingest-worker, web-frontend]
+        service: [api-gateway, data-processor, web-frontend]
     
     steps:
     - name: Checkout code
@@ -210,7 +210,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api_gateway, ingest-worker]
+        service: [api-gateway, data-processor]
     
     steps:
     - name: Checkout code
@@ -282,7 +282,7 @@ jobs:
     
     strategy:
       matrix:
-        service: [api_gateway, ingest-worker]
+        service: [api-gateway, data-processor]
     
     steps:
     - name: Checkout code

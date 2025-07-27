@@ -29,11 +29,7 @@ const IssuesPage = () => {
     "その他",
   ];
 
-  useEffect(() => {
-    fetchIssues();
-    fetchIssueTags();
-  }, []);
-
+  // Define fetch functions before useEffects
   const fetchIssues = useCallback(async () => {
     try {
       setLoading(true);
@@ -76,6 +72,12 @@ const IssuesPage = () => {
       setIssueTags([]);
     }
   }, []);
+
+  // Call fetch functions in useEffect after they are defined
+  useEffect(() => {
+    fetchIssues();
+    fetchIssueTags();
+  }, [fetchIssues, fetchIssueTags]);
 
   const getTagsForIssue = (issue: Issue): IssueTag[] => {
     if (!issue.issue_tags) return [];

@@ -106,7 +106,7 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
         clearTimeout(timeout);
       }
     };
-  }, [filters, performSearch]);
+  }, [filters, performSearch, searchTimeout]);
 
   const handleClearFilters = useCallback(() => {
     setFilters(DEFAULT_FILTERS);

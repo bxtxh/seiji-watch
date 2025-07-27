@@ -1,9 +1,11 @@
 """Base models and mixins for all Airtable-based models."""
 
 from datetime import datetime
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, Field
+
+T = TypeVar("T", bound="BaseRecord")
 
 
 class BaseRecord(BaseModel):
@@ -30,7 +32,7 @@ class BaseRecord(BaseModel):
         return fields
 
     @classmethod
-    def from_airtable_record(cls, record: dict[str, Any]) -> "BaseRecord":
+    def from_airtable_record(cls: type[T], record: dict[str, Any]) -> T:
         """Create model instance from Airtable record."""
         fields = record.get("fields", {})
 
