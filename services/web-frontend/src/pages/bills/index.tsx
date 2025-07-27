@@ -61,6 +61,71 @@ const BillsPage = () => {
 
   const router = useRouter();
 
+  // Define fetchBills early to avoid hoisting issues
+  const fetchBills = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
+
+      // Build search request
+      const searchRequest = {
+        query: searchQuery || undefined,
+        status: selectedStatus || undefined,
+        stage: selectedStage || undefined,
+        policy_category_ids: selectedCategory
+          ? [selectedCategory.id]
+          : undefined,
+        max_records: itemsPerPage * currentPage,
+      };
+
+      const response = await fetch(`${apiBaseUrl}/api/bills/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(searchRequest),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data: SearchResponse = await response.json();
+
+      if (data.success) {
+        setBills(data.results);
+        setTotalFound(data.total_found);
+      } else {
+        throw new Error("Failed to fetch bills");
+      }
+    } catch (err) {
+      console.error("Failed to fetch bills:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch bills");
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, selectedStatus, selectedStage, selectedCategory, currentPage, itemsPerPage]);
+
+  const fetchCategory = async (categoryId: string) => {
+    try {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
+      const response = await fetch(
+        `${apiBaseUrl}/api/issues/categories/${categoryId}`,
+      );
+
+      if (response.ok) {
+        const categoryData = await response.json();
+        setSelectedCategory(categoryData);
+      }
+    } catch (err) {
+      console.error("Failed to fetch category:", err);
+    }
+  };
+
   // Get initial filters from URL parameters
   useEffect(() => {
     const { query, status, stage, policy_category_id } = router.query;
