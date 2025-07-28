@@ -154,7 +154,7 @@ export default function BillDetailModal({
                   aria-current={activeTab === tab.id ? "page" : undefined}
                 >
                   {tab.label}
-                  {tab.count !== null && tab.count > 0 && (
+                  {tab.count != null && tab.count > 0 && (
                     <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2 rounded-full text-xs">
                       {tab.count}
                     </span>

@@ -4,54 +4,62 @@ Provides level-specific endpoints and hierarchical issue management.
 """
 
 import logging
-import os
 
 # Import the enhanced services
-import sys
 from datetime import datetime
-
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, validator
+from typing import Any
 
 # TODO: Replace with proper HTTP client calls to respective services
 # These are placeholder implementations to avoid cross-service imports
-
-from typing import Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field, validator
 
 from ..security.validation import InputValidator
+
 
 # Placeholder classes and types
 class BillData:
     """Placeholder for BillData. Should be replaced with proper API schema."""
+
     def __init__(self, **kwargs):
         pass
 
+
 class PolicyIssueExtractor:
     """Placeholder for PolicyIssueExtractor. Should be replaced with HTTP API calls."""
-    
-    async def extract_issues(self, text: str) -> List[Dict[str, Any]]:
+
+    async def extract_issues(self, text: str) -> list[dict[str, Any]]:
         """Placeholder method for issue extraction."""
-        logger.warning("PolicyIssueExtractor.extract_issues called - implement HTTP API call")
+        logger.warning(
+            "PolicyIssueExtractor.extract_issues called - implement HTTP API call"
+        )
         return []
+
 
 class DualLevelIssue:
     """Placeholder for DualLevelIssue. Should be replaced with proper API schema."""
+
     def __init__(self, **kwargs):
         # Store all passed kwargs as attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+
 class AirtableIssueManager:
     """Placeholder for Airtable issue management. Should be replaced with HTTP API calls."""
-    
-    async def get_issue_by_id(self, issue_id: str) -> Optional[Dict[str, Any]]:
+
+    async def get_issue_by_id(self, issue_id: str) -> dict[str, Any] | None:
         """Placeholder method for getting issue data."""
-        logger.warning("AirtableIssueManager.get_issue_by_id called - implement HTTP API call")
+        logger.warning(
+            "AirtableIssueManager.get_issue_by_id called - implement HTTP API call"
+        )
         return None
-    
-    async def get_issues_by_category(self, category_id: str) -> List[Dict[str, Any]]:
+
+    async def get_issues_by_category(self, category_id: str) -> list[dict[str, Any]]:
         """Placeholder method for getting issues by category."""
-        logger.warning("AirtableIssueManager.get_issues_by_category called - implement HTTP API call")
+        logger.warning(
+            "AirtableIssueManager.get_issues_by_category called - implement HTTP API call"
+        )
         return []
 
 

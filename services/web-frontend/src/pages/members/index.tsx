@@ -12,13 +12,15 @@ import Layout from "@/components/Layout";
 import { useObservability } from "@/lib/observability";
 
 interface Member {
-  member_id: string;
+  id: string;
   name: string;
   name_kana: string;
   house: "house_of_representatives" | "house_of_councillors";
   party: string;
   constituency: string;
   terms_served: number;
+  profile_image_url?: string | null;
+  created_at?: string;
 }
 
 const MembersPage: React.FC = () => {
@@ -185,7 +187,7 @@ const MembersPage: React.FC = () => {
             : "比例代表";
 
       members.push({
-        member_id: `member_${i.toString().padStart(3, "0")}`,
+        id: `member_${i.toString().padStart(3, "0")}`,
         name: `${familyName.kanji}${givenName.kanji}`,
         name_kana: `${familyName.kana}${givenName.kana}`,
         house,
@@ -214,16 +216,16 @@ const MembersPage: React.FC = () => {
             // Transform Airtable data to match the expected format
             if (Array.isArray(data) && data.length > 0) {
               const transformedMembers = data.map((record: any) => ({
-                member_id: record.id,
+                id: record.id,
                 name: record.fields?.Name || "",
                 name_kana: record.fields?.Name_Kana || "",
-                house: record.fields?.House === "衆議院" ? "house_of_representatives" : "house_of_councillors",
+                house: (record.fields?.House === "衆議院" ? "house_of_representatives" : "house_of_councillors") as "house_of_representatives" | "house_of_councillors",
                 party: record.fields?.Party_Name || "無所属",
                 constituency: record.fields?.Constituency || "",
                 terms_served: record.fields?.Terms_Served || 1,
                 profile_image_url: null,
                 created_at: record.fields?.Created_At || new Date().toISOString()
-              }));
+              })) as Member[];
               setAllMembers(transformedMembers);
               recordMetric({
                 name: "members.virtualized.loaded",
@@ -577,7 +579,7 @@ const MembersPage: React.FC = () => {
                         className="border-b border-gray-200 last:border-b-0"
                       >
                         <div
-                          onClick={() => handleMemberClick(member.member_id)}
+                          onClick={() => handleMemberClick(member.id)}
                           className="p-6 hover:bg-gray-50 cursor-pointer transition-colors h-full flex items-center"
                           data-testid="member-card"
                         >

@@ -13,10 +13,6 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
     null,
   );
 
-  useEffect(() => {
-    fetchVotingData();
-  }, [billNumber, fetchVotingData]);
-
   const fetchVotingData = useCallback(async () => {
     try {
       setLoading(true);
@@ -78,6 +74,10 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
       setLoading(false);
     }
   }, [billNumber]);
+
+  useEffect(() => {
+    fetchVotingData();
+  }, [billNumber, fetchVotingData]);
 
   const getVoteResultBadge = (result: string) => {
     const badgeClasses = {

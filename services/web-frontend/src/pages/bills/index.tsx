@@ -4,6 +4,7 @@ import Link from "next/link";
 import Layout from "@/components/Layout";
 import BillCard from "@/components/BillCard";
 import { Bill } from "@/types";
+import { api } from "@/lib/api-client";
 
 interface BillRecord {
   id: string;
@@ -67,9 +68,6 @@ const BillsPage = () => {
       setLoading(true);
       setError(null);
 
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
-
       // Build search request
       const searchRequest = {
         query: searchQuery || undefined,
@@ -81,19 +79,7 @@ const BillsPage = () => {
         max_records: itemsPerPage * currentPage,
       };
 
-      const response = await fetch(`${apiBaseUrl}/api/bills/search`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(searchRequest),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data: SearchResponse = await response.json();
+      const data = await api.bills.search(searchRequest) as SearchResponse;
 
       if (data.success) {
         setBills(data.results);
@@ -103,7 +89,11 @@ const BillsPage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch bills:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch bills");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("データの取得に失敗しました。APIサーバーが起動しているか確認してください。");
+      }
     } finally {
       setLoading(false);
     }
@@ -111,16 +101,8 @@ const BillsPage = () => {
 
   const fetchCategory = async (categoryId: string) => {
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
-      const response = await fetch(
-        `${apiBaseUrl}/api/issues/categories/${categoryId}`,
-      );
-
-      if (response.ok) {
-        const categoryData = await response.json();
-        setSelectedCategory(categoryData);
-      }
+      const categoryData = await api.categories.get(categoryId) as IssueCategory;
+      setSelectedCategory(categoryData);
     } catch (err) {
       console.error("Failed to fetch category:", err);
     }
@@ -158,70 +140,6 @@ const BillsPage = () => {
     currentPage,
     fetchBills,
   ]);
-
-  const fetchCategory = async (categoryId: string) => {
-    try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
-      const response = await fetch(
-        `${apiBaseUrl}/api/issues/categories/${categoryId}`,
-      );
-
-      if (response.ok) {
-        const categoryData = await response.json();
-        setSelectedCategory(categoryData);
-      }
-    } catch (err) {
-      console.error("Failed to fetch category:", err);
-    }
-  };
-
-  const fetchBills = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081";
-
-      // Build search request
-      const searchRequest = {
-        query: searchQuery || undefined,
-        status: selectedStatus || undefined,
-        stage: selectedStage || undefined,
-        policy_category_ids: selectedCategory
-          ? [selectedCategory.id]
-          : undefined,
-        max_records: itemsPerPage * currentPage,
-      };
-
-      const response = await fetch(`${apiBaseUrl}/api/bills/search`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(searchRequest),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data: SearchResponse = await response.json();
-
-      if (data.success) {
-        setBills(data.results);
-        setTotalFound(data.total_found);
-      } else {
-        throw new Error("Failed to fetch bills");
-      }
-    } catch (err) {
-      console.error("Failed to fetch bills:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch bills");
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, selectedStatus, selectedStage, selectedCategory, currentPage, itemsPerPage]);
 
   const convertBillRecordToBill = (billRecord: BillRecord): Bill => {
     return {
