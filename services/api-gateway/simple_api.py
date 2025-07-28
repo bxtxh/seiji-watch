@@ -3,12 +3,17 @@
 
 import os
 import asyncio
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import aiohttp
 from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -47,13 +52,24 @@ async def fetch_airtable(table_name: str, max_records: int = 100) -> List[Dict[s
     
     url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{table_name}?maxRecords={max_records}"
     
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as resp:
-            if resp.status == 200:
-                data = await resp.json()
-                return data.get("records", [])
-            else:
-                raise HTTPException(status_code=resp.status, detail=f"Airtable error: {await resp.text()}")
+    # Configure timeout
+    timeout = aiohttp.ClientTimeout(total=30)
+    
+    try:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url, headers=headers) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    return data.get("records", [])
+                else:
+                    logger.error(f"Airtable API error: {resp.status} - {await resp.text()}")
+                    raise HTTPException(status_code=resp.status, detail="Failed to fetch data")
+    except asyncio.TimeoutError:
+        logger.error(f"Timeout while fetching from Airtable table: {table_name}")
+        raise HTTPException(status_code=504, detail="Request timeout")
+    except Exception as e:
+        logger.error(f"Unexpected error fetching from Airtable: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/health")
 async def health_check():
@@ -80,7 +96,8 @@ async def get_bills(max_records: int = 100):
         bills = await fetch_airtable("Bills (法案)", max_records)
         return bills
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in get_bills: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/bills/search")
 async def search_bills_get(q: str = "", limit: int = 20, offset: int = 0, status: str = None):
@@ -119,9 +136,10 @@ async def search_bills_get(q: str = "", limit: int = 20, offset: int = 0, status
             }
         }
     except Exception as e:
+        logger.error(f"Error in search_bills_get: {str(e)}")
         return {
             "success": False,
-            "error": str(e),
+            "error": "Internal server error",
             "results": [],
             "total_found": 0
         }
@@ -161,9 +179,10 @@ async def search_bills(request: dict):
             }
         }
     except Exception as e:
+        logger.error(f"Error in search_bills: {str(e)}")
         return {
             "success": False,
-            "error": str(e),
+            "error": "Internal server error",
             "results": [],
             "total_found": 0
         }
@@ -175,6 +194,7 @@ async def get_categories(max_records: int = 100):
         categories = await fetch_airtable("IssueCategories", max_records)
         return categories
     except Exception as e:
+        logger.error(f"Error fetching categories: {str(e)}")
         # Return empty array if table doesn't exist
         return []
 
@@ -188,7 +208,8 @@ async def get_category(category_id: str):
                 return cat
         raise HTTPException(status_code=404, detail="Category not found")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in get_category: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/issues/categories/tree")
 async def get_categories_tree():
@@ -244,6 +265,7 @@ async def get_categories_tree():
             }
         ]
     except Exception as e:
+        logger.error(f"Error in get_categories_tree: {str(e)}")
         return []
 
 @app.get("/api/members/{member_id}")
@@ -275,9 +297,10 @@ async def get_member(member_id: str):
             "error": "Member not found"
         }
     except Exception as e:
+        logger.error(f"Error in get_member: {str(e)}")
         return {
             "success": False,
-            "error": str(e)
+            "error": "Internal server error"
         }
 
 @app.get("/api/members/{member_id}/voting-stats")
@@ -393,7 +416,8 @@ async def get_members(max_records: int = 100):
                 
         return members
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in get_members: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/speeches")
 async def get_speeches(max_records: int = 100):
@@ -402,7 +426,8 @@ async def get_speeches(max_records: int = 100):
         speeches = await fetch_airtable("Speeches (発言)", max_records)
         return speeches
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in get_speeches: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/api/issues/kanban")
 async def get_issues_kanban(range: str = "30d", max_per_stage: int = 8):
@@ -486,7 +511,7 @@ async def get_issues_kanban(range: str = "30d", max_per_stage: int = 8):
             }
         }
     except Exception as e:
-        print(f"Error fetching kanban data: {e}")
+        logger.error(f"Error fetching kanban data: {str(e)}")
         return {
             "success": True,
             "data": {
@@ -561,6 +586,7 @@ async def get_issues(limit: int = 20, offset: int = 0, category: str = None, tag
             "offset": offset
         }
     except Exception as e:
+        logger.error(f"Error in get_issues: {str(e)}")
         return {
             "success": False,
             "issues": [],
@@ -615,9 +641,10 @@ async def get_issue(issue_id: str):
             "error": "Issue not found"
         }
     except Exception as e:
+        logger.error(f"Error in get_issue: {str(e)}")
         return {
             "success": False,
-            "error": str(e)
+            "error": "Internal server error"
         }
 
 @app.get("/api/issues/{issue_id}/bills")
@@ -631,10 +658,11 @@ async def get_issue_bills(issue_id: str):
             "bills": []
         }
     except Exception as e:
+        logger.error(f"Error in get_issue_bills: {str(e)}")
         return {
             "success": False,
             "bills": [],
-            "error": str(e)
+            "error": "Internal server error"
         }
 
 @app.get("/api/issues/tags")
@@ -669,6 +697,7 @@ async def get_issue_tags():
             "tags": tag_list
         }
     except Exception as e:
+        logger.error(f"Error in get_issue_tags: {str(e)}")
         return {
             "success": False,
             "tags": []
