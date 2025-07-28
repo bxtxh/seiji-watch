@@ -8,20 +8,33 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import aiohttp
 from typing import Any, Dict, List, Optional
+from dotenv import load_dotenv
 
 # Load environment variables
-AIRTABLE_PAT = "patzu6qz1qNDVGZqL.7feb60b33535807523001c8ee9d368040fe757652b387f9e333f688583747144"
-AIRTABLE_BASE_ID = "appA9UGcgf3NhdnK9"
+load_dotenv()
+
+# Get environment variables with validation
+AIRTABLE_PAT = os.getenv("AIRTABLE_PAT")
+AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID")
+
+if not AIRTABLE_PAT:
+    raise ValueError("AIRTABLE_PAT environment variable is required")
+if not AIRTABLE_BASE_ID:
+    raise ValueError("AIRTABLE_BASE_ID environment variable is required")
 
 app = FastAPI(title="Diet Issue Tracker API (Simplified)")
 
-# CORS設定
+# CORS設定 - More restrictive configuration
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001").split(",")
+cors_methods = os.getenv("CORS_ALLOW_METHODS", "GET,POST,PUT,DELETE,OPTIONS").split(",")
+cors_headers = os.getenv("CORS_ALLOW_HEADERS", "Content-Type,Authorization").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=cors_methods,
+    allow_headers=cors_headers,
 )
 
 # Airtable helper
