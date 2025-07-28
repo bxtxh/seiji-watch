@@ -211,11 +211,23 @@ const MembersPage: React.FC = () => {
           );
           if (response.ok) {
             const data = await response.json();
-            if (data.success && data.members.length > 0) {
-              setAllMembers(data.members);
+            // Transform Airtable data to match the expected format
+            if (Array.isArray(data) && data.length > 0) {
+              const transformedMembers = data.map((record: any) => ({
+                member_id: record.id,
+                name: record.fields?.Name || "",
+                name_kana: record.fields?.Name_Kana || "",
+                house: record.fields?.House === "衆議院" ? "house_of_representatives" : "house_of_councillors",
+                party: record.fields?.Party_Name || "無所属",
+                constituency: record.fields?.Constituency || "",
+                terms_served: record.fields?.Terms_Served || 1,
+                profile_image_url: null,
+                created_at: record.fields?.Created_At || new Date().toISOString()
+              }));
+              setAllMembers(transformedMembers);
               recordMetric({
                 name: "members.virtualized.loaded",
-                value: data.members.length,
+                value: transformedMembers.length,
                 timestamp: Date.now(),
                 tags: { source: "api" },
               });
