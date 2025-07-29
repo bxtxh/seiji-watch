@@ -47,8 +47,15 @@ const MembersPage: React.FC = () => {
     recordPageView("members_virtualized");
   }, [recordPageView]);
 
+  // Memoized mock data cache
+  const mockMembersCache = useRef<Member[] | null>(null);
+
   // Generate comprehensive mock data for 700+ members
   const generateMockMembers = useCallback((): Member[] => {
+    // Return cached data if available
+    if (mockMembersCache.current) {
+      return mockMembersCache.current;
+    }
     const parties = [
       "自由民主党",
       "立憲民主党",
@@ -197,7 +204,10 @@ const MembersPage: React.FC = () => {
       });
     }
 
-    return members.sort((a, b) => a.name.localeCompare(b.name, "ja"));
+    const sortedMembers = members.sort((a, b) => a.name.localeCompare(b.name, "ja"));
+    // Cache the generated data
+    mockMembersCache.current = sortedMembers;
+    return sortedMembers;
   }, []);
 
   useEffect(() => {

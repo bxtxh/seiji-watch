@@ -135,7 +135,7 @@ const IssueCard = React.memo(function IssueCard({
         <div className="flex flex-wrap gap-1">
           {issue.tags.slice(0, 3).map((tag, index) => (
             <span
-              key={index}
+              key={`tag-${tag}-${index}`}
               className={`px-2 py-1 text-xs rounded-full font-medium ${getTagColor(index)}`}
               title={tag}
             >
@@ -162,7 +162,7 @@ const IssueCard = React.memo(function IssueCard({
           <div className="space-y-1">
             {issue.related_bills.slice(0, 2).map((bill, index) => (
               <div
-                key={index}
+                key={`bill-${bill.bill_id}-${index}`}
                 className="p-2 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
