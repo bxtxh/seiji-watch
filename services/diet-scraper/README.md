@@ -5,6 +5,7 @@ Data collection service for the Diet Issue Tracker that scrapes information from
 ## Overview
 
 This service is responsible for:
+
 - Scraping bill information from Diet websites
 - Collecting transcript data (TXT/PDF)
 - Processing Diet TV video links (HLS)

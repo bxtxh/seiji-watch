@@ -46,10 +46,10 @@ const IssueDetailPage = ({
   const { id } = router.query;
   const [issue, setIssue] = useState<ExtendedIssue | null>(initialIssue);
   const [relatedBills, setRelatedBills] = useState<Bill[]>(
-    initialRelatedBills || [],
+    initialRelatedBills || []
   );
   const [issueTags, setIssueTags] = useState<IssueTag[]>(
-    initialIssueTags || [],
+    initialIssueTags || []
   );
   const [loading, setLoading] = useState(!initialIssue && !error);
   const [activeTab, setActiveTab] = useState<
@@ -85,13 +85,15 @@ const IssueDetailPage = ({
         const tagsData = await tagsResponse.json();
         if (tagsData.success && tagsData.tags) {
           // API returns tags as array of {name, count} objects
-          const transformedTags = tagsData.tags.map((tag: any, index: number) => ({
-            id: `tag-${index}`,
-            name: tag.name || "",
-            color_code: "#3B82F6",
-            category: "",
-            description: undefined,
-          }));
+          const transformedTags = tagsData.tags.map(
+            (tag: any, index: number) => ({
+              id: `tag-${index}`,
+              name: tag.name || "",
+              color_code: "#3B82F6",
+              category: "",
+              description: undefined,
+            })
+          );
           setIssueTags(transformedTags);
         }
       }
@@ -151,7 +153,7 @@ const IssueDetailPage = ({
         transcript_url: "#",
       },
     ],
-    [],
+    []
   );
 
   const transformIssueData = (data: any): ExtendedIssue => ({

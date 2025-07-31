@@ -4,103 +4,103 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment'
+        description: "Target environment"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
-        - staging
-        - production
+          - staging
+          - production
 
 jobs:
   sync-and-deploy:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       id-token: write
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-    
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-    
-    - name: Sync Airtable PAT to GCP
-      run: |
-        echo "Syncing AIRTABLE_PAT to GCP Secret Manager..."
-        echo "${{ secrets.AIRTABLE_PAT }}" | gcloud secrets versions add seiji-watch-airtable-pat-${{ github.event.inputs.environment }} --data-file=-
-        echo "✅ Airtable PAT synced successfully"
-    
-    - name: Sync Airtable Base ID to GCP
-      run: |
-        echo "Syncing AIRTABLE_BASE_ID to GCP Secret Manager..."
-        echo "${{ secrets.AIRTABLE_BASE_ID }}" | gcloud secrets versions add seiji-watch-airtable-base-id-${{ github.event.inputs.environment }} --data-file=-
-        echo "✅ Airtable Base ID synced successfully"
-    
-    - name: Update API Gateway with new secrets
-      if: github.event.inputs.environment == 'staging'
-      run: |
-        echo "🔄 Updating API Gateway with new secrets..."
-        gcloud run services update seiji-watch-api-gateway-staging \
-          --region=asia-northeast1 \
-          --timeout=300
-        echo "✅ API Gateway updated successfully"
-    
-    - name: Wait for deployment
-      if: github.event.inputs.environment == 'staging'
-      run: |
-        echo "⏳ Waiting for service to restart..."
-        sleep 30
-    
-    - name: Verify API Gateway health
-      if: github.event.inputs.environment == 'staging'
-      run: |
-        echo "🧪 Testing API Gateway health..."
-        curl -f "https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/health" \
-          || (echo "❌ Health check failed" && exit 1)
-        echo "✅ API Gateway health check passed"
-    
-    - name: Test real data access
-      if: github.event.inputs.environment == 'staging'
-      run: |
-        echo "🧪 Testing real data access..."
-        response=$(curl -s "https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/api/bills/search?q=test&max_records=1")
-        echo "API Response: $response"
-        
-        # Check if response contains error
-        if echo "$response" | grep -q '"detail".*"error"'; then
-          echo "⚠️ API still returning errors"
-          echo "This might be expected if Airtable table structure is different"
-        else
-          echo "✅ Real data API test successful"
-        fi
-    
-    - name: Update frontend to use API Gateway
-      if: github.event.inputs.environment == 'staging'
-      run: |
-        echo "✅ Frontend already configured to use API Gateway URL"
-        echo "🌐 Frontend: https://staging.politics-watch.jp"
-        echo "🔗 API Gateway: https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app"
-    
-    - name: Summary
-      if: github.event.inputs.environment == 'staging'
-      run: |
-        echo "🎯 Deployment Summary:"
-        echo "────────────────────────"
-        echo "✅ GitHub Secrets synced to GCP Secret Manager"
-        echo "✅ API Gateway updated with real Airtable credentials"
-        echo "✅ Health checks passed"
-        echo "🧪 Ready for external testing with real 第217回国会 data"
-        echo ""
-        echo "🔗 Test URLs:"
-        echo "  Frontend: https://staging.politics-watch.jp"
-        echo "  API Health: https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/health"
-        echo "  API Docs: https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/docs"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Sync Airtable PAT to GCP
+        run: |
+          echo "Syncing AIRTABLE_PAT to GCP Secret Manager..."
+          echo "${{ secrets.AIRTABLE_PAT }}" | gcloud secrets versions add seiji-watch-airtable-pat-${{ github.event.inputs.environment }} --data-file=-
+          echo "✅ Airtable PAT synced successfully"
+
+      - name: Sync Airtable Base ID to GCP
+        run: |
+          echo "Syncing AIRTABLE_BASE_ID to GCP Secret Manager..."
+          echo "${{ secrets.AIRTABLE_BASE_ID }}" | gcloud secrets versions add seiji-watch-airtable-base-id-${{ github.event.inputs.environment }} --data-file=-
+          echo "✅ Airtable Base ID synced successfully"
+
+      - name: Update API Gateway with new secrets
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "🔄 Updating API Gateway with new secrets..."
+          gcloud run services update seiji-watch-api-gateway-staging \
+            --region=asia-northeast1 \
+            --timeout=300
+          echo "✅ API Gateway updated successfully"
+
+      - name: Wait for deployment
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "⏳ Waiting for service to restart..."
+          sleep 30
+
+      - name: Verify API Gateway health
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "🧪 Testing API Gateway health..."
+          curl -f "https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/health" \
+            || (echo "❌ Health check failed" && exit 1)
+          echo "✅ API Gateway health check passed"
+
+      - name: Test real data access
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "🧪 Testing real data access..."
+          response=$(curl -s "https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/api/bills/search?q=test&max_records=1")
+          echo "API Response: $response"
+
+          # Check if response contains error
+          if echo "$response" | grep -q '"detail".*"error"'; then
+            echo "⚠️ API still returning errors"
+            echo "This might be expected if Airtable table structure is different"
+          else
+            echo "✅ Real data API test successful"
+          fi
+
+      - name: Update frontend to use API Gateway
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "✅ Frontend already configured to use API Gateway URL"
+          echo "🌐 Frontend: https://staging.politics-watch.jp"
+          echo "🔗 API Gateway: https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app"
+
+      - name: Summary
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "🎯 Deployment Summary:"
+          echo "────────────────────────"
+          echo "✅ GitHub Secrets synced to GCP Secret Manager"
+          echo "✅ API Gateway updated with real Airtable credentials"
+          echo "✅ Health checks passed"
+          echo "🧪 Ready for external testing with real 第217回国会 data"
+          echo ""
+          echo "🔗 Test URLs:"
+          echo "  Frontend: https://staging.politics-watch.jp"
+          echo "  API Health: https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/health"
+          echo "  API Docs: https://seiji-watch-api-gateway-staging-496359339214.asia-northeast1.run.app/docs"

@@ -37,7 +37,7 @@ const MembersPage: React.FC = () => {
   const [houseFilter, setHouseFilter] = useState<string>("");
   const [partyFilter, setPartyFilter] = useState<string>("");
   const [searchMode, setSearchMode] = useState<"auto" | "hiragana" | "romaji">(
-    "auto",
+    "auto"
   );
 
   const API_BASE_URL =
@@ -204,7 +204,9 @@ const MembersPage: React.FC = () => {
       });
     }
 
-    const sortedMembers = members.sort((a, b) => a.name.localeCompare(b.name, "ja"));
+    const sortedMembers = members.sort((a, b) =>
+      a.name.localeCompare(b.name, "ja")
+    );
     // Cache the generated data
     mockMembersCache.current = sortedMembers;
     return sortedMembers;
@@ -219,7 +221,7 @@ const MembersPage: React.FC = () => {
         // Try to fetch from API first, fallback to mock data
         try {
           const response = await fetch(
-            `${API_BASE_URL}/api/members?limit=1000`,
+            `${API_BASE_URL}/api/members?limit=1000`
           );
           if (response.ok) {
             const data = await response.json();
@@ -229,12 +231,17 @@ const MembersPage: React.FC = () => {
                 id: record.id,
                 name: record.fields?.Name || "",
                 name_kana: record.fields?.Name_Kana || "",
-                house: (record.fields?.House === "衆議院" ? "house_of_representatives" : "house_of_councillors") as "house_of_representatives" | "house_of_councillors",
+                house: (record.fields?.House === "衆議院"
+                  ? "house_of_representatives"
+                  : "house_of_councillors") as
+                  | "house_of_representatives"
+                  | "house_of_councillors",
                 party: record.fields?.Party_Name || "無所属",
                 constituency: record.fields?.Constituency || "",
                 terms_served: record.fields?.Terms_Served || 1,
                 profile_image_url: null,
-                created_at: record.fields?.Created_At || new Date().toISOString()
+                created_at:
+                  record.fields?.Created_At || new Date().toISOString(),
               })) as Member[];
               setAllMembers(transformedMembers);
               recordMetric({
@@ -325,7 +332,7 @@ const MembersPage: React.FC = () => {
             member.name.toLowerCase().includes(term) ||
             member.name_kana.includes(term) ||
             member.party.toLowerCase().includes(term) ||
-            member.constituency.toLowerCase().includes(term),
+            member.constituency.toLowerCase().includes(term)
         );
       });
     }
@@ -345,14 +352,14 @@ const MembersPage: React.FC = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value);
     },
-    [],
+    []
   );
 
   const handleMemberClick = useCallback(
     (memberId: string) => {
       router.push(`/members/${memberId}`);
     },
-    [router],
+    [router]
   );
 
   const getHouseLabel = (house: string) => {
@@ -472,7 +479,7 @@ const MembersPage: React.FC = () => {
                     衆議院 (
                     {
                       allMembers.filter(
-                        (m) => m.house === "house_of_representatives",
+                        (m) => m.house === "house_of_representatives"
                       ).length
                     }
                     名)
@@ -481,7 +488,7 @@ const MembersPage: React.FC = () => {
                     参議院 (
                     {
                       allMembers.filter(
-                        (m) => m.house === "house_of_councillors",
+                        (m) => m.house === "house_of_councillors"
                       ).length
                     }
                     名)

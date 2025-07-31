@@ -5,6 +5,7 @@ Email notification service for the Diet Issue Tracker.
 ## Overview
 
 This service handles:
+
 - Daily batch email notifications (22:00 JST)
 - Issue progress alerts (bill stage changes, committee meetings)
 - SendGrid integration for email delivery

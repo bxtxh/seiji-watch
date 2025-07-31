@@ -28,34 +28,39 @@ interface SearchResponse {
   };
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<SearchResponse>) {
+export default function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<SearchResponse>
+) {
   if (req.method === "GET") {
     const { q, status, stage, limit = 20 } = req.query;
-    
+
     let filteredBills = mockBills as BillRecord[];
-    
+
     // Apply search query filter
     if (q && typeof q === "string") {
-      filteredBills = filteredBills.filter(bill => 
-        bill.fields.Name.toLowerCase().includes(q.toLowerCase()) ||
-        (bill.fields.Summary && bill.fields.Summary.toLowerCase().includes(q.toLowerCase()))
+      filteredBills = filteredBills.filter(
+        (bill) =>
+          bill.fields.Name.toLowerCase().includes(q.toLowerCase()) ||
+          (bill.fields.Summary &&
+            bill.fields.Summary.toLowerCase().includes(q.toLowerCase()))
       );
     }
-    
+
     // Apply status filter
     if (status && typeof status === "string") {
-      filteredBills = filteredBills.filter(bill => 
-        bill.fields.Bill_Status === status
+      filteredBills = filteredBills.filter(
+        (bill) => bill.fields.Bill_Status === status
       );
     }
-    
+
     // Apply stage filter
     if (stage && typeof stage === "string") {
-      filteredBills = filteredBills.filter(bill => 
-        bill.fields.Stage === stage
+      filteredBills = filteredBills.filter(
+        (bill) => bill.fields.Stage === stage
       );
     }
-    
+
     // Apply limit
     const limitNum = parseInt(limit as string, 10);
     if (!isNaN(limitNum) && limitNum > 0) {
@@ -70,7 +75,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Search
       filters: {
         status: status as string,
         stage: stage as string,
-      }
+      },
     });
   } else {
     res.setHeader("Allow", ["GET"]);

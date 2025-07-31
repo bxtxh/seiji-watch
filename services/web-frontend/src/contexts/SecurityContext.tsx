@@ -21,7 +21,7 @@ interface SecurityContextType {
 }
 
 const SecurityContext = createContext<SecurityContextType | undefined>(
-  undefined,
+  undefined
 );
 
 interface SecurityProviderProps {
@@ -60,7 +60,7 @@ export function SecurityProvider({ children }: SecurityProviderProps) {
         const newToken = CSRFProtection.generateToken();
         setCsrfToken(newToken);
       },
-      30 * 60 * 1000,
+      30 * 60 * 1000
     ); // 30 minutes
 
     return () => clearInterval(refreshInterval);
@@ -105,7 +105,7 @@ export function useSecurityContext(): SecurityContextType {
   const context = useContext(SecurityContext);
   if (context === undefined) {
     throw new Error(
-      "useSecurityContext must be used within a SecurityProvider",
+      "useSecurityContext must be used within a SecurityProvider"
     );
   }
   return context;
@@ -113,7 +113,7 @@ export function useSecurityContext(): SecurityContextType {
 
 // Higher-order component for protecting components
 export function withSecurityContext<P extends object>(
-  Component: React.ComponentType<P>,
+  Component: React.ComponentType<P>
 ): React.ComponentType<P> {
   return function SecuredComponent(props: P) {
     const security = useSecurityContext();
@@ -133,7 +133,7 @@ export function withSecurityContext<P extends object>(
 // Hook for secure form submission
 export function useSecureForm() {
   const security = useSecurityContext();
-  
+
   // Check if we're in SSR environment
   if (typeof window === "undefined") {
     return {
@@ -175,7 +175,7 @@ export function useSecureForm() {
 // Security event logging
 export function useSecurityLogger() {
   const security = useSecurityContext();
-  
+
   // Check if we're in SSR environment
   if (typeof window === "undefined") {
     return {
@@ -189,7 +189,7 @@ export function useSecurityLogger() {
       | "rate_limit_exceeded"
       | "invalid_input"
       | "security_error",
-    details?: Record<string, any>,
+    details?: Record<string, any>
   ) => {
     const logEntry = {
       timestamp: new Date().toISOString(),

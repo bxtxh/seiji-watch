@@ -23,7 +23,7 @@ test.describe("Member List - T64 Implementation", () => {
 
     // Check if member count is displayed
     await expect(
-      page.locator("text=/\d+名の議員が登録されています/"),
+      page.locator("text=/\d+名の議員が登録されています/")
     ).toBeVisible();
 
     // Check if search box is present
@@ -104,12 +104,12 @@ test.describe("Member List - T64 Implementation", () => {
 
     // Check virtual scrolling indicator
     await expect(
-      page.locator("text=/仮想スクロール: \d+名中 \d+名を表示中/"),
+      page.locator("text=/仮想スクロール: \d+名中 \d+名を表示中/")
     ).toBeVisible();
 
     // Test scrolling performance
     const scrollContainer = page.locator(
-      '[data-testid="virtual-scroll-container"]',
+      '[data-testid="virtual-scroll-container"]'
     );
 
     // Scroll down multiple times
@@ -120,7 +120,7 @@ test.describe("Member List - T64 Implementation", () => {
 
     // Should still show virtual scrolling indicator
     await expect(
-      page.locator("text=/仮想スクロール: \d+名中 \d+名を表示中/"),
+      page.locator("text=/仮想スクロール: \d+名中 \d+名を表示中/")
     ).toBeVisible();
 
     // Should maintain performance (no frozen UI)
@@ -141,7 +141,7 @@ test.describe("Member List - T64 Implementation", () => {
 
     // Should show member details
     await expect(page.locator("h1")).toContainText(
-      /田中|佐藤|鈴木|高橋|伊藤|渡辺|山本|中村|小林|加藤|吉田|山田|佐々木|山口|松本|井上|木村|林|斎藤|清水|山崎|森|池田|橋本|阿部|石川|前田|藤原|後藤|近藤/,
+      /田中|佐藤|鈴木|高橋|伊藤|渡辺|山本|中村|小林|加藤|吉田|山田|佐々木|山口|松本|井上|木村|林|斎藤|清水|山崎|森|池田|橋本|阿部|石川|前田|藤原|後藤|近藤/
     );
   });
 
@@ -224,7 +224,7 @@ test.describe("Member List - T64 Implementation", () => {
 
     // Should still show some data (mock fallback)
     await expect(
-      page.locator("text=/\d+名の議員が登録されています/"),
+      page.locator("text=/\d+名の議員が登録されています/")
     ).toBeVisible();
   });
 });

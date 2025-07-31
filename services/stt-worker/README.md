@@ -5,6 +5,7 @@ Speech-to-text processing service for the Diet Issue Tracker.
 ## Overview
 
 This service handles:
+
 - Audio extraction from Diet TV streams using yt-dlp
 - Speech-to-text conversion using OpenAI Whisper
 - Async job processing via message queue

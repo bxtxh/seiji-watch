@@ -12,11 +12,13 @@
    - **DO NOT** reuse the exposed token
 
 2. **Create .env File**
+
    ```bash
    cp .env.template .env
    ```
 
 3. **Update .env with Your Credentials**
+
    ```
    AIRTABLE_PAT=your_new_pat_here
    AIRTABLE_BASE_ID=appA9UGcgf3NhdnK9

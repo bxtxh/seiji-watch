@@ -3,17 +3,17 @@
  * Advanced search interface for dual-level policy issues
  */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { 
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import {
   MagnifyingGlassIcon,
   FunnelIcon,
   XMarkIcon,
   AdjustmentsHorizontalIcon,
   ChartBarIcon,
-  CalendarIcon
-} from '@heroicons/react/24/outline';
-import { DualLevelToggle } from './DualLevelToggle';
-import { IssueCard, Issue } from './IssueCard';
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
+import { DualLevelToggle } from "./DualLevelToggle";
+import { IssueCard, Issue } from "./IssueCard";
 
 export interface SearchFilters {
   query: string;
@@ -35,22 +35,22 @@ export interface IssueSearchProps {
 }
 
 const DEFAULT_FILTERS: SearchFilters = {
-  query: '',
-  status: 'approved',
+  query: "",
+  status: "approved",
   minConfidence: 0,
   minQuality: 0,
-  maxRecords: 50
+  maxRecords: 50,
 };
 
 export const IssueSearch: React.FC<IssueSearchProps> = ({
   onSearch,
   initialFilters = {},
   showAdvancedFilters = false,
-  className = ''
+  className = "",
 }) => {
   const [filters, setFilters] = useState<SearchFilters>({
     ...DEFAULT_FILTERS,
-    ...initialFilters
+    ...initialFilters,
   });
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(showAdvancedFilters);
   const [isSearching, setIsSearching] = useState(false);
@@ -58,34 +58,41 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
   const [searchError, setSearchError] = useState<string | null>(null);
 
   // Debounced search
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
-  const handleFilterChange = useCallback(<K extends keyof SearchFilters>(
-    key: K,
-    value: SearchFilters[K]
-  ) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const handleFilterChange = useCallback(
+    <K extends keyof SearchFilters>(key: K, value: SearchFilters[K]) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
 
-  const performSearch = useCallback(async (searchFilters: SearchFilters) => {
-    if (!searchFilters.query.trim()) {
-      setSearchResults([]);
-      return;
-    }
+  const performSearch = useCallback(
+    async (searchFilters: SearchFilters) => {
+      if (!searchFilters.query.trim()) {
+        setSearchResults([]);
+        return;
+      }
 
-    setIsSearching(true);
-    setSearchError(null);
+      setIsSearching(true);
+      setSearchError(null);
 
-    try {
-      const results = await onSearch(searchFilters);
-      setSearchResults(results);
-    } catch (error) {
-      setSearchError(error instanceof Error ? error.message : '検索に失敗しました');
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [onSearch]);
+      try {
+        const results = await onSearch(searchFilters);
+        setSearchResults(results);
+      } catch (error) {
+        setSearchError(
+          error instanceof Error ? error.message : "検索に失敗しました"
+        );
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [onSearch]
+  );
 
   // Debounced search trigger
   useEffect(() => {
@@ -121,7 +128,7 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.level) count++;
-    if (filters.status !== 'approved') count++;
+    if (filters.status !== "approved") count++;
     if (filters.minConfidence > 0) count++;
     if (filters.minQuality > 0) count++;
     if (filters.billId) count++;
@@ -137,24 +144,25 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
       <div className="bg-white rounded-lg border shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">政策課題検索</h2>
-          
+
           <div className="flex items-center space-x-3">
             {/* Level Toggle */}
             {filters.level && (
               <DualLevelToggle
                 currentLevel={filters.level}
-                onLevelChange={(level) => handleFilterChange('level', level)}
+                onLevelChange={(level) => handleFilterChange("level", level)}
               />
             )}
-            
+
             {/* Advanced Filters Toggle */}
             <button
               onClick={handleToggleAdvanced}
               className={`
                 flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150
-                ${isAdvancedOpen 
-                  ? 'text-blue-700 bg-blue-50 border border-blue-200' 
-                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                ${
+                  isAdvancedOpen
+                    ? "text-blue-700 bg-blue-50 border border-blue-200"
+                    : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                 }
               `}
             >
@@ -177,7 +185,7 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
           <input
             type="text"
             value={filters.query}
-            onChange={(e) => handleFilterChange('query', e.target.value)}
+            onChange={(e) => handleFilterChange("query", e.target.value)}
             className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             placeholder="政策課題を検索（例：介護制度、環境保護、税制改革）"
           />
@@ -193,8 +201,15 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                   表示レベル
                 </label>
                 <select
-                  value={filters.level || ''}
-                  onChange={(e) => handleFilterChange('level', e.target.value ? parseInt(e.target.value) as 1 | 2 : undefined)}
+                  value={filters.level || ""}
+                  onChange={(e) =>
+                    handleFilterChange(
+                      "level",
+                      e.target.value
+                        ? (parseInt(e.target.value) as 1 | 2)
+                        : undefined
+                    )
+                  }
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">すべて</option>
@@ -210,7 +225,7 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                 </label>
                 <select
                   value={filters.status}
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  onChange={(e) => handleFilterChange("status", e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="approved">承認済み</option>
@@ -233,7 +248,12 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                     max="1"
                     step="0.1"
                     value={filters.minConfidence}
-                    onChange={(e) => handleFilterChange('minConfidence', parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "minConfidence",
+                        parseFloat(e.target.value)
+                      )
+                    }
                     className="flex-1"
                   />
                   <ChartBarIcon className="w-4 h-4 text-gray-400" />
@@ -252,7 +272,12 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                     max="1"
                     step="0.1"
                     value={filters.minQuality}
-                    onChange={(e) => handleFilterChange('minQuality', parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "minQuality",
+                        parseFloat(e.target.value)
+                      )
+                    }
                     className="flex-1"
                   />
                   <ChartBarIcon className="w-4 h-4 text-gray-400" />
@@ -266,8 +291,10 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                 </label>
                 <input
                   type="text"
-                  value={filters.billId || ''}
-                  onChange={(e) => handleFilterChange('billId', e.target.value || undefined)}
+                  value={filters.billId || ""}
+                  onChange={(e) =>
+                    handleFilterChange("billId", e.target.value || undefined)
+                  }
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="例：bill_001"
                 />
@@ -280,7 +307,9 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                 </label>
                 <select
                   value={filters.maxRecords}
-                  onChange={(e) => handleFilterChange('maxRecords', parseInt(e.target.value))}
+                  onChange={(e) =>
+                    handleFilterChange("maxRecords", parseInt(e.target.value))
+                  }
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value={10}>10件</option>
@@ -301,8 +330,13 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                 <div className="relative">
                   <input
                     type="date"
-                    value={filters.dateFrom || ''}
-                    onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
+                    value={filters.dateFrom || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "dateFrom",
+                        e.target.value || undefined
+                      )
+                    }
                     className="block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                   <CalendarIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -316,8 +350,10 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                 <div className="relative">
                   <input
                     type="date"
-                    value={filters.dateTo || ''}
-                    onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
+                    value={filters.dateTo || ""}
+                    onChange={(e) =>
+                      handleFilterChange("dateTo", e.target.value || undefined)
+                    }
                     className="block w-full px-3 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   />
                   <CalendarIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -336,7 +372,8 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
               </button>
 
               <div className="text-sm text-gray-600">
-                {activeFilterCount > 0 && `${activeFilterCount}個のフィルターが適用中`}
+                {activeFilterCount > 0 &&
+                  `${activeFilterCount}個のフィルターが適用中`}
               </div>
             </div>
           </div>
@@ -357,7 +394,7 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
                 </div>
               )}
             </div>
-            
+
             {searchResults.length > 0 && (
               <div className="text-sm text-gray-600">
                 {searchResults.length}件の課題が見つかりました
@@ -380,21 +417,26 @@ export const IssueSearch: React.FC<IssueSearchProps> = ({
         )}
 
         {/* Empty State */}
-        {!isSearching && !searchError && filters.query.trim() && searchResults.length === 0 && (
-          <div className="bg-gray-50 rounded-lg p-8 text-center">
-            <MagnifyingGlassIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">検索結果がありません</h3>
-            <p className="text-gray-600 mb-4">
-              「{filters.query}」に一致する政策課題が見つかりませんでした。
-            </p>
-            <button
-              onClick={handleClearFilters}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-150"
-            >
-              検索条件をリセット
-            </button>
-          </div>
-        )}
+        {!isSearching &&
+          !searchError &&
+          filters.query.trim() &&
+          searchResults.length === 0 && (
+            <div className="bg-gray-50 rounded-lg p-8 text-center">
+              <MagnifyingGlassIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                検索結果がありません
+              </h3>
+              <p className="text-gray-600 mb-4">
+                「{filters.query}」に一致する政策課題が見つかりませんでした。
+              </p>
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors duration-150"
+              >
+                検索条件をリセット
+              </button>
+            </div>
+          )}
 
         {/* Results List */}
         {searchResults.length > 0 && (
@@ -422,51 +464,64 @@ export const useIssueSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const search = useCallback(async (filters: SearchFilters): Promise<Issue[]> => {
-    setIsLoading(true);
-    setError(null);
+  const search = useCallback(
+    async (filters: SearchFilters): Promise<Issue[]> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const queryParams = new URLSearchParams();
-      
-      if (filters.query) queryParams.append('query', filters.query);
-      if (filters.level) queryParams.append('level', filters.level.toString());
-      if (filters.status) queryParams.append('status', filters.status);
-      if (filters.minConfidence > 0) queryParams.append('min_confidence', filters.minConfidence.toString());
-      if (filters.minQuality > 0) queryParams.append('min_quality', filters.minQuality.toString());
-      if (filters.billId) queryParams.append('bill_id', filters.billId);
-      if (filters.dateFrom) queryParams.append('date_from', filters.dateFrom);
-      if (filters.dateTo) queryParams.append('date_to', filters.dateTo);
-      queryParams.append('max_records', filters.maxRecords.toString());
+      try {
+        const queryParams = new URLSearchParams();
 
-      const response = await fetch(`/api/issues/search?${queryParams.toString()}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(filters),
-      });
+        if (filters.query) queryParams.append("query", filters.query);
+        if (filters.level)
+          queryParams.append("level", filters.level.toString());
+        if (filters.status) queryParams.append("status", filters.status);
+        if (filters.minConfidence > 0)
+          queryParams.append(
+            "min_confidence",
+            filters.minConfidence.toString()
+          );
+        if (filters.minQuality > 0)
+          queryParams.append("min_quality", filters.minQuality.toString());
+        if (filters.billId) queryParams.append("bill_id", filters.billId);
+        if (filters.dateFrom) queryParams.append("date_from", filters.dateFrom);
+        if (filters.dateTo) queryParams.append("date_to", filters.dateTo);
+        queryParams.append("max_records", filters.maxRecords.toString());
 
-      if (!response.ok) {
-        throw new Error('Search request failed');
+        const response = await fetch(
+          `/api/issues/search?${queryParams.toString()}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(filters),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Search request failed");
+        }
+
+        const data = await response.json();
+        return data.results || [];
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-      return data.results || [];
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   return {
     search,
     isLoading,
     error,
-    clearError: () => setError(null)
+    clearError: () => setError(null),
   };
 };
 

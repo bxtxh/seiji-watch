@@ -89,13 +89,13 @@ test.describe("Performance Tests", () => {
 
     // Check performance requirements
     expect(domContentLoadedTime).toBeLessThan(
-      performanceThresholds.domContentLoaded,
+      performanceThresholds.domContentLoaded
     );
     expect(fullLoadTime).toBeLessThan(performanceThresholds.pageLoad);
 
     if (metrics.firstContentfulPaint > 0) {
       expect(metrics.firstContentfulPaint).toBeLessThan(
-        performanceThresholds.firstContentfulPaint,
+        performanceThresholds.firstContentfulPaint
       );
     }
   });
@@ -127,7 +127,7 @@ test.describe("Performance Tests", () => {
 
     // Mobile-specific thresholds (more lenient)
     expect(domContentLoadedTime).toBeLessThan(
-      performanceThresholds.mobile.domContentLoaded,
+      performanceThresholds.mobile.domContentLoaded
     );
     expect(fullLoadTime).toBeLessThan(performanceThresholds.mobile.pageLoad);
   });
@@ -232,12 +232,12 @@ test.describe("Performance Tests", () => {
 
     // Check main JavaScript bundle size
     const jsFiles = networkRequests.filter(
-      (req) => req.type.includes("javascript") || req.url.endsWith(".js"),
+      (req) => req.type.includes("javascript") || req.url.endsWith(".js")
     );
 
     // Check CSS bundle size
     const cssFiles = networkRequests.filter(
-      (req) => req.type.includes("css") || req.url.endsWith(".css"),
+      (req) => req.type.includes("css") || req.url.endsWith(".css")
     );
 
     console.log("Bundle Analysis:", {

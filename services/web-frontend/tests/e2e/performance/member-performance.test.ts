@@ -28,7 +28,7 @@ test.describe("Member Features Performance Tests", () => {
 
     // Measure scroll performance
     const scrollContainer = page.locator(
-      '[data-testid="virtual-scroll-container"]',
+      '[data-testid="virtual-scroll-container"]'
     );
     const scrollStartTime = Date.now();
 
@@ -181,7 +181,7 @@ test.describe("Member Features Performance Tests", () => {
     });
 
     const scrollContainer = page.locator(
-      '[data-testid="virtual-scroll-container"]',
+      '[data-testid="virtual-scroll-container"]'
     );
 
     // Get initial memory usage
@@ -245,7 +245,7 @@ test.describe("Member Features Performance Tests", () => {
     // Run basic performance checks
     const performanceMetrics = await page.evaluate(() => {
       const navigation = performance.getEntriesByType(
-        "navigation",
+        "navigation"
       )[0] as PerformanceNavigationTiming;
       return {
         loadTime: navigation.loadEventEnd - navigation.loadEventStart,

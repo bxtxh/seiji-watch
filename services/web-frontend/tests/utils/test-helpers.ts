@@ -196,7 +196,7 @@ export class TestHelpers {
         expect(boundingBox.x).toBeGreaterThanOrEqual(0);
         expect(boundingBox.y).toBeGreaterThanOrEqual(0);
         expect(boundingBox.x + boundingBox.width).toBeLessThanOrEqual(
-          viewport.width,
+          viewport.width
         );
       }
     }
@@ -213,7 +213,7 @@ export class TestHelpers {
     // Test Enter on focused button
     const focusedElement = this.page.locator(":focus");
     const tagName = await focusedElement.evaluate((el) =>
-      el.tagName.toLowerCase(),
+      el.tagName.toLowerCase()
     );
 
     if (tagName === "button" || tagName === "a") {
@@ -257,7 +257,7 @@ export class TestHelpers {
   }> {
     const performanceMetrics = await this.page.evaluate(() => {
       const navigation = performance.getEntriesByType(
-        "navigation",
+        "navigation"
       )[0] as PerformanceNavigationTiming;
       const paint = performance.getEntriesByType("paint");
 
@@ -319,7 +319,7 @@ export class TestHelpers {
    * Simulate network conditions
    */
   async simulateNetworkCondition(
-    condition: "offline" | "slow3g" | "fast3g",
+    condition: "offline" | "slow3g" | "fast3g"
   ): Promise<void> {
     const context = this.page.context();
 
@@ -375,7 +375,7 @@ export class DietTrackerAssertions {
 
   static async expectValidJapaneseContent(
     page: Page,
-    selector: string,
+    selector: string
   ): Promise<void> {
     const element = page.locator(selector);
     const text = await element.textContent();
@@ -383,7 +383,7 @@ export class DietTrackerAssertions {
     if (text) {
       // Check for Japanese characters (Hiragana, Katakana, Kanji)
       const hasJapanese = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(
-        text,
+        text
       );
       expect(hasJapanese).toBe(true);
     }
@@ -404,7 +404,7 @@ export class DietTrackerAssertions {
 
       if (boundingBox && (await button.isVisible())) {
         expect(
-          Math.min(boundingBox.width, boundingBox.height),
+          Math.min(boundingBox.width, boundingBox.height)
         ).toBeGreaterThanOrEqual(44);
       }
     }

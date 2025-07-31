@@ -5,6 +5,7 @@ Progressive Web App (PWA) frontend for the Diet Issue Tracker platform.
 ## Overview
 
 This service provides:
+
 - Mobile-first responsive design
 - Accessibility-focused UI with ARIA support
 - Real-time issue tracking and visualization
@@ -24,12 +25,14 @@ This service provides:
 ## Key Features
 
 ### Issue Navigation
+
 - 3-layer hierarchical category browsing
 - Drill-down navigation (L1 → L2 → Bills)
 - Category-based filtering and search
 - Policy area statistics and trends
 
 ### Intelligent Features
+
 - LLM-generated issue insights
 - Bill impact visualization
 - Semantic search across content
@@ -37,6 +40,7 @@ This service provides:
 - Real-time political agenda tracking
 
 ### Accessibility
+
 - WCAG 2.1 AA compliance
 - Furigana toggle for kanji
 - Keyboard navigation
@@ -101,6 +105,7 @@ npm run type-check
 ## Environment Variables
 
 Create `.env.development` for local development:
+
 ```bash
 # Copy example file
 cp .env.example .env.development
@@ -124,6 +129,7 @@ For production, create `.env.production` with appropriate values.
 ## Deployment
 
 The frontend is containerized and deployed to Cloud Run:
+
 ```bash
 # Build Docker image
 docker build -t web-frontend .

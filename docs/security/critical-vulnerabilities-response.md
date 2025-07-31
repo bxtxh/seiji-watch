@@ -11,18 +11,21 @@ This document tracks the response to critical security vulnerabilities identifie
 **Status**: RESOLVED
 
 **Actions Taken**:
+
 - Implemented Workload Identity Federation (WIF) configuration in Terraform
 - Updated all GitHub Actions workflows to use WIF instead of service account JSON keys
 - Created comprehensive documentation for WIF setup and maintenance
 - Provided setup script for easy deployment
 
 **Files Modified**:
+
 - `/infra/workload_identity.tf` - New WIF configuration
 - `/.github/workflows/staging-external-testing.yml` - Updated authentication method
 - `/docs/security/workload-identity-federation.md` - Setup documentation
 - `/scripts/setup_workload_identity.sh` - Automated setup script
 
 **Next Steps**:
+
 1. Run `./scripts/setup_workload_identity.sh` to deploy WIF infrastructure
 2. Add WIF_PROVIDER and WIF_SERVICE_ACCOUNT variables to GitHub repository
 3. Delete GCP_SERVICE_ACCOUNT_JSON secret from GitHub
@@ -33,10 +36,12 @@ This document tracks the response to critical security vulnerabilities identifie
 **Status**: RESOLVED
 
 **Actions Taken**:
+
 - Removed localhost entries from CORS configuration in Terraform variables
 - Updated staging environment to only allow production domain
 
 **Files Modified**:
+
 - `/infra/staging-external-testing.tfvars` - Removed localhost from cors_origins
 
 ### 3. ✅ Data Anonymization Disabled (HIGH)
@@ -44,10 +49,12 @@ This document tracks the response to critical security vulnerabilities identifie
 **Status**: RESOLVED
 
 **Actions Taken**:
+
 - Enabled data anonymization in Terraform configuration
 - Set `data_anonymization = true` for external testing environment
 
 **Files Modified**:
+
 - `/infra/staging-external-testing.tfvars` - Enabled data_anonymization
 - `/.github/workflows/staging-external-testing.yml` - Updated environment variable
 
@@ -56,6 +63,7 @@ This document tracks the response to critical security vulnerabilities identifie
 **Status**: RESOLVED (Previously completed)
 
 **Actions Taken**:
+
 - Added explicit permissions block to GitHub Actions workflow
 - Configured minimum required permissions following principle of least privilege
 
@@ -64,6 +72,7 @@ This document tracks the response to critical security vulnerabilities identifie
 **Status**: RESOLVED (Previously completed)
 
 **Actions Taken**:
+
 - Implemented Google Secret Manager integration
 - Created secure token storage script
 - Added JWT authentication middleware
@@ -72,19 +81,20 @@ This document tracks the response to critical security vulnerabilities identifie
 
 All critical Phase 1 security improvements have been implemented:
 
-| Vulnerability | Severity | Status | Implementation Time |
-|--------------|----------|--------|-------------------|
-| GCP Service Account Key | CRITICAL | ✅ Resolved | < 1 hour |
-| Localhost CORS | HIGH | ✅ Resolved | < 15 minutes |
-| Data Anonymization | HIGH | ✅ Resolved | < 15 minutes |
-| Workflow Permissions | MEDIUM | ✅ Resolved | Previously done |
-| JWT Token Exposure | HIGH | ✅ Resolved | Previously done |
+| Vulnerability           | Severity | Status      | Implementation Time |
+| ----------------------- | -------- | ----------- | ------------------- |
+| GCP Service Account Key | CRITICAL | ✅ Resolved | < 1 hour            |
+| Localhost CORS          | HIGH     | ✅ Resolved | < 15 minutes        |
+| Data Anonymization      | HIGH     | ✅ Resolved | < 15 minutes        |
+| Workflow Permissions    | MEDIUM   | ✅ Resolved | Previously done     |
+| JWT Token Exposure      | HIGH     | ✅ Resolved | Previously done     |
 
 ## Deployment Instructions
 
 To deploy these security improvements:
 
 1. **Deploy Workload Identity Federation**:
+
    ```bash
    cd /Users/shogen/KIRO/seiji-watch
    ./scripts/setup_workload_identity.sh
@@ -95,6 +105,7 @@ To deploy these security improvements:
    - Delete GCP_SERVICE_ACCOUNT_JSON secret
 
 3. **Apply Terraform Changes**:
+
    ```bash
    cd infra
    terraform apply -var-file="staging-external-testing.tfvars"
@@ -108,11 +119,13 @@ To deploy these security improvements:
 ## Remaining Security Tasks (Phase 2 & 3)
 
 ### Phase 2 (48 hours):
+
 - [ ] Implement Identity-Aware Proxy (IAP) for access control
 - [ ] Complete Secret Manager migration for all sensitive data
 - [ ] Add comprehensive audit logging
 
 ### Phase 3 (1 week):
+
 - [ ] Implement VPC Service Controls
 - [ ] Add Cloud Armor for DDoS protection
 - [ ] Deploy Security Command Center
@@ -129,6 +142,7 @@ To deploy these security improvements:
 ## Contact
 
 For security concerns or questions:
+
 - Security Team: security@diet-tracker.jp
 - DevOps Team: devops@diet-tracker.jp
 - Emergency: security-emergency@diet-tracker.jp

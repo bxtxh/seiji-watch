@@ -94,7 +94,7 @@ const IssuesPage = () => {
     .filter(
       (issue) =>
         issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        issue.description.toLowerCase().includes(searchQuery.toLowerCase()),
+        issue.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       switch (sortBy) {

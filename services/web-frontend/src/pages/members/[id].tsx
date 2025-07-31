@@ -73,10 +73,10 @@ const MemberPage: React.FC<MemberPageProps> = ({
 
   const [member, setMember] = useState<Member | null>(initialMember);
   const [policyAnalysis, setPolicyAnalysis] = useState<PolicyAnalysis | null>(
-    initialPolicyAnalysis,
+    initialPolicyAnalysis
   );
   const [votingStats, setVotingStats] = useState<VotingStats | null>(
-    initialVotingStats,
+    initialVotingStats
   );
   const [loading, setLoading] = useState(!initialMember);
   const [error, setError] = useState<string | null>(null);
@@ -95,17 +95,20 @@ const MemberPage: React.FC<MemberPageProps> = ({
         throw new Error("Member not found");
       }
       const memberData = await memberResponse.json();
-      
+
       // Transform Airtable response to match Member interface
       if (memberData.success && memberData.member) {
         const rawMember = memberData.member;
         const fields = rawMember.fields || {};
-        
+
         const transformedMember: Member = {
           id: rawMember.id,
           name: fields.Name || "",
           name_kana: fields.Name_Kana || "",
-          house: fields.House === "衆議院" ? "house_of_representatives" : "house_of_councillors",
+          house:
+            fields.House === "衆議院"
+              ? "house_of_representatives"
+              : "house_of_councillors",
           party: fields.Party_Name || "無所属",
           constituency: fields.Constituency || "",
           terms_served: fields.Terms_Served || 1,
@@ -117,7 +120,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
           education: fields.Education,
           career: fields.Career,
         };
-        
+
         setMember(transformedMember);
       }
 
@@ -137,7 +140,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
     } catch (err) {
       console.error("Failed to fetch member data:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to load member data",
+        err instanceof Error ? err.message : "Failed to load member data"
       );
       recordError({
         error: err as Error,
@@ -438,7 +441,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">
                           {Math.round(
-                            policyAnalysis.overall_activity_level * 100,
+                            policyAnalysis.overall_activity_level * 100
                           )}
                           %
                         </div>
@@ -447,7 +450,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                       <div className="text-center">
                         <div className="text-2xl font-bold text-green-600">
                           {Math.round(
-                            policyAnalysis.party_alignment_rate * 100,
+                            policyAnalysis.party_alignment_rate * 100
                           )}
                           %
                         </div>
@@ -578,7 +581,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                         <span>
                           更新:{" "}
                           {new Date(position.last_updated).toLocaleDateString(
-                            "ja-JP",
+                            "ja-JP"
                           )}
                         </span>
                       </div>
@@ -599,7 +602,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                                     <span className="flex-shrink-0 w-1 h-1 bg-gray-400 rounded-full mt-2 mr-2"></span>
                                     <span>{evidence}</span>
                                   </li>
-                                ),
+                                )
                               )}
                             </ul>
                           </div>
@@ -648,7 +651,12 @@ const MemberPage: React.FC<MemberPageProps> = ({
                         </div>
                         <div className="text-sm text-gray-600">賛成</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {Math.round((votingStats.voting_pattern.yes_votes / votingStats.total_votes) * 100)}%
+                          {Math.round(
+                            (votingStats.voting_pattern.yes_votes /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
                         </div>
                       </div>
                       <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
@@ -657,7 +665,12 @@ const MemberPage: React.FC<MemberPageProps> = ({
                         </div>
                         <div className="text-sm text-gray-600">反対</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {Math.round((votingStats.voting_pattern.no_votes / votingStats.total_votes) * 100)}%
+                          {Math.round(
+                            (votingStats.voting_pattern.no_votes /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
                         </div>
                       </div>
                       <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
@@ -666,7 +679,12 @@ const MemberPage: React.FC<MemberPageProps> = ({
                         </div>
                         <div className="text-sm text-gray-600">棄権</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {Math.round((votingStats.voting_pattern.abstentions / votingStats.total_votes) * 100)}%
+                          {Math.round(
+                            (votingStats.voting_pattern.abstentions /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
                         </div>
                       </div>
                       <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-300">
@@ -675,7 +693,12 @@ const MemberPage: React.FC<MemberPageProps> = ({
                         </div>
                         <div className="text-sm text-gray-600">欠席</div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {Math.round((votingStats.voting_pattern.absences / votingStats.total_votes) * 100)}%
+                          {Math.round(
+                            (votingStats.voting_pattern.absences /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
                         </div>
                       </div>
                     </div>
@@ -683,33 +706,57 @@ const MemberPage: React.FC<MemberPageProps> = ({
 
                   {/* Overall Statistics */}
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="font-medium text-gray-900 mb-3">統計サマリー</h3>
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      統計サマリー
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">総投票数:</span>
-                        <span className="text-sm font-medium">{votingStats.total_votes}回</span>
+                        <span className="text-sm font-medium">
+                          {votingStats.total_votes}回
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">出席率:</span>
-                        <span className="text-sm font-medium">{Math.round(votingStats.attendance_rate * 100)}%</span>
+                        <span className="text-sm font-medium">
+                          {Math.round(votingStats.attendance_rate * 100)}%
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">党方針一致率:</span>
-                        <span className="text-sm font-medium">{Math.round(votingStats.party_alignment_rate * 100)}%</span>
+                        <span className="text-sm text-gray-600">
+                          党方針一致率:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {Math.round(votingStats.party_alignment_rate * 100)}%
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Voting History Placeholder */}
                   <div className="border-t pt-6">
-                    <h3 className="font-medium text-gray-900 mb-4">最近の投票記録</h3>
+                    <h3 className="font-medium text-gray-900 mb-4">
+                      最近の投票記録
+                    </h3>
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                       <div className="flex items-center">
-                        <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-5 h-5 text-yellow-600 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                         <div>
-                          <h4 className="text-sm font-medium text-yellow-800">投票履歴機能について</h4>
+                          <h4 className="text-sm font-medium text-yellow-800">
+                            投票履歴機能について
+                          </h4>
                           <p className="text-sm text-yellow-700 mt-1">
                             個別の法案への投票記録は、今後のアップデートで追加予定です。現在は統計データのみ表示しています。
                           </p>
@@ -720,8 +767,18 @@ const MemberPage: React.FC<MemberPageProps> = ({
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <svg className="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  <svg
+                    className="w-12 h-12 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
                   </svg>
                   <p>投票データを読み込んでいます...</p>
                 </div>

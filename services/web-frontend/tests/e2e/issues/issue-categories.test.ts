@@ -36,7 +36,7 @@ test.describe("Issue Categories Navigation", () => {
 
     // Check at least some L1 categories are displayed
     await expect(
-      page.locator('[data-testid="l1-category"]').first(),
+      page.locator('[data-testid="l1-category"]').first()
     ).toBeVisible();
 
     // Check CAP code badges are present
@@ -56,7 +56,7 @@ test.describe("Issue Categories Navigation", () => {
 
       // Check that L2 children are now visible
       await expect(
-        page.locator('[data-testid="l2-category"]').first(),
+        page.locator('[data-testid="l2-category"]').first()
       ).toBeVisible();
 
       // Click to collapse
@@ -64,7 +64,7 @@ test.describe("Issue Categories Navigation", () => {
 
       // Check that L2 children are hidden
       await expect(
-        page.locator('[data-testid="l2-category"]').first(),
+        page.locator('[data-testid="l2-category"]').first()
       ).toBeHidden();
     }
   });
@@ -122,7 +122,7 @@ test.describe("Issue Categories Navigation", () => {
     if (await subTopicsSection.isVisible()) {
       // Check that sub-topics are displayed
       await expect(
-        page.locator('[data-testid="child-category"]').first(),
+        page.locator('[data-testid="child-category"]').first()
       ).toBeVisible();
     }
   });
@@ -161,10 +161,10 @@ test.describe("Issue Categories Navigation", () => {
     // Check sidebar navigation
     await expect(page.locator("text=ナビゲーション")).toBeVisible();
     await expect(
-      page.locator('a[href="/issues/categories"]:has-text("すべての政策分野")'),
+      page.locator('a[href="/issues/categories"]:has-text("すべての政策分野")')
     ).toBeVisible();
     await expect(
-      page.locator('a[href="/bills"]:has-text("法案一覧")'),
+      page.locator('a[href="/bills"]:has-text("法案一覧")')
     ).toBeVisible();
   });
 
@@ -327,7 +327,7 @@ test.describe("Issue Categories Mobile Responsiveness", () => {
 
     // Test mobile navigation
     await expect(
-      page.locator('nav a[href="/issues/categories"]'),
+      page.locator('nav a[href="/issues/categories"]')
     ).toBeVisible();
   });
 

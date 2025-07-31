@@ -20,15 +20,15 @@ test.describe("Member Detail Page - T63 Implementation", () => {
 
     // Check if member name is displayed
     await expect(page.locator("h1")).toContainText(
-      /田中|佐藤|鈴木|高橋|伊藤|渡辺|山本|中村|小林|加藤|吉田|山田|佐々木|山口|松本|井上|木村|林|斎藤|清水|山崎|森|池田|橋本|阿部|石川|前田|藤原|後藤|近藤/,
+      /田中|佐藤|鈴木|高橋|伊藤|渡辺|山本|中村|小林|加藤|吉田|山田|佐々木|山口|松本|井上|木村|林|斎藤|清水|山崎|森|池田|橋本|阿部|石川|前田|藤原|後藤|近藤/
     );
 
     // Check if basic info is displayed
     await expect(page.locator("text=/衆議院|参議院/")).toBeVisible();
     await expect(
       page.locator(
-        "text=/自由民主党|立憲民主党|日本維新の会|公明党|日本共産党|国民民主党|れいわ新選組|社会民主党|無所属/",
-      ),
+        "text=/自由民主党|立憲民主党|日本維新の会|公明党|日本共産党|国民民主党|れいわ新選組|社会民主党|無所属/"
+      )
     ).toBeVisible();
     await expect(page.locator("text=/\d+期/")).toBeVisible();
 
@@ -44,7 +44,7 @@ test.describe("Member Detail Page - T63 Implementation", () => {
 
     // Check initial tab (概要)
     await expect(page.locator('button[aria-selected="true"]')).toContainText(
-      "概要",
+      "概要"
     );
 
     // Click on 政策立場 tab
@@ -86,12 +86,12 @@ test.describe("Member Detail Page - T63 Implementation", () => {
     await expect(page.locator(".bg-yellow-50")).toBeVisible();
     await expect(page.locator("text=政策立場分析機能について")).toBeVisible();
     await expect(
-      page.locator("text=より精密な政策立場分析システムを開発中"),
+      page.locator("text=より精密な政策立場分析システムを開発中")
     ).toBeVisible();
 
     // Should show sample data notice
     await expect(
-      page.locator("text=※ 以下はMVP版のサンプルデータです"),
+      page.locator("text=※ 以下はMVP版のサンプルデータです")
     ).toBeVisible();
 
     // Should show sample policy positions with reduced opacity
@@ -176,7 +176,7 @@ test.describe("Member Detail Page - T63 Implementation", () => {
 
     // Should switch to next tab
     await expect(page.locator('button[aria-selected="true"]')).toContainText(
-      "政策立場",
+      "政策立場"
     );
 
     // Check for proper ARIA labels

@@ -47,7 +47,7 @@ export function sanitizeHtml(input: string): string {
  */
 export function sanitizeInput(
   input: string,
-  maxLength: number = INPUT_LIMITS.GENERAL_TEXT,
+  maxLength: number = INPUT_LIMITS.GENERAL_TEXT
 ): string {
   if (typeof input !== "string") {
     return "";
@@ -131,7 +131,7 @@ export function validateUrl(url: string): { isValid: boolean; error?: string } {
 
     if (
       !allowedDomains.some(
-        (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+        (domain) => hostname === domain || hostname.endsWith(`.${domain}`)
       )
     ) {
       return { isValid: false, error: "許可されていないドメインです" };
@@ -168,7 +168,7 @@ export class RateLimiter {
 
     // Remove old requests outside the window
     const recentRequests = requests.filter(
-      (timestamp) => timestamp > windowStart,
+      (timestamp) => timestamp > windowStart
     );
 
     // Check if under the limit
@@ -191,7 +191,7 @@ export class RateLimiter {
     const windowStart = now - this.windowMs;
     const requests = this.requests.get(identifier) || [];
     const recentRequests = requests.filter(
-      (timestamp) => timestamp > windowStart,
+      (timestamp) => timestamp > windowStart
     );
 
     return Math.max(0, this.maxRequests - recentRequests.length);
@@ -228,7 +228,7 @@ export class CSRFProtection {
     }
 
     const token = Array.from(array, (byte) =>
-      byte.toString(16).padStart(2, "0"),
+      byte.toString(16).padStart(2, "0")
     ).join("");
     this.tokens.add(token);
 
@@ -282,7 +282,7 @@ export function generateSecureId(length: number = 16): string {
     // Fallback for server-side
     for (let i = 0; i < length; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length),
+        Math.floor(Math.random() * characters.length)
       );
     }
   }

@@ -72,7 +72,7 @@ test.describe("Basic Navigation", () => {
 
       // Check main content is present
       await expect(
-        page.locator(TestHelpers.selectors.mainContent),
+        page.locator(TestHelpers.selectors.mainContent)
       ).toBeVisible();
     }
   });

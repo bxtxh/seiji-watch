@@ -2,7 +2,7 @@ name: Pull Request Checks
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
 
 env:
@@ -18,249 +18,249 @@ jobs:
       infrastructure: ${{ steps.changes.outputs.infrastructure }}
       docs: ${{ steps.changes.outputs.docs }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Detect changes
-      uses: dorny/paths-filter@v2
-      id: changes
-      with:
-        filters: |
-          python:
-            - 'services/**/*.py'
-            - 'shared/**/*.py'
-            - '**/pyproject.toml'
-            - '**/requirements.txt'
-          frontend:
-            - 'services/web-frontend/**'
-            - 'package.json'
-            - 'package-lock.json'
-          infrastructure:
-            - 'infra/**/*.tf'
-            - 'infra/**/*.tfvars'
-            - '.github/workflows/**'
-          docs:
-            - '**/*.md'
-            - 'docs/**'
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            python:
+              - 'services/**/*.py'
+              - 'shared/**/*.py'
+              - '**/pyproject.toml'
+              - '**/requirements.txt'
+            frontend:
+              - 'services/web-frontend/**'
+              - 'package.json'
+              - 'package-lock.json'
+            infrastructure:
+              - 'infra/**/*.tf'
+              - 'infra/**/*.tfvars'
+              - '.github/workflows/**'
+            docs:
+              - '**/*.md'
+              - 'docs/**'
 
   lint-python:
     name: Lint Python Code
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.python == 'true'
-    
+
     strategy:
       matrix:
         service: [api-gateway]
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        version: latest
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-        
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v3
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-        
-    - name: Install dependencies
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      working-directory: services/${{ matrix.service }}
-      run: poetry install --no-interaction --no-root
-      
-    - name: Install project
-      working-directory: services/${{ matrix.service }}
-      run: poetry install --no-interaction
-      
-    - name: Run ruff linting
-      working-directory: services/${{ matrix.service }}
-      run: poetry run ruff check . --output-format=github
-      
-    - name: Run ruff formatting check
-      working-directory: services/${{ matrix.service }}
-      run: poetry run ruff format --check . --diff
-      
-    - name: Run mypy type checking
-      working-directory: services/${{ matrix.service }}
-      run: poetry run mypy . --show-error-codes --pretty
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        working-directory: services/${{ matrix.service }}
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        working-directory: services/${{ matrix.service }}
+        run: poetry install --no-interaction
+
+      - name: Run ruff linting
+        working-directory: services/${{ matrix.service }}
+        run: poetry run ruff check . --output-format=github
+
+      - name: Run ruff formatting check
+        working-directory: services/${{ matrix.service }}
+        run: poetry run ruff format --check . --diff
+
+      - name: Run mypy type checking
+        working-directory: services/${{ matrix.service }}
+        run: poetry run mypy . --show-error-codes --pretty
+        continue-on-error: true
 
   test-python:
     name: Test Python Code
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.python == 'true'
-    
+
     strategy:
       matrix:
         service: [api-gateway]
-        python-version: ['3.11']
-    
+        python-version: ["3.11"]
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        version: latest
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-        
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v3
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
-        
-    - name: Install dependencies
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      working-directory: services/${{ matrix.service }}
-      run: poetry install --no-interaction --no-root
-      
-    - name: Install project
-      working-directory: services/${{ matrix.service }}
-      run: poetry install --no-interaction
-      
-    - name: Run tests
-      working-directory: services/${{ matrix.service }}
-      run: |
-        poetry run pytest \
-          --cov=. \
-          --cov-report=xml \
-          --cov-report=term-missing \
-          --junitxml=test-results.xml \
-          -v
-      continue-on-error: true
-      
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results-${{ matrix.service }}-${{ matrix.python-version }}
-        path: services/${{ matrix.service }}/test-results.xml
-        
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./services/${{ matrix.service }}/coverage.xml
-        flags: ${{ matrix.service }}
-        name: codecov-${{ matrix.service }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        working-directory: services/${{ matrix.service }}
+        run: poetry install --no-interaction --no-root
+
+      - name: Install project
+        working-directory: services/${{ matrix.service }}
+        run: poetry install --no-interaction
+
+      - name: Run tests
+        working-directory: services/${{ matrix.service }}
+        run: |
+          poetry run pytest \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=test-results.xml \
+            -v
+        continue-on-error: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.service }}-${{ matrix.python-version }}
+          path: services/${{ matrix.service }}/test-results.xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./services/${{ matrix.service }}/coverage.xml
+          flags: ${{ matrix.service }}
+          name: codecov-${{ matrix.service }}
 
   lint-frontend:
     name: Lint Frontend Code
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run ESLint
-      run: npm run lint --workspace=services/web-frontend
-      
-    - name: Run Prettier check
-      run: npx prettier --check "services/web-frontend/**/*.{js,jsx,ts,tsx,json,css,md}"
-      
-    - name: Run type checking
-      run: npm run type-check --workspace=services/web-frontend
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --workspace=services/web-frontend
+
+      - name: Run Prettier check
+        run: npx prettier --check "services/web-frontend/**/*.{js,jsx,ts,tsx,json,css,md}"
+
+      - name: Run type checking
+        run: npm run type-check --workspace=services/web-frontend
 
   test-frontend:
     name: Test Frontend Code
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests
-      run: npm run test --workspace=services/web-frontend -- --coverage --watchAll=false
-      continue-on-error: true
-      
-    - name: Build application
-      run: npm run build --workspace=services/web-frontend
-      
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-build
-        path: services/web-frontend/.next
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test --workspace=services/web-frontend -- --coverage --watchAll=false
+        continue-on-error: true
+
+      - name: Build application
+        run: npm run build --workspace=services/web-frontend
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: services/web-frontend/.next
 
   validate-infrastructure:
     name: Validate Infrastructure
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.infrastructure == 'true'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: "~1.0"
-        
-    - name: Terraform Format Check
-      working-directory: infra
-      run: terraform fmt -check -recursive
-      
-    - name: Terraform Validation
-      working-directory: infra
-      run: |
-        terraform init -backend=false
-        terraform validate
-        
-    - name: Run tflint
-      uses: terraform-linters/setup-tflint@v4
-      with:
-        tflint_version: latest
-        
-    - name: Run TFLint
-      working-directory: infra
-      run: |
-        tflint --init
-        tflint --format=compact
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.0"
+
+      - name: Terraform Format Check
+        working-directory: infra
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validation
+        working-directory: infra
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+      - name: Run tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Run TFLint
+        working-directory: infra
+        run: |
+          tflint --init
+          tflint --format=compact
 
   security-scan:
     name: Security Scan
@@ -269,139 +269,147 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-        
-    - name: Run Semgrep security scan
-      uses: semgrep/semgrep-action@v1
-      with:
-        config: >-
-          p/security-audit
-          p/secrets
-          p/python
-          p/typescript
-      env:
-        SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+      - name: Run Semgrep security scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/python
+            p/typescript
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        continue-on-error: true
 
   size-analysis:
     name: Bundle Size Analysis
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build and analyze bundle
-      run: npm run build --workspace=services/web-frontend
-      
-    - name: Analyze bundle size
-      run: |
-        cd services/web-frontend
-        npx @next/bundle-analyzer --help || echo "Bundle analyzer not available"
-        if [ -d ".next" ]; then
-          echo "Build size analysis:"
-          du -sh .next/static/chunks/* | head -10
-          echo "Total build size:"
-          du -sh .next
-        fi
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze bundle
+        run: npm run build --workspace=services/web-frontend
+
+      - name: Analyze bundle size
+        run: |
+          cd services/web-frontend
+          npx @next/bundle-analyzer --help || echo "Bundle analyzer not available"
+          if [ -d ".next" ]; then
+            echo "Build size analysis:"
+            du -sh .next/static/chunks/* | head -10
+            echo "Total build size:"
+            du -sh .next
+          fi
+        continue-on-error: true
 
   accessibility-test:
     name: Accessibility Testing
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build application
-      run: npm run build --workspace=services/web-frontend
-      
-    - name: Start application
-      run: |
-        npm run start --workspace=services/web-frontend &
-        sleep 10
-      
-    - name: Run Lighthouse CI
-      uses: treosh/lighthouse-ci-action@v10
-      with:
-        configPath: '.lighthouserc.json'
-        uploadArtifacts: true
-        temporaryPublicStorage: true
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build --workspace=services/web-frontend
+
+      - name: Start application
+        run: |
+          npm run start --workspace=services/web-frontend &
+          sleep 10
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: ".lighthouserc.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        continue-on-error: true
 
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [lint-python, test-python, lint-frontend, test-frontend, validate-infrastructure, security-scan]
+    needs:
+      [
+        lint-python,
+        test-python,
+        lint-frontend,
+        test-frontend,
+        validate-infrastructure,
+        security-scan,
+      ]
     if: always()
-    
+
     steps:
-    - name: Create PR comment summary
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const results = {
-            'Python Lint': '${{ needs.lint-python.result }}',
-            'Python Tests': '${{ needs.test-python.result }}',
-            'Frontend Lint': '${{ needs.lint-frontend.result }}',
-            'Frontend Tests': '${{ needs.test-frontend.result }}',
-            'Infrastructure': '${{ needs.validate-infrastructure.result }}',
-            'Security Scan': '${{ needs.security-scan.result }}'
-          };
-          
-          let summary = '## PR Check Results\n\n';
-          
-          for (const [check, result] of Object.entries(results)) {
-            if (result === 'skipped') continue;
-            const emoji = result === 'success' ? '✅' : result === 'failure' ? '❌' : '⚠️';
-            summary += `${emoji} ${check}: ${result}\n`;
-          }
-          
-          summary += '\n---\n*Automated PR checks completed*';
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: summary
-          });
+      - name: Create PR comment summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              'Python Lint': '${{ needs.lint-python.result }}',
+              'Python Tests': '${{ needs.test-python.result }}',
+              'Frontend Lint': '${{ needs.lint-frontend.result }}',
+              'Frontend Tests': '${{ needs.test-frontend.result }}',
+              'Infrastructure': '${{ needs.validate-infrastructure.result }}',
+              'Security Scan': '${{ needs.security-scan.result }}'
+            };
+
+            let summary = '## PR Check Results\n\n';
+
+            for (const [check, result] of Object.entries(results)) {
+              if (result === 'skipped') continue;
+              const emoji = result === 'success' ? '✅' : result === 'failure' ? '❌' : '⚠️';
+              summary += `${emoji} ${check}: ${result}\n`;
+            }
+
+            summary += '\n---\n*Automated PR checks completed*';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

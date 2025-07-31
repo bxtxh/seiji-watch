@@ -114,42 +114,49 @@ infra/
 ## Service Responsibilities
 
 ### api-gateway
+
 - RESTful API endpoints
 - JWT authentication
 - Rate limiting
 - Request routing
 
 ### data-processor
+
 - Data normalization
 - Entity extraction
 - LLM-based analysis
 - Issue categorization
 
 ### diet-scraper
+
 - Web scraping Diet sites
 - PDF/TXT processing
 - NDL API integration
 - Rate-limited crawling
 
 ### stt-worker
+
 - Audio extraction (yt-dlp)
 - Whisper transcription
 - Quality validation
 - Async processing
 
 ### vector-store
+
 - Embedding generation
 - Semantic search
 - Topic clustering
 - Similar bill detection
 
 ### notifications-worker
+
 - Email notifications
 - Subscription management
 - Daily batch processing
 - Event tracking
 
 ### web-frontend
+
 - Next.js PWA
 - Responsive UI
 - Accessibility features

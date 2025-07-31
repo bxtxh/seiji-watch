@@ -10,7 +10,7 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<VotingSession | null>(
-    null,
+    null
   );
 
   const fetchVotingData = useCallback(async () => {
@@ -189,7 +189,7 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
               <div className="text-xs text-yellow-600">
                 {calculatePercentage(
                   session.abstain_votes,
-                  session.total_votes,
+                  session.total_votes
                 )}
                 %
               </div>
@@ -246,7 +246,7 @@ export default function VotingResults({ billNumber }: VotingResultsProps) {
               <button
                 onClick={() =>
                   setSelectedSession(
-                    selectedSession === session ? null : session,
+                    selectedSession === session ? null : session
                   )
                 }
                 className="text-sm text-blue-600 hover:text-blue-800 mb-3"

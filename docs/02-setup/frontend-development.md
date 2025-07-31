@@ -29,6 +29,7 @@ docker-compose up -d
 ```
 
 確認：
+
 ```bash
 docker-compose ps
 ```
@@ -52,6 +53,7 @@ python scripts/start_api.py
 ```
 
 API Gatewayが起動していることを確認：
+
 ```bash
 curl http://localhost:8080/health
 ```
@@ -102,7 +104,7 @@ open http://localhost:3000
 3. **環境変数が読み込まれない**
    - Next.jsを再起動（Ctrl+C後、npm run dev）
    - .env.developmentファイルが正しい場所にあるか確認
-   - 環境変数名がNEXT_PUBLIC_で始まっているか確認
+   - 環境変数名がNEXT*PUBLIC*で始まっているか確認
 
 ### データが表示されない
 
@@ -118,6 +120,7 @@ open http://localhost:3000
 ## デバッグモード
 
 開発環境では、画面右下にデバッグ情報が表示されます：
+
 - API Base URL
 - 環境変数の状態
 - その他の設定
@@ -127,6 +130,7 @@ open http://localhost:3000
 ## 開発のベストプラクティス
 
 1. **コミット前のチェック**
+
    ```bash
    npm run lint
    npm run type-check
@@ -144,12 +148,14 @@ open http://localhost:3000
 
 **Q: ポート3000が既に使用されている**
 A: 環境変数PORTを設定して別のポートを使用：
+
 ```bash
 PORT=3001 npm run dev
 ```
 
 **Q: TypeScriptエラーが大量に出る**
 A: VSCodeの場合、TypeScriptのバージョンを確認：
+
 - Cmd+Shift+P → "TypeScript: Select TypeScript Version"
 - "Use Workspace Version"を選択
 

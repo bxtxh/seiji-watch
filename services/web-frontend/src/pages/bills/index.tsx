@@ -5,21 +5,9 @@ import Layout from "@/components/Layout";
 import BillCard from "@/components/BillCard";
 import { Bill } from "@/types";
 import { api } from "@/lib/api-client";
+import { transformBillRecordToBill, type BillRecord } from "@/utils/data-transformers";
 
-interface BillRecord {
-  id: string;
-  fields: {
-    Bill_Number: string;
-    Name: string;
-    Bill_Status: string;
-    Category?: string;
-    Diet_Session?: string;
-    Submitted_Date?: string;
-    Summary?: string;
-    Notes?: string;
-    Stage?: string;
-  };
-}
+// BillRecord interface is now imported from data-transformers
 
 interface SearchResponse {
   success: boolean;
@@ -79,7 +67,7 @@ const BillsPage = () => {
         max_records: itemsPerPage * currentPage,
       };
 
-      const data = await api.bills.search(searchRequest) as SearchResponse;
+      const data = (await api.bills.search(searchRequest)) as SearchResponse;
 
       if (data.success) {
         setBills(data.results);
@@ -92,16 +80,27 @@ const BillsPage = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("データの取得に失敗しました。APIサーバーが起動しているか確認してください。");
+        setError(
+          "データの取得に失敗しました。APIサーバーが起動しているか確認してください。"
+        );
       }
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedStatus, selectedStage, selectedCategory, currentPage, itemsPerPage]);
+  }, [
+    searchQuery,
+    selectedStatus,
+    selectedStage,
+    selectedCategory,
+    currentPage,
+    itemsPerPage,
+  ]);
 
   const fetchCategory = async (categoryId: string) => {
     try {
-      const categoryData = await api.categories.get(categoryId) as IssueCategory;
+      const categoryData = (await api.categories.get(
+        categoryId
+      )) as IssueCategory;
       setSelectedCategory(categoryData);
     } catch (err) {
       console.error("Failed to fetch category:", err);
@@ -141,17 +140,7 @@ const BillsPage = () => {
     fetchBills,
   ]);
 
-  const convertBillRecordToBill = (billRecord: BillRecord): Bill => {
-    return {
-      id: billRecord.id,
-      bill_number: billRecord.fields.Bill_Number || "",
-      title: billRecord.fields.Name || "",
-      summary: billRecord.fields.Summary || billRecord.fields.Notes || "",
-      category: billRecord.fields.Category || "",
-      status: billRecord.fields.Bill_Status || "",
-      diet_url: "", // Not available in this interface
-    };
-  };
+  // Data transformation is now handled by the imported utility function
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -468,7 +457,7 @@ const BillsPage = () => {
                 {bills.map((billRecord) => (
                   <BillCard
                     key={billRecord.id}
-                    bill={convertBillRecordToBill(billRecord)}
+                    bill={transformBillRecordToBill(billRecord)}
                   />
                 ))}
               </div>

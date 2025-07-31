@@ -20,7 +20,7 @@ const { chromium } = require("playwright");
     try {
       // Call the API directly
       const response = await fetch(
-        "http://localhost:8081/search?q=税制&limit=5&offset=0",
+        "http://localhost:8081/search?q=税制&limit=5&offset=0"
       );
       const data = await response.json();
 
@@ -34,7 +34,7 @@ const { chromium } = require("playwright");
           const searchResult = await window.apiClient.searchBills("税制", 5);
           console.log(
             "ApiClient search result:",
-            JSON.stringify(searchResult, null, 2),
+            JSON.stringify(searchResult, null, 2)
           );
           return searchResult;
         } catch (error) {
@@ -53,7 +53,7 @@ const { chromium } = require("playwright");
 
   console.log(
     "API response from browser:",
-    JSON.stringify(apiResponse, null, 2),
+    JSON.stringify(apiResponse, null, 2)
   );
 
   await browser.close();

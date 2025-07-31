@@ -6,18 +6,32 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
-import { 
+import {
   Bars3Icon,
   ListBulletIcon,
   FunnelIcon,
   ArrowPathIcon,
-  ChartBarIcon
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
-import { DualLevelToggle, useDualLevel } from "../../components/issues/DualLevelToggle";
-import { IssueCard, CompactIssueCard, Issue } from "../../components/issues/IssueCard";
-import { IssueTreeView, useIssueTree } from "../../components/issues/IssueTreeView";
-import { IssueSearch, useIssueSearch, SearchFilters } from "../../components/issues/IssueSearch";
+import {
+  DualLevelToggle,
+  useDualLevel,
+} from "../../components/issues/DualLevelToggle";
+import {
+  IssueCard,
+  CompactIssueCard,
+  Issue,
+} from "../../components/issues/IssueCard";
+import {
+  IssueTreeView,
+  useIssueTree,
+} from "../../components/issues/IssueTreeView";
+import {
+  IssueSearch,
+  useIssueSearch,
+  SearchFilters,
+} from "../../components/issues/IssueSearch";
 
 type ViewMode = "list" | "tree" | "search";
 
@@ -58,11 +72,11 @@ const EnhancedIssuesPage: NextPage = () => {
       const params = new URLSearchParams({
         level: level.toString(),
         status: statusFilter,
-        max_records: maxRecords.toString()
+        max_records: maxRecords.toString(),
       });
 
       const response = await fetch(`/api/issues?${params.toString()}`);
-      
+
       if (!response.ok) {
         throw new Error("Failed to load issues");
       }
@@ -85,7 +99,7 @@ const EnhancedIssuesPage: NextPage = () => {
         setStats(data);
       }
     } catch (err) {
-      console.error('Failed to load statistics:', err);
+      console.error("Failed to load statistics:", err);
     }
   }, []);
 
@@ -97,53 +111,59 @@ const EnhancedIssuesPage: NextPage = () => {
 
   // Load tree data when switching to tree view
   useEffect(() => {
-    if (viewMode === 'tree') {
+    if (viewMode === "tree") {
       loadTreeData(statusFilter);
     }
   }, [viewMode, statusFilter, loadTreeData]);
 
   // Handle issue status change
-  const handleStatusChange = useCallback(async (issueId: string, newStatus: string) => {
-    try {
-      const response = await fetch(`/api/issues/${issueId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: newStatus,
-          reviewer_notes: `Status changed to ${newStatus}`
-        }),
-      });
+  const handleStatusChange = useCallback(
+    async (issueId: string, newStatus: string) => {
+      try {
+        const response = await fetch(`/api/issues/${issueId}/status`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: newStatus,
+            reviewer_notes: `Status changed to ${newStatus}`,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
+        if (!response.ok) {
+          throw new Error("Failed to update status");
+        }
 
-      // Refresh data
-      if (viewMode === 'list') {
-        await loadIssues();
-      } else if (viewMode === 'tree') {
-        await loadTreeData(statusFilter);
+        // Refresh data
+        if (viewMode === "list") {
+          await loadIssues();
+        } else if (viewMode === "tree") {
+          await loadTreeData(statusFilter);
+        }
+
+        await loadStats();
+      } catch (err) {
+        console.error("Failed to update status:", err);
+        alert("ステータスの更新に失敗しました");
       }
-      
-      await loadStats();
-    } catch (err) {
-      console.error('Failed to update status:', err);
-      alert('ステータスの更新に失敗しました');
-    }
-  }, [viewMode, loadIssues, loadTreeData, statusFilter, loadStats]);
+    },
+    [viewMode, loadIssues, loadTreeData, statusFilter, loadStats]
+  );
 
   // Handle search
-  const handleSearch = useCallback(async (filters: SearchFilters): Promise<Issue[]> => {
-    return await search(filters);
-  }, [search]);
+  const handleSearch = useCallback(
+    async (filters: SearchFilters): Promise<Issue[]> => {
+      return await search(filters);
+    },
+    [search]
+  );
 
   // Handle refresh
   const handleRefresh = useCallback(async () => {
-    if (viewMode === 'list') {
+    if (viewMode === "list") {
       await loadIssues();
-    } else if (viewMode === 'tree') {
+    } else if (viewMode === "tree") {
       await loadTreeData(statusFilter);
     }
     await loadStats();
@@ -155,7 +175,10 @@ const EnhancedIssuesPage: NextPage = () => {
     <>
       <Head>
         <title>政策課題一覧（強化版） - Seiji Watch</title>
-        <meta name="description" content="抽出された政策課題を閲覧・管理します。高校生向けと一般読者向けの2レベルで表示できます。" />
+        <meta
+          name="description"
+          content="抽出された政策課題を閲覧・管理します。高校生向けと一般読者向けの2レベルで表示できます。"
+        />
       </Head>
 
       <div className="min-h-screen bg-gray-50">
@@ -195,7 +218,9 @@ const EnhancedIssuesPage: NextPage = () => {
                   disabled={isAnyLoading}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                  <ArrowPathIcon className={`-ml-1 mr-2 h-5 w-5 ${isAnyLoading ? 'animate-spin' : ''}`} />
+                  <ArrowPathIcon
+                    className={`-ml-1 mr-2 h-5 w-5 ${isAnyLoading ? "animate-spin" : ""}`}
+                  />
                   更新
                 </button>
               </div>
@@ -207,36 +232,38 @@ const EnhancedIssuesPage: NextPage = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
               {/* View Mode Selector */}
               <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-gray-700">表示方法:</span>
+                <span className="text-sm font-medium text-gray-700">
+                  表示方法:
+                </span>
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => setViewMode("list")}
                     className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 ${
-                      viewMode === 'list'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                      viewMode === "list"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <ListBulletIcon className="w-4 h-4 mr-2" />
                     リスト
                   </button>
                   <button
-                    onClick={() => setViewMode('tree')}
+                    onClick={() => setViewMode("tree")}
                     className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 ${
-                      viewMode === 'tree'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                      viewMode === "tree"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <Bars3Icon className="w-4 h-4 mr-2" />
                     ツリー
                   </button>
                   <button
-                    onClick={() => setViewMode('search')}
+                    onClick={() => setViewMode("search")}
                     className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-150 ${
-                      viewMode === 'search'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                      viewMode === "search"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
                     <FunnelIcon className="w-4 h-4 mr-2" />
@@ -248,9 +275,11 @@ const EnhancedIssuesPage: NextPage = () => {
               {/* Level Toggle and Filters */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 {/* Status Filter */}
-                {viewMode !== 'search' && (
+                {viewMode !== "search" && (
                   <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium text-gray-700">状態:</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      状態:
+                    </label>
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
@@ -265,9 +294,11 @@ const EnhancedIssuesPage: NextPage = () => {
                 )}
 
                 {/* Max Records */}
-                {viewMode === 'list' && (
+                {viewMode === "list" && (
                   <div className="flex items-center space-x-2">
-                    <label className="text-sm font-medium text-gray-700">件数:</label>
+                    <label className="text-sm font-medium text-gray-700">
+                      件数:
+                    </label>
                     <select
                       value={maxRecords}
                       onChange={(e) => setMaxRecords(parseInt(e.target.value))}
@@ -282,7 +313,7 @@ const EnhancedIssuesPage: NextPage = () => {
                 )}
 
                 {/* Level Toggle */}
-                {viewMode !== 'search' && (
+                {viewMode !== "search" && (
                   <DualLevelToggle
                     currentLevel={level}
                     onLevelChange={setLevel}
@@ -299,7 +330,9 @@ const EnhancedIssuesPage: NextPage = () => {
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <div className="flex">
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">エラーが発生しました</h3>
+                    <h3 className="text-sm font-medium text-red-800">
+                      エラーが発生しました
+                    </h3>
                     <div className="mt-2 text-sm text-red-700">{error}</div>
                   </div>
                 </div>
@@ -307,7 +340,7 @@ const EnhancedIssuesPage: NextPage = () => {
             )}
 
             {/* List View */}
-            {viewMode === 'list' && (
+            {viewMode === "list" && (
               <div className="space-y-4">
                 {loading ? (
                   <div className="text-center py-12">
@@ -317,8 +350,12 @@ const EnhancedIssuesPage: NextPage = () => {
                 ) : issues.length === 0 ? (
                   <div className="text-center py-12">
                     <ListBulletIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">政策課題がありません</h3>
-                    <p className="text-gray-600">指定された条件に一致する課題が見つかりませんでした。</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      政策課題がありません
+                    </h3>
+                    <p className="text-gray-600">
+                      指定された条件に一致する課題が見つかりませんでした。
+                    </p>
                   </div>
                 ) : (
                   <>
@@ -327,10 +364,11 @@ const EnhancedIssuesPage: NextPage = () => {
                         {issues.length}件の政策課題
                       </h2>
                       <div className="text-sm text-gray-600">
-                        レベル{level} ({level === 1 ? '高校生向け' : '一般読者向け'})
+                        レベル{level} (
+                        {level === 1 ? "高校生向け" : "一般読者向け"})
                       </div>
                     </div>
-                    
+
                     {issues.map((issue) => (
                       <IssueCard
                         key={issue.issue_id}
@@ -346,7 +384,7 @@ const EnhancedIssuesPage: NextPage = () => {
             )}
 
             {/* Tree View */}
-            {viewMode === 'tree' && (
+            {viewMode === "tree" && (
               <IssueTreeView
                 treeData={treeData}
                 currentLevel={level}
@@ -358,7 +396,7 @@ const EnhancedIssuesPage: NextPage = () => {
             )}
 
             {/* Search View */}
-            {viewMode === 'search' && (
+            {viewMode === "search" && (
               <IssueSearch
                 onSearch={handleSearch}
                 initialFilters={{ level, status: statusFilter }}
@@ -370,14 +408,20 @@ const EnhancedIssuesPage: NextPage = () => {
           {/* Statistics Panel */}
           {stats && (
             <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">統計情報</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                統計情報
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stats.by_level.lv1}</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {stats.by_level.lv1}
+                  </div>
                   <div className="text-sm text-gray-600">レベル1課題</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{stats.by_level.lv2}</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {stats.by_level.lv2}
+                  </div>
                   <div className="text-sm text-gray-600">レベル2課題</div>
                 </div>
                 <div className="text-center">

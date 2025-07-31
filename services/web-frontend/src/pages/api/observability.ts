@@ -51,7 +51,7 @@ interface ObservabilityData {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   // Only accept POST requests
   if (req.method !== "POST") {
@@ -86,7 +86,7 @@ export default async function handler(
 
 async function processObservabilityData(
   data: ObservabilityData,
-  req: NextApiRequest,
+  req: NextApiRequest
 ) {
   const clientIP =
     req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -114,7 +114,7 @@ async function processObservabilityData(
     // Log individual metrics for debugging
     data.metrics.forEach((metric) => {
       console.log(
-        `[Metric] ${metric.name}: ${metric.value}${metric.tags ? ` (${JSON.stringify(metric.tags)})` : ""}`,
+        `[Metric] ${metric.name}: ${metric.value}${metric.tags ? ` (${JSON.stringify(metric.tags)})` : ""}`
       );
     });
 
@@ -139,7 +139,7 @@ async function processObservabilityData(
 
 async function processMetrics(
   metrics: ObservabilityData["metrics"],
-  sessionId: string,
+  sessionId: string
 ) {
   // Group metrics by name for analysis
   const metricsByName = metrics.reduce(
@@ -150,7 +150,7 @@ async function processMetrics(
       acc[metric.name].push(metric);
       return acc;
     },
-    {} as Record<string, typeof metrics>,
+    {} as Record<string, typeof metrics>
   );
 
   // Analyze each metric type
@@ -176,7 +176,7 @@ async function processMetrics(
 
 async function processErrors(
   errors: ObservabilityData["errors"],
-  sessionId: string,
+  sessionId: string
 ) {
   for (const error of errors) {
     // Create error report
@@ -202,7 +202,7 @@ async function processErrors(
 
 async function processInteractions(
   interactions: ObservabilityData["interactions"],
-  sessionId: string,
+  sessionId: string
 ) {
   // Analyze user behavior patterns
   const interactionsByType = interactions.reduce(
@@ -213,13 +213,13 @@ async function processInteractions(
       acc[interaction.type].push(interaction);
       return acc;
     },
-    {} as Record<string, typeof interactions>,
+    {} as Record<string, typeof interactions>
   );
 
   // Log interaction analysis
   for (const [type, interactionList] of Object.entries(interactionsByType)) {
     console.log(
-      `[Interaction Analysis] ${type}: ${interactionList.length} events`,
+      `[Interaction Analysis] ${type}: ${interactionList.length} events`
     );
   }
 
@@ -240,7 +240,7 @@ async function processInteractions(
 
 async function processWebVitals(
   webVitals: ObservabilityData["webVitals"],
-  sessionId: string,
+  sessionId: string
 ) {
   // Analyze Core Web Vitals
   const vitalsAnalysis = {
@@ -265,14 +265,14 @@ async function processWebVitals(
 
   if (poorVitals.length > 0) {
     console.warn(
-      `[Performance Alert] Poor Core Web Vitals detected: ${poorVitals.join(", ")} for session ${sessionId}`,
+      `[Performance Alert] Poor Core Web Vitals detected: ${poorVitals.join(", ")} for session ${sessionId}`
     );
   }
 }
 
 function getRating(
   value: number,
-  thresholds: [number, number],
+  thresholds: [number, number]
 ): "good" | "needs-improvement" | "poor" {
   if (value <= thresholds[0]) return "good";
   if (value <= thresholds[1]) return "needs-improvement";

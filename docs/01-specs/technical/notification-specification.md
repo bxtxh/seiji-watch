@@ -5,16 +5,18 @@
 ### Event Triggers
 
 #### (A) Bill Stage Changes
+
 ```sql
 -- Trigger: bills table UPDATE on stage column
 -- Detection: stage column value change
 -- Events captured:
 --   審議中 → 採決待ち (voting imminent)
---   採決待ち → 成立 (bill passed)  
+--   採決待ち → 成立 (bill passed)
 --   採決待ち → 否決 (bill failed)
 ```
 
 #### (B) Committee Meeting Creation
+
 ```sql
 -- Trigger: meetings table INSERT
 -- Detection: new meeting with issue_id mapping
@@ -24,6 +26,7 @@
 ### Data Schema
 
 #### Subscriptions Table
+
 ```sql
 CREATE TABLE subscriptions (
     id UUID PRIMARY KEY,
@@ -36,7 +39,8 @@ CREATE TABLE subscriptions (
 );
 ```
 
-#### Issue Events Table  
+#### Issue Events Table
+
 ```sql
 CREATE TABLE issue_events (
     id UUID PRIMARY KEY,
@@ -58,7 +62,7 @@ sequenceDiagram
     participant W as notifications-worker
     participant S as SendGrid
     participant U as User
-    
+
     A->>W: Event detection (scheduled check)
     W->>W: Aggregate daily events
     W->>W: Group by subscribed users
@@ -70,16 +74,19 @@ sequenceDiagram
 ## 2. Non-Functional Requirements
 
 ### Performance
+
 - **Email Processing**: ≤100 emails/minute (SendGrid free tier)
 - **Event Detection Latency**: ≤2 hours from source update
 - **Daily Batch Window**: 22:00-23:00 JST
 
 ### Reliability
+
 - **Retry Logic**: Failed emails retry 3x with exponential backoff
 - **Idempotency**: Event fingerprinting prevents duplicates
 - **Audit Trail**: All events logged with timestamps
 
 ### Security
+
 - **Email Validation**: Double opt-in confirmation
 - **Unsubscribe**: One-click unsubscribe in footer
 - **Data Retention**: Purge unsubscribed users after 30 days
@@ -87,13 +94,14 @@ sequenceDiagram
 ## 3. Technical Implementation
 
 ### Event Detection
+
 ```python
 class EventDetector:
     async def detect_stage_changes(self) -> List[IssueEvent]:
         """Poll Airtable for stage changes since last check"""
         last_check = await self.get_last_check_timestamp()
         changes = await self.airtable_client.get_bill_updates(since=last_check)
-        
+
         events = []
         for change in changes:
             if change.field == 'stage':
@@ -108,6 +116,7 @@ class EventDetector:
 ```
 
 ### Email Template System
+
 ```python
 # Email template using MJML → HTML compilation
 DAILY_DIGEST_TEMPLATE = """
@@ -133,10 +142,11 @@ DAILY_DIGEST_TEMPLATE = """
 ## 4. Roadmap Extensions
 
 ### Phase 2: Speech Volume Spike Detection (2026 Q1)
+
 ```python
 class SpeechSpikeDetector:
     """Detect unusual debate activity indicating political crisis"""
-    
+
     async def detect_volume_spikes(self, issue_id: str) -> Optional[SpikeEvent]:
         # Analyze speech frequency/duration over rolling 7-day window
         # Trigger when volume > 2 standard deviations above mean
@@ -156,10 +166,12 @@ class SpeechSpikeDetector:
 **Last Updated**: 2025-07-16
 
 ### Current State
+
 - **Frontend**: WatchButton.tsx contains only skeleton code with TODO comments
 - **Backend**: No subscription/notification services implemented
 - **Database**: subscriptions and issue_events tables not created
 - **API**: No notification endpoints implemented
 
 ### Next Steps
+
 Implementation should follow development tickets T124-T127 in development-tickets-final.md

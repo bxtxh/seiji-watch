@@ -22,19 +22,19 @@ export interface Bill {
   issue_tags?: string[];
 
   // Enhanced detailed content fields
-  bill_outline?: string;           // 議案要旨相当の長文情報
-  background_context?: string;     // 提出背景・経緯
-  expected_effects?: string;       // 期待される効果
-  key_provisions?: string[];       // 主要条項リスト
-  related_laws?: string[];         // 関連法律リスト
-  implementation_date?: string;    // 施行予定日
+  bill_outline?: string; // 議案要旨相当の長文情報
+  background_context?: string; // 提出背景・経緯
+  expected_effects?: string; // 期待される効果
+  key_provisions?: string[]; // 主要条項リスト
+  related_laws?: string[]; // 関連法律リスト
+  implementation_date?: string; // 施行予定日
 
   // Process tracking fields
   committee_assignments?: CommitteeAssignment[]; // 委員会付託情報
-  voting_results?: VotingSession[];              // 採決結果
-  amendments?: Amendment[];                      // 修正内容
-  inter_house_status?: string;                   // 両院間の状況
-  legislative_stage?: LegislativeStage;          // 立法段階情報
+  voting_results?: VotingSession[]; // 採決結果
+  amendments?: Amendment[]; // 修正内容
+  inter_house_status?: string; // 両院間の状況
+  legislative_stage?: LegislativeStage; // 立法段階情報
 
   // 後方互換性のため (段階的移行)
   category?: string;
@@ -182,4 +182,15 @@ export interface VotingSession {
   absent_votes: number;
   is_final_vote: boolean;
   vote_records?: VoteResult[];
+}
+
+export interface Member {
+  id: string;
+  name_ja: string;
+  name_en?: string;
+  party: string;
+  house: string;
+  district: string;
+  profile?: string;
+  photo_url?: string;
 }

@@ -7,6 +7,7 @@ This guide covers the deployment of the complete Diet Issue Tracker platform wit
 ## Architecture Overview
 
 The platform consists of 7 microservices:
+
 - **diet-scraper**: Data collection from Diet websites
 - **stt-worker**: Speech-to-text processing with Whisper
 - **data-processor**: Data normalization and LLM analysis
@@ -18,6 +19,7 @@ The platform consists of 7 microservices:
 ## Infrastructure Components
 
 ### GCP Services
+
 - **Cloud Run**: Serverless containers for all services
 - **Cloud SQL**: PostgreSQL 15 with pgvector extension
 - **Cloud Storage**: Raw data and processed files
@@ -30,6 +32,7 @@ The platform consists of 7 microservices:
 ## Prerequisites
 
 ### Local Development
+
 - Docker & Docker Compose
 - Terraform >= 1.0
 - gcloud CLI
@@ -38,6 +41,7 @@ The platform consists of 7 microservices:
 - Poetry (Python package manager)
 
 ### GCP Requirements
+
 - GCP Project with billing enabled
 - Required APIs enabled:
   - Cloud Run API
@@ -87,12 +91,14 @@ gcloud secrets create jwt-secret-key-${ENV} --data-file=- <<< 'your-secret'
 ### 4. Build and Deploy Services
 
 Using GitHub Actions (recommended):
+
 ```bash
 # Push to main branch triggers automatic deployment
 git push origin main
 ```
 
 Manual deployment:
+
 ```bash
 # Build and push Docker images
 ./scripts/build-and-push.sh -e ${ENV}
@@ -122,16 +128,19 @@ gcloud scheduler jobs create http notifications-daily \
 ## Environment Configuration
 
 ### Development Environment
+
 - Uses local PostgreSQL via Docker Compose
 - Services run on localhost with different ports
 - Hot reload enabled for all services
 
 ### Staging Environment
+
 - Mirrors production infrastructure
 - Uses separate GCP project or namespace
 - Automated deployment from main branch
 
 ### Production Environment
+
 - Manual approval required for deployment
 - Blue-green deployment strategy
 - Health checks and rollback capability
@@ -139,36 +148,43 @@ gcloud scheduler jobs create http notifications-daily \
 ## Service-Specific Configuration
 
 ### diet-scraper
+
 - Rate limiting: 1-2 second delays
 - Respects robots.txt
 - NDL API rate limit: ≤3 req/s
 
 ### stt-worker
+
 - Whisper large-v3 model
 - Audio files stored in Cloud Storage
 - WER validation ≤15%
 
 ### data-processor
+
 - OpenAI GPT-4 for analysis
 - Airtable integration for dynamic data
 - Batch processing capabilities
 
 ### vector-store
+
 - pgvector for embeddings
 - Japanese-optimized models
 - Incremental indexing
 
 ### api-gateway
+
 - JWT authentication
 - CORS configuration
 - Rate limiting with Redis
 
 ### web-frontend
+
 - CDN distribution
 - PWA manifest configuration
 - Environment-specific API URLs
 
 ### notifications-worker
+
 - SendGrid configuration
 - Daily batch at 22:00 JST
 - Idempotency checks
@@ -176,23 +192,29 @@ gcloud scheduler jobs create http notifications-daily \
 ## Monitoring and Maintenance
 
 ### Health Checks
+
 All services expose health endpoints:
+
 - `GET /health` - Basic health check
 - `GET /health/ready` - Readiness check
 
 ### Logging
+
 - Structured JSON logging
 - Cloud Logging integration
 - Log levels: DEBUG, INFO, WARNING, ERROR
 
 ### Metrics
+
 - Request latency (p50, p95, p99)
 - Error rates
 - Processing queue depth
 - Database connection pool
 
 ### Alerts
+
 Configure alerts in Cloud Monitoring for:
+
 - Service downtime
 - High error rates
 - Slow response times

@@ -246,7 +246,7 @@ test.describe("Security Tests", () => {
 
     // Should restrict object-src
     const objectSrcDirective = directives.find((d) =>
-      d.startsWith("object-src"),
+      d.startsWith("object-src")
     );
     if (objectSrcDirective) {
       expect(objectSrcDirective).toContain("'none'");
@@ -299,7 +299,7 @@ test.describe("Security Tests", () => {
       expect(["Strict", "Lax", "None"]).toContain(cookie.sameSite);
 
       console.log(
-        `Cookie: ${cookie.name}, Secure: ${cookie.secure}, HttpOnly: ${cookie.httpOnly}, SameSite: ${cookie.sameSite}`,
+        `Cookie: ${cookie.name}, Secure: ${cookie.secure}, HttpOnly: ${cookie.httpOnly}, SameSite: ${cookie.sameSite}`
       );
     }
   });
@@ -327,7 +327,7 @@ test.describe("Security Tests", () => {
 
     // Wait for error message
     await expect(
-      page.locator(TestHelpers.selectors.errorMessage),
+      page.locator(TestHelpers.selectors.errorMessage)
     ).toBeVisible();
 
     const errorText = await page

@@ -7,6 +7,7 @@
 ### Project Context
 
 **プロジェクトの現状:**
+
 - **MVP完了**: 2025年7月にMVP開発完了、参議院選挙に合わせてリリース
 - **アーキテクチャ**: 3サービス構成（ingest-worker、api-gateway、web-frontend）+ 共有ライブラリ
 - **データ戦略**: Airtable（構造化データ） + Weaviate Cloud（ベクターデータ）
@@ -15,6 +16,7 @@
 ### Current State Analysis
 
 **問題のあるファイルパターン:**
+
 - `services/ingest-worker/`: 200以上のファイル、多くが日付付きの一時ファイル（例：`*_20250713_*.json`）
 - `services/api_gateway/`: 複数の重複したテストファイルとサーバーファイル
 - `services/web-frontend/` と `services/web-frontend-new/`: 2つのフロントエンドが並存
@@ -22,6 +24,7 @@
 - 大量の分析・バックアップファイルが開発ディレクトリに蓄積
 
 **技術的負債の背景:**
+
 - 急速なMVP開発により一時的なスクリプトが蓄積
 - データ移行・品質改善の過程で多数のバックアップファイル生成
 - 複数の実験的アプローチによる重複実装
@@ -78,6 +81,7 @@ graph TD
 ### 1. File Classification System
 
 **Temporary File Detector**
+
 ```python
 class TemporaryFileDetector:
     def classify_file(self, filepath: str) -> FileClassification:
@@ -89,6 +93,7 @@ class TemporaryFileDetector:
 ```
 
 **Duplicate File Analyzer**
+
 ```python
 class DuplicateAnalyzer:
     def find_duplicates(self, directory: str) -> List[DuplicateGroup]:
@@ -101,6 +106,7 @@ class DuplicateAnalyzer:
 ### 2. Dependency Graph Builder
 
 **Service Dependency Mapper**
+
 ```python
 class DependencyMapper:
     def build_dependency_graph(self) -> DependencyGraph:
@@ -113,6 +119,7 @@ class DependencyMapper:
 ### 3. Safe Deletion Engine
 
 **File Safety Checker**
+
 ```python
 class SafetyChecker:
     def is_safe_to_delete(self, filepath: str) -> SafetyResult:
@@ -126,9 +133,10 @@ class SafetyChecker:
 ### 4. Code Consolidation Manager
 
 **Frontend Merger**
+
 ```python
 class FrontendMerger:
-    def merge_frontends(self, 
+    def merge_frontends(self,
                        primary: str = "web-frontend",
                        secondary: str = "web-frontend-new") -> MergeResult:
         # Compare and merge:
@@ -139,6 +147,7 @@ class FrontendMerger:
 ```
 
 **Test Suite Consolidator**
+
 ```python
 class TestConsolidator:
     def consolidate_tests(self, service_path: str) -> ConsolidationResult:
@@ -204,7 +213,7 @@ class RefactoringPlan(BaseModel):
 class RefactoringRollback:
     def create_checkpoint(self) -> str:
         # Create git commit or backup before operations
-        
+
     def rollback_to_checkpoint(self, checkpoint_id: str) -> bool:
         # Restore previous state if issues occur
 ```
@@ -215,10 +224,10 @@ class RefactoringRollback:
 class PostRefactoringValidator:
     def validate_build_integrity(self) -> ValidationResult:
         # Ensure all services still build
-        
+
     def validate_test_coverage(self) -> ValidationResult:
         # Ensure test coverage is maintained
-        
+
     def validate_functionality(self) -> ValidationResult:
         # Run smoke tests on core functionality
 ```
@@ -247,6 +256,7 @@ class PostRefactoringValidator:
 ### Test Structure Improvements
 
 **Before (Current State):**
+
 ```
 services/api_gateway/
 ├── test_*.py (multiple scattered test files)
@@ -255,6 +265,7 @@ services/api_gateway/
 ```
 
 **After (Improved Structure):**
+
 ```
 services/api_gateway/tests/
 ├── unit/
@@ -270,27 +281,32 @@ services/api_gateway/tests/
 ## Implementation Phases
 
 ### Phase 1: Analysis and Planning (Safe)
+
 - File classification and duplicate detection
 - Dependency analysis
 - Risk assessment
 - Backup creation
 
 ### Phase 2: Safe Deletions (Low Risk)
+
 - Remove clearly temporary files (date-stamped backups)
 - Delete unused test result files
 - Clean up development artifacts
 
 ### Phase 3: Code Consolidation (Medium Risk)
+
 - Merge duplicate test files
 - Consolidate frontend services
 - Organize shared library usage
 
 ### Phase 4: Structure Optimization (Medium Risk)
+
 - Reorganize directory structures
 - Update import paths
 - Consolidate configuration files
 
 ### Phase 5: Quality Assurance (Critical)
+
 - Run full test suite
 - Verify build integrity
 - Performance validation
@@ -299,30 +315,35 @@ services/api_gateway/tests/
 ## Risk Mitigation
 
 ### Backup Strategy
+
 - Git commit before each phase
 - File-level backups for critical operations
 - Airtable data export before structural changes
 - Weaviate vector data backup if needed
 
 ### Incremental Approach
+
 - One service at a time
 - Validate after each major change
 - Rollback capability at each step
 - Preserve MVP functionality throughout refactoring
 
 ### Validation Gates
+
 - Automated tests must pass before proceeding
 - Manual review for high-risk operations
 - Stakeholder approval for structural changes
 - Integration with existing CI/CD pipeline
 
 ### Documentation Integration
+
 - Update comprehensive docs/ structure during refactoring
 - Maintain alignment with existing technical specifications
 - Preserve development ticket tracking system
 - Update roadmap documentation as needed
 
 ### MVP Preservation
+
 - Maintain all completed EPIC functionality
 - Preserve Airtable + Weaviate integration
 - Keep CI/CD pipeline operational

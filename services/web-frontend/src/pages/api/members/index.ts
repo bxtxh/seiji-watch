@@ -18,12 +18,15 @@ interface MembersResponse {
   total_found: number;
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<MembersResponse>) {
+export default function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<MembersResponse>
+) {
   if (req.method === "GET") {
     const { limit = 20 } = req.query;
-    
+
     let filteredMembers = mockMembers as MemberRecord[];
-    
+
     // Apply limit
     const limitNum = parseInt(limit as string, 10);
     if (!isNaN(limitNum) && limitNum > 0) {

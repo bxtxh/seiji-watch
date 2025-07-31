@@ -21,23 +21,26 @@ const LegislativeProgressBar: React.FC<LegislativeProgressBarProps> = ({
     if (completed) {
       return "bg-green-500 text-white";
     }
-    
+
     if (stageName === stage.current_stage) {
       return "bg-blue-500 text-white";
     }
-    
+
     return "bg-gray-200 text-gray-600";
   };
 
-  const getStageIcon = (milestone: LegislativeMilestone, isCurrentStage: boolean) => {
+  const getStageIcon = (
+    milestone: LegislativeMilestone,
+    isCurrentStage: boolean
+  ) => {
     if (milestone.completed) {
       return <CheckCircleIconSolid className="w-5 h-5 text-green-500" />;
     }
-    
+
     if (isCurrentStage) {
       return <ClockIcon className="w-5 h-5 text-blue-500" />;
     }
-    
+
     return <div className="w-5 h-5 rounded-full border-2 border-gray-300" />;
   };
 
@@ -54,13 +57,21 @@ const LegislativeProgressBar: React.FC<LegislativeProgressBarProps> = ({
   };
 
   const getProgressPercentage = () => {
-    const completedMilestones = stage.milestones.filter(m => m.completed).length;
+    const completedMilestones = stage.milestones.filter(
+      (m) => m.completed
+    ).length;
     return Math.round((completedMilestones / stage.milestones.length) * 100);
   };
 
   if (compact) {
     return (
-      <div className="flex items-center space-x-3" role="progressbar" aria-valuenow={stage.stage_progress} aria-valuemin={0} aria-valuemax={100}>
+      <div
+        className="flex items-center space-x-3"
+        role="progressbar"
+        aria-valuenow={stage.stage_progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <div className="flex-1">
           <div className="flex justify-between text-sm text-gray-600 mb-1">
             <span>{stage.current_stage}</span>
@@ -85,15 +96,23 @@ const LegislativeProgressBar: React.FC<LegislativeProgressBarProps> = ({
   }
 
   return (
-    <section className="space-y-6" aria-labelledby="legislative-progress-heading">
+    <section
+      className="space-y-6"
+      aria-labelledby="legislative-progress-heading"
+    >
       <header className="flex items-center justify-between">
-        <h3 id="legislative-progress-heading" className="text-lg font-semibold text-gray-900 flex items-center">
+        <h3
+          id="legislative-progress-heading"
+          className="text-lg font-semibold text-gray-900 flex items-center"
+        >
           <ClockIcon className="w-5 h-5 mr-2" />
           立法進捗
         </h3>
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <span>進捗率:</span>
-          <span className="font-semibold text-blue-600">{getProgressPercentage()}%</span>
+          <span className="font-semibold text-blue-600">
+            {getProgressPercentage()}%
+          </span>
         </div>
       </header>
 
@@ -128,37 +147,54 @@ const LegislativeProgressBar: React.FC<LegislativeProgressBarProps> = ({
 
       {/* Timeline */}
       <div className="relative">
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200" aria-hidden="true" />
-        
-        <div className="space-y-6" role="list" aria-label="立法進捗のマイルストーン">
+        <div
+          className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"
+          aria-hidden="true"
+        />
+
+        <div
+          className="space-y-6"
+          role="list"
+          aria-label="立法進捗のマイルストーン"
+        >
           {stage.milestones.map((milestone, index) => {
             const isCurrentStage = milestone.stage === stage.current_stage;
-            
+
             return (
-              <div key={index} className="relative flex items-start" role="listitem">
+              <div
+                key={index}
+                className="relative flex items-start"
+                role="listitem"
+              >
                 {/* Timeline dot */}
                 <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center relative z-10">
                   {getStageIcon(milestone, isCurrentStage)}
                 </div>
 
                 {/* Content */}
-                <div className={`flex-1 ml-4 pb-6 ${milestone.completed ? 'opacity-80' : ''}`}>
-                  <div className={`p-4 rounded-lg border ${
-                    milestone.completed 
-                      ? 'bg-green-50 border-green-200' 
-                      : isCurrentStage 
-                        ? 'bg-blue-50 border-blue-200' 
-                        : 'bg-gray-50 border-gray-200'
-                  }`}>
+                <div
+                  className={`flex-1 ml-4 pb-6 ${milestone.completed ? "opacity-80" : ""}`}
+                >
+                  <div
+                    className={`p-4 rounded-lg border ${
+                      milestone.completed
+                        ? "bg-green-50 border-green-200"
+                        : isCurrentStage
+                          ? "bg-blue-50 border-blue-200"
+                          : "bg-gray-50 border-gray-200"
+                    }`}
+                  >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h4 className={`font-medium ${
-                          milestone.completed 
-                            ? 'text-green-900' 
-                            : isCurrentStage 
-                              ? 'text-blue-900' 
-                              : 'text-gray-900'
-                        }`}>
+                        <h4
+                          className={`font-medium ${
+                            milestone.completed
+                              ? "text-green-900"
+                              : isCurrentStage
+                                ? "text-blue-900"
+                                : "text-gray-900"
+                          }`}
+                        >
                           {milestone.stage}
                           {milestone.house && (
                             <span className="ml-2 text-sm font-normal text-gray-600">
@@ -166,13 +202,15 @@ const LegislativeProgressBar: React.FC<LegislativeProgressBarProps> = ({
                             </span>
                           )}
                         </h4>
-                        <p className={`text-sm mt-1 ${
-                          milestone.completed 
-                            ? 'text-green-700' 
-                            : isCurrentStage 
-                              ? 'text-blue-700' 
-                              : 'text-gray-600'
-                        }`}>
+                        <p
+                          className={`text-sm mt-1 ${
+                            milestone.completed
+                              ? "text-green-700"
+                              : isCurrentStage
+                                ? "text-blue-700"
+                                : "text-gray-600"
+                          }`}
+                        >
                           {milestone.description}
                         </p>
                         {milestone.date && (
@@ -184,7 +222,7 @@ const LegislativeProgressBar: React.FC<LegislativeProgressBarProps> = ({
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Status indicator */}
                       <div className="ml-4 flex-shrink-0">
                         {milestone.completed && (

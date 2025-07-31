@@ -16,7 +16,9 @@ interface EnhancedBillDetailsProps {
 }
 
 const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<
+    Record<string, boolean>
+  >({
     outline: false,
     background: false,
     effects: false,
@@ -25,9 +27,9 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
   });
 
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -51,8 +53,17 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
     content: string | string[];
     isArray?: boolean;
     emptyMessage?: string;
-  }> = ({ id, title, icon, content, isArray = false, emptyMessage = "情報がありません" }) => {
-    const hasContent = isArray ? Array.isArray(content) && content.length > 0 : content;
+  }> = ({
+    id,
+    title,
+    icon,
+    content,
+    isArray = false,
+    emptyMessage = "情報がありません",
+  }) => {
+    const hasContent = isArray
+      ? Array.isArray(content) && content.length > 0
+      : content;
     const isExpanded = expandedSections[id];
 
     if (!hasContent) {
@@ -92,8 +103,13 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
               <ul className="space-y-2" role="list">
                 {(content as string[]).map((item, index) => (
                   <li key={index} className="flex items-start" role="listitem">
-                    <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-gray-700 japanese-text leading-relaxed">{item}</span>
+                    <span
+                      className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-gray-700 japanese-text leading-relaxed">
+                      {item}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -113,7 +129,10 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
   return (
     <section className="space-y-6" aria-labelledby="enhanced-bill-details">
       <header>
-        <h3 id="enhanced-bill-details" className="text-lg font-semibold text-gray-900 flex items-center">
+        <h3
+          id="enhanced-bill-details"
+          className="text-lg font-semibold text-gray-900 flex items-center"
+        >
           <DocumentTextIcon className="w-5 h-5 mr-2" />
           詳細情報
         </h3>
@@ -175,8 +194,8 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
               <span className="ml-2 font-medium text-blue-900">施行予定日</span>
             </div>
             <div className="mt-2 ml-7">
-              <time 
-                dateTime={bill.implementation_date} 
+              <time
+                dateTime={bill.implementation_date}
                 className="text-blue-800 font-medium"
               >
                 {formatDate(bill.implementation_date)}
@@ -190,7 +209,9 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
             <div className="flex items-center">
               <InformationCircleIcon className="w-5 h-5 text-purple-600" />
-              <span className="ml-2 font-medium text-purple-900">両院間の状況</span>
+              <span className="ml-2 font-medium text-purple-900">
+                両院間の状況
+              </span>
             </div>
             <div className="mt-2 ml-7">
               <span className="text-purple-800">{bill.inter_house_status}</span>
@@ -204,12 +225,14 @@ const EnhancedBillDetails: React.FC<EnhancedBillDetailsProps> = ({ bill }) => {
         <div className="flex items-start">
           <InformationCircleIcon className="w-5 h-5 text-yellow-600 mt-0.5" />
           <div className="ml-2">
-            <h4 className="text-sm font-medium text-yellow-900">情報について</h4>
+            <h4 className="text-sm font-medium text-yellow-900">
+              情報について
+            </h4>
             <p className="text-sm text-yellow-800 mt-1">
               詳細情報は段階的に取得・更新されます。最新の情報については、
-              <a 
-                href={bill.diet_url} 
-                target="_blank" 
+              <a
+                href={bill.diet_url}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="underline hover:text-yellow-900"
               >

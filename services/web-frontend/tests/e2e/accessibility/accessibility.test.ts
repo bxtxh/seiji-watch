@@ -86,7 +86,7 @@ test.describe("Accessibility Tests", () => {
       : false;
 
     expect(
-      hasAriaLabel || hasAriaLabelledby || hasAssociatedLabel,
+      hasAriaLabel || hasAriaLabelledby || hasAssociatedLabel
     ).toBeTruthy();
 
     // Check buttons have accessible names
@@ -208,7 +208,7 @@ test.describe("Accessibility Tests", () => {
 
       // Test accessibility of toggle
       await helpers.expectElementToBeAccessible(
-        TestHelpers.selectors.furiganaToggle,
+        TestHelpers.selectors.furiganaToggle
       );
     }
   });
@@ -317,7 +317,7 @@ test.describe("Accessibility Tests", () => {
       const ariaLive = await errorMessage.getAttribute("aria-live");
 
       expect(
-        role === "alert" || ariaLive === "polite" || ariaLive === "assertive",
+        role === "alert" || ariaLive === "polite" || ariaLive === "assertive"
       ).toBeTruthy();
     }
   });

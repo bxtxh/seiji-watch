@@ -28,7 +28,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
 }) => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(
-    null,
+    null
   );
 
   useEffect(() => {
@@ -48,7 +48,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   const collectMetrics = () => {
     try {
       const navigation = performance.getEntriesByType(
-        "navigation",
+        "navigation"
       )[0] as PerformanceNavigationTiming;
       const memory = (performance as any).memory;
 
@@ -99,7 +99,7 @@ const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
 
   const getPerformanceScore = (
     metric: number,
-    thresholds: { good: number; poor: number },
+    thresholds: { good: number; poor: number }
   ): string => {
     if (metric <= thresholds.good) return "text-green-600 bg-green-100";
     if (metric <= thresholds.poor) return "text-yellow-600 bg-yellow-100";

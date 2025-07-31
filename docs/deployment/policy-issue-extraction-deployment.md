@@ -7,6 +7,7 @@ This guide covers the deployment of the dual-level policy issue extraction syste
 ## Prerequisites
 
 ### Environment Requirements
+
 - Python 3.11.2+
 - Node.js 18+ (for API Gateway)
 - PostgreSQL 14+ with pgvector extension
@@ -14,6 +15,7 @@ This guide covers the deployment of the dual-level policy issue extraction syste
 - Docker and Docker Compose (recommended for development)
 
 ### External Service Accounts
+
 - OpenAI API key with GPT-4 access
 - Airtable account with API access
 - Discord webhook URL for notifications
@@ -90,7 +92,7 @@ pip install pydantic>=2.0.0
 pip install asyncio>=3.4.3
 pip install aiohttp>=3.8.0
 
-# Japanese NLP dependencies  
+# Japanese NLP dependencies
 pip install janome>=0.5.0
 pip install mecab-python3>=1.0.6
 
@@ -111,14 +113,14 @@ class ExtractorConfig(BaseSettings):
     openai_model: str = "gpt-4"
     openai_max_tokens: int = 800
     openai_temperature: float = 0.2
-    
+
     airtable_api_key: str
     airtable_base_id: str
     airtable_issues_table: str
-    
+
     discord_webhook_url: str
     discord_notifications_enabled: bool = True
-    
+
     class Config:
         env_file = ".env"
 ```
@@ -272,15 +274,15 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'seiji-watch-api'
+  - job_name: "seiji-watch-api"
     static_configs:
-      - targets: ['localhost:8000']
-    metrics_path: '/api/monitoring/metrics'
-    
-  - job_name: 'seiji-watch-ingest'
+      - targets: ["localhost:8000"]
+    metrics_path: "/api/monitoring/metrics"
+
+  - job_name: "seiji-watch-ingest"
     static_configs:
-      - targets: ['localhost:8001']
-    metrics_path: '/metrics'
+      - targets: ["localhost:8001"]
+    metrics_path: "/metrics"
 ```
 
 #### Grafana Dashboard
@@ -301,7 +303,7 @@ scrape_configs:
       },
       {
         "title": "LLM API Response Time",
-        "type": "graph", 
+        "type": "graph",
         "targets": [
           {
             "expr": "histogram_quantile(0.95, rate(llm_request_duration_seconds_bucket[5m]))"
@@ -336,7 +338,7 @@ groups:
           severity: warning
         annotations:
           summary: "High issue extraction failure rate"
-          
+
       - alert: LLMAPIDown
         expr: up{job="llm-api"} == 0
         for: 1m
@@ -344,7 +346,7 @@ groups:
           severity: critical
         annotations:
           summary: "LLM API is down"
-          
+
       - alert: AirtableRateLimitExceeded
         expr: airtable_rate_limit_remaining < 10
         for: 1m
@@ -362,11 +364,11 @@ groups:
 
 ```yaml
 # docker-compose.prod.yml
-version: '3.8'
+version: "3.8"
 
 services:
   ingest-worker:
-    build: 
+    build:
       context: ./services/ingest-worker
       dockerfile: Dockerfile.prod
     environment:
@@ -377,7 +379,7 @@ services:
       - redis
       - postgres
     restart: unless-stopped
-    
+
   api-gateway:
     build:
       context: ./services/api-gateway
@@ -392,7 +394,7 @@ services:
       - postgres
       - redis
     restart: unless-stopped
-    
+
   postgres:
     image: pgvector/pgvector:pg14
     environment:
@@ -402,11 +404,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
-    
+
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    
+
   prometheus:
     image: prom/prometheus
     ports:
@@ -414,7 +416,7 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     restart: unless-stopped
-    
+
   grafana:
     image: grafana/grafana
     ports:
@@ -449,37 +451,37 @@ spec:
         app: policy-issue-extraction
     spec:
       containers:
-      - name: ingest-worker
-        image: seiji-watch/ingest-worker:latest
-        env:
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: api-keys
-              key: openai-api-key
-        - name: AIRTABLE_PAT
-          valueFrom:
-            secretKeyRef:
-              name: api-keys
-              key: airtable-api-key
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-      - name: api-gateway
-        image: seiji-watch/api-gateway:latest
-        ports:
-        - containerPort: 8000
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "125m"
-          limits:
-            memory: "512Mi"
-            cpu: "250m"
+        - name: ingest-worker
+          image: seiji-watch/ingest-worker:latest
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-keys
+                  key: openai-api-key
+            - name: AIRTABLE_PAT
+              valueFrom:
+                secretKeyRef:
+                  name: api-keys
+                  key: airtable-api-key
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+        - name: api-gateway
+          image: seiji-watch/api-gateway:latest
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "125m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
 ```
 
 ### 2. Cloud Deployment (GCP)
@@ -556,7 +558,7 @@ app.add_middleware(
 )
 
 app.add_middleware(
-    TrustedHostMiddleware, 
+    TrustedHostMiddleware,
     allowed_hosts=["api.seiji-watch.com", "*.seiji-watch.com"]
 )
 
@@ -629,13 +631,13 @@ redis_client = redis.Redis(
 async def get_cached_issues(level: int, status: str):
     cache_key = f"issues:{level}:{status}"
     cached_data = await redis_client.get(cache_key)
-    
+
     if cached_data:
         return json.loads(cached_data)
-    
+
     # Fetch from database
     data = await fetch_issues_from_db(level, status)
-    
+
     # Cache for 5 minutes
     await redis_client.setex(cache_key, 300, json.dumps(data))
     return data
@@ -724,10 +726,10 @@ async def health_check():
         "airtable": await check_airtable_health(),
         "openai": await check_openai_health()
     }
-    
+
     all_healthy = all(checks.values())
     status_code = 200 if all_healthy else 503
-    
+
     return JSONResponse(
         status_code=status_code,
         content={
@@ -748,7 +750,7 @@ livenessProbe:
     port: 8000
   initialDelaySeconds: 30
   periodSeconds: 10
-  
+
 readinessProbe:
   httpGet:
     path: /ready
@@ -774,7 +776,7 @@ data:
       tag kubernetes.*
       format json
     </source>
-    
+
     <match kubernetes.**>
       @type google_cloud
       project_id "#{ENV['PROJECT_ID']}"

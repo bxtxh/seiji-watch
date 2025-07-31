@@ -2,24 +2,27 @@
 
 **作成日**: 2025年7月11日  
 **対象システム**: Diet Issue Tracker  
-**バージョン**: 1.0  
+**バージョン**: 1.0
 
 ## 1. 概要
 
 ### 1.1 イシュー機能の目的
+
 国会で議論される**具体的な政策課題**を「イシュー」として管理・追跡し、関連する法案・議論・政治活動を集約して可視化する機能。
 
 ### 1.2 重要な概念区別
 
 #### イシュー（Issue）
+
 - **定義**: 具体的な政策課題・社会問題
-- **例**: 
+- **例**:
   - "介護・障害福祉従事者の人員確保"
   - "カーボンニュートラル目標達成のための制度整備"
   - "ライドシェア事業制度の導入"
   - "ギャンブル等依存症対策の強化"
 
 #### 政策分野（Policy Category）
+
 - **定義**: 法案・政策の分野分類（CAP準拠の階層システム）
 - **例**:
   - L1: "社会保障", "環境・エネルギー", "経済・産業"
@@ -27,6 +30,7 @@
   - L3: "高齢者医療", "太陽光発電", "公共交通"
 
 #### 関係性
+
 ```
 イシュー「介護人員確保」 → 政策分野「社会保障 > 介護・福祉 > 人材確保」
     ↓
@@ -44,17 +48,17 @@ class Issue(BaseRecord):
     description: str                        # 詳細説明
     priority: str = "medium"                # 優先度（high/medium/low）
     status: str = "active"                  # ステータス（active/reviewed/archived）
-    
+
     # 関連エンティティ
     related_bills: Optional[List[str]]      # 関連法案レコードID
     issue_tags: Optional[List[str]]         # イシュータグレコードID
     policy_category_id: Optional[str]       # 政策分野カテゴリID（※名称変更）
-    
+
     # AI・分析関連
     extraction_confidence: Optional[float]  # LLM抽出信頼度（0.0-1.0）
     review_notes: Optional[str]             # 管理者レビューノート
     is_llm_generated: bool = False          # AI自動生成フラグ
-    
+
     # メタデータ
     created_at: str                         # 作成日時
     updated_at: str                         # 更新日時
@@ -70,15 +74,16 @@ class PolicyCategory(BaseRecord):
     title_ja: str                           # 日本語タイトル
     title_en: Optional[str]                 # 英語タイトル
     summary_150ja: Optional[str]            # 日本語説明（150文字以内）
-    
+
     # 階層関係
     parent_category_id: Optional[str]       # 親カテゴリID
-    
+
     # メタデータ
     is_seed: bool = False                   # CAP由来のシードデータフラグ
 ```
 
 #### 階層例
+
 ```
 L1: 13 "社会保障"
 ├── L2: 1301 "健康保険"
@@ -100,6 +105,7 @@ class IssueTag(BaseRecord):
 ```
 
 #### タグカテゴリ例
+
 - **審議状況**: "長期審議", "短期審議", "継続審議"
 - **緊急度**: "緊急性高", "緊急性中", "緊急性低"
 - **影響範囲**: "全国影響", "地域限定", "特定業界"
@@ -118,35 +124,36 @@ class IssueTag(BaseRecord):
 
 ### 3.2 ステージ定義
 
-| ステージ | 説明 | 条件 |
-|----------|------|------|
-| **審議前** | イシューが特定されたが、関連法案の審議が開始されていない | 関連法案が提出済みだが審議未開始 |
-| **審議中** | 関連法案が委員会・本会議で審議中 | 少なくとも1つの関連法案が審議中 |
-| **採決待ち** | 審議完了し、採決予定が決定 | 審議完了、採決日程確定 |
-| **成立** | 関連法案が可決成立または廃案確定 | 全関連法案の最終結果確定 |
+| ステージ     | 説明                                                     | 条件                             |
+| ------------ | -------------------------------------------------------- | -------------------------------- |
+| **審議前**   | イシューが特定されたが、関連法案の審議が開始されていない | 関連法案が提出済みだが審議未開始 |
+| **審議中**   | 関連法案が委員会・本会議で審議中                         | 少なくとも1つの関連法案が審議中  |
+| **採決待ち** | 審議完了し、採決予定が決定                               | 審議完了、採決日程確定           |
+| **成立**     | 関連法案が可決成立または廃案確定                         | 全関連法案の最終結果確定         |
 
 ### 3.3 ステージ判定ロジック
+
 ```python
 def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
     """関連法案の状態からイシューステージを判定"""
-    
+
     if not related_bills:
         return "審議前"
-    
+
     bill_statuses = [bill.status for bill in related_bills]
-    
+
     # 1つでも成立/廃案があれば「成立」
     if any(status in ["passed", "enacted", "rejected"] for status in bill_statuses):
         return "成立"
-    
+
     # 1つでも採決待ちがあれば「採決待ち」
     if any(status in ["pending_vote", "awaiting_vote"] for status in bill_statuses):
         return "採決待ち"
-    
+
     # 1つでも審議中があれば「審議中」
     if any(status in ["under_review", "in_committee", "in_plenary"] for status in bill_statuses):
         return "審議中"
-    
+
     # デフォルト
     return "審議前"
 ```
@@ -156,33 +163,40 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ### 4.1 実装済みエンドポイント
 
 #### イシュー基本操作
+
 - `GET /api/issues/` - イシュー一覧（フィルタリング対応）
 - `POST /api/issues/` - 新規イシュー作成
 - `PUT /api/issues/{issue_id}` - イシュー更新
 
 #### AI機能
+
 - `POST /api/issues/extract` - 法案内容からLLMでイシュー抽出
 
 #### 政策分野・タグ
+
 - `GET /api/issues/categories` - 政策分野階層一覧
 - `GET /api/issues/tags/` - イシュータグ一覧
 
 #### Kanban表示
+
 - `GET /api/issues/kanban` - TOPページ用Kanbanデータ
 
 ### 4.2 未実装エンドポイント（必要）
 
 #### 個別イシュー詳細
+
 - `GET /api/issues/{issue_id}` - 個別イシュー詳細取得
 - `GET /api/issues/{issue_id}/bills` - イシューの関連法案一覧
 
 #### 詳細検索・分析
+
 - `GET /api/issues/search` - 高度な検索機能
 - `GET /api/issues/analytics` - イシュー分析データ
 
 ### 4.3 APIレスポンス例
 
 #### GET /api/issues/{issue_id}
+
 ```json
 {
   "success": true,
@@ -221,6 +235,7 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ```
 
 #### GET /api/issues/{issue_id}/bills
+
 ```json
 {
   "success": true,
@@ -252,6 +267,7 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ### 5.1 Kanbanボード（TOPページ）
 
 #### レイアウト
+
 ```
 ┌─────────────┬─────────────┬─────────────┬─────────────┐
 │   審議前    │   審議中    │  採決待ち   │    成立     │
@@ -265,6 +281,7 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ```
 
 #### イシューカード仕様
+
 ```
 ┌────────────────────────────────────────┐
 │ 🔸 介護・障害福祉従事者の人員確保...     │ ← イシュータイトル（20文字+...）
@@ -284,11 +301,13 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ### 5.2 イシュー詳細ページ（/issues/[id]）
 
 #### タブ構成
+
 1. **概要タブ**: イシュー基本情報・政策分野・タグ
 2. **関連法案タブ**: 関連法案一覧・進捗状況
 3. **議論履歴タブ**: 関連する委員会・本会議の議論
 
 #### 詳細表示項目
+
 - **ヘッダー**: イシュー名、説明、優先度、ステータス
 - **政策分野**: 階層表示（L1 > L2 > L3）
 - **イシュータグ**: カラー付きタグ表示
@@ -300,11 +319,13 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ### 6.1 イシュー自動抽出
 
 #### 入力
+
 - **法案内容**: 法案の全文または要約
 - **法案タイトル**: 法案の正式名称
 - **既存イシューリスト**: 重複防止用
 
 #### 処理フロー
+
 ```
 法案内容 → LLM分析 → イシュー候補抽出 → 類似性チェック → 新規イシュー提案
                                     ↓
@@ -312,6 +333,7 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ```
 
 #### LLMプロンプト例
+
 ```
 以下の法案内容から、具体的な政策課題（イシュー）を1-3個抽出してください。
 
@@ -342,6 +364,7 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ### 6.2 政策分野自動分類
 
 #### CAP-based分類
+
 - **L1判定**: 法案内容から主要政策分野を判定
 - **L2判定**: より具体的なサブカテゴリを判定
 - **L3判定**: 最も具体的な政策領域を判定
@@ -351,17 +374,20 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ### 7.1 データ検証ルール
 
 #### イシュー作成時
+
 - タイトル: 1-100文字、日本語推奨
 - 説明: 1-2000文字、具体的内容必須
 - 政策分野: 有効なカテゴリIDのみ
 - 関連法案: 存在する法案IDのみ
 
 #### 関連性検証
+
 - イシュー ⟷ 法案: 双方向関係の整合性
 - イシュー ⟷ 政策分野: 階層構造の整合性
 - 重複イシューの検出・統合
 
 ### 7.2 品質メトリクス
+
 - **LLM抽出精度**: 人間レビューとの一致率 > 85%
 - **関連性適切度**: 関連法案の妥当性スコア > 0.8
 - **カテゴリ分類精度**: CAP分類の正確性 > 90%
@@ -369,12 +395,14 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ## 8. パフォーマンス要件
 
 ### 8.1 API応答時間
+
 - イシュー一覧取得: < 200ms
 - 個別イシュー詳細: < 150ms
 - Kanbanデータ生成: < 300ms
 - LLMイシュー抽出: < 10秒
 
 ### 8.2 UI表示速度
+
 - Kanbanボード初期表示: < 2秒
 - イシューカードクリック→詳細表示: < 1秒
 - タブ切り替え: < 500ms
@@ -382,11 +410,13 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ## 9. セキュリティ・コンプライアンス
 
 ### 9.1 データアクセス制御
+
 - **公開データ**: イシュー基本情報、関連法案
 - **制限データ**: レビューノート、内部分析データ
 - **管理者専用**: LLM信頼度、抽出ログ
 
 ### 9.2 政治的中立性
+
 - イシューの客観的記述
 - 政党・議員への偏向的表現禁止
 - 政策評価の中立性維持
@@ -394,11 +424,13 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ## 10. 今後の拡張予定
 
 ### 10.1 Phase 2 機能
+
 - イシュー間の関連性分析
 - 時系列での政策変遷追跡
 - 議員の政策ポジション分析
 
 ### 10.2 Phase 3 機能
+
 - 市民からのイシュー提案機能
 - イシューの社会的インパクト測定
 - 国際比較・ベンチマーキング
@@ -406,6 +438,7 @@ def determine_issue_stage(issue: Issue, related_bills: List[Bill]) -> str:
 ---
 
 **文書管理**:
+
 - 初版作成: 2025年7月11日
 - 次回レビュー予定: 実装完了後
 - 承認者: プロダクトオーナー

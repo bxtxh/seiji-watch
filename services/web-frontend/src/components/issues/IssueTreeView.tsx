@@ -3,18 +3,18 @@
  * Displays hierarchical relationship between Level 1 and Level 2 issues
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
-import { 
+import React, { useState, useCallback, useMemo } from "react";
+import {
   ChevronDownIcon,
   ChevronRightIcon,
   FolderIcon,
   FolderOpenIcon,
   DocumentIcon,
   EyeIcon,
-  EyeSlashIcon
-} from '@heroicons/react/24/outline';
-import { IssueCard, CompactIssueCard, Issue } from './IssueCard';
-import { DualLevelToggle } from './DualLevelToggle';
+  EyeSlashIcon,
+} from "@heroicons/react/24/outline";
+import { IssueCard, CompactIssueCard, Issue } from "./IssueCard";
+import { DualLevelToggle } from "./DualLevelToggle";
 
 export interface IssueTreeNode {
   record_id: string;
@@ -46,15 +46,15 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
   onStatusChange,
   expandAll = false,
   showCompact = false,
-  className = ''
+  className = "",
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(
-    expandAll ? new Set(treeData.map(node => node.record_id)) : new Set()
+    expandAll ? new Set(treeData.map((node) => node.record_id)) : new Set()
   );
   const [selectedIssue, setSelectedIssue] = useState<string | null>(null);
 
   const handleToggleNode = useCallback((nodeId: string) => {
-    setExpandedNodes(prev => {
+    setExpandedNodes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(nodeId)) {
         newSet.delete(nodeId);
@@ -68,7 +68,7 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
   const handleExpandAll = useCallback(() => {
     const allNodeIds = new Set<string>();
     const collectNodeIds = (nodes: IssueTreeNode[]) => {
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         allNodeIds.add(node.record_id);
         if (node.children.length > 0) {
           collectNodeIds(node.children);
@@ -84,23 +84,26 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
   }, []);
 
   const handleToggleDetails = useCallback((issueId: string) => {
-    setSelectedIssue(prev => prev === issueId ? null : issueId);
+    setSelectedIssue((prev) => (prev === issueId ? null : issueId));
   }, []);
 
   // Convert tree nodes to Issue format for IssueCard
-  const convertToIssue = useCallback((node: IssueTreeNode): Issue => ({
-    issue_id: node.issue_id,
-    record_id: node.record_id,
-    label_lv1: node.label_lv1,
-    label_lv2: node.label_lv2,
-    confidence: node.confidence,
-    quality_score: node.quality_score,
-    status: node.status as any,
-    source_bill_id: node.source_bill_id,
-    created_at: node.created_at,
-    level: currentLevel,
-    children: node.children.map(convertToIssue)
-  }), [currentLevel]);
+  const convertToIssue = useCallback(
+    (node: IssueTreeNode): Issue => ({
+      issue_id: node.issue_id,
+      record_id: node.record_id,
+      label_lv1: node.label_lv1,
+      label_lv2: node.label_lv2,
+      confidence: node.confidence,
+      quality_score: node.quality_score,
+      status: node.status as any,
+      source_bill_id: node.source_bill_id,
+      created_at: node.created_at,
+      level: currentLevel,
+      children: node.children.map(convertToIssue),
+    }),
+    [currentLevel]
+  );
 
   const TreeNode: React.FC<{
     node: IssueTreeNode;
@@ -114,15 +117,18 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
     const issueData = convertToIssue(node);
 
     return (
-      <div className={`${!parentExpanded ? 'hidden' : ''}`}>
+      <div className={`${!parentExpanded ? "hidden" : ""}`}>
         <div className="flex items-start space-x-2">
           {/* Indentation */}
-          <div className="flex-shrink-0" style={{ marginLeft: `${level * 24}px` }}>
+          <div
+            className="flex-shrink-0"
+            style={{ marginLeft: `${level * 24}px` }}
+          >
             {hasChildren ? (
               <button
                 onClick={() => handleToggleNode(node.record_id)}
                 className="flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 transition-colors duration-150"
-                aria-label={isExpanded ? '折りたたむ' : '展開する'}
+                aria-label={isExpanded ? "折りたたむ" : "展開する"}
               >
                 {isExpanded ? (
                   <ChevronDownIcon className="w-4 h-4" />
@@ -174,7 +180,9 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
 
         {/* Children */}
         {hasChildren && (
-          <div className={`transition-all duration-200 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
+          <div
+            className={`transition-all duration-200 ${isExpanded ? "opacity-100" : "opacity-0"}`}
+          >
             {node.children.map((child) => (
               <TreeNode
                 key={child.record_id}
@@ -195,7 +203,7 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
     let childNodes = 0;
 
     const countNodes = (nodes: IssueTreeNode[]) => {
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         totalNodes++;
         if (node.children.length > 0) {
           parentNodes++;
@@ -218,7 +226,7 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
           <h2 className="text-lg font-semibold text-gray-900">
             政策課題ツリー
           </h2>
-          
+
           {/* Tree Stats */}
           <div className="flex items-center space-x-3 text-sm text-gray-600">
             <span>総数: {treeStats.totalNodes}</span>
@@ -264,11 +272,7 @@ export const IssueTreeView: React.FC<IssueTreeViewProps> = ({
         ) : (
           <div className="p-6">
             {treeData.map((node) => (
-              <TreeNode
-                key={node.record_id}
-                node={node}
-                level={0}
-              />
+              <TreeNode key={node.record_id} node={node} level={0} />
             ))}
           </div>
         )}
@@ -308,20 +312,20 @@ export const useIssueTree = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadTreeData = useCallback(async (status: string = 'approved') => {
+  const loadTreeData = useCallback(async (status: string = "approved") => {
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`/api/issues/tree?status=${status}`);
       if (!response.ok) {
-        throw new Error('Failed to load tree data');
+        throw new Error("Failed to load tree data");
       }
 
       const data = await response.json();
       setTreeData(data.tree || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
@@ -336,7 +340,7 @@ export const useIssueTree = () => {
     loading,
     error,
     loadTreeData,
-    refreshTree
+    refreshTree,
   };
 };
 

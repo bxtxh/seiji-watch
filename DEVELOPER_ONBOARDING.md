@@ -7,6 +7,7 @@ Welcome to the Diet Issue Tracker project! This guide will help you get started 
 The Diet Issue Tracker is an open-source platform that tracks Japanese legislative issues, bills, and parliamentary discussions. It helps citizens understand and follow political developments through AI-powered analysis and categorization.
 
 ### Key Features
+
 - Real-time tracking of Diet bills and their progress
 - AI-powered issue extraction and categorization (CAP-based)
 - Speech transcription and semantic search
@@ -110,6 +111,7 @@ git checkout -b feat/your-feature-name
 ### 2. Make Changes
 
 Follow these guidelines:
+
 - **Python**: PEP 8, type hints required, use Black formatter
 - **TypeScript**: ESLint rules, proper types, no `any`
 - **Tests**: Write tests for new features
@@ -149,6 +151,7 @@ npm run lint         # Run linting
 ```
 
 Key technologies:
+
 - Next.js 13+ (App Router)
 - TypeScript
 - Tailwind CSS
@@ -165,6 +168,7 @@ poetry run mypy .                          # Type checking
 ```
 
 Key technologies:
+
 - FastAPI
 - JWT authentication
 - Redis caching
@@ -179,6 +183,7 @@ poetry run python -m src.main  # Run processor
 ```
 
 Features:
+
 - LLM-based analysis (OpenAI/Claude)
 - Policy categorization (CAP)
 - Airtable integration
@@ -202,7 +207,7 @@ Backlog → 審議中 (Under Review) → 採決待ち (Awaiting Vote) → 成立
 ### 3. Data Sources
 
 - **Diet Bill Pages**: HTML scraping
-- **Transcripts**: PDF/TXT processing  
+- **Transcripts**: PDF/TXT processing
 - **Diet TV**: HLS stream processing
 - **NDL Minutes API**: Historical data
 
@@ -270,4 +275,4 @@ We're excited to have you contribute to making Japanese politics more transparen
 
 ---
 
-*Last updated: 2025-01-27*
+_Last updated: 2025-01-27_

@@ -27,7 +27,7 @@ test.describe("Performance Tests", () => {
 
     // Check performance targets
     expect(domContentLoadedTime).toBeLessThan(
-      performanceThresholds.domContentLoaded,
+      performanceThresholds.domContentLoaded
     );
     expect(fullLoadTime).toBeLessThan(performanceThresholds.pageLoad);
 
@@ -44,7 +44,7 @@ test.describe("Performance Tests", () => {
 
     // Check Core Web Vitals against thresholds
     expect(metrics.firstContentfulPaint).toBeLessThan(
-      performanceThresholds.firstContentfulPaint,
+      performanceThresholds.firstContentfulPaint
     );
     expect(metrics.loadTime).toBeLessThan(performanceThresholds.pageLoad);
 
@@ -57,7 +57,7 @@ test.describe("Performance Tests", () => {
           const observer = new PerformanceObserver((list) => {
             const entries = list.getEntries();
             const lcp = entries.find(
-              (entry) => entry.entryType === "largest-contentful-paint",
+              (entry) => entry.entryType === "largest-contentful-paint"
             );
             const cls = entries
               .filter((entry) => entry.entryType === "layout-shift")
@@ -77,7 +77,7 @@ test.describe("Performance Tests", () => {
           setTimeout(
             () =>
               resolve({ largestContentfulPaint: 0, cumulativeLayoutShift: 0 }),
-            5000,
+            5000
           );
         } else {
           resolve({ largestContentfulPaint: 0, cumulativeLayoutShift: 0 });
@@ -103,7 +103,7 @@ test.describe("Performance Tests", () => {
 
     // Mobile should meet stricter thresholds
     expect(mobileLoadTime).toBeLessThan(
-      performanceThresholds.mobile.domContentLoaded,
+      performanceThresholds.mobile.domContentLoaded
     );
 
     console.log(`Mobile Load Time: ${mobileLoadTime}ms`);
@@ -118,7 +118,7 @@ test.describe("Performance Tests", () => {
 
     // Should show loading states appropriately
     const loadingIndicator = page.locator(
-      TestHelpers.selectors.loadingIndicator,
+      TestHelpers.selectors.loadingIndicator
     );
 
     // App should be responsive even on slow connections
@@ -207,7 +207,7 @@ test.describe("Performance Tests", () => {
 
     console.log(`Total JS bundle size: ${(totalJsSize / 1024).toFixed(2)} KB`);
     console.log(
-      `Total CSS bundle size: ${(totalCssSize / 1024).toFixed(2)} KB`,
+      `Total CSS bundle size: ${(totalCssSize / 1024).toFixed(2)} KB`
     );
 
     // Check bundle size limits
@@ -237,7 +237,7 @@ test.describe("Performance Tests", () => {
     // Check image optimization
     for (const img of imageRequests) {
       console.log(
-        `Image: ${img.url}, Type: ${img.contentType}, Size: ${img.size}`,
+        `Image: ${img.url}, Type: ${img.contentType}, Size: ${img.size}`
       );
 
       // Should use modern formats when possible
@@ -287,7 +287,7 @@ test.describe("Performance Tests", () => {
       const memoryIncrease =
         finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize;
       console.log(
-        `Memory increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)} MB`,
+        `Memory increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)} MB`
       );
 
       // Memory increase should be reasonable (< 50MB for these simple operations)

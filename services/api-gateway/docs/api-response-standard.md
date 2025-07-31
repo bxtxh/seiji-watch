@@ -27,8 +27,9 @@ All API endpoints should follow a consistent response format to improve client-s
 {
   "success": false,
   "error": "Error message",
-  "error_code": "VALIDATION_ERROR",  // Optional
-  "details": {  // Optional error details
+  "error_code": "VALIDATION_ERROR", // Optional
+  "details": {
+    // Optional error details
     "field": "email",
     "reason": "Invalid format"
   },
@@ -89,6 +90,7 @@ async def get_members():
 ## Endpoints Requiring Standardization
 
 ### High Priority (Before Merge)
+
 1. `/api/health` - Add success wrapper
 2. `/api/members` - Wrap in success response with count
 3. `/api/issues/kanban` - Already has success format, ensure consistency
@@ -96,6 +98,7 @@ async def get_members():
 5. `/api/speeches` - Wrap in success response
 
 ### Medium Priority (Post-Merge)
+
 1. `/api/issues` - Add pagination support
 2. `/api/bills/search` - Standardize search response
 3. `/api/members/{id}` - Ensure 404 returns standard error
@@ -130,11 +133,11 @@ interface APIResponse<T> {
 async function fetchAPI<T>(url: string): Promise<T> {
   const response = await fetch(url);
   const json: APIResponse<T> = await response.json();
-  
+
   if (!json.success) {
-    throw new Error(json.error || 'API request failed');
+    throw new Error(json.error || "API request failed");
   }
-  
+
   return json.data!;
 }
 ```

@@ -7,18 +7,21 @@
 ## 主要機能
 
 ### 1. 高度なPDF発見・分類システム
+
 - **自動PDF発見**: 衆議院Webサイトから投票関連PDFを自動検出
 - **インテリジェント分類**: PDFタイプの自動分類（記名投票、委員会採決、本会議表決）
 - **優先度判定**: PDFの重要度に基づく処理順序の最適化
 - **メタデータ抽出**: URL、ファイル名、日付から情報を自動抽出
 
 ### 2. 多段階抽出戦略
+
 - **テキスト抽出**: PyMuPDFによる高速テキスト抽出
 - **OCR フォールバック**: Tesseractを使った画像ベースOCR処理
 - **ハイブリッド手法**: パターンマッチングと推論による補完
 - **品質評価**: 抽出データの信頼性自動評価
 
 ### 3. データ正規化・統合
+
 - **議員名照合**: 既存議員データベースとの高精度名前マッチング
 - **競合解決**: データ不整合の自動検出・解決
 - **品質保証**: データ完全性・一貫性の自動検証
@@ -43,16 +46,19 @@
 ### コンポーネント構成
 
 #### 1. Enhanced HR Scraper (`enhanced_hr_scraper.py`)
+
 - **PDFProcessingResult**: 処理結果の詳細追跡
 - **EnhancedVotingSession**: 拡張投票セッションデータ
 - **EnhancedHRProcessor**: メイン処理エンジン
 
 #### 2. Data Integration (`hr_data_integration.py`)
+
 - **HRDataIntegrator**: データベース統合ロジック
 - **DataConflictStrategy**: 競合解決戦略定義
 - **IntegrationResult**: 統合結果の詳細レポート
 
 #### 3. API Endpoints (main.py)
+
 - `POST /hr/process`: PDF処理実行
 - `GET /hr/status`: 処理状況確認
 
@@ -105,12 +111,12 @@ asyncio.run(test_basic_hr_processing())
 
 ### PDFタイプ分類
 
-| 分類 | 説明 | 優先度 | 検出パターン |
-|------|------|--------|--------------|
-| `roll_call_vote` | 記名投票結果 | 10 | `記名投票`, `採決結果` |
-| `plenary_vote` | 本会議表決 | 8 | `本会議.*採決` |
-| `committee_vote` | 委員会採決 | 6 | `委員会.*採決` |
-| `unknown` | 不明 | 1 | その他 |
+| 分類             | 説明         | 優先度 | 検出パターン           |
+| ---------------- | ------------ | ------ | ---------------------- |
+| `roll_call_vote` | 記名投票結果 | 10     | `記名投票`, `採決結果` |
+| `plenary_vote`   | 本会議表決   | 8      | `本会議.*採決`         |
+| `committee_vote` | 委員会採決   | 6      | `委員会.*採決`         |
+| `unknown`        | 不明         | 1      | その他                 |
 
 ### 優先度計算要素
 
@@ -124,16 +130,19 @@ asyncio.run(test_basic_hr_processing())
 ## データ抽出戦略
 
 ### 1. テキスト抽出 (第一手法)
+
 - PyMuPDFによる高速処理
 - 品質評価: 文字数、日本語比率
 - 成功条件: 100文字以上の有効テキスト
 
 ### 2. OCR処理 (フォールバック)
+
 - Tesseract + 日本語モデル
 - 画像前処理: ノイズ除去、二値化
 - 信頼度スコア: 0.7以上で採用
 
 ### 3. ハイブリッド手法 (最終手段)
+
 - パターンマッチング
 - 既知フォーマット対応
 - 部分データから推論
@@ -277,12 +286,14 @@ monitoring_config = {
 ### よくある問題
 
 1. **PDFが見つからない**
+
    ```bash
    # 検索URL確認
    curl "https://www.shugiin.go.jp/internet/itdb_rchome.nsf/Xhtml/result/vote_list.html"
    ```
 
 2. **OCR品質が低い**
+
    ```python
    # Tesseract設定確認
    pytesseract.get_tesseract_version()
@@ -290,6 +301,7 @@ monitoring_config = {
    ```
 
 3. **処理が遅い**
+
    ```python
    # 並行数調整
    await processor.process_enhanced_hr_data(max_concurrent=1)
@@ -319,6 +331,7 @@ result = await run_hr_integration_pipeline(dry_run=True)
 衆議院PDF処理を実行
 
 **リクエスト**:
+
 ```json
 {
   "days_back": 7,
@@ -329,6 +342,7 @@ result = await run_hr_integration_pipeline(dry_run=True)
 ```
 
 **レスポンス**:
+
 ```json
 {
   "success": true,
@@ -351,6 +365,7 @@ result = await run_hr_integration_pipeline(dry_run=True)
 処理状況と統計情報を取得
 
 **レスポンス**:
+
 ```json
 {
   "status": "ready",
@@ -404,12 +419,14 @@ tesseract --list-langs | grep jpn
 ## 今後の拡張計画
 
 ### Phase 2 機能
+
 - **リアルタイム処理**: Webhook による自動処理
 - **機械学習強化**: PDFレイアウト学習
 - **詳細分析**: 投票パターン分析
 - **API拡張**: より細かな制御オプション
 
 ### Phase 3 機能
+
 - **多言語対応**: 英語レポート生成
 - **予測機能**: 投票結果予測
 - **統計ダッシュボード**: リアルタイム可視化
@@ -430,5 +447,5 @@ tesseract --list-langs | grep jpn
 
 ---
 
-*最終更新: 2025-07-05*
-*ドキュメントバージョン: 1.0.0*
+_最終更新: 2025-07-05_
+_ドキュメントバージョン: 1.0.0_

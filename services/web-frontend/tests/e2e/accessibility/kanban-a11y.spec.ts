@@ -9,14 +9,14 @@ test.describe("Kanban Board Accessibility Tests", () => {
   test("Semantic HTML structure", async ({ page }) => {
     // Check main container has proper ARIA role
     const kanbanBoard = page.locator(
-      '[aria-label="国会イシュー Kanban ボード"]',
+      '[aria-label="国会イシュー Kanban ボード"]'
     );
     await expect(kanbanBoard).toBeVisible();
     expect(await kanbanBoard.getAttribute("role")).toBe(null); // section element doesn't need role
 
     // Check list container has proper ARIA role
     const listContainer = page.locator(
-      '[role="list"][aria-label="ステージ別イシュー一覧"]',
+      '[role="list"][aria-label="ステージ別イシュー一覧"]'
     );
     await expect(listContainer).toBeVisible();
 
@@ -59,7 +59,7 @@ test.describe("Kanban Board Accessibility Tests", () => {
 
     // Check main section has aria-label
     const kanbanBoard = page.locator(
-      '[aria-label="国会イシュー Kanban ボード"]',
+      '[aria-label="国会イシュー Kanban ボード"]'
     );
     await expect(kanbanBoard).toBeVisible();
 
@@ -201,7 +201,7 @@ test.describe("Kanban Board Accessibility Tests", () => {
 
     // Loading state should be replaced with actual content
     const kanbanBoard = page.locator(
-      '[aria-label="国会イシュー Kanban ボード"]',
+      '[aria-label="国会イシュー Kanban ボード"]'
     );
     await expect(kanbanBoard).toBeVisible();
   });
@@ -244,7 +244,7 @@ test.describe("Kanban Board Accessibility Tests", () => {
 
     // Check that elements are still visible and readable
     const kanbanBoard = page.locator(
-      '[aria-label="国会イシュー Kanban ボード"]',
+      '[aria-label="国会イシュー Kanban ボード"]'
     );
     await expect(kanbanBoard).toBeVisible();
 
@@ -264,7 +264,7 @@ test.describe("Kanban Board Accessibility Tests", () => {
 
     // Check that content is still accessible without animations
     const kanbanBoard = page.locator(
-      '[aria-label="国会イシュー Kanban ボード"]',
+      '[aria-label="国会イシュー Kanban ボード"]'
     );
     await expect(kanbanBoard).toBeVisible();
 

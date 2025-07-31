@@ -207,7 +207,7 @@ const RelatedBillsList: React.FC<RelatedBillsListProps> = ({
                   aria-label={`カテゴリ: ${formatCategory(bill.policy_category?.title_ja || bill.category || "その他")}`}
                 >
                   {formatCategory(
-                    bill.policy_category?.title_ja || bill.category || "その他",
+                    bill.policy_category?.title_ja || bill.category || "その他"
                   )}
                 </span>
               </div>

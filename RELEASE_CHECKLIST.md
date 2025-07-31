@@ -16,12 +16,14 @@ This checklist ensures a smooth and safe production release. Complete all items 
 ### 2. Testing ✓
 
 #### Automated Tests
+
 - [ ] All unit tests passing (`pytest` for Python, `jest` for JavaScript)
 - [ ] All integration tests passing
 - [ ] All E2E tests passing (Playwright)
 - [ ] Test coverage meets minimum threshold (80%+)
 
 #### Manual Testing
+
 - [ ] Critical user flows tested:
   - [ ] Bill search and filtering
   - [ ] Issue category navigation
@@ -152,6 +154,7 @@ git push origin v1.0.0
 If issues are detected:
 
 1. **Immediate Rollback** (< 5 minutes)
+
    ```bash
    # Rollback to previous version
    gcloud run services update-traffic api-gateway --to-revisions=PREVIOUS_REVISION=100
@@ -159,6 +162,7 @@ If issues are detected:
    ```
 
 2. **Database Rollback** (if needed)
+
    ```bash
    # Run rollback migration
    cd services/data-processor
@@ -173,18 +177,21 @@ If issues are detected:
 ## 📊 Post-Release Monitoring
 
 ### First Hour
+
 - [ ] Monitor error rates
 - [ ] Check performance metrics
 - [ ] Review user feedback channels
 - [ ] Verify data pipeline functioning
 
 ### First 24 Hours
+
 - [ ] Daily batch jobs completing
 - [ ] No memory leaks
 - [ ] Database connections stable
 - [ ] Cache hit rates normal
 
 ### First Week
+
 - [ ] User adoption metrics
 - [ ] Feature usage analytics
 - [ ] Performance trends
@@ -193,11 +200,13 @@ If issues are detected:
 ## 📝 Release Communication
 
 ### Internal
+
 - [ ] Team notification sent
 - [ ] Release notes in Slack/Email
 - [ ] Known issues communicated
 
 ### External
+
 - [ ] User announcement prepared
 - [ ] Social media updates scheduled
 - [ ] Documentation site updated
@@ -205,12 +214,12 @@ If issues are detected:
 
 ## ⚠️ Critical Contacts
 
-| Role | Name | Contact |
-|------|------|---------|
-| Release Manager | TBD | email/phone |
-| Tech Lead | TBD | email/phone |
-| DevOps Lead | TBD | email/phone |
-| On-Call Engineer | TBD | email/phone |
+| Role             | Name | Contact     |
+| ---------------- | ---- | ----------- |
+| Release Manager  | TBD  | email/phone |
+| Tech Lead        | TBD  | email/phone |
+| DevOps Lead      | TBD  | email/phone |
+| On-Call Engineer | TBD  | email/phone |
 
 ## 🎯 Success Criteria
 
@@ -229,8 +238,8 @@ If issues are detected:
 
 ---
 
-**Release Date**: ________________  
-**Release Version**: ________________  
-**Release Manager**: ________________  
+**Release Date**: ******\_\_\_\_******  
+**Release Version**: ******\_\_\_\_******  
+**Release Manager**: ******\_\_\_\_******
 
-*Remember: It's better to delay a release than to ship broken code!*
+_Remember: It's better to delay a release than to ship broken code!_

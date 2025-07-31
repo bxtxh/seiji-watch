@@ -5,12 +5,15 @@
 The Enhanced Issues API provides comprehensive dual-level policy issue extraction and management capabilities. This API enables the extraction of policy issues from bill data at two comprehension levels (high school and general reader), with full lifecycle management including human review workflows.
 
 ## Base URL
+
 ```
 https://api.seiji-watch.com/api/issues
 ```
 
 ## Authentication
+
 All API endpoints require authentication via API key in the header:
+
 ```
 Authorization: Bearer YOUR_API_KEY
 ```
@@ -18,10 +21,12 @@ Authorization: Bearer YOUR_API_KEY
 ## Core Concepts
 
 ### Dual-Level Issues
+
 - **Level 1 (高校生向け)**: Simplified policy issues using high school-appropriate vocabulary
 - **Level 2 (一般読者向け)**: Detailed policy issues for general readers with technical terminology
 
 ### Issue Lifecycle
+
 1. **Extraction**: Policy issues extracted from bill data using LLM
 2. **Validation**: Issues validated for vocabulary level and verb endings
 3. **Review**: Human reviewers approve, reject, or request changes
@@ -34,6 +39,7 @@ Authorization: Bearer YOUR_API_KEY
 Retrieve issues with optional filtering by level, status, and other criteria.
 
 **Parameters:**
+
 - `level` (optional): Filter by issue level (1 or 2)
 - `status` (optional): Filter by status (pending, approved, rejected, failed_validation)
 - `bill_id` (optional): Filter by source bill ID
@@ -41,12 +47,14 @@ Retrieve issues with optional filtering by level, status, and other criteria.
 - `max_records` (optional): Maximum number of records to return (default: 100, max: 1000)
 
 **Example Request:**
+
 ```bash
 curl -X GET "https://api.seiji-watch.com/api/issues?level=1&status=approved&max_records=50" \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
 **Example Response:**
+
 ```json
 {
   "issues": [
@@ -73,9 +81,11 @@ curl -X GET "https://api.seiji-watch.com/api/issues?level=1&status=approved&max_
 Retrieve hierarchical issue tree structure showing parent-child relationships.
 
 **Parameters:**
+
 - `status` (optional): Filter by status (default: "approved")
 
 **Example Response:**
+
 ```json
 {
   "tree": [
@@ -106,6 +116,7 @@ Retrieve hierarchical issue tree structure showing parent-child relationships.
 Retrieve a specific issue by its Airtable record ID.
 
 **Example Response:**
+
 ```json
 {
   "issue": {
@@ -131,6 +142,7 @@ Retrieve a specific issue by its Airtable record ID.
 Extract dual-level issues from bill data using LLM.
 
 **Request Body:**
+
 ```json
 {
   "bill_id": "bill_001",
@@ -145,6 +157,7 @@ Extract dual-level issues from bill data using LLM.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -173,6 +186,7 @@ Extract dual-level issues from bill data using LLM.
 Extract issues from multiple bills in a single request.
 
 **Request Body:**
+
 ```json
 [
   {
@@ -181,7 +195,7 @@ Extract issues from multiple bills in a single request.
     "bill_outline": "高齢者の介護負担を軽減する"
   },
   {
-    "bill_id": "bill_002", 
+    "bill_id": "bill_002",
     "bill_title": "環境保護促進法案",
     "bill_outline": "環境保護を促進し、持続可能な社会を実現する"
   }
@@ -189,6 +203,7 @@ Extract issues from multiple bills in a single request.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Processed 2 bills, 2 successful",
@@ -215,6 +230,7 @@ Extract issues from multiple bills in a single request.
 Update the status of an issue (for human review workflow).
 
 **Request Body:**
+
 ```json
 {
   "status": "approved",
@@ -223,12 +239,14 @@ Update the status of an issue (for human review workflow).
 ```
 
 **Valid Status Values:**
+
 - `pending`: Awaiting review
 - `approved`: Approved by reviewer
 - `rejected`: Rejected by reviewer
 - `failed_validation`: Failed automatic validation
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -243,6 +261,7 @@ Update the status of an issue (for human review workflow).
 Search issues by text query with advanced filtering.
 
 **Request Body:**
+
 ```json
 {
   "query": "介護",
@@ -253,6 +272,7 @@ Search issues by text query with advanced filtering.
 ```
 
 **Response:**
+
 ```json
 {
   "query": "介護",
@@ -281,6 +301,7 @@ Search issues by text query with advanced filtering.
 Get comprehensive statistics about issues in the system.
 
 **Response:**
+
 ```json
 {
   "total_issues": 1250,
@@ -307,9 +328,11 @@ Get comprehensive statistics about issues in the system.
 Get count of pending issues for notification purposes.
 
 **Parameters:**
+
 - `exclude_failed_validation` (optional): Exclude failed validation issues (default: true)
 
 **Response:**
+
 ```json
 {
   "pending_count": 15,
@@ -323,6 +346,7 @@ Get count of pending issues for notification purposes.
 Health check endpoint for the enhanced issues service.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -347,6 +371,7 @@ The API uses standard HTTP status codes and returns error details in a consisten
 ```
 
 ### Common Status Codes
+
 - `200`: Success
 - `400`: Bad Request
 - `401`: Unauthorized
@@ -358,11 +383,13 @@ The API uses standard HTTP status codes and returns error details in a consisten
 ## Rate Limiting
 
 API requests are limited to:
+
 - **100 requests per minute** per API key for regular endpoints
 - **10 requests per minute** per API key for extraction endpoints
 - **5 requests per minute** per API key for batch extraction
 
 Rate limit headers are included in responses:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -372,12 +399,14 @@ X-RateLimit-Reset: 1642257600
 ## Data Validation
 
 ### Issue Labels
+
 - **Length**: 10-60 characters
 - **Language**: Japanese text
 - **Verb Endings**: Must end with appropriate Japanese verb forms
 - **Vocabulary**: Level 1 issues must use high school-appropriate vocabulary
 
 ### Confidence Scores
+
 - **Range**: 0.0 to 1.0
 - **Interpretation**:
   - 0.8-1.0: High confidence
@@ -385,6 +414,7 @@ X-RateLimit-Reset: 1642257600
   - 0.0-0.6: Low confidence
 
 ### Quality Scores
+
 - **Range**: 0.0 to 1.0
 - **Factors**: Label quality, confidence, review status, bill linkage
 
@@ -393,11 +423,13 @@ X-RateLimit-Reset: 1642257600
 The system supports webhooks for real-time notifications of issue status changes.
 
 ### Webhook Events
+
 - `issue.approved`: Issue approved by reviewer
 - `issue.rejected`: Issue rejected by reviewer
 - `issue.created`: New issue extracted and created
 
 ### Webhook Payload
+
 ```json
 {
   "event": "issue.approved",
@@ -415,27 +447,29 @@ The system supports webhooks for real-time notifications of issue status changes
 ## SDKs and Libraries
 
 ### JavaScript/TypeScript
+
 ```bash
 npm install @seiji-watch/issues-api
 ```
 
 ```javascript
-import { IssuesAPI } from '@seiji-watch/issues-api';
+import { IssuesAPI } from "@seiji-watch/issues-api";
 
-const api = new IssuesAPI('YOUR_API_KEY');
+const api = new IssuesAPI("YOUR_API_KEY");
 
 // Get level 1 issues
-const issues = await api.getIssues({ level: 1, status: 'approved' });
+const issues = await api.getIssues({ level: 1, status: "approved" });
 
 // Extract issues from bill
 const result = await api.extractIssues({
-  bill_id: 'bill_001',
-  bill_title: '介護保険制度改正法案',
-  bill_outline: '...'
+  bill_id: "bill_001",
+  bill_title: "介護保険制度改正法案",
+  bill_outline: "...",
 });
 ```
 
 ### Python
+
 ```bash
 pip install seiji-watch-issues-api
 ```
@@ -459,22 +493,24 @@ result = api.extract_issues({
 ## Examples
 
 ### Frontend Level Toggle
+
 ```javascript
 // Toggle between level 1 and level 2 display
 async function toggleIssueLevel(currentLevel) {
   const newLevel = currentLevel === 1 ? 2 : 1;
-  
+
   const issues = await api.getIssues({
     level: newLevel,
-    status: 'approved',
-    max_records: 100
+    status: "approved",
+    max_records: 100,
   });
-  
+
   displayIssues(issues, newLevel);
 }
 ```
 
 ### Batch Processing Workflow
+
 ```python
 # Process multiple bills efficiently
 bills = [
@@ -487,39 +523,44 @@ print(f"Created {result['total_issues_created']} issue pairs")
 ```
 
 ### Human Review Integration
+
 ```javascript
 // Approve an issue after review
 async function approveIssue(recordId, reviewerNotes) {
   const result = await api.updateIssueStatus(recordId, {
-    status: 'approved',
-    reviewer_notes: reviewerNotes
+    status: "approved",
+    reviewer_notes: reviewerNotes,
   });
-  
-  console.log('Issue approved:', result.message);
+
+  console.log("Issue approved:", result.message);
 }
 ```
 
 ## Best Practices
 
 ### Performance
+
 - Use batch extraction for multiple bills
 - Implement caching for frequently accessed issues
 - Use pagination for large result sets
 - Filter by level to reduce response size
 
 ### Quality Assurance
+
 - Always validate extracted issues before publishing
 - Implement human review workflows for quality control
 - Monitor confidence scores and quality metrics
 - Use appropriate vocabulary levels for target audiences
 
 ### Error Handling
+
 - Implement exponential backoff for rate limiting
 - Handle network failures gracefully
 - Validate input data before API calls
 - Log errors for debugging and monitoring
 
 ### Security
+
 - Keep API keys secure and rotate regularly
 - Use HTTPS for all API communications
 - Validate and sanitize all user inputs
@@ -528,6 +569,7 @@ async function approveIssue(recordId, reviewerNotes) {
 ## Changelog
 
 ### v1.0.0 (2024-01-15)
+
 - Initial release of Enhanced Issues API
 - Dual-level issue extraction and management
 - Human review workflow support

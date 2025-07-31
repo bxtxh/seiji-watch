@@ -173,7 +173,7 @@ test.describe("Security Tests", () => {
 
     // Should show validation error for excessive length
     await expect(
-      page.locator("text=200文字以内で入力してください"),
+      page.locator("text=200文字以内で入力してください")
     ).toBeVisible();
   });
 
@@ -221,7 +221,7 @@ test.describe("Security Tests", () => {
           await searchInput.fill(`テスト${i}`);
           await page.click('button:has-text("検索する")');
           await page.waitForTimeout(50); // Very rapid requests
-        })(),
+        })()
       );
     }
 
@@ -381,7 +381,7 @@ test.describe("Security Tests", () => {
 
         // Check for hidden CSRF token field
         const csrfInput = form.locator(
-          'input[name*="csrf"], input[name*="token"]',
+          'input[name*="csrf"], input[name*="token"]'
         );
         const csrfInputCount = await csrfInput.count();
 
@@ -396,7 +396,7 @@ test.describe("Security Tests", () => {
         }
 
         console.log(
-          `Form ${i}: action=${action}, method=${method}, csrf=${csrfInputCount > 0}`,
+          `Form ${i}: action=${action}, method=${method}, csrf=${csrfInputCount > 0}`
         );
       }
     }
@@ -441,7 +441,7 @@ test.describe("Security Tests", () => {
 
     // Check for any authentication-related elements
     const loginElements = page.locator(
-      'button:has-text("ログイン"), a:has-text("ログイン"), [data-testid="login"]',
+      'button:has-text("ログイン"), a:has-text("ログイン"), [data-testid="login"]'
     );
     const loginCount = await loginElements.count();
 

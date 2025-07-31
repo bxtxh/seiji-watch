@@ -199,7 +199,10 @@ export default function Terms() {
             <p>
               利用者のアクセスログ・Cookie 等の情報は、Google Analytics 4
               などの解析ツールを通じて収集する場合がある。詳細は
-              <Link href="/privacy/" className="text-primary-green hover:underline">
+              <Link
+                href="/privacy/"
+                className="text-primary-green hover:underline"
+              >
                 プライバシーポリシー
               </Link>
               に定める。
@@ -247,7 +250,10 @@ export default function Terms() {
         {/* Navigation Links */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           <div className="flex justify-between items-center">
-            <Link href="/privacy/" className="text-primary-green hover:underline">
+            <Link
+              href="/privacy/"
+              className="text-primary-green hover:underline"
+            >
               プライバシーポリシー →
             </Link>
             <Link

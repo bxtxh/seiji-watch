@@ -76,7 +76,7 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
         setError(null);
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/issues/kanban?range=30d&max_per_stage=8`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/issues/kanban?range=30d&max_per_stage=8`
         );
 
         if (!response.ok) {
@@ -84,33 +84,34 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
         }
 
         const data = await response.json();
-        
+
         // Transform API response to match expected format
         if (data.success && data.data) {
           const transformedData: KanbanData = {
             metadata: {
               total_issues: data.metadata?.total_issues || 0,
-              last_updated: data.metadata?.last_updated || new Date().toISOString(),
+              last_updated:
+                data.metadata?.last_updated || new Date().toISOString(),
               date_range: {
                 from: data.metadata?.date_range?.from || "2025-07-01",
-                to: data.metadata?.date_range?.to || "2025-07-26"
-              }
+                to: data.metadata?.date_range?.to || "2025-07-26",
+              },
             },
             stages: {
               審議前: data.data.stages?.backlog || [],
               審議中: data.data.stages?.in_progress || [],
               採決待ち: data.data.stages?.in_review || [],
-              成立: data.data.stages?.completed || []
-            }
+              成立: data.data.stages?.completed || [],
+            },
           };
           setKanbanData(transformedData);
         } else {
-          throw new Error('Invalid API response format');
+          throw new Error("Invalid API response format");
         }
       } catch (err) {
         console.error("Failed to fetch Kanban data:", err);
         setError(
-          err instanceof Error ? err.message : "データの取得に失敗しました",
+          err instanceof Error ? err.message : "データの取得に失敗しました"
         );
       } finally {
         setLoading(false);
@@ -128,7 +129,7 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
       // Navigate to issue detail page using Next.js router
       router.push(`/issues/${issue.id}`);
     },
-    [router],
+    [router]
   );
 
   // Prefetch issue details on hover
@@ -137,7 +138,7 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
       // Prefetch issue detail page using Next.js router
       router.prefetch(`/issues/${issue.id}`);
     },
-    [router],
+    [router]
   );
 
   // Memoize stage columns rendering - always call this hook
@@ -227,7 +228,7 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
             <span>
               最終更新:{" "}
               {new Date(kanbanData.metadata.last_updated).toLocaleString(
-                "ja-JP",
+                "ja-JP"
               )}
             </span>
             <span className="hidden sm:inline">|</span>

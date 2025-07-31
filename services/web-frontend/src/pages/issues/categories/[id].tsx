@@ -34,7 +34,7 @@ interface BillRecord {
 const CategoryDetailPage = () => {
   const [category, setCategory] = useState<IssueCategory | null>(null);
   const [parentCategory, setParentCategory] = useState<IssueCategory | null>(
-    null,
+    null
   );
   const [childCategories, setChildCategories] = useState<IssueCategory[]>([]);
   const [relatedBills, setRelatedBills] = useState<BillRecord[]>([]);
@@ -57,7 +57,7 @@ const CategoryDetailPage = () => {
 
       // Fetch category details
       const categoryResponse = await fetch(
-        `${apiBaseUrl}/api/issues/categories/${categoryId}`,
+        `${apiBaseUrl}/api/issues/categories/${categoryId}`
       );
       if (!categoryResponse.ok) {
         throw new Error("Category not found");
@@ -73,7 +73,7 @@ const CategoryDetailPage = () => {
         const parentId = categoryData.fields.Parent_Category[0];
         try {
           const parentResponse = await fetch(
-            `${apiBaseUrl}/api/issues/categories/${parentId}`,
+            `${apiBaseUrl}/api/issues/categories/${parentId}`
           );
           if (parentResponse.ok) {
             const parentData = await parentResponse.json();
@@ -87,7 +87,7 @@ const CategoryDetailPage = () => {
       // Fetch child categories
       try {
         const childrenResponse = await fetch(
-          `${apiBaseUrl}/api/issues/categories/${categoryId}/children`,
+          `${apiBaseUrl}/api/issues/categories/${categoryId}/children`
         );
         if (childrenResponse.ok) {
           const childrenData = await childrenResponse.json();
@@ -100,7 +100,7 @@ const CategoryDetailPage = () => {
       // Fetch related bills (mock for now - would need to implement bill-category relationship)
       try {
         const billsResponse = await fetch(
-          `${apiBaseUrl}/api/bills?max_records=10`,
+          `${apiBaseUrl}/api/bills?max_records=10`
         );
         if (billsResponse.ok) {
           const billsData = await billsResponse.json();
@@ -108,7 +108,7 @@ const CategoryDetailPage = () => {
           const filtered = billsData.filter(
             (bill: BillRecord) =>
               bill.fields.Category &&
-              bill.fields.Category.includes(categoryData.fields.Title_JA),
+              bill.fields.Category.includes(categoryData.fields.Title_JA)
           );
           setRelatedBills(filtered.slice(0, 6)); // Limit to 6 bills
         }

@@ -16,10 +16,12 @@ Based on T53 data quality validation results (Overall Quality Score: 66.9%), the
 ### 1. Bills Data Collection (Priority: HIGH)
 
 **Current Issues:**
+
 - Title quality: 0.64 (threshold: 0.80)
 - Category diversity: 0.30 (threshold: 0.60)
 
 **Recommended Parameters:**
+
 ```python
 # Enhanced bill collection limits
 MAX_BILLS = 50  # Increase from 30 for better diversity
@@ -71,6 +73,7 @@ QUALITY_BASED_COLLECTION = {
 ### 3. Scraping Rate Limiting (Priority: MEDIUM)
 
 **Current Parameters:**
+
 ```python
 RATE_LIMITS = {
     'requests_per_second': 0.5,  # 2 second delay
@@ -81,6 +84,7 @@ RATE_LIMITS = {
 ```
 
 **Recommended Tuning:**
+
 ```python
 ENHANCED_RATE_LIMITS = {
     'requests_per_second': 0.8,  # Slightly faster for efficiency
@@ -96,6 +100,7 @@ ENHANCED_RATE_LIMITS = {
 ### 4. AI/ML Feature Parameters (Priority: HIGH)
 
 #### Speech-to-Text (STT)
+
 ```python
 STT_CONFIG = {
     'model': 'whisper-large-v3',
@@ -116,6 +121,7 @@ STT_CONFIG = {
 ```
 
 #### LLM Issue Extraction
+
 ```python
 LLM_CONFIG = {
     'model': 'gpt-4-turbo',
@@ -143,6 +149,7 @@ LLM_CONFIG = {
 ```
 
 #### Semantic Search
+
 ```python
 EMBEDDING_CONFIG = {
     'model': 'text-embedding-3-large',
@@ -165,6 +172,7 @@ EMBEDDING_CONFIG = {
 ### 5. Data Quality Thresholds (Priority: MEDIUM)
 
 **Current Thresholds:**
+
 ```python
 CURRENT_THRESHOLDS = {
     'completeness': 0.95,
@@ -177,6 +185,7 @@ CURRENT_THRESHOLDS = {
 ```
 
 **Recommended Adjustments:**
+
 ```python
 PRODUCTION_THRESHOLDS = {
     'completeness': 0.92,  # Slightly lower for real-world data
@@ -244,18 +253,21 @@ STORAGE_CONFIG = {
 ## Implementation Phases
 
 ### Phase 1: Critical Issues (Week 1)
+
 1. Implement enhanced category classification
 2. Improve title quality validation
 3. Update collection strategy for diversity
 4. Deploy quality-based filtering
 
 ### Phase 2: AI/ML Enhancement (Week 2)
+
 1. Configure STT parameters for Japanese
 2. Implement LLM issue extraction
 3. Optimize embedding generation
 4. Test semantic search accuracy
 
 ### Phase 3: Performance & Monitoring (Week 3)
+
 1. Implement parallel processing
 2. Add comprehensive monitoring
 3. Optimize rate limiting
@@ -264,12 +276,14 @@ STORAGE_CONFIG = {
 ## Success Metrics
 
 **Target Quality Scores:**
+
 - Overall Quality Score: >80%
 - Bills Data Quality: >85%
 - Voting Data Quality: >90%
 - AI Readiness Score: >75%
 
 **Performance Targets:**
+
 - Processing time: <2 minutes for 40 bills
 - Error rate: <5%
 - Category diversity: >50%
@@ -286,11 +300,13 @@ STORAGE_CONFIG = {
 ## Risk Mitigation
 
 **High-Risk Changes:**
+
 - Rate limiting adjustments (monitor for blocking)
 - LLM API costs (implement usage caps)
 - Embedding generation time (batch processing)
 
 **Rollback Strategy:**
+
 - Maintain parameter version control
 - Implement feature flags for new configurations
 - Monitor key metrics for degradation
@@ -299,12 +315,14 @@ STORAGE_CONFIG = {
 ## Cost Considerations
 
 **Estimated Costs (per batch):**
+
 - OpenAI API (LLM): ~$2-5
 - OpenAI API (Embeddings): ~$1-2
 - Whisper STT: ~$0.50-1
 - Total per 40-bill batch: ~$3.50-8
 
 **Cost Optimization:**
+
 - Batch API calls when possible
 - Cache expensive operations
 - Use smaller models for dev/testing

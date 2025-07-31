@@ -46,7 +46,7 @@ for (const suite of testSuites) {
   } catch (error) {
     console.log(`⚠️  ${suite} completed with some failures`);
     console.log(
-      "Some tests may have failed due to application-specific conditions",
+      "Some tests may have failed due to application-specific conditions"
     );
   }
 }
@@ -54,19 +54,19 @@ for (const suite of testSuites) {
 console.log("\n🎯 E2E Test Suite Summary");
 console.log("==========================");
 console.log(
-  "✅ Navigation Tests: Basic navigation, routing, and state management",
+  "✅ Navigation Tests: Basic navigation, routing, and state management"
 );
 console.log(
-  "✅ Search Tests: Search functionality, validation, and error handling",
+  "✅ Search Tests: Search functionality, validation, and error handling"
 );
 console.log(
-  "✅ Accessibility Tests: ARIA, keyboard navigation, screen reader support",
+  "✅ Accessibility Tests: ARIA, keyboard navigation, screen reader support"
 );
 console.log(
-  "✅ Performance Tests: Load times, Core Web Vitals, resource optimization",
+  "✅ Performance Tests: Load times, Core Web Vitals, resource optimization"
 );
 console.log(
-  "✅ Security Tests: XSS prevention, CSP headers, input sanitization",
+  "✅ Security Tests: XSS prevention, CSP headers, input sanitization"
 );
 console.log("✅ PWA Tests: Service Worker, manifest, offline functionality");
 

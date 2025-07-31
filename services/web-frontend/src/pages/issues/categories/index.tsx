@@ -32,13 +32,13 @@ interface CategoryTreeResponse {
 
 const IssueCategoriesPage = () => {
   const [categoryTree, setCategoryTree] = useState<CategoryTreeResponse | null>(
-    null,
+    null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedL1, setSelectedL1] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const router = useRouter();
 

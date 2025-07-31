@@ -11,12 +11,14 @@
 ### Secure Configuration
 
 #### Environment Files
+
 - ✅ Use `.env.local` for local development
 - ✅ Use `.env.production` for production (not committed)
 - ✅ `.env.template` shows required variables (safe to commit)
 - ❌ NEVER commit `.env*` files with real values
 
 #### API Keys Storage
+
 ```bash
 # Create your local environment file
 cp .env.template .env.local
@@ -28,12 +30,14 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 ### Required API Keys
 
 #### OpenAI API
+
 - **Purpose**: STT (Whisper), LLM (GPT), Embeddings
 - **Format**: `sk-proj-...` (project-scoped key recommended)
 - **Obtain**: https://platform.openai.com/api-keys
 - **Environment**: `OPENAI_API_KEY=sk-proj-...`
 
 #### Airtable API
+
 - **Purpose**: Structured data storage
 - **Format**: `pat...` (Personal Access Token)
 - **Obtain**: https://airtable.com/create/tokens
@@ -41,12 +45,14 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 - **Note**: API Keys deprecated Feb 1, 2024 - use PAT only
 
 #### Weaviate Cloud
+
 - **Purpose**: Vector database
 - **Format**: Standard API key
 - **Obtain**: https://console.weaviate.cloud/
 - **Environment**: `WEAVIATE_API_KEY=...`
 
 #### GCP Service Account
+
 - **Purpose**: Cloud infrastructure
 - **Format**: JSON key file
 - **Obtain**: GCP Console → IAM → Service Accounts
@@ -55,6 +61,7 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 ## 🔒 Production Security Checklist
 
 ### T52 - Production Security Configuration
+
 - [ ] Security headers configured (X-Frame-Options, CSP, HSTS)
 - [ ] CORS properly configured for production domains
 - [ ] JWT authentication with secure token handling
@@ -62,12 +69,14 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 - [ ] DDoS protection enabled
 
 ### T51 - External API Security
+
 - [ ] Circuit breaker patterns for API calls
 - [ ] API key rotation procedure established
 - [ ] Rate limiting compliance for all external APIs
 - [ ] Error handling without exposing sensitive information
 
 ### T59 - Legal Compliance
+
 - [ ] Data retention policies implemented
 - [ ] Privacy-compliant analytics tracking
 - [ ] GDPR compliance measures (data export, deletion)
@@ -76,13 +85,15 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 ## 🚨 Incident Response
 
 ### If API Key is Exposed
+
 1. **Immediately revoke the exposed key** at the provider's console
-2. **Generate a new key** 
+2. **Generate a new key**
 3. **Update all environments** with the new key
 4. **Check usage logs** for unauthorized access
 5. **Monitor for unusual activity** for 24-48 hours
 
 ### Emergency Contacts
+
 - **OpenAI**: https://help.openai.com/
 - **Airtable**: https://support.airtable.com/
 - **GCP**: https://cloud.google.com/support/
@@ -90,18 +101,21 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 ## ✅ Security Best Practices
 
 ### Development
+
 - Use project-scoped API keys when available
 - Implement request timeouts and retry logic
 - Log security events (without exposing sensitive data)
 - Regular dependency updates and security scanning
 
 ### Production
+
 - Use GCP Secret Manager for production secrets
 - Enable audit logging for all API access
 - Monitor API usage and billing
 - Implement automated secret rotation where possible
 
 ### Code Review
+
 - Check for hardcoded secrets before merging
 - Verify .gitignore includes all sensitive files
 - Validate environment variable usage
@@ -111,4 +125,4 @@ echo "OPENAI_API_KEY=sk-proj-your-real-key-here" >> .env.local
 
 **Remember**: Security is everyone's responsibility. When in doubt, ask for review before committing code that handles sensitive data.
 
-*Last Updated: July 7, 2025*
+_Last Updated: July 7, 2025_

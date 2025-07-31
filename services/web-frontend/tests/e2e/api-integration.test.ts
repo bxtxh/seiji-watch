@@ -53,7 +53,7 @@ test.describe("API Integration Tests", () => {
     // Check system status indicator
     await expect(page.locator(".bg-green-50")).toBeVisible();
     await expect(
-      page.locator("text=システムは正常に動作しています"),
+      page.locator("text=システムは正常に動作しています")
     ).toBeVisible();
   });
 
@@ -87,7 +87,7 @@ test.describe("API Integration Tests", () => {
     // Should show error state
     await expect(page.locator(".bg-yellow-50")).toBeVisible();
     await expect(
-      page.locator("text=システムへの接続に失敗しました"),
+      page.locator("text=システムへの接続に失敗しました")
     ).toBeVisible();
   });
 

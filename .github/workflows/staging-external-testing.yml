@@ -2,38 +2,38 @@ name: Staging Environment for External User Testing
 
 on:
   push:
-    branches: [ staging/external-user-testing ]
+    branches: [staging/external-user-testing]
     paths:
-      - 'services/**'
-      - 'infra/**'
-      - '.github/workflows/staging-external-testing.yml'
+      - "services/**"
+      - "infra/**"
+      - ".github/workflows/staging-external-testing.yml"
   pull_request:
-    branches: [ staging/external-user-testing ]
+    branches: [staging/external-user-testing]
     paths:
-      - 'services/**'
-      - 'infra/**'
+      - "services/**"
+      - "infra/**"
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action to perform'
+        description: "Action to perform"
         required: true
-        default: 'deploy'
+        default: "deploy"
         type: choice
         options:
           - deploy
           - destroy
           - plan
       reset_data:
-        description: 'Reset test data to 217th Diet session'
+        description: "Reset test data to 217th Diet session"
         required: false
         default: false
         type: boolean
 
 # Minimum required permissions for the workflow
 permissions:
-  contents: read        # Read repository contents
-  id-token: write      # Required for OIDC authentication to GCP
-  pull-requests: read  # Read pull request information
+  contents: read # Read repository contents
+  id-token: write # Required for OIDC authentication to GCP
+  pull-requests: read # Read pull request information
 
 env:
   TF_VERSION: "1.0"
@@ -48,56 +48,56 @@ jobs:
     strategy:
       matrix:
         service: [api_gateway, ingest-worker, web-frontend]
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python 3.11
-      if: matrix.service != 'web-frontend'
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        
-    - name: Set up Node.js
-      if: matrix.service == 'web-frontend'
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        
-    - name: Install Python dependencies
-      if: matrix.service != 'web-frontend'
-      working-directory: services/${{ matrix.service }}
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt || pip install -e .
-        
-    - name: Install Node.js dependencies
-      if: matrix.service == 'web-frontend'
-      working-directory: services/${{ matrix.service }}
-      run: |
-        npm ci
-        
-    - name: Run Python tests
-      if: matrix.service != 'web-frontend'
-      working-directory: services/${{ matrix.service }}
-      run: |
-        python -m pytest tests/ --verbose
-        
-    - name: Run Node.js tests
-      if: matrix.service == 'web-frontend'
-      working-directory: services/${{ matrix.service }}
-      run: |
-        npm run test
-        
-    - name: Run linting
-      working-directory: services/${{ matrix.service }}
-      run: |
-        if [ "${{ matrix.service }}" = "web-frontend" ]; then
-          npm run lint
-        else
-          python -m ruff check .
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        if: matrix.service != 'web-frontend'
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        if: matrix.service == 'web-frontend'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Python dependencies
+        if: matrix.service != 'web-frontend'
+        working-directory: services/${{ matrix.service }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install -e .
+
+      - name: Install Node.js dependencies
+        if: matrix.service == 'web-frontend'
+        working-directory: services/${{ matrix.service }}
+        run: |
+          npm ci
+
+      - name: Run Python tests
+        if: matrix.service != 'web-frontend'
+        working-directory: services/${{ matrix.service }}
+        run: |
+          python -m pytest tests/ --verbose
+
+      - name: Run Node.js tests
+        if: matrix.service == 'web-frontend'
+        working-directory: services/${{ matrix.service }}
+        run: |
+          npm run test
+
+      - name: Run linting
+        working-directory: services/${{ matrix.service }}
+        run: |
+          if [ "${{ matrix.service }}" = "web-frontend" ]; then
+            npm run lint
+          else
+            python -m ruff check .
+          fi
 
   # Deploy infrastructure for external testing
   deploy-infrastructure:
@@ -105,100 +105,100 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.ref == 'refs/heads/staging/external-user-testing' && (github.event_name == 'push' || github.event.inputs.action == 'deploy')
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        terraform_wrapper: false
-        
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
-        
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      
-    - name: Create terraform.tfvars from template
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        envsubst < terraform.tfvars.template > terraform.tfvars
-      env:
-        PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-        REGION: asia-northeast1
-        ZONE: asia-northeast1-a
-        ENVIRONMENT: staging-external-test
-        APP_NAME: seiji-watch
-        DB_TIER: db-custom-2-7680
-        DB_DISK_SIZE: 100
-        DB_BACKUP_ENABLED: true
-        CLOUD_RUN_CPU: "2"
-        CLOUD_RUN_MEMORY: 2Gi
-        CLOUD_RUN_MIN_INSTANCES: 1
-        CLOUD_RUN_MAX_INSTANCES: 50
-        STORAGE_LOCATION: ASIA-NORTHEAST1
-        STORAGE_CLASS: STANDARD
-        DATA_ANONYMIZATION: \"true\"
-        ALLOWED_CORS_ORIGINS: '"https://staging.politics-watch.jp"'
-        
-    - name: Terraform Init
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
-          -backend-config="prefix=terraform/state/staging-external-test"
-      
-    - name: Create or Select Workspace
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        terraform workspace select staging-external-test || terraform workspace new staging-external-test
-        
-    - name: Terraform Plan
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        set +e  # Don't exit on non-zero return code
-        terraform plan \
-          -var="environment=staging-external-test" \
-          -out=tfplan-staging-external-test \
-          -detailed-exitcode
-        PLAN_EXIT_CODE=$?
-        set -e  # Re-enable exit on error
-        
-        # Exit codes: 0=no changes, 1=error, 2=changes present
-        if [ $PLAN_EXIT_CODE -eq 0 ]; then
-          echo "✅ No infrastructure changes detected"
-        elif [ $PLAN_EXIT_CODE -eq 2 ]; then
-          echo "📋 Infrastructure changes detected for staging environment"
-        else
-          echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
-          exit 1
-        fi
-        
-    - name: Terraform Apply
-      if: github.event_name == 'push' || github.event.inputs.action == 'deploy'
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        terraform apply \
-          -var="environment=staging-external-test" \
-          -auto-approve
-          
-    - name: Output Infrastructure Info
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        echo "## Staging Infrastructure Deployment Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "**Environment:** staging-external-test" >> $GITHUB_STEP_SUMMARY
-        echo "**Domain:** ${{ env.STAGING_DOMAIN }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-        terraform output >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Create terraform.tfvars from template
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          envsubst < terraform.tfvars.template > terraform.tfvars
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          REGION: asia-northeast1
+          ZONE: asia-northeast1-a
+          ENVIRONMENT: staging-external-test
+          APP_NAME: seiji-watch
+          DB_TIER: db-custom-2-7680
+          DB_DISK_SIZE: 100
+          DB_BACKUP_ENABLED: true
+          CLOUD_RUN_CPU: "2"
+          CLOUD_RUN_MEMORY: 2Gi
+          CLOUD_RUN_MIN_INSTANCES: 1
+          CLOUD_RUN_MAX_INSTANCES: 50
+          STORAGE_LOCATION: ASIA-NORTHEAST1
+          STORAGE_CLASS: STANDARD
+          DATA_ANONYMIZATION: \"true\"
+          ALLOWED_CORS_ORIGINS: '"https://staging.politics-watch.jp"'
+
+      - name: Terraform Init
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
+            -backend-config="prefix=terraform/state/staging-external-test"
+
+      - name: Create or Select Workspace
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform workspace select staging-external-test || terraform workspace new staging-external-test
+
+      - name: Terraform Plan
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          set +e  # Don't exit on non-zero return code
+          terraform plan \
+            -var="environment=staging-external-test" \
+            -out=tfplan-staging-external-test \
+            -detailed-exitcode
+          PLAN_EXIT_CODE=$?
+          set -e  # Re-enable exit on error
+
+          # Exit codes: 0=no changes, 1=error, 2=changes present
+          if [ $PLAN_EXIT_CODE -eq 0 ]; then
+            echo "✅ No infrastructure changes detected"
+          elif [ $PLAN_EXIT_CODE -eq 2 ]; then
+            echo "📋 Infrastructure changes detected for staging environment"
+          else
+            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+            exit 1
+          fi
+
+      - name: Terraform Apply
+        if: github.event_name == 'push' || github.event.inputs.action == 'deploy'
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform apply \
+            -var="environment=staging-external-test" \
+            -auto-approve
+
+      - name: Output Infrastructure Info
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          echo "## Staging Infrastructure Deployment Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** staging-external-test" >> $GITHUB_STEP_SUMMARY
+          echo "**Domain:** ${{ env.STAGING_DOMAIN }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          terraform output >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
   # Deploy services to staging environment
   deploy-services:
@@ -209,50 +209,50 @@ jobs:
     strategy:
       matrix:
         service: [api_gateway, ingest-worker, web-frontend]
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
-        
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      
-    - name: Configure Docker for GCP
-      run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-      
-    - name: Build and Deploy ${{ matrix.service }}
-      working-directory: services/${{ matrix.service }}
-      run: |
-        # Build container image
-        SERVICE_IMAGE="asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/seiji-watch/${{ matrix.service }}:staging-external-test-${{ github.sha }}"
-        
-        docker build -t $SERVICE_IMAGE .
-        docker push $SERVICE_IMAGE
-        
-        # Deploy to Cloud Run with staging-specific configuration
-        # Using IAP (Identity-Aware Proxy) for authentication
-        gcloud run deploy ${{ matrix.service }}-staging-external-test \
-          --image $SERVICE_IMAGE \
-          --platform managed \
-          --region asia-northeast1 \
-          --no-allow-unauthenticated \
-          --memory 2Gi \
-          --cpu 2 \
-          --min-instances 1 \
-          --max-instances 50 \
-          --timeout 300s \
-          --set-env-vars="ENVIRONMENT=staging-external-test" \
-          --set-env-vars="LOG_LEVEL=INFO" \
-          --set-env-vars="ENABLE_DETAILED_LOGGING=true" \
-          --set-env-vars="JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
-          --set-secrets="AIRTABLE_PAT=airtable-pat:latest" \
-          --project ${{ secrets.GCP_PROJECT_ID }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+
+      - name: Build and Deploy ${{ matrix.service }}
+        working-directory: services/${{ matrix.service }}
+        run: |
+          # Build container image
+          SERVICE_IMAGE="asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/seiji-watch/${{ matrix.service }}:staging-external-test-${{ github.sha }}"
+
+          docker build -t $SERVICE_IMAGE .
+          docker push $SERVICE_IMAGE
+
+          # Deploy to Cloud Run with staging-specific configuration
+          # Using IAP (Identity-Aware Proxy) for authentication
+          gcloud run deploy ${{ matrix.service }}-staging-external-test \
+            --image $SERVICE_IMAGE \
+            --platform managed \
+            --region asia-northeast1 \
+            --no-allow-unauthenticated \
+            --memory 2Gi \
+            --cpu 2 \
+            --min-instances 1 \
+            --max-instances 50 \
+            --timeout 300s \
+            --set-env-vars="ENVIRONMENT=staging-external-test" \
+            --set-env-vars="LOG_LEVEL=INFO" \
+            --set-env-vars="ENABLE_DETAILED_LOGGING=true" \
+            --set-env-vars="JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
+            --set-secrets="AIRTABLE_PAT=airtable-pat:latest" \
+            --project ${{ secrets.GCP_PROJECT_ID }}
 
   # Initialize test data
   initialize-test-data:
@@ -260,73 +260,73 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-services
     if: github.ref == 'refs/heads/staging/external-user-testing' && (github.event_name == 'push' || github.event.inputs.reset_data == true)
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        
-    - name: Install dependencies
-      working-directory: services/ingest-worker
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
-    - name: Wait for services to be healthy
-      run: |
-        echo "Waiting for services to be ready..."
-        API_URL="https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
-        
-        # Function to check service health
-        check_health() {
-          local url=$1
-          local service=$2
-          for i in {1..30}; do
-            if curl -sf "${url}/health" > /dev/null; then
-              echo "✅ ${service} is healthy"
-              return 0
-            fi
-            echo "⏳ Waiting for ${service}... (attempt $i/30)"
-            sleep 10
-          done
-          echo "❌ ${service} health check failed after 5 minutes"
-          return 1
-        }
-        
-        # Check API Gateway health
-        check_health "$API_URL" "API Gateway" || exit 1
-        
-        # Check other critical services
-        WEB_URL="https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
-        check_health "$WEB_URL" "Web Frontend" || exit 1
-        
-        echo "✅ All services are healthy and ready"
-        
-    - name: Initialize 217th Diet Session Data
-      working-directory: services/ingest-worker
-      env:
-        ENVIRONMENT: staging-external-test
-        AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_PAT }}
-        AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
-        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-      run: |
-        echo "Initializing test data for 217th Diet session..."
-        python run_production_scraping.py --environment=staging-external-test --diet-session=217
-        
-    - name: Create Test User Accounts
-      env:
-        JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-        API_GATEWAY_URL: "https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
-      run: |
-        echo "Creating test user accounts..."
-        # Create test accounts for external users
-        python scripts/create_test_accounts.py \
-          --environment=staging-external-test \
-          --accounts=external-testers.json
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: services/ingest-worker
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to be ready..."
+          API_URL="https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+
+          # Function to check service health
+          check_health() {
+            local url=$1
+            local service=$2
+            for i in {1..30}; do
+              if curl -sf "${url}/health" > /dev/null; then
+                echo "✅ ${service} is healthy"
+                return 0
+              fi
+              echo "⏳ Waiting for ${service}... (attempt $i/30)"
+              sleep 10
+            done
+            echo "❌ ${service} health check failed after 5 minutes"
+            return 1
+          }
+
+          # Check API Gateway health
+          check_health "$API_URL" "API Gateway" || exit 1
+
+          # Check other critical services
+          WEB_URL="https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+          check_health "$WEB_URL" "Web Frontend" || exit 1
+
+          echo "✅ All services are healthy and ready"
+
+      - name: Initialize 217th Diet Session Data
+        working-directory: services/ingest-worker
+        env:
+          ENVIRONMENT: staging-external-test
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          echo "Initializing test data for 217th Diet session..."
+          python run_production_scraping.py --environment=staging-external-test --diet-session=217
+
+      - name: Create Test User Accounts
+        env:
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          API_GATEWAY_URL: "https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+        run: |
+          echo "Creating test user accounts..."
+          # Create test accounts for external users
+          python scripts/create_test_accounts.py \
+            --environment=staging-external-test \
+            --accounts=external-testers.json
 
   # Run health checks
   health-check:
@@ -334,73 +334,73 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-services, initialize-test-data]
     if: always() && (needs.deploy-services.result == 'success')
-    
+
     steps:
-    - name: Check API Gateway Health
-      run: |
-        API_URL="https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
-        curl -f $API_URL/health || echo "API Gateway health check failed"
-        
-    - name: Check Web Frontend Health
-      run: |
-        WEB_URL="https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
-        curl -f $WEB_URL || echo "Web Frontend health check failed"
-        
-    - name: Create Test Summary
-      run: |
-        echo "## 🧪 External User Testing Environment Ready" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🌐 Access URLs" >> $GITHUB_STEP_SUMMARY
-        echo "- **Frontend**: https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app" >> $GITHUB_STEP_SUMMARY
-        echo "- **API**: https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📊 Configuration" >> $GITHUB_STEP_SUMMARY
-        echo "- **Environment**: staging-external-test" >> $GITHUB_STEP_SUMMARY
-        echo "- **Resources**: 2 vCPU, 2GB RAM, 100GB storage" >> $GITHUB_STEP_SUMMARY
-        echo "- **Capacity**: Up to 50 instances, 1000 concurrent users" >> $GITHUB_STEP_SUMMARY
-        echo "- **Data**: Full 217th Diet session dataset" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 👥 Next Steps" >> $GITHUB_STEP_SUMMARY
-        echo "1. Share access URLs with external testing participants" >> $GITHUB_STEP_SUMMARY
-        echo "2. Distribute test credentials and documentation" >> $GITHUB_STEP_SUMMARY
-        echo "3. Begin Phase 1: System Foundation Testing" >> $GITHUB_STEP_SUMMARY
+      - name: Check API Gateway Health
+        run: |
+          API_URL="https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+          curl -f $API_URL/health || echo "API Gateway health check failed"
+
+      - name: Check Web Frontend Health
+        run: |
+          WEB_URL="https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app"
+          curl -f $WEB_URL || echo "Web Frontend health check failed"
+
+      - name: Create Test Summary
+        run: |
+          echo "## 🧪 External User Testing Environment Ready" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 Access URLs" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend**: https://web-frontend-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app" >> $GITHUB_STEP_SUMMARY
+          echo "- **API**: https://api-gateway-staging-external-test-${{ secrets.GCP_PROJECT_ID }}.a.run.app" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: staging-external-test" >> $GITHUB_STEP_SUMMARY
+          echo "- **Resources**: 2 vCPU, 2GB RAM, 100GB storage" >> $GITHUB_STEP_SUMMARY
+          echo "- **Capacity**: Up to 50 instances, 1000 concurrent users" >> $GITHUB_STEP_SUMMARY
+          echo "- **Data**: Full 217th Diet session dataset" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 👥 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Share access URLs with external testing participants" >> $GITHUB_STEP_SUMMARY
+          echo "2. Distribute test credentials and documentation" >> $GITHUB_STEP_SUMMARY
+          echo "3. Begin Phase 1: System Foundation Testing" >> $GITHUB_STEP_SUMMARY
 
   # Destroy infrastructure (manual only)
   destroy-infrastructure:
     name: Destroy Staging Infrastructure
     runs-on: ubuntu-latest
     if: github.event.inputs.action == 'destroy'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        terraform_wrapper: false
-        
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
-        
-    - name: Terraform Init
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
-          -backend-config="prefix=terraform/state/staging-external-test"
-      
-    - name: Select Workspace
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: terraform workspace select staging-external-test
-      
-    - name: Terraform Destroy
-      working-directory: ${{ env.TERRAFORM_DIR }}
-      run: |
-        terraform destroy \
-          -var="environment=staging-external-test" \
-          -auto-approve
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
+            -backend-config="prefix=terraform/state/staging-external-test"
+
+      - name: Select Workspace
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: terraform workspace select staging-external-test
+
+      - name: Terraform Destroy
+        working-directory: ${{ env.TERRAFORM_DIR }}
+        run: |
+          terraform destroy \
+            -var="environment=staging-external-test" \
+            -auto-approve

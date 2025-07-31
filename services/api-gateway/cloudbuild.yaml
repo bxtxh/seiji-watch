@@ -1,33 +1,51 @@
 steps:
   # Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-f', 'Dockerfile.simple',
-      '-t', 'asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/api-gateway:latest',
-      '.'
-    ]
-    dir: 'services/api_gateway'
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-f",
+        "Dockerfile.simple",
+        "-t",
+        "asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/api-gateway:latest",
+        ".",
+      ]
+    dir: "services/api_gateway"
 
   # Push the container image to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/api-gateway:latest']
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/api-gateway:latest",
+      ]
 
   # Deploy container image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
-    args: [
-      'run', 'deploy', 'seiji-watch-api-gateway-staging',
-      '--image', 'asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/api-gateway:latest',
-      '--region', 'asia-northeast1',
-      '--platform', 'managed',
-      '--port', '8000',
-      '--memory', '1Gi',
-      '--cpu', '1',
-      '--set-env-vars', 'AIRTABLE_PAT=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-api-key-staging/versions/latest:value,AIRTABLE_BASE_ID=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-base-id-staging/versions/latest:value',
-      '--service-account', 'seiji-cr-staging@gen-lang-client-0458605339.iam.gserviceaccount.com',
-      '--allow-unauthenticated'
-    ]
+    args:
+      [
+        "run",
+        "deploy",
+        "seiji-watch-api-gateway-staging",
+        "--image",
+        "asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/api-gateway:latest",
+        "--region",
+        "asia-northeast1",
+        "--platform",
+        "managed",
+        "--port",
+        "8000",
+        "--memory",
+        "1Gi",
+        "--cpu",
+        "1",
+        "--set-env-vars",
+        "AIRTABLE_PAT=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-api-key-staging/versions/latest:value,AIRTABLE_BASE_ID=projects/gen-lang-client-0458605339/secrets/seiji-watch-airtable-base-id-staging/versions/latest:value",
+        "--service-account",
+        "seiji-cr-staging@gen-lang-client-0458605339.iam.gserviceaccount.com",
+        "--allow-unauthenticated",
+      ]
 
 options:
   logging: CLOUD_LOGGING_ONLY
