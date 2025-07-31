@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import KanbanBoard from "../KanbanBoard";
 import { useRouter } from "next/router";
@@ -38,6 +38,11 @@ describe("KanbanBoard", () => {
   });
 
   it("renders loading skeleton initially", () => {
+    // Mock fetch to not be called immediately
+    (global.fetch as jest.Mock).mockImplementation(() => 
+      new Promise(() => {}) // Never resolves
+    );
+
     render(<KanbanBoard />);
 
     // Should show loading state
@@ -96,7 +101,9 @@ describe("KanbanBoard", () => {
   it("handles API errors gracefully", async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
 
-    render(<KanbanBoard />);
+    await act(async () => {
+      render(<KanbanBoard />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("エラーが発生しました")).toBeInTheDocument();
@@ -129,7 +136,9 @@ describe("KanbanBoard", () => {
       json: async () => mockEmptyData,
     });
 
-    render(<KanbanBoard />);
+    await act(async () => {
+      render(<KanbanBoard />);
+    });
 
     await waitFor(() => {
       expect(screen.getByText("0件のイシューを表示中")).toBeInTheDocument();

@@ -6,9 +6,7 @@ module.exports = {
     "<rootDir>/node_modules/",
     "<rootDir>/tests/e2e/", // Ignore e2e tests - they're for Playwright
   ],
-  modulePathIgnorePatterns: [
-    "<rootDir>/.next/",
-  ],
+  modulePathIgnorePatterns: ["<rootDir>/.next/"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },

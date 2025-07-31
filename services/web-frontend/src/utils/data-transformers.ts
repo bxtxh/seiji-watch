@@ -76,7 +76,9 @@ export interface MemberRecord {
   };
 }
 
-export function transformMemberRecordToMember(memberRecord: MemberRecord): Member {
+export function transformMemberRecordToMember(
+  memberRecord: MemberRecord
+): Member {
   return {
     id: memberRecord.id,
     name_ja: memberRecord.fields.Name_JA || "",
@@ -103,7 +105,9 @@ export interface SpeechRecord {
   };
 }
 
-export function transformSpeechRecordToSpeech(speechRecord: SpeechRecord): Partial<Speech> {
+export function transformSpeechRecordToSpeech(
+  speechRecord: SpeechRecord
+): Partial<Speech> {
   return {
     id: speechRecord.id,
     speaker_name: speechRecord.fields.Speaker_Name || "",
@@ -127,7 +131,9 @@ export const STAGE_MAPPINGS = {
   completed: "成立",
 } as const;
 
-export function transformEnglishStageToJapanese(stage: keyof typeof STAGE_MAPPINGS): string {
+export function transformEnglishStageToJapanese(
+  stage: keyof typeof STAGE_MAPPINGS
+): string {
   return STAGE_MAPPINGS[stage] || stage;
 }
 
@@ -155,7 +161,9 @@ export function createSuccessResponse<T>(
   };
 }
 
-export function createErrorResponse<T>(error: string): StandardApiResponse<T | null> {
+export function createErrorResponse<T>(
+  error: string
+): StandardApiResponse<T | null> {
   return {
     success: false,
     data: null,

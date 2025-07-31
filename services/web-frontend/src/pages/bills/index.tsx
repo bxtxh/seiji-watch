@@ -5,7 +5,10 @@ import Layout from "@/components/Layout";
 import BillCard from "@/components/BillCard";
 import { Bill } from "@/types";
 import { api } from "@/lib/api-client";
-import { transformBillRecordToBill, type BillRecord } from "@/utils/data-transformers";
+import {
+  transformBillRecordToBill,
+  type BillRecord,
+} from "@/utils/data-transformers";
 
 // BillRecord interface is now imported from data-transformers
 
