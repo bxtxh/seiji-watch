@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import DebugInfo from "./DebugInfo";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -272,6 +273,7 @@ export default function Layout({
             </div>
           </div>
         </footer>
+        <DebugInfo />
       </div>
     </>
   );

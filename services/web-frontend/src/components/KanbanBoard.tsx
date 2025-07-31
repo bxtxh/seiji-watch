@@ -92,8 +92,8 @@ export default function KanbanBoard({ className = "" }: KanbanBoardProps) {
               total_issues: data.metadata?.total_issues || 0,
               last_updated: data.metadata?.last_updated || new Date().toISOString(),
               date_range: {
-                from: "2025-07-01", // Default values for now
-                to: "2025-07-26"
+                from: data.metadata?.date_range?.from || "2025-07-01",
+                to: data.metadata?.date_range?.to || "2025-07-26"
               }
             },
             stages: {

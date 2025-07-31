@@ -132,6 +132,15 @@ export function withSecurityContext<P extends object>(
 
 // Hook for secure form submission
 export function useSecureForm() {
+  // Check if we're in SSR environment
+  if (typeof window === "undefined") {
+    return {
+      createSecureFormData: (data: Record<string, any>) => data,
+      validateSecureSubmission: () => true,
+      submitSecureForm: async () => ({ success: false, error: "SSR mode" }),
+    };
+  }
+  
   const security = useSecurityContext();
 
   const createSecureFormData = (data: Record<string, any>) => {
@@ -165,6 +174,13 @@ export function useSecureForm() {
 
 // Security event logging
 export function useSecurityLogger() {
+  // Check if we're in SSR environment
+  if (typeof window === "undefined") {
+    return {
+      logSecurityEvent: () => {},
+    };
+  }
+  
   const security = useSecurityContext();
 
   const logSecurityEvent = (

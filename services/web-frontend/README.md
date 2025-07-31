@@ -100,11 +100,20 @@ npm run type-check
 
 ## Environment Variables
 
-Create `.env.local`:
+Create `.env.development` for local development:
+```bash
+# Copy example file
+cp .env.example .env.development
+
+# Environment variables
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080  # API Gateway URL
+NEXT_PUBLIC_SITE_NAME=Diet Issue Tracker
+NEXT_PUBLIC_SITE_DESCRIPTION=国会の課題をトラッキングするプラットフォーム
+NEXT_PUBLIC_ENABLE_ANALYTICS=false
+NEXT_PUBLIC_ENABLE_DEBUG=true
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_ENVIRONMENT=development
-```
+
+For production, create `.env.production` with appropriate values.
 
 ## Testing
 

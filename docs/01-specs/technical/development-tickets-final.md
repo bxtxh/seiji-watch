@@ -2766,4 +2766,157 @@ CI/CDパイプラインで複数のlintエラーが発生し、deployment が bl
 - **Total Effort:** 40 hours (5日間)
 - **Critical Path:** APIゲートウェイ修正 → 設計 → バックエンド実装 → フロントエンド実装
 - **Key Deliverable:** 動作する法案レビューシステム
+
+## EPIC 22: フロントエンドデータ表示の修正と改善
+**Goal:** フロントエンドでのデータ取得・表示エラーを解消し、ユーザーエクスペリエンスを改善する  
+**Priority:** P0  
+**Owner:** TBD  
+**Created:** 2025-07-27  
+
+### Background
+- 現在のフロントエンドで複数の重大なエラーが発生し、データが表示されていない
+- 構文エラー（関数の重複定義）がビルドを妨げている
+- APIからのデータ取得はできているが、フロントエンドでの表示処理に問題がある
+- ユーザーは法案、議員、発言、政策課題などの重要データにアクセスできない状態
+
+### Current State
+**構文エラー:**
+- `/pages/bills/index.tsx`: `fetchCategory`と`fetchBills`関数が重複定義されている
+- これによりNext.jsのビルドが失敗し、全ページがエラー状態
+
+**データ表示の問題:**
+- トップページのKanbanボード: 0件のイシューと表示
+- 法案検索: ページ自体が表示されない
+- 議員一覧: ページ自体が表示されない
+- 発言検索: 未確認だが同様の問題が予想される
+
+**APIエンドポイント:**
+- バックエンドAPIは`http://localhost:8081`で稼働想定
+- 環境変数`NEXT_PUBLIC_API_BASE_URL`で設定可能
+
+### Tasks
+
+#### T22-1: 構文エラーの修正
+**Priority:** P0 | **Estimate:** 2 hours  
+**Assignee:** Frontend Developer
+
+- [ ] `/pages/bills/index.tsx`の関数重複を解消
+  - [ ] `fetchCategory`関数の重複定義を削除（112行目と162行目）
+  - [ ] `fetchBills`関数の重複定義を削除（65行目と179行目）
+  - [ ] useCallback依存配列の適切な設定
+- [ ] `/pages/issues/index.tsx`の同様のエラーをチェック・修正
+- [ ] 全ページのビルドエラーを確認・修正
+- [ ] ESLintによる構文チェックの実行
+
+**DoD:** 
+- `npm run build`が成功すること
+- 全ページが正常に表示されること
+- コンソールに構文エラーが表示されないこと
+
+#### T22-2: API接続の検証と修正
+**Priority:** P0 | **Estimate:** 4 hours  
+**Assignee:** Full-stack Developer
+
+- [ ] API接続設定の確認
+  - [ ] 環境変数の設定確認（.env.local）
+  - [ ] CORSエラーの確認と対応
+  - [ ] APIエンドポイントの疎通確認
+- [ ] APIクライアントの実装確認
+  - [ ] エラーハンドリングの改善
+  - [ ] タイムアウト設定の追加
+  - [ ] リトライロジックの実装
+- [ ] 開発者ツールでのネットワークログ分析
+- [ ] APIモックの作成（開発環境用）
+
+**DoD:** 
+- APIへのリクエストが正常に送信されること
+- レスポンスが適切に処理されること
+- エラー時に適切なメッセージが表示されること
+
+#### T22-3: データ取得と表示ロジックの修正
+**Priority:** P1 | **Estimate:** 8 hours  
+**Assignee:** Frontend Developer
+
+**トップページ（Kanbanボード）:**
+- [ ] イシューデータの取得処理実装
+- [ ] ステージ別のデータフィルタリング
+- [ ] リアルタイムデータ更新の実装
+- [ ] エラー状態の適切な表示
+
+**法案検索ページ:**
+- [ ] 法案リストの取得・表示
+- [ ] 検索・フィルタリング機能の動作確認
+- [ ] ページネーションの実装
+- [ ] 法案詳細モーダルの修正
+
+**議員一覧ページ:**
+- [ ] 議員データの取得・表示
+- [ ] 政党別フィルタリング
+- [ ] 議員詳細ページへのリンク
+
+**発言検索ページ:**
+- [ ] 発言データの取得・表示
+- [ ] 検索機能の実装
+- [ ] 関連法案・議員へのリンク
+
+**DoD:** 
+- 各ページでデータが正しく表示されること
+- フィルタリング・検索が機能すること
+- ローディング・エラー状態が適切に表示されること
+
+#### T22-4: UI/UXの改善とテスト
+**Priority:** P2 | **Estimate:** 6 hours  
+**Assignee:** Frontend Developer / QA
+
+- [ ] レスポンシブデザインの確認・修正
+- [ ] アクセシビリティの向上
+  - [ ] ARIA属性の追加
+  - [ ] キーボードナビゲーション
+  - [ ] スクリーンリーダー対応
+- [ ] パフォーマンス最適化
+  - [ ] 画像の最適化
+  - [ ] コンポーネントの遅延読み込み
+  - [ ] キャッシュ戦略の実装
+- [ ] E2Eテストの作成（Playwright）
+  - [ ] 主要ユーザーフローのテスト
+  - [ ] データ表示の検証
+  - [ ] エラー処理のテスト
+
+**DoD:** 
+- Lighthouse Performance スコア 90以上
+- Accessibility スコア 95以上
+- E2Eテストが全て合格すること
+
+### Technical Requirements
+- **Frontend:** Next.js 14+, TypeScript, React 18+
+- **State Management:** React hooks (useState, useEffect, useCallback)
+- **API Client:** Fetch API with proper error handling
+- **Testing:** Playwright for E2E, Jest for unit tests
+- **Build:** Webpack 5, SWC compiler
+
+### Success Criteria
+1. 全ページが構文エラーなしでビルド・表示されること
+2. APIからのデータが正しく取得・表示されること
+3. ユーザーが法案、議員、発言を検索・閲覧できること
+4. エラー時に適切なフィードバックが提供されること
+5. パフォーマンスとアクセシビリティの基準を満たすこと
+
+### Dependencies
+- バックエンドAPI（api-gateway）が稼働していること
+- Airtableにデータが存在すること
+- 適切な環境変数が設定されていること
+
+### Risks & Mitigation
+- **Risk:** APIレスポンスの遅延
+  - **Mitigation:** ローディング状態の実装、キャッシュの活用
+- **Risk:** 大量データによるパフォーマンス低下
+  - **Mitigation:** ページネーション、仮想スクロール、遅延読み込み
+- **Risk:** ブラウザ互換性の問題
+  - **Mitigation:** Polyfillの使用、段階的な機能強化
+
+**EPIC 22 Summary:**
+- **Total Tickets:** 4
+- **Total Effort:** 20 hours (2.5日間)
+- **Critical Path:** 構文エラー修正 → API接続確認 → データ表示修正 → UI/UX改善
+- **Key Deliverable:** 正常に動作し、データが表示されるフロントエンド
 - **Risk Mitigation**: 簡素化によりリスク大幅低減 + 迅速な問題対応
