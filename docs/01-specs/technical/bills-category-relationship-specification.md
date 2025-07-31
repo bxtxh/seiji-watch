@@ -7,11 +7,13 @@
 ## 問題の現状
 
 ### 現在の問題
+
 1. **データベース分離**: Bills（PostgreSQL）とIssueCategories（Airtable）が独立
 2. **脆弱な関連付け**: フロントエンドが文字列マッチングに依存
 3. **概念混同**: PolicyCategory（構造的分類）とIssue（動的抽出）の区別不明確
 
 ### 影響範囲
+
 - `/issues/categories/[id].tsx`: 不適切な関連Bills取得
 - API設計: Category-based Bills検索の不備
 - ユーザー体験: 不正確なカテゴリ→Bills ナビゲーション
@@ -333,15 +335,15 @@ graph TB
 
 #### bills_issue_categories テーブル仕様
 
-| カラム名 | データ型 | 制約 | 説明 |
-|---------|----------|------|------|
-| id | INTEGER | PRIMARY KEY | 主キー |
-| bill_id | INTEGER | NOT NULL, FK to bills(id) | 法案ID |
-| issue_category_airtable_id | VARCHAR(50) | NOT NULL | AirtableカテゴリID |
-| confidence_score | FLOAT | DEFAULT 1.0 | 関連度スコア (0.0-1.0) |
-| is_manual | BOOLEAN | DEFAULT FALSE | 手動設定フラグ |
-| created_at | TIMESTAMP | DEFAULT NOW() | 作成日時 |
-| updated_at | TIMESTAMP | DEFAULT NOW() | 更新日時 |
+| カラム名                   | データ型    | 制約                      | 説明                   |
+| -------------------------- | ----------- | ------------------------- | ---------------------- |
+| id                         | INTEGER     | PRIMARY KEY               | 主キー                 |
+| bill_id                    | INTEGER     | NOT NULL, FK to bills(id) | 法案ID                 |
+| issue_category_airtable_id | VARCHAR(50) | NOT NULL                  | AirtableカテゴリID     |
+| confidence_score           | FLOAT       | DEFAULT 1.0               | 関連度スコア (0.0-1.0) |
+| is_manual                  | BOOLEAN     | DEFAULT FALSE             | 手動設定フラグ         |
+| created_at                 | TIMESTAMP   | DEFAULT NOW()             | 作成日時               |
+| updated_at                 | TIMESTAMP   | DEFAULT NOW()             | 更新日時               |
 
 #### 主要インデックス
 
@@ -376,7 +378,7 @@ CREATE INDEX idx_bills_categories_confidence ON bills_issue_categories(confidenc
 ### 2. データフロー設計
 
 ```
-PostgreSQL Bills.category (enum) 
+PostgreSQL Bills.category (enum)
     ↓ [初期マッピング]
 bills_issue_categories (中間テーブル)
     ↓ [Airtable ID参照]
@@ -388,13 +390,14 @@ L1 → L2 → L3 PolicyCategory
 ### 3. API設計
 
 #### Bills関連API拡張
+
 ```python
 # 既存API拡張
 GET  /api/bills/{bill_id}/categories          # Bill関連PolicyCategory取得
 POST /api/bills/{bill_id}/categories          # 関連付け追加
 DELETE /api/bills/{bill_id}/categories/{cat_id} # 関連付け削除
 
-# PolicyCategory関連API拡張  
+# PolicyCategory関連API拡張
 GET /api/categories/{category_id}/bills        # Category関連Bills取得
 GET /api/categories/{category_id}/bills/count  # 関連Bills数
 
@@ -406,27 +409,32 @@ POST /api/bills/categories/auto-classify       # LLM自動分類
 ## 開発フェーズ
 
 ### Phase 1: 基盤実装 (1週間)
+
 - **BC-001**: 中間テーブル作成 & マイグレーション
 - **BC-002**: 基本API エンドポイント実装
 
 ### Phase 2: データ移行 (3日)
+
 - **BC-003**: 既存Bills.category → PolicyCategory マッピング
 - **BC-004**: LLM支援自動分類システム
 
-### Phase 3: フロントエンド統合 (1週間)  
+### Phase 3: フロントエンド統合 (1週間)
+
 - **BC-005**: カテゴリページ修正（文字列マッチング削除）
 - **BC-006**: Bills検索・フィルタ機能
 
 ### Phase 4: 運用機能 (3日)
+
 - **BC-007**: 管理画面（手動編集・レビュー機能）
 
 ## 初期データマッピング
 
 ### PostgreSQL Bills.category → Airtable PolicyCategory
+
 ```python
 ENUM_TO_CATEGORY_MAPPING = {
     'BUDGET': 'rec_L1_budget_finance',          # L1: 予算・金融
-    'TAXATION': 'rec_L1_budget_finance',        # L1: 予算・金融  
+    'TAXATION': 'rec_L1_budget_finance',        # L1: 予算・金融
     'SOCIAL_SECURITY': 'rec_L1_social_welfare', # L1: 社会保障
     'FOREIGN_AFFAIRS': 'rec_L1_foreign_policy', # L1: 外交・国際
     'ECONOMY': 'rec_L1_economy_industry',       # L1: 経済・産業
@@ -442,7 +450,7 @@ ENUM_TO_CATEGORY_MAPPING = {
 
 ## パフォーマンス要件
 
-- **API応答時間**: 
+- **API応答時間**:
   - `/api/categories/{id}/bills`: ≤ 200ms (p95)
   - `/api/bills/{id}/categories`: ≤ 100ms (p95)
 - **データ整合性**: 中間テーブル更新時のAirtable同期 ≤ 5秒
@@ -451,11 +459,13 @@ ENUM_TO_CATEGORY_MAPPING = {
 ## リスク & 対応策
 
 ### 技術的リスク
+
 1. **Airtable API制限**: 5 req/s → バッチ処理 & キャッシュ戦略
 2. **データ同期ラグ**: PostgreSQL ↔ Airtable → Eventual consistency受容
 3. **マイグレーション複雑性**: 段階的移行 & ロールバック計画
 
-### 運用リスク  
+### 運用リスク
+
 1. **手動メンテナンス負荷**: 管理画面による効率化
 2. **分類精度**: LLM + 人手レビューによる品質確保
 3. **システム複雑性**: 明確なドキュメント & テスト戦略
@@ -463,11 +473,13 @@ ENUM_TO_CATEGORY_MAPPING = {
 ## 成功指標
 
 ### 技術指標
+
 - Bills ↔ PolicyCategory 関連付け精度 ≥ 90%
 - API応答時間改善 (現在の文字列マッチング vs 新API)
 - データ整合性エラー率 ≤ 0.1%
 
 ### UX指標
+
 - カテゴリページからのBills発見率向上
 - PolicyCategory → Bills ナビゲーション精度向上
 - ユーザー満足度調査での改善評価
@@ -481,4 +493,4 @@ ENUM_TO_CATEGORY_MAPPING = {
 
 ---
 
-*この設計書は、Diet Issue Tracker の Bills ↔ PolicyCategory 関連付けシステムの技術仕様として作成されています。実装進捗に応じて適宜更新されます。*
+_この設計書は、Diet Issue Tracker の Bills ↔ PolicyCategory 関連付けシステムの技術仕様として作成されています。実装進捗に応じて適宜更新されます。_

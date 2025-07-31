@@ -2,30 +2,30 @@ name: Infrastructure Management
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'infra/**'
-      - '.github/workflows/infrastructure.yml'
+      - "infra/**"
+      - ".github/workflows/infrastructure.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'infra/**'
-      - '.github/workflows/infrastructure.yml'
+      - "infra/**"
+      - ".github/workflows/infrastructure.yml"
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'dev'
+        default: "dev"
         type: choice
         options:
           - dev
           - staging
           - prod
       action:
-        description: 'Terraform action'
+        description: "Terraform action"
         required: true
-        default: 'plan'
+        default: "plan"
         type: choice
         options:
           - plan
@@ -41,375 +41,375 @@ jobs:
   terraform-validate:
     name: Validate Terraform
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        
-    - name: Terraform Format Check
-      working-directory: infra
-      run: terraform fmt -check -recursive
-      
-    - name: Terraform Init
-      working-directory: infra
-      run: terraform init -backend=false
-      
-    - name: Terraform Validate
-      working-directory: infra
-      run: terraform validate
-      
-    - name: Run tflint
-      uses: terraform-linters/setup-tflint@v4
-      with:
-        tflint_version: latest
-        
-    - name: Initialize TFLint
-      working-directory: infra
-      run: tflint --init
-      
-    - name: Run TFLint
-      working-directory: infra
-      run: tflint --format=compact
-      
-    - name: Run Checkov
-      uses: bridgecrewio/checkov-action@master
-      with:
-        directory: infra
-        framework: terraform
-        output_format: sarif
-        output_file_path: checkov-results.sarif
-        quiet: true
-        
-    - name: Upload Checkov results
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: checkov-results.sarif
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        working-directory: infra
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        working-directory: infra
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: infra
+        run: terraform validate
+
+      - name: Run tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Initialize TFLint
+        working-directory: infra
+        run: tflint --init
+
+      - name: Run TFLint
+        working-directory: infra
+        run: tflint --format=compact
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          quiet: true
+
+      - name: Upload Checkov results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
 
   terraform-plan-dev:
     name: Plan Dev Environment
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        terraform_wrapper: false
-        
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      
-    - name: Create terraform.tfvars
-      working-directory: infra
-      run: |
-        cat > terraform.tfvars << EOF
-        project_id = "${{ secrets.GCP_PROJECT_ID }}"
-        region = "asia-northeast1"
-        environment = "dev"
-        app_name = "seiji-watch"
-        db_tier = "db-f1-micro"
-        db_disk_size = 20
-        cloud_run_cpu = "1"
-        cloud_run_memory = "512Mi"
-        cloud_run_min_instances = 0
-        cloud_run_max_instances = 10
-        EOF
-        
-    - name: Terraform Init
-      working-directory: infra
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
-          -backend-config="prefix=terraform/state/dev"
-      
-    - name: Select or Create Workspace
-      working-directory: infra
-      run: |
-        terraform workspace select dev || terraform workspace new dev
-        
-    - name: Terraform Plan
-      working-directory: infra
-      run: |
-        # Execute terraform plan and capture exit code
-        terraform plan \
-          -var="environment=dev" \
-          -out=tfplan-dev \
-          -detailed-exitcode || PLAN_EXIT_CODE=$?
-        
-        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
-        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
-        
-        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
-        
-        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
-        case $PLAN_EXIT_CODE in
-          0)
-            echo "✅ No infrastructure changes detected"
-            ;;
-          2|3)
-            echo "📋 Infrastructure changes detected (this is expected for PR review)"
-            ;;
-          *)
-            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
-            exit 1
-            ;;
-        esac
-      
-    - name: Upload plan artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: tfplan-dev
-        path: infra/tfplan-dev
-        retention-days: 5
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Create terraform.tfvars
+        working-directory: infra
+        run: |
+          cat > terraform.tfvars << EOF
+          project_id = "${{ secrets.GCP_PROJECT_ID }}"
+          region = "asia-northeast1"
+          environment = "dev"
+          app_name = "seiji-watch"
+          db_tier = "db-f1-micro"
+          db_disk_size = 20
+          cloud_run_cpu = "1"
+          cloud_run_memory = "512Mi"
+          cloud_run_min_instances = 0
+          cloud_run_max_instances = 10
+          EOF
+
+      - name: Terraform Init
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
+            -backend-config="prefix=terraform/state/dev"
+
+      - name: Select or Create Workspace
+        working-directory: infra
+        run: |
+          terraform workspace select dev || terraform workspace new dev
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: |
+          # Execute terraform plan and capture exit code
+          terraform plan \
+            -var="environment=dev" \
+            -out=tfplan-dev \
+            -detailed-exitcode || PLAN_EXIT_CODE=$?
+
+          # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
+          PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
+
+          echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+
+          # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+          case $PLAN_EXIT_CODE in
+            0)
+              echo "✅ No infrastructure changes detected"
+              ;;
+            2|3)
+              echo "📋 Infrastructure changes detected (this is expected for PR review)"
+              ;;
+            *)
+              echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+              exit 1
+              ;;
+          esac
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-dev
+          path: infra/tfplan-dev
+          retention-days: 5
 
   terraform-apply-dev:
     name: Apply Dev Environment
     runs-on: ubuntu-latest
     needs: terraform-plan-dev
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        terraform_wrapper: false
-        
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      
-    - name: Create terraform.tfvars
-      working-directory: infra
-      run: |
-        cat > terraform.tfvars << EOF
-        project_id = "${{ secrets.GCP_PROJECT_ID }}"
-        region = "asia-northeast1"
-        environment = "dev"
-        app_name = "seiji-watch"
-        db_tier = "db-f1-micro"
-        db_disk_size = 20
-        cloud_run_cpu = "1"
-        cloud_run_memory = "512Mi"
-        cloud_run_min_instances = 0
-        cloud_run_max_instances = 10
-        EOF
-        
-    - name: Terraform Init
-      working-directory: infra
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
-          -backend-config="prefix=terraform/state/dev"
-      
-    - name: Select Workspace
-      working-directory: infra
-      run: terraform workspace select dev
-      
-    - name: Terraform Apply
-      working-directory: infra
-      run: |
-        terraform apply \
-          -var="environment=dev" \
-          -auto-approve
-          
-    - name: Output Infrastructure Info
-      working-directory: infra
-      run: |
-        echo "## Infrastructure Deployment Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-        terraform output >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Create terraform.tfvars
+        working-directory: infra
+        run: |
+          cat > terraform.tfvars << EOF
+          project_id = "${{ secrets.GCP_PROJECT_ID }}"
+          region = "asia-northeast1"
+          environment = "dev"
+          app_name = "seiji-watch"
+          db_tier = "db-f1-micro"
+          db_disk_size = 20
+          cloud_run_cpu = "1"
+          cloud_run_memory = "512Mi"
+          cloud_run_min_instances = 0
+          cloud_run_max_instances = 10
+          EOF
+
+      - name: Terraform Init
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
+            -backend-config="prefix=terraform/state/dev"
+
+      - name: Select Workspace
+        working-directory: infra
+        run: terraform workspace select dev
+
+      - name: Terraform Apply
+        working-directory: infra
+        run: |
+          terraform apply \
+            -var="environment=dev" \
+            -auto-approve
+
+      - name: Output Infrastructure Info
+        working-directory: infra
+        run: |
+          echo "## Infrastructure Deployment Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          terraform output >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
   terraform-plan-staging:
     name: Plan Staging Environment
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        terraform_wrapper: false
-        
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Create terraform.tfvars
-      working-directory: infra
-      run: |
-        cat > terraform.tfvars << EOF
-        project_id = "${{ secrets.GCP_PROJECT_ID }}"
-        region = "asia-northeast1"
-        environment = "staging"
-        app_name = "seiji-watch"
-        db_tier = "db-custom-1-3840"
-        db_disk_size = 50
-        cloud_run_cpu = "2"
-        cloud_run_memory = "1Gi"
-        cloud_run_min_instances = 1
-        cloud_run_max_instances = 20
-        EOF
-        
-    - name: Terraform Init
-      working-directory: infra
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
-          -backend-config="prefix=terraform/state/staging"
-      
-    - name: Select or Create Workspace
-      working-directory: infra
-      run: |
-        terraform workspace select staging || terraform workspace new staging
-        
-    - name: Terraform Plan
-      working-directory: infra
-      run: |
-        # Execute terraform plan and capture exit code
-        terraform plan \
-          -var="environment=staging" \
-          -out=tfplan-staging \
-          -detailed-exitcode || PLAN_EXIT_CODE=$?
-        
-        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
-        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
-        
-        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
-        
-        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
-        case $PLAN_EXIT_CODE in
-          0)
-            echo "✅ No infrastructure changes detected"
-            ;;
-          2|3)
-            echo "📋 Infrastructure changes detected (this is expected for PR review)"
-            ;;
-          *)
-            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
-            exit 1
-            ;;
-        esac
-          
-    - name: Upload plan artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: tfplan-staging
-        path: infra/tfplan-staging
-        retention-days: 5
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Create terraform.tfvars
+        working-directory: infra
+        run: |
+          cat > terraform.tfvars << EOF
+          project_id = "${{ secrets.GCP_PROJECT_ID }}"
+          region = "asia-northeast1"
+          environment = "staging"
+          app_name = "seiji-watch"
+          db_tier = "db-custom-1-3840"
+          db_disk_size = 50
+          cloud_run_cpu = "2"
+          cloud_run_memory = "1Gi"
+          cloud_run_min_instances = 1
+          cloud_run_max_instances = 20
+          EOF
+
+      - name: Terraform Init
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
+            -backend-config="prefix=terraform/state/staging"
+
+      - name: Select or Create Workspace
+        working-directory: infra
+        run: |
+          terraform workspace select staging || terraform workspace new staging
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: |
+          # Execute terraform plan and capture exit code
+          terraform plan \
+            -var="environment=staging" \
+            -out=tfplan-staging \
+            -detailed-exitcode || PLAN_EXIT_CODE=$?
+
+          # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
+          PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
+
+          echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+
+          # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+          case $PLAN_EXIT_CODE in
+            0)
+              echo "✅ No infrastructure changes detected"
+              ;;
+            2|3)
+              echo "📋 Infrastructure changes detected (this is expected for PR review)"
+              ;;
+            *)
+              echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+              exit 1
+              ;;
+          esac
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-staging
+          path: infra/tfplan-staging
+          retention-days: 5
 
   terraform-plan-production:
     name: Plan Production Environment
     runs-on: ubuntu-latest
     needs: terraform-validate
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: ${{ env.TF_VERSION }}
-        terraform_wrapper: false
-        
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        
-    - name: Create terraform.tfvars
-      working-directory: infra
-      run: |
-        cat > terraform.tfvars << EOF
-        project_id = "${{ secrets.GCP_PROJECT_ID }}"
-        region = "asia-northeast1"
-        environment = "prod"
-        app_name = "seiji-watch"
-        db_tier = "db-custom-4-15360"
-        db_disk_size = 100
-        db_backup_enabled = true
-        cloud_run_cpu = "4"
-        cloud_run_memory = "2Gi"
-        cloud_run_min_instances = 2
-        cloud_run_max_instances = 100
-        EOF
-        
-    - name: Terraform Init
-      working-directory: infra
-      run: |
-        terraform init \
-          -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
-          -backend-config="prefix=terraform/state/prod"
-      
-    - name: Select or Create Workspace
-      working-directory: infra
-      run: |
-        terraform workspace select prod || terraform workspace new prod
-        
-    - name: Terraform Plan
-      working-directory: infra
-      run: |
-        # Execute terraform plan and capture exit code
-        terraform plan \
-          -var="environment=prod" \
-          -out=tfplan-prod \
-          -detailed-exitcode || PLAN_EXIT_CODE=$?
-        
-        # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
-        PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
-        
-        echo "Terraform plan exit code: $PLAN_EXIT_CODE"
-        
-        # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
-        case $PLAN_EXIT_CODE in
-          0)
-            echo "✅ No infrastructure changes detected"
-            ;;
-          2|3)
-            echo "📋 Infrastructure changes detected (this is expected for PR review)"
-            ;;
-          *)
-            echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
-            exit 1
-            ;;
-        esac
-          
-    - name: Upload plan artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: tfplan-prod
-        path: infra/tfplan-prod
-        retention-days: 30
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Create terraform.tfvars
+        working-directory: infra
+        run: |
+          cat > terraform.tfvars << EOF
+          project_id = "${{ secrets.GCP_PROJECT_ID }}"
+          region = "asia-northeast1"
+          environment = "prod"
+          app_name = "seiji-watch"
+          db_tier = "db-custom-4-15360"
+          db_disk_size = 100
+          db_backup_enabled = true
+          cloud_run_cpu = "4"
+          cloud_run_memory = "2Gi"
+          cloud_run_min_instances = 2
+          cloud_run_max_instances = 100
+          EOF
+
+      - name: Terraform Init
+        working-directory: infra
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.GCP_PROJECT_ID }}-terraform-state" \
+            -backend-config="prefix=terraform/state/prod"
+
+      - name: Select or Create Workspace
+        working-directory: infra
+        run: |
+          terraform workspace select prod || terraform workspace new prod
+
+      - name: Terraform Plan
+        working-directory: infra
+        run: |
+          # Execute terraform plan and capture exit code
+          terraform plan \
+            -var="environment=prod" \
+            -out=tfplan-prod \
+            -detailed-exitcode || PLAN_EXIT_CODE=$?
+
+          # If PLAN_EXIT_CODE is not set, terraform succeeded (exit code 0)
+          PLAN_EXIT_CODE=${PLAN_EXIT_CODE:-0}
+
+          echo "Terraform plan exit code: $PLAN_EXIT_CODE"
+
+          # Exit codes: 0=no changes, 1=error, 2=changes present, 3=changes+warnings
+          case $PLAN_EXIT_CODE in
+            0)
+              echo "✅ No infrastructure changes detected"
+              ;;
+            2|3)
+              echo "📋 Infrastructure changes detected (this is expected for PR review)"
+              ;;
+            *)
+              echo "❌ Terraform plan failed with error (exit code: $PLAN_EXIT_CODE)"
+              exit 1
+              ;;
+          esac
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-prod
+          path: infra/tfplan-prod
+          retention-days: 30

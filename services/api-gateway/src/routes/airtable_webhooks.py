@@ -10,7 +10,6 @@ import logging
 import os
 
 # Import the enhanced services
-import sys
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -19,22 +18,28 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field, validator
 
+
 # TODO: Replace with proper HTTP client calls to respective services
 # These are placeholder implementations to avoid cross-service imports
 class AirtableIssueManager:
     """Placeholder for Airtable issue management. Should be replaced with HTTP API calls."""
-    
+
     async def process_webhook_data(self, data: Any) -> dict[str, Any]:
         """Placeholder method for processing webhook data."""
-        logger.warning("AirtableIssueManager.process_webhook_data called - implement HTTP API call")
+        logger.warning(
+            "AirtableIssueManager.process_webhook_data called - implement HTTP API call"
+        )
         return {"status": "placeholder", "message": "HTTP API call not yet implemented"}
+
 
 class DiscordNotificationBot:
     """Placeholder for Discord notifications. Should be replaced with HTTP API calls."""
-    
+
     async def send_notification(self, message: str, data: Any = None) -> bool:
         """Placeholder method for sending notifications."""
-        logger.warning("DiscordNotificationBot.send_notification called - implement HTTP API call")
+        logger.warning(
+            "DiscordNotificationBot.send_notification called - implement HTTP API call"
+        )
         return True
 
 
@@ -81,7 +86,7 @@ class AirtableWebhookPayload(BaseModel):
     )
 
     @validator("timestamp")
-    def validate_timestamp(self, v):
+    def validate_timestamp(cls, v):  # noqa: N805
         try:
             datetime.fromisoformat(v.replace("Z", "+00:00"))
             return v

@@ -58,8 +58,8 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
   };
 
   const getHouseBadgeClass = (house: CommitteeAssignment["house"]) => {
-    return house === "衆議院" 
-      ? "bg-purple-100 text-purple-800" 
+    return house === "衆議院"
+      ? "bg-purple-100 text-purple-800"
       : "bg-indigo-100 text-indigo-800";
   };
 
@@ -94,7 +94,10 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
     return (
       <div className="space-y-2">
         {assignments.map((assignment, index) => (
-          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div
+            key={index}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+          >
             <div className="flex items-center space-x-3">
               {getStatusIcon(assignment.status)}
               <div>
@@ -102,7 +105,9 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
                   <span className="font-medium text-gray-900">
                     {assignment.committee_name}
                   </span>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getHouseBadgeClass(assignment.house)}`}>
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getHouseBadgeClass(assignment.house)}`}
+                  >
                     {assignment.house}
                   </span>
                 </div>
@@ -111,7 +116,9 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
                 </div>
               </div>
             </div>
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(assignment.status)}`}>
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(assignment.status)}`}
+            >
               {getStatusLabel(assignment.status)}
             </span>
           </div>
@@ -121,9 +128,15 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
   }
 
   return (
-    <section className="space-y-6" aria-labelledby="committee-assignments-heading">
+    <section
+      className="space-y-6"
+      aria-labelledby="committee-assignments-heading"
+    >
       <header className="flex items-center justify-between">
-        <h3 id="committee-assignments-heading" className="text-lg font-semibold text-gray-900 flex items-center">
+        <h3
+          id="committee-assignments-heading"
+          className="text-lg font-semibold text-gray-900 flex items-center"
+        >
           <BuildingOffice2Icon className="w-5 h-5 mr-2" />
           委員会付託状況
           <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm">
@@ -144,17 +157,19 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
                 <div className="flex-shrink-0 mt-1">
                   {getStatusIcon(assignment.status)}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-3 mb-2">
                     <h4 className="text-base font-semibold text-gray-900">
                       {assignment.committee_name}
                     </h4>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getHouseBadgeClass(assignment.house)}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getHouseBadgeClass(assignment.house)}`}
+                    >
                       {assignment.house}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <div className="flex items-center">
                       <CalendarIcon className="w-4 h-4 mr-1" />
@@ -168,23 +183,25 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
                   <div className="mt-3">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-600">状況:</span>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(assignment.status)}`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(assignment.status)}`}
+                      >
                         {getStatusLabel(assignment.status)}
                       </span>
                     </div>
-                    
+
                     {assignment.status === "in_progress" && (
                       <p className="text-sm text-blue-700 mt-2">
                         現在この委員会で審議が行われています
                       </p>
                     )}
-                    
+
                     {assignment.status === "completed" && (
                       <p className="text-sm text-green-700 mt-2">
                         委員会での審議が完了しました
                       </p>
                     )}
-                    
+
                     {assignment.status === "pending" && (
                       <p className="text-sm text-yellow-700 mt-2">
                         委員会への付託が完了し、審議開始を待っています
@@ -200,23 +217,25 @@ const CommitteeAssignments: React.FC<CommitteeAssignmentsProps> = ({
 
       {/* Summary */}
       <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">付託状況サマリー</h4>
+        <h4 className="text-sm font-medium text-gray-700 mb-2">
+          付託状況サマリー
+        </h4>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-lg font-semibold text-yellow-600">
-              {assignments.filter(a => a.status === "pending").length}
+              {assignments.filter((a) => a.status === "pending").length}
             </div>
             <div className="text-sm text-gray-600">付託済み</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-blue-600">
-              {assignments.filter(a => a.status === "in_progress").length}
+              {assignments.filter((a) => a.status === "in_progress").length}
             </div>
             <div className="text-sm text-gray-600">審議中</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-green-600">
-              {assignments.filter(a => a.status === "completed").length}
+              {assignments.filter((a) => a.status === "completed").length}
             </div>
             <div className="text-sm text-gray-600">完了</div>
           </div>

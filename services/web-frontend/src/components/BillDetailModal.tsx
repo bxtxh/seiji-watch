@@ -16,7 +16,9 @@ export default function BillDetailModal({
   isOpen,
   onClose,
 }: BillDetailModalProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "details" | "progress" | "committee">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "details" | "progress" | "committee"
+  >("overview");
   // Handle escape key
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -140,8 +142,16 @@ export default function BillDetailModal({
               {[
                 { id: "overview", label: "概要", count: null },
                 { id: "details", label: "詳細", count: null },
-                { id: "progress", label: "進捗", count: bill.legislative_stage?.milestones?.length },
-                { id: "committee", label: "委員会", count: bill.committee_assignments?.length },
+                {
+                  id: "progress",
+                  label: "進捗",
+                  count: bill.legislative_stage?.milestones?.length,
+                },
+                {
+                  id: "committee",
+                  label: "委員会",
+                  count: bill.committee_assignments?.length,
+                },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -154,7 +164,7 @@ export default function BillDetailModal({
                   aria-current={activeTab === tab.id ? "page" : undefined}
                 >
                   {tab.label}
-                  {tab.count !== null && tab.count > 0 && (
+                  {tab.count != null && tab.count > 0 && (
                     <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2 rounded-full text-xs">
                       {tab.count}
                     </span>
@@ -205,7 +215,10 @@ export default function BillDetailModal({
                 {/* Progress Bar - Compact */}
                 {bill.legislative_stage && (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <LegislativeProgressBar stage={bill.legislative_stage} compact={true} />
+                    <LegislativeProgressBar
+                      stage={bill.legislative_stage}
+                      compact={true}
+                    />
                   </div>
                 )}
 
@@ -278,9 +291,7 @@ export default function BillDetailModal({
               </div>
             )}
 
-            {activeTab === "details" && (
-              <EnhancedBillDetails bill={bill} />
-            )}
+            {activeTab === "details" && <EnhancedBillDetails bill={bill} />}
 
             {activeTab === "progress" && (
               <div className="space-y-6">
@@ -314,8 +325,11 @@ export default function BillDetailModal({
 
             {activeTab === "committee" && (
               <div className="space-y-6">
-                {bill.committee_assignments && bill.committee_assignments.length > 0 ? (
-                  <CommitteeAssignments assignments={bill.committee_assignments} />
+                {bill.committee_assignments &&
+                bill.committee_assignments.length > 0 ? (
+                  <CommitteeAssignments
+                    assignments={bill.committee_assignments}
+                  />
                 ) : (
                   <div className="text-center py-12">
                     <svg

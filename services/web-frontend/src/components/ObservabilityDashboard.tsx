@@ -25,7 +25,7 @@ export default function ObservabilityDashboard({
   const [webVitals, setWebVitals] = useState(getWebVitals());
   const [sessionSummary, setSessionSummary] = useState(getSessionSummary());
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(
-    null,
+    null
   );
 
   const updateData = useCallback(() => {
@@ -55,7 +55,7 @@ export default function ObservabilityDashboard({
 
   const getVitalRating = (
     vital: string,
-    value?: number,
+    value?: number
   ): "good" | "needs-improvement" | "poor" | "unknown" => {
     if (value === undefined) return "unknown";
 

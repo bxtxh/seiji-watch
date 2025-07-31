@@ -4,7 +4,11 @@
  */
 
 import React, { useState, useCallback } from "react";
-import { ChevronDownIcon, AcademicCapIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronDownIcon,
+  AcademicCapIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/outline";
 
 export interface DualLevelToggleProps {
   currentLevel: 1 | 2;
@@ -17,7 +21,7 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
   currentLevel,
   onLevelChange,
   disabled = false,
-  className = ""
+  className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,20 +31,23 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
     }
   }, [disabled, isOpen]);
 
-  const handleLevelSelect = useCallback((level: 1 | 2) => {
-    onLevelChange(level);
-    setIsOpen(false);
-  }, [onLevelChange]);
+  const handleLevelSelect = useCallback(
+    (level: 1 | 2) => {
+      onLevelChange(level);
+      setIsOpen(false);
+    },
+    [onLevelChange]
+  );
 
   const getLevelInfo = (level: 1 | 2) => {
-    return level === 1 
+    return level === 1
       ? {
           icon: AcademicCapIcon,
           label: "高校生向け",
           description: "わかりやすい表現",
           color: "text-blue-600",
           bgColor: "bg-blue-50",
-          borderColor: "border-blue-200"
+          borderColor: "border-blue-200",
         }
       : {
           icon: UserGroupIcon,
@@ -48,7 +55,7 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
           description: "詳細な専門用語",
           color: "text-green-600",
           bgColor: "bg-green-50",
-          borderColor: "border-green-200"
+          borderColor: "border-green-200",
         };
   };
 
@@ -68,9 +75,10 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
           text-sm font-medium rounded-lg border-2 shadow-sm
           transition-all duration-200 ease-in-out
           ${currentInfo.color} ${currentInfo.bgColor} ${currentInfo.borderColor}
-          ${disabled 
-            ? "opacity-50 cursor-not-allowed" 
-            : "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          ${
+            disabled
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           }
           min-w-[200px]
         `}
@@ -85,7 +93,7 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
             <div className="text-xs opacity-75">{currentInfo.description}</div>
           </div>
         </div>
-        <ChevronDownIcon 
+        <ChevronDownIcon
           className={`w-4 h-4 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
@@ -108,7 +116,9 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
               <currentInfo.icon className="w-5 h-5" aria-hidden="true" />
               <div className="flex-1">
                 <div className="font-semibold">{currentInfo.label}</div>
-                <div className="text-xs opacity-75">{currentInfo.description}</div>
+                <div className="text-xs opacity-75">
+                  {currentInfo.description}
+                </div>
               </div>
               <div className="text-xs font-medium px-2 py-1 rounded bg-white bg-opacity-50">
                 選択中
@@ -131,11 +141,11 @@ export const DualLevelToggle: React.FC<DualLevelToggleProps> = ({
               <otherInfo.icon className="w-5 h-5" aria-hidden="true" />
               <div className="flex-1">
                 <div className="font-semibold">{otherInfo.label}</div>
-                <div className="text-xs opacity-75">{otherInfo.description}</div>
+                <div className="text-xs opacity-75">
+                  {otherInfo.description}
+                </div>
               </div>
-              <div className="text-xs text-gray-400">
-                切り替え
-              </div>
+              <div className="text-xs text-gray-400">切り替え</div>
             </button>
           </div>
         </div>
@@ -160,7 +170,7 @@ export const CompactDualLevelToggle: React.FC<DualLevelToggleProps> = ({
   currentLevel,
   onLevelChange,
   disabled = false,
-  className = ""
+  className = "",
 }) => {
   const handleToggle = useCallback(() => {
     if (!disabled) {
@@ -169,9 +179,10 @@ export const CompactDualLevelToggle: React.FC<DualLevelToggleProps> = ({
     }
   }, [currentLevel, onLevelChange, disabled]);
 
-  const currentInfo = currentLevel === 1 
-    ? { label: "高校生", color: "text-blue-600", bgColor: "bg-blue-100" }
-    : { label: "一般", color: "text-green-600", bgColor: "bg-green-100" };
+  const currentInfo =
+    currentLevel === 1
+      ? { label: "高校生", color: "text-blue-600", bgColor: "bg-blue-100" }
+      : { label: "一般", color: "text-green-600", bgColor: "bg-green-100" };
 
   return (
     <button
@@ -181,9 +192,10 @@ export const CompactDualLevelToggle: React.FC<DualLevelToggleProps> = ({
         inline-flex items-center px-3 py-2 text-sm font-medium rounded-md
         border border-gray-300 shadow-sm transition-all duration-200
         ${currentInfo.color} ${currentInfo.bgColor}
-        ${disabled 
-          ? 'opacity-50 cursor-not-allowed' 
-          : 'hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+        ${
+          disabled
+            ? "opacity-50 cursor-not-allowed"
+            : "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         }
         ${className}
       `}
@@ -202,7 +214,7 @@ export const useDualLevel = (initialLevel: 1 | 2 = 1) => {
   const [level, setLevel] = useState<1 | 2>(initialLevel);
 
   const toggleLevel = useCallback(() => {
-    setLevel(prev => prev === 1 ? 2 : 1);
+    setLevel((prev) => (prev === 1 ? 2 : 1));
   }, []);
 
   const setLevel1 = useCallback(() => setLevel(1), []);
@@ -215,7 +227,7 @@ export const useDualLevel = (initialLevel: 1 | 2 = 1) => {
     setLevel1,
     setLevel2,
     isLevel1: level === 1,
-    isLevel2: level === 2
+    isLevel2: level === 2,
   };
 };
 

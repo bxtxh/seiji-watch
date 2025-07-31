@@ -7,7 +7,7 @@ This document details the security improvements implemented in response to the c
 All critical and high-priority security vulnerabilities have been addressed:
 
 - ✅ **5 Critical Issues**: All resolved
-- ✅ **3 High Priority Issues**: All resolved  
+- ✅ **3 High Priority Issues**: All resolved
 - ✅ **2 Medium Priority Issues**: All resolved
 
 ## Critical Issues Resolved
@@ -17,6 +17,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 ```diff
 - requests==2.31.0
 + requests>=2.32.4  # Fix CVE-2024-35195 and CVE-2024-47081
@@ -29,11 +30,13 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 - Removed all filesystem-based token storage
 - Integrated Google Secret Manager for secure token storage
 - Tokens are now stored directly in Secret Manager without touching disk
 
 **Code Changes**:
+
 - Modified `create_test_accounts.py` to use Secret Manager API
 - Removed temporary file creation and chmod operations
 - Added proper error handling for Secret Manager operations
@@ -43,11 +46,13 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 - Changed `--allow-unauthenticated` to `--no-allow-unauthenticated`
 - Implemented Identity-Aware Proxy (IAP) configuration
 - Added proper JWT authentication middleware
 
 **New Authentication Flow**:
+
 1. External testers authenticate via Google IAP
 2. Services validate JWT tokens
 3. Access restricted to authorized Google Group members
@@ -57,6 +62,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 - Removed hardcoded `project_id` from tfvars
 - Now requires explicit variable passing: `terraform apply -var="project_id=$GCP_PROJECT_ID"`
 
@@ -65,6 +71,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 - Completely disabled debug endpoints in production environments
 - Limited information returned even in development
 - Added environment-based access control
@@ -76,6 +83,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Implementation**:
+
 - Created comprehensive WIF Terraform configuration
 - Updated all GitHub Actions workflows
 - Provided setup script and documentation
@@ -86,6 +94,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 - Removed localhost from production CORS origins
 - Environment-specific CORS configuration
 - Staging now only allows `https://staging-test.diet-issue-tracker.jp`
@@ -95,6 +104,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Fix Applied**:
+
 - Enabled `data_anonymization = true` in Terraform configuration
 - Protects user privacy during external testing
 
@@ -105,6 +115,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Implementation**:
+
 - Created `CachedAirtableClient` with connection pooling
 - 5-minute response cache for Airtable data
 - Configurable connection limits and timeouts
@@ -115,6 +126,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 **Status**: ✅ RESOLVED
 
 **Improvements**:
+
 - Added comprehensive environment variable validation
 - Implemented exponential backoff for retries
 - Proper timeout handling throughout
@@ -165,17 +177,20 @@ All critical and high-priority security vulnerabilities have been addressed:
 ## Deployment Instructions
 
 1. **Apply Workload Identity Federation**:
+
    ```bash
    ./scripts/setup_workload_identity.sh
    ```
 
 2. **Deploy IAP Configuration**:
+
    ```bash
    cd infra
    terraform apply -target=module.iap_config
    ```
 
 3. **Update Dependencies**:
+
    ```bash
    cd scripts
    pip install -r requirements.txt --upgrade
@@ -189,6 +204,7 @@ All critical and high-priority security vulnerabilities have been addressed:
 ## Compliance and Audit Trail
 
 All changes have been:
+
 - Documented in version control
 - Reviewed for security impact
 - Tested in isolated environment
@@ -197,11 +213,13 @@ All changes have been:
 ## Next Steps
 
 ### Phase 2 (Within 48 hours)
+
 - [ ] Complete IAP deployment
 - [ ] Migrate remaining secrets to Secret Manager
 - [ ] Enable Cloud Audit Logs
 
 ### Phase 3 (Within 1 week)
+
 - [ ] Implement VPC Service Controls
 - [ ] Deploy Cloud Armor for DDoS protection
 - [ ] Enable Security Command Center

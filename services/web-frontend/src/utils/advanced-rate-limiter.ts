@@ -74,7 +74,7 @@ export class AdvancedRateLimiter {
   isAllowed(
     identifier: string,
     type: keyof RateLimitConfig = "general",
-    requestInfo?: { userAgent?: string; ip?: string },
+    requestInfo?: { userAgent?: string; ip?: string }
   ): RateLimitInfo {
     const rule = this.config[type];
     const now = Date.now();
@@ -146,7 +146,7 @@ export class AdvancedRateLimiter {
   recordRequest(
     identifier: string,
     type: keyof RateLimitConfig = "general",
-    success: boolean = true,
+    success: boolean = true
   ): void {
     const key = `${type}:${identifier}`;
     const now = Date.now();
@@ -159,7 +159,7 @@ export class AdvancedRateLimiter {
     const rule = this.config[type];
     const windowStart = now - rule.windowMs;
     const filteredRequests = requests.filter(
-      (req) => req.timestamp > windowStart,
+      (req) => req.timestamp > windowStart
     );
 
     this.requests.set(key, filteredRequests);
@@ -176,7 +176,7 @@ export class AdvancedRateLimiter {
     const windowStart = now - rule.windowMs;
 
     const recentRequests = requests.filter(
-      (req) => req.timestamp > windowStart,
+      (req) => req.timestamp > windowStart
     );
     const successfulRequests = recentRequests.filter((req) => req.success);
     const failedRequests = recentRequests.filter((req) => !req.success);
@@ -224,7 +224,7 @@ export class AdvancedRateLimiter {
 
       const windowStart = now - rule.windowMs;
       const filteredRequests = requests.filter(
-        (req) => req.timestamp > windowStart,
+        (req) => req.timestamp > windowStart
       );
 
       if (filteredRequests.length === 0) {
@@ -255,7 +255,7 @@ export class AdvancedRateLimiter {
       }
       stats[identifier][type] = this.getStats(
         identifier,
-        type as keyof RateLimitConfig,
+        type as keyof RateLimitConfig
       );
     }
 
@@ -272,7 +272,7 @@ if (typeof window !== "undefined") {
     () => {
       globalRateLimiter.cleanup();
     },
-    5 * 60 * 1000,
+    5 * 60 * 1000
   );
 }
 
@@ -304,14 +304,14 @@ export class AdaptiveRateLimiter extends AdvancedRateLimiter {
   isAllowed(
     identifier: string,
     type: keyof RateLimitConfig = "general",
-    requestInfo?: any,
+    requestInfo?: any
   ): RateLimitInfo {
     // Temporarily modify config based on adaptive multiplier
     const originalRule = this.config[type];
     const adaptedRule = {
       ...originalRule,
       maxRequests: Math.floor(
-        originalRule.maxRequests * this.adaptiveMultiplier,
+        originalRule.maxRequests * this.adaptiveMultiplier
       ),
     };
 

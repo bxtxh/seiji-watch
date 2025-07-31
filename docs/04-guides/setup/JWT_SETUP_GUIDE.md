@@ -7,36 +7,40 @@
 ## 🎯 重要な原則
 
 ### 1. **JWT_SECRET_KEYの完全一致**
+
 **JWT_SECRET_KEYとトークン生成時のSECRET_KEYが完全一致していなければ認証は絶対に失敗します。**
 1文字でも違うと認証できません。
 
 ### 2. **サーバー側が期待するJWTペイロード形式**
+
 サーバー側（`auth.py`）が期待するクレーム（必須）:
 
-| クレーム名 | 型 | 必須 | 例 | 説明 |
-|------------|-----|------|-----|------|
-| `user_id` | string | ✅ | `"ci-bot"` | ユーザーID（`sub`ではない） |
-| `email` | string | ✅ | `"ci-bot@seiji-watch.local"` | メールアドレス（`role`ではない） |
-| `scopes` | array | ✅ | `["read", "write", "admin"]` | 権限スコープの配列 |
-| `type` | string | ✅ | `"access_token"` | トークンタイプ（固定値） |
-| `exp` | number | ✅ | `1705737600` | 有効期限（UTC timestamp） |
-| `iat` | number | ✅ | `1705651200` | 発行時刻（UTC timestamp） |
+| クレーム名 | 型     | 必須 | 例                           | 説明                             |
+| ---------- | ------ | ---- | ---------------------------- | -------------------------------- |
+| `user_id`  | string | ✅   | `"ci-bot"`                   | ユーザーID（`sub`ではない）      |
+| `email`    | string | ✅   | `"ci-bot@seiji-watch.local"` | メールアドレス（`role`ではない） |
+| `scopes`   | array  | ✅   | `["read", "write", "admin"]` | 権限スコープの配列               |
+| `type`     | string | ✅   | `"access_token"`             | トークンタイプ（固定値）         |
+| `exp`      | number | ✅   | `1705737600`                 | 有効期限（UTC timestamp）        |
+| `iat`      | number | ✅   | `1705651200`                 | 発行時刻（UTC timestamp）        |
 
 **❌ 間違ったペイロード例:**
+
 ```json
 {
-  "sub": "ci-bot",           // ❌ 'user_id'であるべき
-  "role": "ci",              // ❌ 'email'であるべき
-  "scopes": ["read"]         // ✅ 正しい
+  "sub": "ci-bot", // ❌ 'user_id'であるべき
+  "role": "ci", // ❌ 'email'であるべき
+  "scopes": ["read"] // ✅ 正しい
 }
 ```
 
 **✅ 正しいペイロード例:**
+
 ```json
 {
-  "user_id": "ci-bot",       // ✅ 正しい
-  "email": "ci-bot@seiji-watch.local",  // ✅ 正しい
-  "scopes": ["read", "write", "admin"]  // ✅ 正しい
+  "user_id": "ci-bot", // ✅ 正しい
+  "email": "ci-bot@seiji-watch.local", // ✅ 正しい
+  "scopes": ["read", "write", "admin"] // ✅ 正しい
 }
 ```
 
@@ -45,12 +49,15 @@
 ### 1. JWT_SECRET_KEY (必須)
 
 **本番環境用の値:**
+
 ```
 [REDACTED - USE ENVIRONMENT VARIABLE JWT_SECRET_KEY_PROD]
 ```
+
 ⚠️ **セキュリティ警告**: プロダクションシークレットはコードやドキュメントにハードコードしてはいけません。
 
 **設定手順:**
+
 1. GitHub Repository → Settings → Secrets and variables → Actions
 2. "New repository secret" をクリック
 3. Name: `JWT_SECRET_KEY`
@@ -60,6 +67,7 @@
 ### 2. API_BEARER_TOKEN (推奨)
 
 **生成方法:**
+
 ```bash
 # PyJWTをインストール
 pip install PyJWT
@@ -69,6 +77,7 @@ python3 scripts/generate_api_bearer_token.py
 ```
 
 **設定手順:**
+
 1. 上記スクリプトで生成された24時間有効なトークンをコピー
 2. GitHub Repository → Settings → Secrets and variables → Actions
 3. "New repository secret" をクリック
@@ -86,6 +95,7 @@ python3 scripts/verify_jwt_consistency.py
 ```
 
 **期待される出力:**
+
 ```
 ✅ All JWT configurations are working correctly
 ✅ Ready for production deployment
@@ -129,16 +139,19 @@ python3 scripts/test_jwt_auth.py
 ## 🌍 環境別設定
 
 ### 開発環境
+
 ```bash
 export JWT_SECRET_KEY="test-jwt-secret-unified-for-ci-cd"
 export ENVIRONMENT="development"
 ```
 
 ### テスト/CI-CD環境
+
 - GitHub Secretsから自動取得
 - フォールバック: `test-jwt-secret-unified-for-ci-cd`
 
 ### 本番環境
+
 - **必須**: GitHub Secretsに正しい値を設定
 - フォールバックは使用されない（セキュリティチェックでエラー）
 
@@ -147,6 +160,7 @@ export ENVIRONMENT="development"
 ### 現在の設定（統一済み）
 
 **ci-cd.yml:**
+
 ```yaml
 env:
   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-unified-for-ci-cd' }}
@@ -155,6 +169,7 @@ env:
 ```
 
 **claude.yml:**
+
 ```yaml
 claude_env: |
   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-unified-for-ci-cd' }}
@@ -178,12 +193,14 @@ claude_env: |
 ### 解決手順
 
 1. **GitHub Secretsを確認:**
+
    ```bash
    # GitHub CLIで確認
    gh secret list
    ```
 
 2. **ローカルでテスト:**
+
    ```bash
    # SECURITY: Never use hardcoded production secrets!
    export JWT_SECRET_KEY_PROD="YOUR_PRODUCTION_SECRET_FROM_SECURE_STORAGE"
@@ -200,17 +217,20 @@ claude_env: |
 ## 🔒 セキュリティ考慮事項
 
 ### 秘密鍵の管理
+
 - ✅ GitHub Secretsに保存
 - ❌ コードにハードコーディングしない
 - ❌ ログに出力しない
 - ✅ 定期的にローテーション（90日推奨）
 
 ### トークンの管理
+
 - ✅ 適切な有効期限設定（1-24時間）
 - ✅ 必要最小限のスコープ設定
 - ❌ 長期間有効なトークンを避ける
 
 ### 環境分離
+
 - ✅ 本番とテスト環境で異なる秘密鍵
 - ✅ 環境変数による動的設定
 - ✅ 本番環境での強制的な秘密鍵チェック

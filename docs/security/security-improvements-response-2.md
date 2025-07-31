@@ -16,6 +16,7 @@ All recommended improvements have been successfully implemented:
 **Status**: ✅ COMPLETE
 
 **Implementation**:
+
 ```python
 # Before: Logged partial token
 self.logger.info(f"Secure token should be stored as: {secure_token_key}={user_data['token'][:10]}...")
@@ -31,11 +32,13 @@ self.logger.info(f"Secure token created for: {user_id}")
 **Status**: ✅ COMPLETE
 
 **Implementation**:
+
 - Added persistent session management with connection pooling
 - Implemented proper cleanup on shutdown
 - Reuses connections across all API calls
 
 **Key Features**:
+
 ```python
 class AirtableClient:
     def __init__(self):
@@ -45,7 +48,7 @@ class AirtableClient:
             limit_per_host=10,  # Per-host connection limit
             ttl_dns_cache=300,  # DNS cache timeout
         )
-    
+
     async def _get_session(self):
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(
@@ -57,6 +60,7 @@ class AirtableClient:
 ```
 
 **Benefits**:
+
 - Reduced connection overhead
 - Improved response times
 - Better resource utilization
@@ -67,11 +71,13 @@ class AirtableClient:
 **Status**: ✅ COMPLETE
 
 **Implementation**:
+
 - Verified `project_id` variable already exists in `variables.tf`
 - Removed hardcoded value from `staging-external-testing.tfvars`
 - Added comprehensive variable definitions for staging environment
 
 **Usage**:
+
 ```bash
 terraform apply -var="project_id=$GCP_PROJECT_ID"
 ```
@@ -84,6 +90,7 @@ terraform apply -var="project_id=$GCP_PROJECT_ID"
 
 **Implementation**:
 Created comprehensive `EnvironmentValidator` class that:
+
 - Validates all required environment variables
 - Sets sensible defaults for optional variables
 - Validates formats (CORS origins, numeric values, enums)
@@ -91,6 +98,7 @@ Created comprehensive `EnvironmentValidator` class that:
 - Masks secrets in configuration output
 
 **Features**:
+
 - Required variables: `AIRTABLE_PAT`, `AIRTABLE_BASE_ID`
 - Optional with defaults: `ENVIRONMENT`, `LOG_LEVEL`, `CACHE_TTL`, etc.
 - Format validation for URLs, integers, and enums
@@ -102,6 +110,7 @@ Created comprehensive `EnvironmentValidator` class that:
 
 **Implementation**:
 Comprehensive error handling with:
+
 - Specific exception types from Google API
 - Clear troubleshooting instructions
 - Permission requirement guidance
@@ -109,6 +118,7 @@ Comprehensive error handling with:
 - Detailed error context
 
 **Error Categories Handled**:
+
 1. **Initialization Errors**: ADC configuration issues
 2. **Permission Errors**: Missing IAM roles
 3. **API Errors**: AlreadyExists, FailedPrecondition
@@ -116,6 +126,7 @@ Comprehensive error handling with:
 5. **Unexpected Errors**: Generic fallback with context
 
 **Example Error Output**:
+
 ```
 ❌ ERROR: Permission denied for Secret Manager
 Required permissions: secretmanager.secrets.create
@@ -141,6 +152,7 @@ Grant with: gcloud projects add-iam-policy-binding PROJECT_ID \
 ## Testing Recommendations
 
 1. **Connection Pool Testing**:
+
    ```bash
    # Monitor connection reuse
    curl -X GET "http://localhost:8000/api/bills/search" -H "accept: application/json"
@@ -148,6 +160,7 @@ Grant with: gcloud projects add-iam-policy-binding PROJECT_ID \
    ```
 
 2. **Environment Validation Testing**:
+
    ```bash
    # Test missing required vars
    unset AIRTABLE_PAT
@@ -165,21 +178,21 @@ Grant with: gcloud projects add-iam-policy-binding PROJECT_ID \
 
 ### Required Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `AIRTABLE_PAT` | Airtable Personal Access Token | `pat123...` |
-| `AIRTABLE_BASE_ID` | Airtable Base ID | `app123...` |
-| `GCP_PROJECT_ID` | Google Cloud Project ID | `diet-tracker` |
+| Variable           | Description                    | Example        |
+| ------------------ | ------------------------------ | -------------- |
+| `AIRTABLE_PAT`     | Airtable Personal Access Token | `pat123...`    |
+| `AIRTABLE_BASE_ID` | Airtable Base ID               | `app123...`    |
+| `GCP_PROJECT_ID`   | Google Cloud Project ID        | `diet-tracker` |
 
 ### Optional Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ENVIRONMENT` | `staging` | Environment name |
-| `LOG_LEVEL` | `INFO` | Logging level |
-| `CACHE_TTL` | `300` | Cache TTL in seconds |
-| `MAX_CONNECTIONS` | `10` | Connection pool size |
-| `CONNECTION_TIMEOUT` | `30` | Timeout in seconds |
+| Variable             | Default   | Description          |
+| -------------------- | --------- | -------------------- |
+| `ENVIRONMENT`        | `staging` | Environment name     |
+| `LOG_LEVEL`          | `INFO`    | Logging level        |
+| `CACHE_TTL`          | `300`     | Cache TTL in seconds |
+| `MAX_CONNECTIONS`    | `10`      | Connection pool size |
+| `CONNECTION_TIMEOUT` | `30`      | Timeout in seconds   |
 
 ## Deployment Checklist
 

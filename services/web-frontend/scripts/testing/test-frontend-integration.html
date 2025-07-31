@@ -1,63 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Frontend Integration Test</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-        .error { color: red; }
-        .success { color: green; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .result {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Frontend Integration Test</h1>
     <button onclick="testSearch()">Test Search API</button>
     <div id="results"></div>
 
     <script>
-        async function testSearch() {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = 'Testing...';
-            
-            try {
-                const response = await fetch('http://localhost:8080/search', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        query: '税制',
-                        limit: 3
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                resultsDiv.innerHTML = `
+      async function testSearch() {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "Testing...";
+
+        try {
+          const response = await fetch("http://localhost:8080/search", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              query: "税制",
+              limit: 3,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          resultsDiv.innerHTML = `
                     <div class="success">✅ Search API Working!</div>
                     <p><strong>Query:</strong> ${data.query}</p>
                     <p><strong>Results found:</strong> ${data.total_found}</p>
                     <p><strong>Search method:</strong> ${data.search_method}</p>
                     <div><strong>Results:</strong></div>
-                    ${data.results.map(result => `
+                    ${data.results
+                      .map(
+                        (result) => `
                         <div class="result">
                             <strong>${result.title}</strong><br>
                             <small>Category: ${result.category} | Status: ${result.status}</small><br>
                             <small>Summary: ${result.summary.substring(0, 200)}...</small>
                         </div>
-                    `).join('')}
+                    `
+                      )
+                      .join("")}
                 `;
-            } catch (error) {
-                resultsDiv.innerHTML = `
+        } catch (error) {
+          resultsDiv.innerHTML = `
                     <div class="error">❌ Search API Failed!</div>
                     <p>Error: ${error.message}</p>
                 `;
-            }
         }
+      }
     </script>
-</body>
+  </body>
 </html>

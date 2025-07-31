@@ -73,28 +73,16 @@ const MemberPage: React.FC<MemberPageProps> = ({
 
   const [member, setMember] = useState<Member | null>(initialMember);
   const [policyAnalysis, setPolicyAnalysis] = useState<PolicyAnalysis | null>(
-    initialPolicyAnalysis,
+    initialPolicyAnalysis
   );
   const [votingStats, setVotingStats] = useState<VotingStats | null>(
-    initialVotingStats,
+    initialVotingStats
   );
   const [loading, setLoading] = useState(!initialMember);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
     "overview" | "policy" | "voting" | "activity"
   >("overview");
-
-  useEffect(() => {
-    if (id) {
-      recordPageView(`member/${id}`);
-    }
-  }, [id, recordPageView]);
-
-  useEffect(() => {
-    if (!initialMember && id) {
-      fetchMemberData();
-    }
-  }, [id, initialMember, fetchMemberData]);
 
   const fetchMemberData = useCallback(async () => {
     try {
@@ -107,7 +95,34 @@ const MemberPage: React.FC<MemberPageProps> = ({
         throw new Error("Member not found");
       }
       const memberData = await memberResponse.json();
-      setMember(memberData.member);
+
+      // Transform Airtable response to match Member interface
+      if (memberData.success && memberData.member) {
+        const rawMember = memberData.member;
+        const fields = rawMember.fields || {};
+
+        const transformedMember: Member = {
+          id: rawMember.id,
+          name: fields.Name || "",
+          name_kana: fields.Name_Kana || "",
+          house:
+            fields.House === "衆議院"
+              ? "house_of_representatives"
+              : "house_of_councillors",
+          party: fields.Party_Name || "無所属",
+          constituency: fields.Constituency || "",
+          terms_served: fields.Terms_Served || 1,
+          committees: fields.Committees || [],
+          profile_image: fields.Profile_Image?.[0]?.url,
+          official_url: fields.Official_URL,
+          elected_date: fields.First_Elected,
+          birth_date: fields.Birth_Date,
+          education: fields.Education,
+          career: fields.Career,
+        };
+
+        setMember(transformedMember);
+      }
 
       // Fetch policy analysis
       const policyResponse = await fetch(`/api/policy/member/${id}/analysis`);
@@ -125,7 +140,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
     } catch (err) {
       console.error("Failed to fetch member data:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to load member data",
+        err instanceof Error ? err.message : "Failed to load member data"
       );
       recordError({
         error: err as Error,
@@ -136,6 +151,18 @@ const MemberPage: React.FC<MemberPageProps> = ({
       setLoading(false);
     }
   }, [id, recordError]);
+
+  useEffect(() => {
+    if (id) {
+      recordPageView(`member/${id}`);
+    }
+  }, [id, recordPageView]);
+
+  useEffect(() => {
+    if (!initialMember && id) {
+      fetchMemberData();
+    }
+  }, [id, initialMember, fetchMemberData]);
 
   const getHouseLabel = (house: string) => {
     return house === "house_of_representatives" ? "衆議院" : "参議院";
@@ -414,7 +441,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">
                           {Math.round(
-                            policyAnalysis.overall_activity_level * 100,
+                            policyAnalysis.overall_activity_level * 100
                           )}
                           %
                         </div>
@@ -423,7 +450,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                       <div className="text-center">
                         <div className="text-2xl font-bold text-green-600">
                           {Math.round(
-                            policyAnalysis.party_alignment_rate * 100,
+                            policyAnalysis.party_alignment_rate * 100
                           )}
                           %
                         </div>
@@ -554,7 +581,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                         <span>
                           更新:{" "}
                           {new Date(position.last_updated).toLocaleDateString(
-                            "ja-JP",
+                            "ja-JP"
                           )}
                         </span>
                       </div>
@@ -575,7 +602,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                                     <span className="flex-shrink-0 w-1 h-1 bg-gray-400 rounded-full mt-2 mr-2"></span>
                                     <span>{evidence}</span>
                                   </li>
-                                ),
+                                )
                               )}
                             </ul>
                           </div>
@@ -610,7 +637,7 @@ const MemberPage: React.FC<MemberPageProps> = ({
                 投票履歴
               </h2>
 
-              {votingStats && (
+              {votingStats ? (
                 <div className="space-y-6">
                   {/* Voting Pattern Chart */}
                   <div>
@@ -618,32 +645,142 @@ const MemberPage: React.FC<MemberPageProps> = ({
                       投票パターン
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">
+                      <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="text-3xl font-bold text-green-600">
                           {votingStats.voting_pattern.yes_votes}
                         </div>
                         <div className="text-sm text-gray-600">賛成</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {Math.round(
+                            (votingStats.voting_pattern.yes_votes /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
+                        </div>
                       </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-2xl font-bold text-red-600">
+                      <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                        <div className="text-3xl font-bold text-red-600">
                           {votingStats.voting_pattern.no_votes}
                         </div>
                         <div className="text-sm text-gray-600">反対</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {Math.round(
+                            (votingStats.voting_pattern.no_votes /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
+                        </div>
                       </div>
-                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                        <div className="text-2xl font-bold text-yellow-600">
+                      <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="text-3xl font-bold text-yellow-600">
                           {votingStats.voting_pattern.abstentions}
                         </div>
                         <div className="text-sm text-gray-600">棄権</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {Math.round(
+                            (votingStats.voting_pattern.abstentions /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
+                        </div>
                       </div>
-                      <div className="text-center p-4 bg-gray-50 rounded-lg">
-                        <div className="text-2xl font-bold text-gray-600">
+                      <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-300">
+                        <div className="text-3xl font-bold text-gray-600">
                           {votingStats.voting_pattern.absences}
                         </div>
                         <div className="text-sm text-gray-600">欠席</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {Math.round(
+                            (votingStats.voting_pattern.absences /
+                              votingStats.total_votes) *
+                              100
+                          )}
+                          %
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Overall Statistics */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      統計サマリー
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">総投票数:</span>
+                        <span className="text-sm font-medium">
+                          {votingStats.total_votes}回
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">出席率:</span>
+                        <span className="text-sm font-medium">
+                          {Math.round(votingStats.attendance_rate * 100)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">
+                          党方針一致率:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {Math.round(votingStats.party_alignment_rate * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Voting History Placeholder */}
+                  <div className="border-t pt-6">
+                    <h3 className="font-medium text-gray-900 mb-4">
+                      最近の投票記録
+                    </h3>
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg
+                          className="w-5 h-5 text-yellow-600 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <div>
+                          <h4 className="text-sm font-medium text-yellow-800">
+                            投票履歴機能について
+                          </h4>
+                          <p className="text-sm text-yellow-700 mt-1">
+                            個別の法案への投票記録は、今後のアップデートで追加予定です。現在は統計データのみ表示しています。
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <svg
+                    className="w-12 h-12 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  <p>投票データを読み込んでいます...</p>
                 </div>
               )}
             </div>

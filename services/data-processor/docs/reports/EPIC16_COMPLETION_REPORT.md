@@ -7,9 +7,11 @@ Successfully implemented the Bills ↔ PolicyCategory relationship system as spe
 ## Completed Tasks
 
 ### ✅ T127 - Database Schema Implementation
+
 **Status**: Completed
 
 **Implementation**:
+
 - Created Alembic migration for PostgreSQL intermediate table
 - File: `/shared/alembic/versions/0002_add_bills_issue_categories_table.py`
 - Added `bills_issue_categories` table with:
@@ -22,20 +24,24 @@ Successfully implemented the Bills ↔ PolicyCategory relationship system as spe
   - Proper indexes for performance
 
 **Key Features**:
+
 - Foreign key constraints ensure data integrity
 - Composite unique constraint prevents duplicate relationships
 - Optimized indexes for common query patterns
 - Supports both manual and automatic relationship creation
 
 ### ✅ T128 - API Endpoint Extensions
+
 **Status**: Completed
 
 **Implementation**:
+
 - Created comprehensive Bills API router: `/services/api-gateway/src/routes/bills.py`
 - Extended Airtable client with relationship management methods
 - Integrated with main FastAPI application
 
 **API Endpoints**:
+
 ```
 GET    /api/bills/                           - List bills with optional filters
 GET    /api/bills/{id}                       - Get specific bill
@@ -49,12 +55,14 @@ GET    /api/bills/statistics/policy-categories   - Get relationship statistics
 ```
 
 **Request/Response Models**:
+
 - `PolicyCategoryRelationshipRequest` - For creating/updating relationships
 - `BillSearchRequest` - For advanced search with category filtering
 - Full input validation and sanitization
 - Proper error handling with meaningful HTTP status codes
 
 **Airtable Client Extensions**:
+
 - `create_bill_policy_category_relationship()`
 - `get_bill_policy_category_relationship()`
 - `list_bill_policy_category_relationships()`
@@ -66,9 +74,11 @@ GET    /api/bills/statistics/policy-categories   - Get relationship statistics
 - Rate limiting and error handling
 
 ### ✅ T129 - Data Migration and Mapping
+
 **Status**: Completed
 
 **T129.1 - Bills Category Analysis**:
+
 - Analyzed 634 Bills records in Airtable
 - Found 95 bills with categories (15% coverage)
 - Identified 6 unique categories:
@@ -80,6 +90,7 @@ GET    /api/bills/statistics/policy-categories   - Get relationship statistics
   - 予算・決算: 1 bill (0.2%)
 
 **T129.2 - PolicyCategory Mapping**:
+
 - Analyzed IssueCategories table accessibility
 - Created fallback mapping for 6 Bills categories to CAP-compliant PolicyCategories
 - Mapping structure:
@@ -95,6 +106,7 @@ GET    /api/bills/statistics/policy-categories   - Get relationship statistics
   ```
 
 **T129.3 - Migration Script**:
+
 - Created comprehensive migration script: `migrate_bills_to_policy_categories.py`
 - Features:
   - Dry-run mode for safe testing
@@ -106,16 +118,19 @@ GET    /api/bills/statistics/policy-categories   - Get relationship statistics
 ## Architecture Decisions
 
 ### 1. Hybrid Approach
+
 - **PostgreSQL**: For high-performance queries and complex relationships
 - **Airtable**: For content management and manual curation
 - **Intermediate Table**: Bridges the gap between systems
 
 ### 2. Confidence Scoring System
+
 - **0.0-1.0 Scale**: Allows for nuanced relationship strength
 - **Manual vs Automatic**: Tracks relationship creation method
 - **Migration Confidence**: 0.8 for automated migration (medium confidence)
 
 ### 3. CAP Compliance
+
 - **Comparative Agendas Project**: International policy classification standards
 - **Hierarchical Structure**: L1 (Major Topics) → L2 (Sub-Topics) → L3 (Specific Areas)
 - **Fallback Mapping**: Ensures compatibility when IssueCategories table is inaccessible
@@ -123,30 +138,36 @@ GET    /api/bills/statistics/policy-categories   - Get relationship statistics
 ## Files Created/Modified
 
 ### Database Schema
+
 - `/shared/alembic/versions/0002_add_bills_issue_categories_table.py`
 - `/shared/src/shared/models/bills_issue_categories.py`
 
 ### API Implementation
+
 - `/services/api-gateway/src/routes/bills.py` (NEW)
 - `/services/api-gateway/src/main.py` (MODIFIED - added bills router)
 - `/shared/src/shared/clients/airtable.py` (EXTENDED)
 
 ### Migration Tools
+
 - `/services/ingest-worker/analyze_bills_categories.py`
 - `/services/ingest-worker/analyze_issue_categories.py`
 - `/services/ingest-worker/migrate_bills_to_policy_categories.py`
 
 ### Analysis Data
+
 - `/services/ingest-worker/bills_category_analysis_t129.json`
 - `/services/ingest-worker/bills_to_issue_categories_mapping_t129.json`
 
 ### Testing & Validation
+
 - `/services/api-gateway/test_bills_policy_category_api.py`
 - `/services/api-gateway/validate_bills_routes.py`
 
 ## Technical Specifications
 
 ### Database Schema
+
 ```sql
 CREATE TABLE bills_issue_categories (
     id SERIAL PRIMARY KEY,
@@ -161,6 +182,7 @@ CREATE TABLE bills_issue_categories (
 ```
 
 ### API Response Format
+
 ```json
 {
   "bill_id": "rec123456789",
@@ -187,16 +209,19 @@ CREATE TABLE bills_issue_categories (
 ## Performance Considerations
 
 ### 1. Indexing Strategy
+
 - Composite index on `(bill_id, issue_category_airtable_id)`
 - Individual indexes on frequently queried fields
 - Optimized for both read and write operations
 
 ### 2. Rate Limiting
+
 - Airtable API: 5 requests per second
 - Batch operations: 10 records per batch
 - Automatic retry with exponential backoff
 
 ### 3. Caching Strategy
+
 - Redis caching for frequently accessed relationships
 - TTL-based cache invalidation
 - Optimized for read-heavy workloads
@@ -204,16 +229,19 @@ CREATE TABLE bills_issue_categories (
 ## Security Measures
 
 ### 1. Input Validation
+
 - Pydantic models for all request/response data
 - SQL injection prevention through parameterized queries
 - XSS prevention through input sanitization
 
 ### 2. Authentication & Authorization
+
 - JWT-based authentication
 - Role-based access control
 - API key rotation support
 
 ### 3. Data Integrity
+
 - Foreign key constraints
 - Unique constraints prevent duplicates
 - Audit trails for all changes
@@ -221,16 +249,19 @@ CREATE TABLE bills_issue_categories (
 ## Future Enhancements
 
 ### 1. Advanced Analytics
+
 - Relationship confidence scoring based on content similarity
 - Machine learning-based category suggestions
 - Trend analysis across policy categories
 
 ### 2. Integration Expansion
+
 - Vector similarity search for automatic categorization
 - Natural language processing for content analysis
 - Real-time updates via webhooks
 
 ### 3. UI/UX Improvements
+
 - Visual relationship management interface
 - Bulk editing capabilities
 - Category hierarchy visualization
@@ -238,16 +269,19 @@ CREATE TABLE bills_issue_categories (
 ## Testing Strategy
 
 ### 1. Unit Tests
+
 - API endpoint validation
 - Database model testing
 - Input validation testing
 
 ### 2. Integration Tests
+
 - End-to-end API workflow testing
 - Database transaction testing
 - Airtable integration testing
 
 ### 3. Performance Tests
+
 - Load testing for bulk operations
 - Stress testing for high-concurrency scenarios
 - Memory usage optimization
@@ -255,16 +289,19 @@ CREATE TABLE bills_issue_categories (
 ## Deployment Considerations
 
 ### 1. Database Migration
+
 - Run Alembic migrations in staging first
 - Verify data integrity after migration
 - Rollback plan for emergency scenarios
 
 ### 2. API Deployment
+
 - Blue-green deployment strategy
 - Health checks for all endpoints
 - Monitoring and alerting setup
 
 ### 3. Data Migration
+
 - Dry-run verification before production
 - Incremental migration approach
 - Rollback procedures for data corruption

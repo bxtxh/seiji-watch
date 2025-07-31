@@ -36,7 +36,7 @@ const ActiveIssuesStrip: React.FC = () => {
       try {
         setLoading(true);
         const response = await fetch(
-          "http://localhost:8080/api/issues?status=in_view&limit=12",
+          "http://localhost:8080/api/issues?status=in_view&limit=12"
         );
 
         if (!response.ok) {

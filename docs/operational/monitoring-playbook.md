@@ -71,31 +71,31 @@ rule_files:
   - "policy_issue_extraction_rules.yml"
 
 scrape_configs:
-  - job_name: 'api-gateway'
+  - job_name: "api-gateway"
     static_configs:
-      - targets: ['localhost:8000']
-    metrics_path: '/api/monitoring/metrics'
+      - targets: ["localhost:8000"]
+    metrics_path: "/api/monitoring/metrics"
     scrape_interval: 10s
-    
-  - job_name: 'ingest-worker'
+
+  - job_name: "ingest-worker"
     static_configs:
-      - targets: ['localhost:8001']
-    metrics_path: '/metrics'
+      - targets: ["localhost:8001"]
+    metrics_path: "/metrics"
     scrape_interval: 30s
-    
-  - job_name: 'postgres-exporter'
+
+  - job_name: "postgres-exporter"
     static_configs:
-      - targets: ['localhost:9187']
-      
-  - job_name: 'redis-exporter'
+      - targets: ["localhost:9187"]
+
+  - job_name: "redis-exporter"
     static_configs:
-      - targets: ['localhost:9121']
+      - targets: ["localhost:9121"]
 
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          - localhost:9093
+            - localhost:9093
 ```
 
 ### 2. Custom Metrics Implementation
@@ -148,40 +148,40 @@ DISCORD_NOTIFICATIONS = Counter(
 
 class MetricsCollector:
     """Collect and expose custom metrics."""
-    
+
     def __init__(self, port: int = 8001):
         self.port = port
-        
+
     def start_metrics_server(self):
         """Start the metrics server."""
         start_http_server(self.port)
-        
+
     def record_extraction_attempt(self, level: int, success: bool):
         """Record an issue extraction attempt."""
         status = 'success' if success else 'failure'
         ISSUE_EXTRACTION_TOTAL.labels(level=level, status=status).inc()
-        
+
     def record_extraction_duration(self, level: int, duration: float):
         """Record extraction duration."""
         ISSUE_EXTRACTION_DURATION.labels(level=level).observe(duration)
-        
+
     def record_llm_request(self, duration: float):
         """Record LLM API request duration."""
         LLM_REQUEST_DURATION.observe(duration)
-        
+
     def record_airtable_request(self, method: str, success: bool):
         """Record Airtable API request."""
         status = 'success' if success else 'failure'
         AIRTABLE_API_CALLS.labels(method=method, status=status).inc()
-        
+
     def update_airtable_rate_limit(self, remaining: int):
         """Update Airtable rate limit gauge."""
         AIRTABLE_RATE_LIMIT_REMAINING.set(remaining)
-        
+
     def update_pending_issues_count(self, count: int):
         """Update pending issues count."""
         PENDING_ISSUES_GAUGE.set(count)
-        
+
     def record_discord_notification(self, success: bool):
         """Record Discord notification attempt."""
         status = 'success' if success else 'failure'
@@ -201,13 +201,13 @@ router = APIRouter()
 @router.get("/health")
 async def health_check():
     """Comprehensive health check endpoint."""
-    
+
     health_checks = {
         "timestamp": datetime.utcnow().isoformat(),
         "status": "healthy",
         "components": {}
     }
-    
+
     # Check database connectivity
     try:
         db_start = time.time()
@@ -223,7 +223,7 @@ async def health_check():
             "error": str(e)
         }
         health_checks["status"] = "unhealthy"
-    
+
     # Check Redis connectivity
     try:
         redis_start = time.time()
@@ -239,7 +239,7 @@ async def health_check():
             "error": str(e)
         }
         health_checks["status"] = "unhealthy"
-    
+
     # Check Airtable API
     try:
         airtable_start = time.time()
@@ -255,7 +255,7 @@ async def health_check():
             "error": str(e)
         }
         health_checks["status"] = "unhealthy"
-    
+
     # Check OpenAI API
     try:
         openai_start = time.time()
@@ -271,18 +271,18 @@ async def health_check():
             "error": str(e)
         }
         health_checks["status"] = "unhealthy"
-    
+
     status_code = 200 if health_checks["status"] == "healthy" else 503
     return JSONResponse(status_code=status_code, content=health_checks)
 
 @router.get("/metrics/summary")
 async def metrics_summary():
     """Get key metrics summary."""
-    
+
     # Get metrics from last 24 hours
     end_time = datetime.utcnow()
     start_time = end_time - timedelta(hours=24)
-    
+
     summary = {
         "timestamp": end_time.isoformat(),
         "period": "24h",
@@ -295,15 +295,15 @@ async def metrics_summary():
             "discord_notifications_sent": await get_discord_notifications_sent(start_time, end_time)
         }
     }
-    
+
     return summary
 
 @router.get("/alerts/active")
 async def active_alerts():
     """Get currently active alerts."""
-    
+
     alerts = []
-    
+
     # Check for high failure rate
     failure_rate = await get_recent_failure_rate()
     if failure_rate > 0.05:  # 5% threshold
@@ -314,7 +314,7 @@ async def active_alerts():
             "threshold": 0.05,
             "description": "Issue extraction failure rate is above 5%"
         })
-    
+
     # Check for slow LLM responses
     avg_llm_time = await get_avg_llm_response_time()
     if avg_llm_time > 10.0:  # 10 second threshold
@@ -325,7 +325,7 @@ async def active_alerts():
             "threshold": 10.0,
             "description": "LLM response time is above 10 seconds"
         })
-    
+
     # Check for high pending issue count
     pending_count = await get_pending_issues_count()
     if pending_count > 100:
@@ -336,7 +336,7 @@ async def active_alerts():
             "threshold": 100,
             "description": "High number of issues pending review"
         })
-    
+
     return {
         "timestamp": datetime.utcnow().isoformat(),
         "active_alerts": alerts,
@@ -364,7 +364,7 @@ groups:
         annotations:
           summary: "{{ $labels.job }} service is down"
           description: "Service {{ $labels.job }} has been down for more than 1 minute"
-          
+
       - alert: HighErrorRate
         expr: rate(issues_extracted_total{status="failure"}[5m]) / rate(issues_extracted_total[5m]) > 0.1
         for: 5m
@@ -374,7 +374,7 @@ groups:
         annotations:
           summary: "High issue extraction error rate"
           description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
-          
+
       - alert: LLMAPIDown
         expr: llm_request_duration_seconds_count == 0
         for: 5m
@@ -384,8 +384,8 @@ groups:
         annotations:
           summary: "LLM API appears to be down"
           description: "No LLM requests completed in the last 5 minutes"
-          
-      # Medium-priority alerts  
+
+      # Medium-priority alerts
       - alert: SlowLLMResponses
         expr: histogram_quantile(0.95, rate(llm_request_duration_seconds_bucket[10m])) > 10
         for: 10m
@@ -395,7 +395,7 @@ groups:
         annotations:
           summary: "LLM API responses are slow"
           description: "95th percentile response time is {{ $value }}s"
-          
+
       - alert: AirtableRateLimitHigh
         expr: airtable_rate_limit_remaining < 50
         for: 1m
@@ -405,7 +405,7 @@ groups:
         annotations:
           summary: "Airtable rate limit usage is high"
           description: "Only {{ $value }} requests remaining in rate limit window"
-          
+
       - alert: HighPendingIssues
         expr: pending_issues_total > 100
         for: 30m
@@ -415,7 +415,7 @@ groups:
         annotations:
           summary: "High number of issues pending review"
           description: "{{ $value }} issues are currently pending review"
-          
+
       # Low-priority alerts
       - alert: DiscordNotificationFailures
         expr: rate(discord_notifications_total{status="failure"}[1h]) > 0.05
@@ -426,7 +426,7 @@ groups:
         annotations:
           summary: "Discord notification failures detected"
           description: "{{ $value | humanizePercentage }} of Discord notifications are failing"
-          
+
       - alert: LowIssueQuality
         expr: avg_over_time(issue_quality_score_avg[6h]) < 0.7
         for: 6h
@@ -443,66 +443,66 @@ groups:
 ```yaml
 # alertmanager.yml
 global:
-  smtp_smarthost: 'localhost:587'
-  smtp_from: 'alerts@seiji-watch.com'
+  smtp_smarthost: "localhost:587"
+  smtp_from: "alerts@seiji-watch.com"
 
 route:
-  group_by: ['alertname', 'severity']
+  group_by: ["alertname", "severity"]
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 1h
-  receiver: 'default'
+  receiver: "default"
   routes:
     - match:
         severity: critical
-      receiver: 'critical-alerts'
+      receiver: "critical-alerts"
       continue: true
     - match:
         team: content
-      receiver: 'content-team'
+      receiver: "content-team"
     - match:
         team: engineering
-      receiver: 'engineering-team'
+      receiver: "engineering-team"
 
 receivers:
-  - name: 'default'
+  - name: "default"
     webhook_configs:
-      - url: 'http://localhost:5001/webhook'
-        
-  - name: 'critical-alerts'
+      - url: "http://localhost:5001/webhook"
+
+  - name: "critical-alerts"
     email_configs:
-      - to: 'oncall@seiji-watch.com'
-        subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+      - to: "oncall@seiji-watch.com"
+        subject: "CRITICAL: {{ .GroupLabels.alertname }}"
         body: |
           {{ range .Alerts }}
           Alert: {{ .Annotations.summary }}
           Description: {{ .Annotations.description }}
           {{ end }}
     slack_configs:
-      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
-        channel: '#alerts-critical'
-        title: 'Critical Alert: {{ .GroupLabels.alertname }}'
+      - api_url: "YOUR_SLACK_WEBHOOK_URL"
+        channel: "#alerts-critical"
+        title: "Critical Alert: {{ .GroupLabels.alertname }}"
         text: |
           {{ range .Alerts }}
           {{ .Annotations.summary }}
           {{ .Annotations.description }}
           {{ end }}
-          
-  - name: 'engineering-team'
+
+  - name: "engineering-team"
     email_configs:
-      - to: 'engineering@seiji-watch.com'
-        subject: 'Alert: {{ .GroupLabels.alertname }}'
+      - to: "engineering@seiji-watch.com"
+        subject: "Alert: {{ .GroupLabels.alertname }}"
     slack_configs:
-      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
-        channel: '#engineering-alerts'
-        
-  - name: 'content-team'
+      - api_url: "YOUR_SLACK_WEBHOOK_URL"
+        channel: "#engineering-alerts"
+
+  - name: "content-team"
     email_configs:
-      - to: 'content@seiji-watch.com'
-        subject: 'Content Alert: {{ .GroupLabels.alertname }}'
+      - to: "content@seiji-watch.com"
+        subject: "Content Alert: {{ .GroupLabels.alertname }}"
     slack_configs:
-      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
-        channel: '#content-alerts'
+      - api_url: "YOUR_SLACK_WEBHOOK_URL"
+        channel: "#content-alerts"
 ```
 
 ## Incident Response Procedures
@@ -510,26 +510,32 @@ receivers:
 ### Severity Levels
 
 **Critical (P0)**: System completely down or major functionality broken
+
 - Response time: 15 minutes
 - Communication: Immediate
 
-**High (P1)**: Significant functionality impaired 
+**High (P1)**: Significant functionality impaired
+
 - Response time: 1 hour
 - Communication: Within 30 minutes
 
 **Medium (P2)**: Minor functionality issues
+
 - Response time: 4 hours
 - Communication: Within 2 hours
 
 **Low (P3)**: Enhancement requests or cosmetic issues
+
 - Response time: 24 hours
 - Communication: Next business day
 
 ### Critical Incident Response (P0)
 
 #### 1. System Down
+
 **Symptoms**: Health checks failing, no API responses
 **Response Steps**:
+
 ```bash
 # 1. Check service status
 kubectl get pods -l app=policy-issue-extraction
@@ -552,8 +558,10 @@ curl https://api.seiji-watch.com/api/issues/health
 ```
 
 #### 2. High Error Rate
+
 **Symptoms**: >10% of issue extractions failing
 **Response Steps**:
+
 ```bash
 # 1. Check recent error logs
 kubectl logs deployment/ingest-worker | grep ERROR | tail -20
@@ -576,8 +584,10 @@ kubectl patch deployment ingest-worker -p '{"spec":{"template":{"spec":{"contain
 ### High Priority Incident Response (P1)
 
 #### 1. Slow LLM Responses
+
 **Symptoms**: >10 second response times from OpenAI
 **Response Steps**:
+
 ```bash
 # 1. Check OpenAI status page
 curl https://status.openai.com/api/v2/status.json
@@ -593,8 +603,10 @@ kubectl set env deployment/ingest-worker OPENAI_MODEL=gpt-3.5-turbo-16k
 ```
 
 #### 2. Airtable Rate Limit Issues
+
 **Symptoms**: Airtable API calls failing with 429 status
 **Response Steps**:
+
 ```bash
 # 1. Check current rate limit status
 curl -H "Authorization: Bearer $AIRTABLE_PAT" \
@@ -614,15 +626,17 @@ watch 'curl -s https://api.seiji-watch.com/api/monitoring/airtable-status'
 ### Escalation Procedures
 
 #### Engineering Escalation Path
+
 1. **On-call Engineer** (Primary response)
 2. **Senior Engineer** (If unresolved in 30 minutes)
 3. **Engineering Manager** (If unresolved in 1 hour)
 4. **CTO** (For extended outages)
 
 #### Contact Information
+
 ```yaml
 contacts:
-  on_call: 
+  on_call:
     slack: "@oncall-engineer"
     phone: "+1-555-0123"
   senior_engineer:
@@ -638,6 +652,7 @@ contacts:
 ### Daily Operations
 
 #### Morning Health Check (9:00 AM JST)
+
 ```bash
 #!/bin/bash
 # Daily health check script
@@ -669,6 +684,7 @@ python scripts/generate_daily_report.py --date=$(date +%Y-%m-%d)
 ```
 
 #### Weekly Maintenance (Sunday 2:00 AM JST)
+
 ```bash
 #!/bin/bash
 # Weekly maintenance script
@@ -695,6 +711,7 @@ kubectl get configmaps -o yaml > backup/configmaps-$(date +%Y%m%d).yaml
 ### Disaster Recovery
 
 #### Data Loss Recovery
+
 ```bash
 #!/bin/bash
 # Data recovery procedure
@@ -733,18 +750,21 @@ curl https://api.seiji-watch.com/api/issues/health
 ### Key Dashboards
 
 #### 1. System Overview Dashboard
+
 - Service uptime and health status
 - Request rate and error rate trends
 - Resource utilization (CPU, memory, disk)
 - External API status (OpenAI, Airtable)
 
 #### 2. Issue Extraction Dashboard
+
 - Extraction success rate by level
 - LLM response time distribution
 - Issue quality score trends
 - Pending issues backlog
 
 #### 3. API Performance Dashboard
+
 - Endpoint response times
 - Request volume by endpoint
 - Rate limiting status

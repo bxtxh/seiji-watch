@@ -48,7 +48,7 @@ test.describe("Simple Smoke Tests", () => {
 
     // Check that the main heading is present
     await expect(
-      page.locator('h1:has-text("国会議事録検索システム")'),
+      page.locator('h1:has-text("国会議事録検索システム")')
     ).toBeVisible();
   });
 

@@ -10,7 +10,7 @@ type HealthResponse = {
 
 export default function handler(
   req: NextApiRequest,
-  res: NextApiResponse<HealthResponse>,
+  res: NextApiResponse<HealthResponse>
 ) {
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);

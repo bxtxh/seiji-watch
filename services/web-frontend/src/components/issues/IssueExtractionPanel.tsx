@@ -3,8 +3,8 @@
  * Interface for extracting policy issues from bill data using the enhanced dual-level system
  */
 
-import React, { useState, useCallback } from 'react';
-import { 
+import React, { useState, useCallback } from "react";
+import {
   PlusIcon,
   DocumentArrowUpIcon,
   CheckCircleIcon,
@@ -12,9 +12,9 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   ChartBarIcon,
-  SparklesIcon
-} from '@heroicons/react/24/outline';
-import { useIssueExtraction } from '../../hooks/useEnhancedIssues';
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
+import { useIssueExtraction } from "../../hooks/useEnhancedIssues";
 
 export interface BillData {
   bill_id: string;
@@ -38,18 +38,18 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
   onExtractionComplete,
   onError,
   disabled = false,
-  className = ''
+  className = "",
 }) => {
   const [showForm, setShowForm] = useState(false);
   const [billData, setBillData] = useState<BillData>({
-    bill_id: '',
-    bill_title: '',
-    bill_outline: '',
-    background_context: '',
-    expected_effects: '',
-    key_provisions: [''],
-    submitter: '',
-    category: ''
+    bill_id: "",
+    bill_title: "",
+    bill_outline: "",
+    background_context: "",
+    expected_effects: "",
+    key_provisions: [""],
+    submitter: "",
+    category: "",
   });
 
   const {
@@ -58,74 +58,81 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
     error: extractionError,
     extractSingle,
     clearResults,
-    clearError
+    clearError,
   } = useIssueExtraction();
 
-  const handleInputChange = useCallback((field: keyof BillData, value: string | string[]) => {
-    setBillData(prev => ({ ...prev, [field]: value }));
-  }, []);
+  const handleInputChange = useCallback(
+    (field: keyof BillData, value: string | string[]) => {
+      setBillData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
   const handleProvisionChange = useCallback((index: number, value: string) => {
-    setBillData(prev => ({
+    setBillData((prev) => ({
       ...prev,
-      key_provisions: prev.key_provisions?.map((provision, i) => 
-        i === index ? value : provision
-      ) || []
+      key_provisions:
+        prev.key_provisions?.map((provision, i) =>
+          i === index ? value : provision
+        ) || [],
     }));
   }, []);
 
   const addProvision = useCallback(() => {
-    setBillData(prev => ({
+    setBillData((prev) => ({
       ...prev,
-      key_provisions: [...(prev.key_provisions || []), '']
+      key_provisions: [...(prev.key_provisions || []), ""],
     }));
   }, []);
 
   const removeProvision = useCallback((index: number) => {
-    setBillData(prev => ({
+    setBillData((prev) => ({
       ...prev,
-      key_provisions: prev.key_provisions?.filter((_, i) => i !== index) || []
+      key_provisions: prev.key_provisions?.filter((_, i) => i !== index) || [],
     }));
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!billData.bill_id || !billData.bill_title || !billData.bill_outline) {
-      onError?.('必須項目を入力してください');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    try {
-      clearError();
-      
-      // Filter out empty provisions
-      const filteredBillData = {
-        ...billData,
-        key_provisions: billData.key_provisions?.filter(p => p.trim()) || []
-      };
+      if (!billData.bill_id || !billData.bill_title || !billData.bill_outline) {
+        onError?.("必須項目を入力してください");
+        return;
+      }
 
-      const results = await extractSingle(filteredBillData);
-      
-      onExtractionComplete?.(results);
-      setShowForm(false);
-      
-      // Reset form
-      setBillData({
-        bill_id: '',
-        bill_title: '',
-        bill_outline: '',
-        background_context: '',
-        expected_effects: '',
-        key_provisions: [''],
-        submitter: '',
-        category: ''
-      });
-      
-    } catch (err) {
-      onError?.(err instanceof Error ? err.message : '抽出に失敗しました');
-    }
-  }, [billData, extractSingle, onExtractionComplete, onError, clearError]);
+      try {
+        clearError();
+
+        // Filter out empty provisions
+        const filteredBillData = {
+          ...billData,
+          key_provisions:
+            billData.key_provisions?.filter((p) => p.trim()) || [],
+        };
+
+        const results = await extractSingle(filteredBillData);
+
+        onExtractionComplete?.(results);
+        setShowForm(false);
+
+        // Reset form
+        setBillData({
+          bill_id: "",
+          bill_title: "",
+          bill_outline: "",
+          background_context: "",
+          expected_effects: "",
+          key_provisions: [""],
+          submitter: "",
+          category: "",
+        });
+      } catch (err) {
+        onError?.(err instanceof Error ? err.message : "抽出に失敗しました");
+      }
+    },
+    [billData, extractSingle, onExtractionComplete, onError, clearError]
+  );
 
   const handleCancel = useCallback(() => {
     setShowForm(false);
@@ -134,9 +141,12 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
   }, [clearResults, clearError]);
 
   const getExtractionStatusIcon = () => {
-    if (extracting) return <ClockIcon className="w-5 h-5 text-blue-500 animate-spin" />;
-    if (extractionError) return <XCircleIcon className="w-5 h-5 text-red-500" />;
-    if (extractionResults?.success) return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+    if (extracting)
+      return <ClockIcon className="w-5 h-5 text-blue-500 animate-spin" />;
+    if (extractionError)
+      return <XCircleIcon className="w-5 h-5 text-red-500" />;
+    if (extractionResults?.success)
+      return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
     return <SparklesIcon className="w-5 h-5 text-purple-500" />;
   };
 
@@ -147,11 +157,9 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {getExtractionStatusIcon()}
-            <h3 className="text-lg font-medium text-gray-900">
-              政策課題抽出
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900">政策課題抽出</h3>
           </div>
-          
+
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
@@ -163,7 +171,7 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
             </button>
           )}
         </div>
-        
+
         <p className="mt-1 text-sm text-gray-600">
           法案データから高校生向けと一般読者向けの政策課題を自動抽出します
         </p>
@@ -176,14 +184,17 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
           <div className="grid grid-cols-1 gap-6">
             {/* Bill ID */}
             <div>
-              <label htmlFor="bill_id" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="bill_id"
+                className="block text-sm font-medium text-gray-700"
+              >
                 法案ID <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="bill_id"
                 value={billData.bill_id}
-                onChange={(e) => handleInputChange('bill_id', e.target.value)}
+                onChange={(e) => handleInputChange("bill_id", e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="例: bill_217_001"
                 required
@@ -192,14 +203,19 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
 
             {/* Bill Title */}
             <div>
-              <label htmlFor="bill_title" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="bill_title"
+                className="block text-sm font-medium text-gray-700"
+              >
                 法案タイトル <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="bill_title"
                 value={billData.bill_title}
-                onChange={(e) => handleInputChange('bill_title', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("bill_title", e.target.value)
+                }
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="例: 介護保険制度改正法案"
                 required
@@ -208,14 +224,19 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
 
             {/* Bill Outline */}
             <div>
-              <label htmlFor="bill_outline" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="bill_outline"
+                className="block text-sm font-medium text-gray-700"
+              >
                 法案概要 <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="bill_outline"
                 rows={4}
                 value={billData.bill_outline}
-                onChange={(e) => handleInputChange('bill_outline', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("bill_outline", e.target.value)
+                }
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="法案の概要を記述してください..."
                 required
@@ -225,19 +246,26 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
 
           {/* Optional Fields */}
           <div className="border-t border-gray-200 pt-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-4">追加情報（任意）</h4>
-            
+            <h4 className="text-sm font-medium text-gray-900 mb-4">
+              追加情報（任意）
+            </h4>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Background Context */}
               <div>
-                <label htmlFor="background_context" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="background_context"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   背景・経緯
                 </label>
                 <textarea
                   id="background_context"
                   rows={3}
                   value={billData.background_context}
-                  onChange={(e) => handleInputChange('background_context', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("background_context", e.target.value)
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="法案提出の背景や経緯..."
                 />
@@ -245,14 +273,19 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
 
               {/* Expected Effects */}
               <div>
-                <label htmlFor="expected_effects" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="expected_effects"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   期待される効果
                 </label>
                 <textarea
                   id="expected_effects"
                   rows={3}
                   value={billData.expected_effects}
-                  onChange={(e) => handleInputChange('expected_effects', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("expected_effects", e.target.value)
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="法案実施により期待される効果..."
                 />
@@ -260,14 +293,19 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
 
               {/* Submitter */}
               <div>
-                <label htmlFor="submitter" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="submitter"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   提出者
                 </label>
                 <input
                   type="text"
                   id="submitter"
                   value={billData.submitter}
-                  onChange={(e) => handleInputChange('submitter', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("submitter", e.target.value)
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   placeholder="例: 厚生労働省"
                 />
@@ -275,13 +313,18 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
 
               {/* Category */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   カテゴリ
                 </label>
                 <select
                   id="category"
                   value={billData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("category", e.target.value)
+                  }
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">選択してください</option>
@@ -313,14 +356,16 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
                 条項を追加
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {billData.key_provisions?.map((provision, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <input
                     type="text"
                     value={provision}
-                    onChange={(e) => handleProvisionChange(index, e.target.value)}
+                    onChange={(e) =>
+                      handleProvisionChange(index, e.target.value)
+                    }
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder={`条項 ${index + 1}`}
                   />
@@ -376,39 +421,65 @@ export const IssueExtractionPanel: React.FC<IssueExtractionPanelProps> = ({
             <CheckCircleIcon className="w-5 h-5 text-green-500" />
             <h4 className="text-sm font-medium text-gray-900">抽出完了</h4>
           </div>
-          
+
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-green-800">
-                {extractionResults.created_issues?.length || 0}件の政策課題を抽出しました
+                {extractionResults.created_issues?.length || 0}
+                件の政策課題を抽出しました
               </span>
               <div className="flex items-center space-x-4 text-xs text-green-700">
-                <span>抽出時間: {extractionResults.extraction_metadata?.extraction_time_ms}ms</span>
-                <span>品質スコア: {Math.round((extractionResults.extraction_metadata?.total_quality_score || 0) * 100)}%</span>
+                <span>
+                  抽出時間:{" "}
+                  {extractionResults.extraction_metadata?.extraction_time_ms}ms
+                </span>
+                <span>
+                  品質スコア:{" "}
+                  {Math.round(
+                    (extractionResults.extraction_metadata
+                      ?.total_quality_score || 0) * 100
+                  )}
+                  %
+                </span>
               </div>
             </div>
-            
-            {extractionResults.created_issues?.map((issue: any, index: number) => (
-              <div key={index} className="bg-white rounded border p-3 mb-2 last:mb-0">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <div className="text-xs font-medium text-blue-600 mb-1">レベル1（高校生向け）</div>
-                    <div className="text-sm text-gray-900">{issue.label_lv1}</div>
+
+            {extractionResults.created_issues?.map(
+              (issue: any, index: number) => (
+                <div
+                  key={index}
+                  className="bg-white rounded border p-3 mb-2 last:mb-0"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs font-medium text-blue-600 mb-1">
+                        レベル1（高校生向け）
+                      </div>
+                      <div className="text-sm text-gray-900">
+                        {issue.label_lv1}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-medium text-green-600 mb-1">
+                        レベル2（一般読者向け）
+                      </div>
+                      <div className="text-sm text-gray-900">
+                        {issue.label_lv2}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xs font-medium text-green-600 mb-1">レベル2（一般読者向け）</div>
-                    <div className="text-sm text-gray-900">{issue.label_lv2}</div>
+                  <div className="mt-3 flex items-center space-x-4 text-xs text-gray-500">
+                    <span className="flex items-center">
+                      <ChartBarIcon className="w-3 h-3 mr-1" />
+                      信頼度: {Math.round(issue.confidence * 100)}%
+                    </span>
+                    <span>
+                      レコードID: {issue.lv1_record_id} / {issue.lv2_record_id}
+                    </span>
                   </div>
                 </div>
-                <div className="mt-3 flex items-center space-x-4 text-xs text-gray-500">
-                  <span className="flex items-center">
-                    <ChartBarIcon className="w-3 h-3 mr-1" />
-                    信頼度: {Math.round(issue.confidence * 100)}%
-                  </span>
-                  <span>レコードID: {issue.lv1_record_id} / {issue.lv2_record_id}</span>
-                </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         </div>
       )}

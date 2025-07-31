@@ -5,6 +5,7 @@ Embedding generation and semantic search service for the Diet Issue Tracker.
 ## Overview
 
 This service provides:
+
 - Text embedding generation using Japanese-optimized models
 - Vector similarity search with pgvector
 - Semantic analysis of bills and debates

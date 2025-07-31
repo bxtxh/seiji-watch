@@ -28,6 +28,7 @@ terraform apply -target=module.workload_identity
 ```
 
 This will create:
+
 - Workload Identity Pool: `github-actions-pool`
 - OIDC Provider: `github-actions-provider`
 - Service Account: `github-actions-sa@<project-id>.iam.gserviceaccount.com`
@@ -42,6 +43,7 @@ terraform output service_account_email
 ```
 
 Add these as GitHub repository variables (not secrets):
+
 - `WIF_PROVIDER`: The workload identity provider path
 - `WIF_SERVICE_ACCOUNT`: The service account email
 
@@ -71,6 +73,7 @@ The updated workflow uses WIF authentication:
 ### Repository Restrictions
 
 The WIF provider is configured to only accept tokens from:
+
 - Repository owner: `bxtxh`
 - Repository: `seiji-watch`
 
@@ -83,6 +86,7 @@ attribute_condition = "assertion.repository_owner == 'bxtxh'"
 ### Service Account Permissions
 
 The service account has the following roles:
+
 - `roles/run.admin`: Deploy Cloud Run services
 - `roles/storage.admin`: Manage storage buckets
 - `roles/cloudsql.client`: Connect to Cloud SQL
@@ -92,6 +96,7 @@ The service account has the following roles:
 ### Token Lifetime
 
 OIDC tokens from GitHub Actions are valid for:
+
 - 10 minutes for the initial token
 - 1 hour for the access token after exchange
 
@@ -147,6 +152,7 @@ To allow additional repositories:
 ### Monitoring
 
 Monitor WIF usage via:
+
 - Cloud Logging: Filter by `protoPayload.serviceName="sts.googleapis.com"`
 - Cloud Monitoring: Track STS token exchange metrics
 

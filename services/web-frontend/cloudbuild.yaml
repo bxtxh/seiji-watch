@@ -1,33 +1,51 @@
 steps:
   # Build the container image with API Gateway URL
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '--build-arg', 'NEXT_PUBLIC_API_BASE_URL=https://seiji-watch-api-gateway-staging-pfepe5d77a-an.a.run.app',
-      '-t', 'asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/web-frontend:latest',
-      '.'
-    ]
-    dir: 'services/web-frontend'
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "--build-arg",
+        "NEXT_PUBLIC_API_BASE_URL=https://seiji-watch-api-gateway-staging-pfepe5d77a-an.a.run.app",
+        "-t",
+        "asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/web-frontend:latest",
+        ".",
+      ]
+    dir: "services/web-frontend"
 
   # Push the container image to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/web-frontend:latest']
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/web-frontend:latest",
+      ]
 
   # Deploy container image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
-    args: [
-      'run', 'deploy', 'seiji-watch-web-frontend-staging',
-      '--image', 'asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/web-frontend:latest',
-      '--region', 'asia-northeast1',
-      '--platform', 'managed',
-      '--port', '3000',
-      '--memory', '1Gi',
-      '--cpu', '1',
-      '--set-env-vars', 'NEXT_PUBLIC_API_BASE_URL=https://seiji-watch-api-gateway-staging-pfepe5d77a-an.a.run.app',
-      '--service-account', 'seiji-cr-staging@gen-lang-client-0458605339.iam.gserviceaccount.com',
-      '--allow-unauthenticated'
-    ]
+    args:
+      [
+        "run",
+        "deploy",
+        "seiji-watch-web-frontend-staging",
+        "--image",
+        "asia-northeast1-docker.pkg.dev/gen-lang-client-0458605339/seiji-watch-staging/web-frontend:latest",
+        "--region",
+        "asia-northeast1",
+        "--platform",
+        "managed",
+        "--port",
+        "3000",
+        "--memory",
+        "1Gi",
+        "--cpu",
+        "1",
+        "--set-env-vars",
+        "NEXT_PUBLIC_API_BASE_URL=https://seiji-watch-api-gateway-staging-pfepe5d77a-an.a.run.app",
+        "--service-account",
+        "seiji-cr-staging@gen-lang-client-0458605339.iam.gserviceaccount.com",
+        "--allow-unauthenticated",
+      ]
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -46,10 +46,10 @@ const IssueDetailPage = ({
   const { id } = router.query;
   const [issue, setIssue] = useState<ExtendedIssue | null>(initialIssue);
   const [relatedBills, setRelatedBills] = useState<Bill[]>(
-    initialRelatedBills || [],
+    initialRelatedBills || []
   );
   const [issueTags, setIssueTags] = useState<IssueTag[]>(
-    initialIssueTags || [],
+    initialIssueTags || []
   );
   const [loading, setLoading] = useState(!initialIssue && !error);
   const [activeTab, setActiveTab] = useState<
@@ -57,12 +57,6 @@ const IssueDetailPage = ({
   >("overview");
   const [billsLoading, setBillsLoading] = useState(false);
   const [discussionsLoading, setDiscussionsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!initialIssue && !error && id) {
-      fetchIssueDetails();
-    }
-  }, [id, initialIssue, error, fetchIssueDetails]);
 
   const fetchIssueDetails = useCallback(async () => {
     try {
@@ -89,7 +83,19 @@ const IssueDetailPage = ({
 
       if (tagsResponse.ok) {
         const tagsData = await tagsResponse.json();
-        setIssueTags(transformTagsData(tagsData));
+        if (tagsData.success && tagsData.tags) {
+          // API returns tags as array of {name, count} objects
+          const transformedTags = tagsData.tags.map(
+            (tag: any, index: number) => ({
+              id: `tag-${index}`,
+              name: tag.name || "",
+              color_code: "#3B82F6",
+              category: "",
+              description: undefined,
+            })
+          );
+          setIssueTags(transformedTags);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch issue details:", error);
@@ -97,6 +103,12 @@ const IssueDetailPage = ({
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!initialIssue && !error && id) {
+      fetchIssueDetails();
+    }
+  }, [id, initialIssue, error, fetchIssueDetails]);
 
   const fetchRelatedBills = useCallback(async () => {
     try {
@@ -141,7 +153,7 @@ const IssueDetailPage = ({
         transcript_url: "#",
       },
     ],
-    [],
+    []
   );
 
   const transformIssueData = (data: any): ExtendedIssue => ({

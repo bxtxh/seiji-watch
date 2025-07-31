@@ -148,7 +148,7 @@ test.describe("Search Functionality", () => {
 
     // Should show validation error
     await expect(
-      page.locator(TestHelpers.selectors.validationError),
+      page.locator(TestHelpers.selectors.validationError)
     ).toBeVisible();
   });
 
@@ -188,12 +188,12 @@ test.describe("Search Functionality", () => {
 
     // Should show loading state
     await expect(
-      page.locator(TestHelpers.selectors.loadingIndicator),
+      page.locator(TestHelpers.selectors.loadingIndicator)
     ).toBeVisible();
 
     // Should show search results after loading
     await expect(page.locator(TestHelpers.selectors.searchResults)).toBeVisible(
-      { timeout: 10000 },
+      { timeout: 10000 }
     );
   });
 
@@ -213,10 +213,10 @@ test.describe("Search Functionality", () => {
 
     // Should show error message
     await expect(
-      page.locator(TestHelpers.selectors.errorMessage),
+      page.locator(TestHelpers.selectors.errorMessage)
     ).toBeVisible();
     await expect(
-      page.locator(TestHelpers.selectors.errorMessage),
+      page.locator(TestHelpers.selectors.errorMessage)
     ).toContainText(/エラー|失敗/);
   });
 
@@ -274,7 +274,7 @@ test.describe("Search Functionality", () => {
 
     // Should show empty state
     await expect(
-      page.locator("text=検索結果が見つかりませんでした"),
+      page.locator("text=検索結果が見つかりませんでした")
     ).toBeVisible();
   });
 
@@ -316,12 +316,12 @@ test.describe("Search Functionality", () => {
   test("should be accessible", async ({ page }) => {
     // Check search input accessibility
     await helpers.expectElementToBeAccessible(
-      TestHelpers.selectors.searchInput,
+      TestHelpers.selectors.searchInput
     );
 
     // Check search button accessibility
     await helpers.expectElementToBeAccessible(
-      TestHelpers.selectors.searchButton,
+      TestHelpers.selectors.searchButton
     );
 
     // Test keyboard interaction

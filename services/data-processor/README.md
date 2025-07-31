@@ -5,6 +5,7 @@ Data normalization, entity extraction, and LLM-based content analysis service fo
 ## Overview
 
 This service handles:
+
 - Data normalization from various Diet sources
 - Entity extraction (Issues, Bills, Members, Parties, etc.)
 - LLM-powered content analysis and classification
@@ -73,6 +74,7 @@ data-processor/
 ## Configuration
 
 Environment variables:
+
 - `DATABASE_URL` - PostgreSQL connection
 - `AIRTABLE_API_KEY` - Airtable Personal Access Token
 - `AIRTABLE_BASE_ID` - Airtable base identifier
@@ -102,6 +104,7 @@ poetry run mypy .
 ## Batch Scripts
 
 Various utility scripts for data management:
+
 - `bills_improvement_execution.py` - Bill data quality improvements
 - `members_duplicate_merge_execution.py` - Member deduplication
 - `table_completeness_improvement.py` - Data completeness checks

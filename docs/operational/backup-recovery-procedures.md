@@ -9,17 +9,20 @@ This document outlines comprehensive backup strategies, recovery procedures, and
 ### Data Classification
 
 #### Critical Data (RTO: 1 hour, RPO: 15 minutes)
+
 - **Issues Database**: PostgreSQL tables containing extracted policy issues
 - **Airtable Records**: Human-reviewed issue classifications and statuses
 - **Configuration Secrets**: API keys, webhook URLs, database credentials
 - **Application Configuration**: Service configurations and environment settings
 
 #### Important Data (RTO: 4 hours, RPO: 1 hour)
+
 - **Application Logs**: System and application logs for troubleshooting
 - **Metrics Data**: Prometheus time-series data
 - **User Sessions**: Redis cache and session data
 
 #### Standard Data (RTO: 24 hours, RPO: 24 hours)
+
 - **Historical Reports**: Daily/weekly system reports
 - **Backup Archives**: Compressed historical backups
 - **Documentation**: System documentation and runbooks
@@ -94,27 +97,27 @@ pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" \
 
 if [ $? -eq 0 ]; then
     log "Database dump completed successfully"
-    
+
     # Compress backup
     log "Compressing backup file..."
     gzip "$BACKUP_DIR/$BACKUP_FILE"
     BACKUP_FILE_GZ="${BACKUP_FILE}.gz"
-    
+
     # Calculate checksum
     CHECKSUM=$(sha256sum "$BACKUP_DIR/$BACKUP_FILE_GZ" | cut -d' ' -f1)
     echo "$CHECKSUM  $BACKUP_FILE_GZ" > "$BACKUP_DIR/${BACKUP_FILE_GZ}.sha256"
-    
+
     # Upload to cloud storage
     log "Uploading to Google Cloud Storage..."
     gsutil cp "$BACKUP_DIR/$BACKUP_FILE_GZ" "gs://$GCS_BUCKET/postgres/daily/"
     gsutil cp "$BACKUP_DIR/${BACKUP_FILE_GZ}.sha256" "gs://$GCS_BUCKET/postgres/daily/"
-    
+
     # Test backup integrity
     log "Testing backup integrity..."
     gunzip -t "$BACKUP_DIR/$BACKUP_FILE_GZ"
     if [ $? -eq 0 ]; then
         log "Backup integrity test passed"
-        
+
         # Create backup metadata
         cat > "$BACKUP_DIR/${BACKUP_FILE_GZ}.meta" << EOF
 {
@@ -127,20 +130,20 @@ if [ $? -eq 0 ]; then
 }
 EOF
         gsutil cp "$BACKUP_DIR/${BACKUP_FILE_GZ}.meta" "gs://$GCS_BUCKET/postgres/daily/"
-        
+
     else
         log "ERROR: Backup integrity test failed"
         exit 1
     fi
-    
+
     # Cleanup old local backups
     log "Cleaning up old local backups..."
     find "$BACKUP_DIR" -name "seiji_watch_*.sql.gz" -mtime +$RETENTION_DAYS -delete
     find "$BACKUP_DIR" -name "*.sha256" -mtime +$RETENTION_DAYS -delete
     find "$BACKUP_DIR" -name "*.meta" -mtime +$RETENTION_DAYS -delete
-    
+
     log "Backup process completed successfully"
-    
+
 else
     log "ERROR: Database dump failed"
     exit 1
@@ -204,10 +207,10 @@ pg_basebackup -h localhost -D "$BASE_BACKUP_DIR" -Ft -z -P -U replication_user
 
 if [ $? -eq 0 ]; then
     log "Base backup completed successfully"
-    
+
     # Upload to cloud storage
     gsutil -m cp -r "$BASE_BACKUP_DIR" "gs://seiji-watch-backups/postgres/incremental/"
-    
+
     log "Incremental backup uploaded to cloud storage"
 else
     log "ERROR: Incremental backup failed"
@@ -248,25 +251,25 @@ class AirtableBackup:
         self.base_id = os.environ['AIRTABLE_BASE_ID']
         self.backup_dir = '/opt/backups/airtable'
         self.gcs_bucket = 'seiji-watch-backups'
-        
+
         # Initialize Airtable client
         self.airtable = Airtable(self.base_id, self.api_key)
-        
+
         # Initialize GCS client
         self.storage_client = storage.Client()
         self.bucket = self.storage_client.bucket(self.gcs_bucket)
-        
+
         # Create backup directory
         os.makedirs(self.backup_dir, exist_ok=True)
-    
+
     def backup_table(self, table_name):
         """Backup a single Airtable table."""
         logging.info(f"Starting backup of table: {table_name}")
-        
+
         try:
             # Fetch all records
             records = self.airtable.get_all(table_name)
-            
+
             # Create backup data structure
             backup_data = {
                 "table_name": table_name,
@@ -274,37 +277,37 @@ class AirtableBackup:
                 "record_count": len(records),
                 "records": records
             }
-            
+
             # Generate filename
             date_str = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"{table_name}_{date_str}.json"
             filepath = os.path.join(self.backup_dir, filename)
-            
+
             # Write to file
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(backup_data, f, indent=2, ensure_ascii=False)
-            
+
             # Compress the file
             compressed_filepath = f"{filepath}.gz"
             with open(filepath, 'rb') as f_in:
                 with gzip.open(compressed_filepath, 'wb') as f_out:
                     f_out.writelines(f_in)
-            
+
             # Remove uncompressed file
             os.remove(filepath)
-            
+
             # Calculate checksum
             checksum = self.calculate_checksum(compressed_filepath)
-            
+
             # Upload to cloud storage
             blob_name = f"airtable/{table_name}/{filename}.gz"
             blob = self.bucket.blob(blob_name)
             blob.upload_from_filename(compressed_filepath)
-            
+
             # Upload checksum
             checksum_blob = self.bucket.blob(f"{blob_name}.sha256")
             checksum_blob.upload_from_string(f"{checksum}  {filename}.gz")
-            
+
             # Create metadata
             metadata = {
                 "table_name": table_name,
@@ -314,17 +317,17 @@ class AirtableBackup:
                 "checksum_sha256": checksum,
                 "backup_type": "full"
             }
-            
+
             metadata_blob = self.bucket.blob(f"{blob_name}.meta")
             metadata_blob.upload_from_string(json.dumps(metadata, indent=2))
-            
+
             logging.info(f"Successfully backed up {len(records)} records from {table_name}")
             return True
-            
+
         except Exception as e:
             logging.error(f"Failed to backup table {table_name}: {str(e)}")
             return False
-    
+
     def calculate_checksum(self, filepath):
         """Calculate SHA256 checksum of a file."""
         hash_sha256 = hashlib.sha256()
@@ -332,25 +335,25 @@ class AirtableBackup:
             for chunk in iter(lambda: f.read(4096), b""):
                 hash_sha256.update(chunk)
         return hash_sha256.hexdigest()
-    
+
     def backup_all_tables(self):
         """Backup all tables in the base."""
         tables = ['Issues', 'Reviews', 'Users']  # Add all table names
-        
+
         success_count = 0
         for table in tables:
             if self.backup_table(table):
                 success_count += 1
-        
+
         logging.info(f"Backup completed: {success_count}/{len(tables)} tables successful")
         return success_count == len(tables)
-    
+
     def cleanup_old_backups(self, retention_days=30):
         """Remove local backups older than retention period."""
         import time
-        
+
         cutoff_time = time.time() - (retention_days * 24 * 60 * 60)
-        
+
         for filename in os.listdir(self.backup_dir):
             filepath = os.path.join(self.backup_dir, filename)
             if os.path.getctime(filepath) < cutoff_time:
@@ -359,7 +362,7 @@ class AirtableBackup:
 
 if __name__ == "__main__":
     backup = AirtableBackup()
-    
+
     if backup.backup_all_tables():
         logging.info("All Airtable backups completed successfully")
         backup.cleanup_old_backups()
@@ -388,45 +391,45 @@ class AirtableSchemaBackup:
             'Authorization': f'Bearer {self.api_key}',
             'Content-Type': 'application/json'
         }
-    
+
     def get_base_schema(self):
         """Retrieve the schema for the entire base."""
         url = f"https://api.airtable.com/v0/meta/bases/{self.base_id}/tables"
-        
+
         response = requests.get(url, headers=self.headers)
         response.raise_for_status()
-        
+
         return response.json()
-    
+
     def backup_schema(self):
         """Backup the base schema to cloud storage."""
         try:
             schema = self.get_base_schema()
-            
+
             # Add metadata
             backup_data = {
                 "base_id": self.base_id,
                 "backup_timestamp": datetime.utcnow().isoformat(),
                 "schema": schema
             }
-            
+
             # Save to local file
             date_str = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"airtable_schema_{date_str}.json"
             filepath = f"/opt/backups/airtable/{filename}"
-            
+
             with open(filepath, 'w') as f:
                 json.dump(backup_data, f, indent=2)
-            
+
             # Upload to cloud storage
             storage_client = storage.Client()
             bucket = storage_client.bucket('seiji-watch-backups')
             blob = bucket.blob(f"airtable/schema/{filename}")
             blob.upload_from_filename(filepath)
-            
+
             print(f"Schema backup completed: {filename}")
             return True
-            
+
         except Exception as e:
             print(f"Schema backup failed: {str(e)}")
             return False
@@ -799,7 +802,7 @@ kubectl scale statefulset postgres --replicas=1
 log "Monitoring recovery progress..."
 while true; do
     RECOVERY_STATUS=$(kubectl exec postgres-pod -- psql -U seiji_user -t -c "SELECT pg_is_in_recovery();" 2>/dev/null || echo "error")
-    
+
     if [ "$RECOVERY_STATUS" = " f" ]; then
         log "Point-in-time recovery completed successfully"
         break
@@ -808,7 +811,7 @@ while true; do
     else
         log "Recovery in progress..."
     fi
-    
+
     sleep 10
 done
 

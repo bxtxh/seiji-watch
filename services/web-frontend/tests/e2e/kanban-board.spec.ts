@@ -8,7 +8,7 @@ test.describe("Kanban Board - EPIC 8", () => {
   test("Kanban board loads and displays correctly", async ({ page }) => {
     // Wait for the Kanban board to load
     await expect(
-      page.locator('[aria-label="国会イシュー Kanban ボード"]'),
+      page.locator('[aria-label="国会イシュー Kanban ボード"]')
     ).toBeVisible();
 
     // Check header is present
@@ -68,13 +68,13 @@ test.describe("Kanban Board - EPIC 8", () => {
     await page.waitForTimeout(2000);
 
     const scrollContainer = page.locator(
-      '[role="list"][aria-label="ステージ別イシュー一覧"]',
+      '[role="list"][aria-label="ステージ別イシュー一覧"]'
     );
     await expect(scrollContainer).toBeVisible();
 
     // Check if scroll container has overflow
     const overflowX = await scrollContainer.evaluate(
-      (el) => getComputedStyle(el).overflowX,
+      (el) => getComputedStyle(el).overflowX
     );
     expect(overflowX).toBe("auto");
   });
@@ -141,7 +141,7 @@ test.describe("Kanban Board - EPIC 8", () => {
 
       // Check description text
       await expect(
-        page.locator("text=新しいイシューが追加されると"),
+        page.locator("text=新しいイシューが追加されると")
       ).toBeVisible();
     }
   });
@@ -156,7 +156,7 @@ test.describe("Kanban Board - EPIC 8", () => {
     if (await metadata.isVisible()) {
       // Check date format (Japanese locale)
       expect(await metadata.textContent()).toMatch(
-        /最終更新: \d{4}\/\d{1,2}\/\d{1,2}/,
+        /最終更新: \d{4}\/\d{1,2}\/\d{1,2}/
       );
 
       // Check date range is present
@@ -173,7 +173,7 @@ test.describe("Kanban Board - EPIC 8", () => {
 
     // Check mobile-specific classes are applied
     const kanbanContainer = page.locator(
-      '[role="list"][aria-label="ステージ別イシュー一覧"]',
+      '[role="list"][aria-label="ステージ別イシュー一覧"]'
     );
     await expect(kanbanContainer).toBeVisible();
 
@@ -194,7 +194,7 @@ test.describe("Kanban Board - EPIC 8", () => {
 
     // Wait for Kanban board to be fully loaded
     await expect(
-      page.locator('[aria-label="国会イシュー Kanban ボード"]'),
+      page.locator('[aria-label="国会イシュー Kanban ボード"]')
     ).toBeVisible();
     await page.waitForTimeout(1000); // Allow for API call
 

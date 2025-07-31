@@ -10,12 +10,12 @@ This guide documents all configuration files in the Diet Issue Tracker project a
 
 ### Root Environment Files
 
-| File | Purpose | Usage |
-|------|---------|-------|
-| `.env.template` | Template with all available variables | Copy and customize for new deployments |
-| `.env.development` | Development environment settings | Local development (copy to `.env`) |
-| `.env.staging` | Staging environment settings | Staging deployments |
-| `.env.production` | Production environment settings | Production deployments |
+| File               | Purpose                               | Usage                                  |
+| ------------------ | ------------------------------------- | -------------------------------------- |
+| `.env.template`    | Template with all available variables | Copy and customize for new deployments |
+| `.env.development` | Development environment settings      | Local development (copy to `.env`)     |
+| `.env.staging`     | Staging environment settings          | Staging deployments                    |
+| `.env.production`  | Production environment settings       | Production deployments                 |
 
 ### Key Principles
 
@@ -38,18 +38,19 @@ All Python services use Poetry for dependency management:
 
 ### Frontend Service (Next.js)
 
-| File | Purpose |
-|------|---------|
-| `package.json` | Dependencies and scripts |
-| `tsconfig.json` | TypeScript configuration |
-| `next.config.js` | Next.js framework settings |
-| `tailwind.config.js` | Tailwind CSS customization |
-| `jest.config.js` | Unit testing configuration |
-| `playwright.config.ts` | E2E testing configuration |
+| File                   | Purpose                    |
+| ---------------------- | -------------------------- |
+| `package.json`         | Dependencies and scripts   |
+| `tsconfig.json`        | TypeScript configuration   |
+| `next.config.js`       | Next.js framework settings |
+| `tailwind.config.js`   | Tailwind CSS customization |
+| `jest.config.js`       | Unit testing configuration |
+| `playwright.config.ts` | E2E testing configuration  |
 
 ### Docker Configuration
 
 Each service has a `Dockerfile` for containerization:
+
 - `services/api_gateway/Dockerfile`
 - `services/ingest-worker/Dockerfile`
 - `services/web-frontend/Dockerfile`
@@ -62,11 +63,11 @@ Each service has a `Dockerfile` for containerization:
 
 Located in `/infra/`:
 
-| File | Purpose |
-|------|---------|
-| `terraform.tfvars.example` | Variable template |
-| `staging-external-testing.tfvars` | Staging environment variables |
-| `*.tf` files | Infrastructure as code definitions |
+| File                              | Purpose                            |
+| --------------------------------- | ---------------------------------- |
+| `terraform.tfvars.example`        | Variable template                  |
+| `staging-external-testing.tfvars` | Staging environment variables      |
+| `*.tf` files                      | Infrastructure as code definitions |
 
 ### Environment-Specific Values
 
@@ -80,12 +81,12 @@ Located in `/infra/`:
 
 Located in `.github/workflows/`:
 
-| Workflow | Purpose | Trigger |
-|----------|---------|---------|
-| `ci-cd.yml` | Main deployment pipeline | Push to main/feat branches |
-| `pr-check.yml` | Pull request validation | PR creation/update |
-| `infrastructure.yml` | Terraform deployment | Manual/scheduled |
-| `staging-external-testing.yml` | External user testing | Manual trigger |
+| Workflow                       | Purpose                  | Trigger                    |
+| ------------------------------ | ------------------------ | -------------------------- |
+| `ci-cd.yml`                    | Main deployment pipeline | Push to main/feat branches |
+| `pr-check.yml`                 | Pull request validation  | PR creation/update         |
+| `infrastructure.yml`           | Terraform deployment     | Manual/scheduled           |
+| `staging-external-testing.yml` | External user testing    | Manual trigger             |
 
 ## Secret Management
 
@@ -160,6 +161,7 @@ gcloud secrets versions add SECRET_NAME --data-file=-
 **Symptom**: Application fails to start with "missing required environment variable"
 
 **Solution**:
+
 1. Check `.env` file exists and contains the variable
 2. Verify variable name matches exactly (case-sensitive)
 3. For cloud deployments, check Secret Manager
@@ -169,6 +171,7 @@ gcloud secrets versions add SECRET_NAME --data-file=-
 **Symptom**: Build fails with dependency resolution errors
 
 **Solution**:
+
 1. For Python: `poetry lock --no-update`
 2. For Node.js: `rm -rf node_modules package-lock.json && npm install`
 3. Check for version conflicts in `pyproject.toml` or `package.json`
@@ -178,6 +181,7 @@ gcloud secrets versions add SECRET_NAME --data-file=-
 **Symptom**: Docker image fails to build
 
 **Solution**:
+
 1. Check base image is available
 2. Verify all COPY paths are correct
 3. Ensure build context includes necessary files
@@ -214,7 +218,7 @@ gcloud secrets versions add SECRET_NAME --data-file=-
 3. **Added environment-specific `.env` files** - Better separation of concerns
 4. **Standardized configuration structure** - Consistent patterns across services
 
-<!-- 
+<!--
 ### Historical Note (Commented for Reference)
 Previously, the project used a mix of requirements.txt and pyproject.toml for Python dependencies.
 This caused confusion and potential version conflicts. As of 2025-01-27, we've standardized on
@@ -227,6 +231,7 @@ Poetry (pyproject.toml) for all Python services. The old requirements.txt approa
 ## Contact
 
 For configuration-related questions:
+
 - Check service-specific README files
 - Review deployment documentation
 - Contact the DevOps team for infrastructure configs

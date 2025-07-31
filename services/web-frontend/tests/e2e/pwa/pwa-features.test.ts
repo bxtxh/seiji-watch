@@ -62,7 +62,7 @@ test.describe("PWA Features", () => {
       () => {
         return navigator.serviceWorker.ready;
       },
-      { timeout: 10000 },
+      { timeout: 10000 }
     );
 
     const swRegistered = await page.evaluate(() => {
@@ -226,10 +226,10 @@ test.describe("PWA Features", () => {
 
     // Check mobile-specific PWA features
     await expect(
-      page.locator('meta[name="mobile-web-app-capable"]'),
+      page.locator('meta[name="mobile-web-app-capable"]')
     ).toHaveCount(1);
     await expect(
-      page.locator('meta[name="apple-mobile-web-app-capable"]'),
+      page.locator('meta[name="apple-mobile-web-app-capable"]')
     ).toHaveCount(1);
 
     // Check theme color for status bar
@@ -256,7 +256,7 @@ test.describe("PWA Features", () => {
           const rules = Array.from(sheet.cssRules || []);
           return rules.some(
             (rule) =>
-              rule.conditionText && rule.conditionText.includes("standalone"),
+              rule.conditionText && rule.conditionText.includes("standalone")
           );
         } catch {
           return false;

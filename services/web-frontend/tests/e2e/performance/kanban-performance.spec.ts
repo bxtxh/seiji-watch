@@ -8,7 +8,7 @@ test.describe("Kanban Board Performance Tests", () => {
 
     // Wait for Largest Contentful Paint (LCP) - should be the Kanban board
     await expect(
-      page.locator('[aria-label="国会イシュー Kanban ボード"]'),
+      page.locator('[aria-label="国会イシュー Kanban ボード"]')
     ).toBeVisible();
     await page.waitForLoadState("networkidle");
 
@@ -49,7 +49,7 @@ test.describe("Kanban Board Performance Tests", () => {
     // Get initial viewport measurements
     const initialMetrics = await page.evaluate(() => {
       const kanban = document.querySelector(
-        '[aria-label="国会イシュー Kanban ボード"]',
+        '[aria-label="国会イシュー Kanban ボード"]'
       );
       if (!kanban) return null;
 
@@ -68,7 +68,7 @@ test.describe("Kanban Board Performance Tests", () => {
     // Get final measurements
     const finalMetrics = await page.evaluate(() => {
       const kanban = document.querySelector(
-        '[aria-label="国会イシュー Kanban ボード"]',
+        '[aria-label="国会イシュー Kanban ボード"]'
       );
       if (!kanban) return null;
 
@@ -110,7 +110,7 @@ test.describe("Kanban Board Performance Tests", () => {
 
     // Perform scroll interactions
     const scrollContainer = page.locator(
-      '[role="list"][aria-label="ステージ別イシュー一覧"]',
+      '[role="list"][aria-label="ステージ別イシュー一覧"]'
     );
     await expect(scrollContainer).toBeVisible();
 
@@ -138,7 +138,7 @@ test.describe("Kanban Board Performance Tests", () => {
       expect(memoryIncreasePercent).toBeLessThan(50);
 
       console.log(
-        `Memory increase: ${memoryIncrease} bytes (${memoryIncreasePercent.toFixed(2)}%)`,
+        `Memory increase: ${memoryIncrease} bytes (${memoryIncreasePercent.toFixed(2)}%)`
       );
     }
   });
@@ -155,7 +155,7 @@ test.describe("Kanban Board Performance Tests", () => {
 
     // Wait for Kanban board to be visible
     await expect(
-      page.locator('[aria-label="国会イシュー Kanban ボード"]'),
+      page.locator('[aria-label="国会イシュー Kanban ボード"]')
     ).toBeVisible();
     await page.waitForLoadState("networkidle");
 
@@ -166,7 +166,7 @@ test.describe("Kanban Board Performance Tests", () => {
 
     // Check horizontal scroll works on mobile
     const scrollContainer = page.locator(
-      '[role="list"][aria-label="ステージ別イシュー一覧"]',
+      '[role="list"][aria-label="ステージ別イシュー一覧"]'
     );
 
     // Perform touch scroll
@@ -217,7 +217,7 @@ test.describe("Kanban Board Performance Tests", () => {
     expect(additionalRequests).toBeLessThanOrEqual(1);
 
     console.log(
-      `API requests - First load: ${firstLoadRequestCount}, Additional: ${additionalRequests}`,
+      `API requests - First load: ${firstLoadRequestCount}, Additional: ${additionalRequests}`
     );
   });
 
@@ -226,7 +226,7 @@ test.describe("Kanban Board Performance Tests", () => {
     await page.waitForLoadState("networkidle");
 
     const scrollContainer = page.locator(
-      '[role="list"][aria-label="ステージ別イシュー一覧"]',
+      '[role="list"][aria-label="ステージ別イシュー一覧"]'
     );
     await expect(scrollContainer).toBeVisible();
 
@@ -271,7 +271,7 @@ test.describe("Kanban Board Performance Tests", () => {
     expect(result.fps).toBeGreaterThan(45); // Allow some tolerance
 
     console.log(
-      `Average FPS: ${result.fps.toFixed(2)}, Frame time: ${result.avgFrameTime.toFixed(2)}ms`,
+      `Average FPS: ${result.fps.toFixed(2)}, Frame time: ${result.avgFrameTime.toFixed(2)}ms`
     );
   });
 
@@ -294,7 +294,7 @@ test.describe("Kanban Board Performance Tests", () => {
 
     // Check JavaScript bundle sizes
     const jsResources = resourceSizes.filter(
-      (r) => r.contentType?.includes("javascript") || r.url.includes(".js"),
+      (r) => r.contentType?.includes("javascript") || r.url.includes(".js")
     );
 
     const totalJSSize = jsResources.reduce((sum, r) => sum + r.size, 0);
@@ -304,7 +304,7 @@ test.describe("Kanban Board Performance Tests", () => {
 
     // Check CSS sizes
     const cssResources = resourceSizes.filter(
-      (r) => r.contentType?.includes("css") || r.url.includes(".css"),
+      (r) => r.contentType?.includes("css") || r.url.includes(".css")
     );
 
     const totalCSSSize = cssResources.reduce((sum, r) => sum + r.size, 0);

@@ -2,14 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone',
+  output: "standalone",
   typescript: {
     // Disable type checking during build as we have pre-build type check
-    ignoreBuildErrors: process.env.NODE_ENV === 'production',
+    ignoreBuildErrors: process.env.NODE_ENV === "production",
   },
   eslint: {
     // Disable ESLint during build as we have pre-build linting
-    ignoreDuringBuilds: process.env.NODE_ENV === 'production',
+    ignoreDuringBuilds: process.env.NODE_ENV === "production",
   },
 
   // PWA configuration
@@ -23,7 +23,7 @@ const nextConfig = {
       return [
         {
           source: "/api/:path*",
-          destination: "http://127.0.0.1:8000/api/:path*",
+          destination: "http://127.0.0.1:8081/api/:path*",
         },
       ];
     }
@@ -48,7 +48,8 @@ const nextConfig = {
   // Environment variables
   env: {
     NEXT_PUBLIC_API_BASE_URL:
-      process.env.NEXT_PUBLIC_API_BASE_URL || "https://seiji-watch-api-gateway-staging-new-496359339214.asia-northeast1.run.app",
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://seiji-watch-api-gateway-staging-new-496359339214.asia-northeast1.run.app",
   },
 
   // Performance optimization

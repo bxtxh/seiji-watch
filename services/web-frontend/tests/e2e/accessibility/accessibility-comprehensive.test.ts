@@ -157,13 +157,13 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
 
       if (focusedCount > 0) {
         const tagName = await focusedElement.evaluate((el) =>
-          el.tagName.toLowerCase(),
+          el.tagName.toLowerCase()
         );
         const role = await focusedElement.getAttribute("role");
         const ariaLabel = await focusedElement.getAttribute("aria-label");
 
         interactiveElements.push(
-          `${tagName}${role ? `[role="${role}"]` : ""}${ariaLabel ? `[aria-label="${ariaLabel}"]` : ""}`,
+          `${tagName}${role ? `[role="${role}"]` : ""}${ariaLabel ? `[aria-label="${ariaLabel}"]` : ""}`
         );
 
         // Verify focus is visible
@@ -173,7 +173,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
         if (tagName === "button" || role === "button") {
           // Don't actually activate to avoid navigation issues
           console.log(
-            `Found focusable button: ${tagName}${role ? `[role="${role}"]` : ""}`,
+            `Found focusable button: ${tagName}${role ? `[role="${role}"]` : ""}`
           );
         }
 
@@ -201,7 +201,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
   test("should support screen reader navigation", async ({ page }) => {
     // Check for skip links
     const skipLink = page.locator(
-      'a:has-text("メインコンテンツへスキップ"), a:has-text("スキップ")',
+      'a:has-text("メインコンテンツへスキップ"), a:has-text("スキップ")'
     );
     const skipLinkCount = await skipLink.count();
 
@@ -245,14 +245,14 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
       // Heading levels should not skip more than 1 level
       if (currentLevel > previousLevel + 1) {
         console.warn(
-          `Heading level skipped: h${previousLevel} followed by h${currentLevel}`,
+          `Heading level skipped: h${previousLevel} followed by h${currentLevel}`
         );
       }
     }
 
     console.log(
       "Heading structure:",
-      headingLevels.map((level) => `h${level}`).join(" → "),
+      headingLevels.map((level) => `h${level}`).join(" → ")
     );
   });
 
@@ -369,7 +369,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
   test("should handle focus management properly", async ({ page }) => {
     // Test focus trap in modals/dialogs
     const modalTriggers = page.locator(
-      'button:has-text("詳細"), button:has-text("詳細を見る")',
+      'button:has-text("詳細"), button:has-text("詳細を見る")'
     );
     const modalCount = await modalTriggers.count();
 
@@ -380,7 +380,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
 
       // Check if modal is open
       const modal = page.locator(
-        '[role="dialog"], .modal, [aria-modal="true"]',
+        '[role="dialog"], .modal, [aria-modal="true"]'
       );
       const modalOpenCount = await modal.count();
 
@@ -418,7 +418,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
 
     // Should show validation error
     const errorMessages = page.locator(
-      '[role="alert"], .text-red-600, .error-message',
+      '[role="alert"], .text-red-600, .error-message'
     );
     const errorCount = await errorMessages.count();
 
@@ -454,7 +454,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
 
     // Check for furigana support (if implemented)
     const furiganaToggle = page.locator(
-      'button:has-text("ふりがな"), [aria-label*="ふりがな"]',
+      'button:has-text("ふりがな"), [aria-label*="ふりがな"]'
     );
     const furiganaCount = await furiganaToggle.count();
 
@@ -487,7 +487,7 @@ test.describe("Accessibility Tests (WCAG 2.1 AA)", () => {
 
     // Check touch target sizes (minimum 44px)
     const buttons = page.locator(
-      'button, a, input[type="submit"], input[type="button"]',
+      'button, a, input[type="submit"], input[type="button"]'
     );
     const buttonCount = await buttons.count();
 

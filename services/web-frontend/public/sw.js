@@ -37,7 +37,7 @@ self.addEventListener("install", (event) => {
       } catch (error) {
         console.error("[SW] Error during install:", error);
       }
-    })(),
+    })()
   );
 });
 
@@ -74,7 +74,7 @@ self.addEventListener("activate", (event) => {
       } catch (error) {
         console.error("[SW] Error during activation:", error);
       }
-    })(),
+    })()
   );
 });
 
@@ -132,7 +132,7 @@ self.addEventListener("fetch", (event) => {
 
         return new Response("Network error", { status: 503 });
       }
-    })(),
+    })()
   );
 });
 
@@ -300,7 +300,7 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification("国会議事録検索システム", options),
+    self.registration.showNotification("国会議事録検索システム", options)
   );
 });
 

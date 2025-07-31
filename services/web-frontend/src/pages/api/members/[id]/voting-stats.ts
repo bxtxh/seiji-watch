@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.API_GATEWAY_URL || "http://localhost:8001";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   const { id } = req.query;
 
@@ -22,7 +22,7 @@ export default async function handler(
           "Content-Type": "application/json",
           "User-Agent": "Diet-Tracker-Web-Frontend/1.0",
         },
-      },
+      }
     );
 
     if (!response.ok) {

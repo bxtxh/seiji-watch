@@ -25,7 +25,7 @@ export default function BillCard({ bill }: BillCardProps) {
 
       // Filter tags that are associated with this bill
       const billTags = transformedTags.filter((tag) =>
-        bill.issue_tags?.includes(tag.id),
+        bill.issue_tags?.includes(tag.id)
       );
 
       setIssueTags(billTags);

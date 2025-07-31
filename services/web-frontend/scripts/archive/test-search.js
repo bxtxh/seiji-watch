@@ -26,7 +26,7 @@ async function testSearchAPI() {
     console.log("Search Response Status:", response.status);
     console.log(
       "Search Response Headers:",
-      response.headers.get("content-type"),
+      response.headers.get("content-type")
     );
     console.log("Search Response Data:", JSON.stringify(data, null, 2));
 

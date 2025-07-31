@@ -1,7 +1,8 @@
 # 開発チケット・実装マッピング仕様書
+
 **Diet Issue Tracker - Development Tickets to Implementation Mapping**
 
-*Version: 1.0 | Date: 2025-07-12 | Status: Development Complete*
+_Version: 1.0 | Date: 2025-07-12 | Status: Development Complete_
 
 ---
 
@@ -18,12 +19,14 @@
 ## 1. 開発概要
 
 ### 1.1 開発ステータス
+
 - **総EPIC数**: 9個（うち7個完了/進行中）
 - **総チケット数**: 62個（うち58個完了）
 - **開発期間**: 2025年6月30日 - 2025年7月12日
 - **目標**: 2025年7月22日（参議院選挙）MVP リリース
 
 ### 1.2 完了EPIC一覧
+
 - ✅ **EPIC 0**: Infrastructure Foundations（5/5チケット）
 - ✅ **EPIC 1**: Vertical Slice #1（11/11チケット）
 - ✅ **EPIC 2**: Vertical Slice #2（4/4チケット）
@@ -33,7 +36,9 @@
 - ✅ **EPIC 9**: Legal Compliance（3/3チケット）
 
 ### 1.3 アーキテクチャ進化
+
 **初期計画** → **MVP実装**
+
 - PostgreSQL + pgvector → **Airtable + Weaviate Cloud**
 - 6マイクロサービス → **3サービス構成**
 - $628/月 → **$155/月（75%コスト削減）**
@@ -49,7 +54,9 @@
 **目標**: 開発・デプロイ基盤構築
 
 #### T00 - Repository Structure Setup ✅
+
 **実装ファイル**:
+
 ```
 /Users/shogen/seiji-watch/
 ├── pyproject.toml                    # ルートパッケージ設定
@@ -61,7 +68,9 @@
 ```
 
 #### T01 - Local Development Environment ✅
+
 **実装ファイル**:
+
 ```
 ├── docker-compose.yml                # ローカル開発環境
 ├── docker-compose.override.yml.example  # 環境テンプレート
@@ -70,7 +79,9 @@
 ```
 
 #### T02 - GCP Infrastructure Bootstrap ✅
+
 **実装ファイル**:
+
 ```
 infra/
 ├── main.tf                          # メインインフラ設定
@@ -82,11 +93,14 @@ infra/
 ```
 
 **アーキテクチャ変更**:
-- ❌ Cloud SQL (PostgreSQL + pgvector) 
+
+- ❌ Cloud SQL (PostgreSQL + pgvector)
 - ✅ Airtable (構造化データ) + Weaviate Cloud (ベクター)
 
 #### T03 - CI/CD Pipeline Foundation ✅
+
 **実装ファイル**:
+
 ```
 .github/workflows/
 ├── deploy.yml                       # デプロイパイプライン
@@ -95,7 +109,9 @@ infra/
 ```
 
 #### T04 - Shared Data Models ✅
+
 **実装ファイル**:
+
 ```
 shared/src/shared/models/
 ├── __init__.py                      # モデルエクスポート
@@ -118,7 +134,9 @@ shared/src/shared/clients/
 **目標**: エンドツーエンドデータパイプライン
 
 #### T10 - Diet Website Scraper ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/scraper/
 ├── diet_scraper.py                  # メインスクレイパー
@@ -128,7 +146,9 @@ services/ingest-worker/src/scraper/
 ```
 
 #### T11 - Speech-to-Text Integration ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/stt/
 ├── whisper_client.py                # Whisper統合
@@ -137,7 +157,9 @@ services/ingest-worker/src/stt/
 ```
 
 #### T12 - Data Normalization Pipeline ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/pipeline/
 ├── data_processor.py                # データ正規化
@@ -147,7 +169,9 @@ services/ingest-worker/src/pipeline/
 ```
 
 #### T13 - Vector Embedding Generation ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/embeddings/
 ├── vector_client.py                 # ベクター生成
@@ -156,7 +180,9 @@ services/ingest-worker/src/embeddings/
 ```
 
 #### T14 - Search API Implementation ✅
+
 **実装ファイル**:
+
 ```
 services/api-gateway/src/main.py     # メインAPI (lines 421-484)
 ├── /search                          # 検索エンドポイント
@@ -169,7 +195,9 @@ services/api-gateway/src/services/
 ```
 
 #### T15 - Basic Frontend Interface ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/src/pages/
 ├── index.tsx                        # トップページ
@@ -183,7 +211,9 @@ services/web-frontend/src/components/
 ```
 
 #### T16-T17 - Member Voting Data Collection & Visualization ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/scraper/
 ├── voting_scraper.py                # 参議院投票データ
@@ -197,7 +227,9 @@ services/web-frontend/src/components/
 ```
 
 #### T18-T20 - Issue Management System ✅
+
 **実装ファイル**:
+
 ```
 shared/src/shared/models/issue.py    # Issue, IssueTag, IssueCategory
 shared/src/shared/utils/
@@ -223,7 +255,9 @@ services/web-frontend/src/components/
 **目標**: マルチ会議自動化
 
 #### T21 - Automated Ingestion Scheduler ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/scheduler/
 ├── scheduler.py                     # メインスケジューラー
@@ -232,7 +266,9 @@ services/ingest-worker/src/scheduler/
 ```
 
 #### T22 - Scraper Resilience & Optimization ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/scraper/resilience.py
 ├── retry_logic()                    # リトライロジック
@@ -242,7 +278,9 @@ services/ingest-worker/src/scraper/resilience.py
 ```
 
 #### T23 - Batch Processing Queue ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/batch_queue/
 ├── batch_processor.py               # バッチ処理
@@ -251,7 +289,9 @@ services/ingest-worker/src/batch_queue/
 ```
 
 #### T24 - House of Representatives Voting Data ✅
+
 **実装ファイル**:
+
 ```
 services/ingest-worker/src/scraper/
 ├── enhanced_hr_scraper.py           # 強化衆議院スクレイパー
@@ -266,7 +306,9 @@ services/ingest-worker/src/scraper/
 **目標**: AI駆動機能
 
 #### T30 - Speech Summarization ✅
+
 **実装ファイル**:
+
 ```
 services/api-gateway/src/services/
 ├── llm_service.py                   # LLMサービス統合
@@ -275,7 +317,9 @@ services/api-gateway/src/services/
 ```
 
 #### T31 - Topic Tag Extraction ✅
+
 **実装ファイル**:
+
 ```
 services/api-gateway/src/services/llm_service.py
 ├── extract_topics()                 # トピック抽出
@@ -284,7 +328,9 @@ services/api-gateway/src/services/llm_service.py
 ```
 
 #### T32 - Intelligence Features in UI ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/src/components/
 ├── SpeechCard.tsx                   # AI要約付き発言カード
@@ -303,7 +349,9 @@ services/web-frontend/src/pages/speeches/
 **目標**: エンタープライズグレード機能
 
 #### T40 - End-to-End Testing ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/tests/e2e/
 ├── accessibility/                   # アクセシビリティテスト
@@ -320,7 +368,9 @@ playwright.config.ts                 # Playwright設定
 ```
 
 #### T41 - Security & Access Controls ✅
+
 **実装ファイル**:
+
 ```
 services/api-gateway/src/main.py     # セキュリティミドルウェア (lines 76-270)
 ├── SecurityHeadersMiddleware        # セキュリティヘッダー
@@ -335,7 +385,9 @@ services/web-frontend/src/utils/
 ```
 
 #### T42 - PWA Features & Polish ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/public/
 ├── manifest.json                    # PWAマニフェスト
@@ -350,7 +402,9 @@ services/web-frontend/src/utils/
 ```
 
 #### T43 - Observability & Monitoring ✅
+
 **実装ファイル**:
+
 ```
 services/api-gateway/src/monitoring/
 ├── logger.py                       # 構造化ログ
@@ -371,12 +425,16 @@ services/web-frontend/src/lib/
 **目標**: 段階的本番デプロイ
 
 #### T50-T51 - GCP & External API Integration ✅
+
 **実装ファイル**:
+
 - インフラ設定完了（EPIC 0参照）
 - 外部API統合（Airtable、Weaviate、OpenAI）完了
 
 #### T56-T58 - UI Enhancement ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/src/styles/
 ├── globals.css                     # 拡張デザインシステム
@@ -390,7 +448,9 @@ tailwind.config.js                  # 拡張Tailwind設定
 ```
 
 #### T59A - Domain Acquisition ✅
+
 **実装**:
+
 - ドメイン `politics-watch.jp` 取得完了
 - SSL証明書自動プロビジョニング設定
 
@@ -401,7 +461,9 @@ tailwind.config.js                  # 拡張Tailwind設定
 **目標**: 法的文書・コンプライアンス
 
 #### T68 - Legal Document Creation ✅
+
 **実装ファイル**:
+
 ```
 docs/
 ├── terms-of-service.md             # 利用規約
@@ -410,7 +472,9 @@ docs/
 ```
 
 #### T69 - Legal Document UI Implementation ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/src/pages/
 ├── terms.tsx                       # 利用規約ページ
@@ -423,7 +487,9 @@ services/web-frontend/src/components/
 ```
 
 #### T70 - Site Integration ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/src/components/Layout.tsx
 ├── Footer legal links              # フッター法的リンク
@@ -438,7 +504,9 @@ services/web-frontend/src/components/Layout.tsx
 **目標**: TOPページ注目イシュー機能
 
 #### T101 - Active Issues API Implementation ✅
+
 **実装ファイル**:
+
 ```
 services/api-gateway/simple_airtable_test_api.py
 ├── @app.get("/api/issues")          # アクティブイシューAPI
@@ -448,7 +516,9 @@ services/api-gateway/simple_airtable_test_api.py
 ```
 
 #### T102 - ActiveIssuesStrip Component ✅
+
 **実装ファイル**:
+
 ```
 services/web-frontend/src/components/
 ├── ActiveIssuesStrip.tsx            # アクティブイシューストリップ
@@ -609,6 +679,7 @@ shared/
 ### 4.1 データアーキテクチャ進化
 
 #### 初期設計 → MVP実装
+
 ```
 Before:                              After:
 ┌─────────────────┐                 ┌─────────────────┐
@@ -634,6 +705,7 @@ Before:                              After:
 ### 4.2 サービスアーキテクチャ進化
 
 #### 6サービス → 3サービス統合
+
 ```
 Original Plan:                       MVP Implementation:
 ┌─────────────┐                     ┌─────────────────┐
@@ -664,12 +736,13 @@ Original Plan:                       MVP Implementation:
 ### 4.3 機能実装進化
 
 #### フェーズ別機能実装
+
 ```
 Phase 1: Core Pipeline (EPIC 1)
 ├── Scraping → STT → Processing → Storage → Search
 └── Basic UI with bill cards and search
 
-Phase 2: AI Intelligence (EPIC 3)  
+Phase 2: AI Intelligence (EPIC 3)
 ├── LLM speech summarization
 ├── Topic extraction (20 categories)
 └── Enhanced search with AI insights
@@ -688,7 +761,7 @@ Phase 4: Production Polish (EPIC 4)
 
 Phase 5: Legal Compliance (EPIC 9)
 ├── Terms of service
-├── Privacy policy  
+├── Privacy policy
 └── Site integration with legal links
 ```
 
@@ -699,6 +772,7 @@ Phase 5: Legal Compliance (EPIC 9)
 ### 5.1 完了済み機能・品質指標
 
 #### ✅ インフラ・基盤
+
 - GCP Cloud Run デプロイメント（3サービス）
 - Terraform Infrastructure as Code
 - CI/CD パイプライン（GitHub Actions）
@@ -706,6 +780,7 @@ Phase 5: Legal Compliance (EPIC 9)
 - Domain setup（politics-watch.jp）
 
 #### ✅ データパイプライン
+
 - 国会サイトスクレイピング（耐障害性付き）
 - 議員投票データ収集（参議院HTML + 衆議院PDF）
 - Whisper音声文字起こし
@@ -713,6 +788,7 @@ Phase 5: Legal Compliance (EPIC 9)
 - Weaviate Cloudベクター検索
 
 #### ✅ AI・LLM機能
+
 - OpenAI GPT-4によるLLM分析
 - 発言要約・トピック抽出
 - 法案からのイシュー自動抽出
@@ -720,6 +796,7 @@ Phase 5: Legal Compliance (EPIC 9)
 - 3層政策分類システム（CAP準拠）
 
 #### ✅ フロントエンド・UI
+
 - Next.js PWA（オフライン対応）
 - モバイルファーストレスポンシブデザイン
 - アクセシビリティ（WCAG 2.1 AA準拠）
@@ -728,6 +805,7 @@ Phase 5: Legal Compliance (EPIC 9)
 - 色覚バリアフリー対応
 
 #### ✅ セキュリティ・監視
+
 - セキュリティヘッダー・レート制限
 - 入力検証・サニタイゼーション
 - 構造化ログ・メトリクス収集
@@ -735,12 +813,14 @@ Phase 5: Legal Compliance (EPIC 9)
 - エラートラッキング
 
 #### ✅ 法的コンプライアンス
+
 - 利用規約・プライバシーポリシー
 - 政治的中立性担保
 - 個人情報保護法準拠
 - 公職選挙法遵守
 
 #### ✅ テスト・品質保証
+
 - Playwright E2Eテスト（包括的）
 - アクセシビリティテスト
 - パフォーマンステスト
@@ -749,20 +829,21 @@ Phase 5: Legal Compliance (EPIC 9)
 
 ### 5.2 品質指標達成状況
 
-| 指標 | 目標 | 実績 | ステータス |
-|------|------|------|----------|
-| Lighthouse Performance | >90 | 93 | ✅ 達成 |
-| Lighthouse Accessibility | >90 | 96 | ✅ 達成 |
-| Lighthouse Best Practices | >90 | 92 | ✅ 達成 |
-| Lighthouse SEO | >90 | 94 | ✅ 達成 |
-| モバイルページロード | <500ms | <200ms | ✅ 達成 |
-| API応答時間 p95 | <1000ms | <300ms | ✅ 達成 |
-| WCAG 2.1 AA準拠 | 100% | 100% | ✅ 達成 |
-| E2Eテストカバレッジ | >80% | 95% | ✅ 達成 |
+| 指標                      | 目標    | 実績   | ステータス |
+| ------------------------- | ------- | ------ | ---------- |
+| Lighthouse Performance    | >90     | 93     | ✅ 達成    |
+| Lighthouse Accessibility  | >90     | 96     | ✅ 達成    |
+| Lighthouse Best Practices | >90     | 92     | ✅ 達成    |
+| Lighthouse SEO            | >90     | 94     | ✅ 達成    |
+| モバイルページロード      | <500ms  | <200ms | ✅ 達成    |
+| API応答時間 p95           | <1000ms | <300ms | ✅ 達成    |
+| WCAG 2.1 AA準拠           | 100%    | 100%   | ✅ 達成    |
+| E2Eテストカバレッジ       | >80%    | 95%    | ✅ 達成    |
 
 ### 5.3 実装されたエンドポイント
 
 #### API Gateway エンドポイント
+
 ```
 GET    /                            # ルート
 GET    /health                      # ヘルスチェック
@@ -775,6 +856,7 @@ GET    /api/issues                  # アクティブイシュー（EPIC 12）
 ```
 
 #### フロントエンドページ
+
 ```
 /                                   # トップページ（Kanban + 検索）
 /speeches                           # 発言検索
@@ -790,13 +872,15 @@ GET    /api/issues                  # アクティブイシュー（EPIC 12）
 ### 5.4 データ統合状況
 
 #### Airtable統合（構造化データ）
+
 - ✅ Bills（法案）: 100+ レコード
 - ✅ Members（議員）: 700+ レコード
 - ✅ Votes（投票）: 実データ統合済み
 - ✅ Issues（イシュー）: LLM自動抽出
 - ✅ IssueCategories（政策分野）: 3層分類
 
-#### Weaviate Cloud統合（ベクターデータ）  
+#### Weaviate Cloud統合（ベクターデータ）
+
 - ✅ Speech embeddings（発言埋め込み）
 - ✅ Bill content vectors（法案内容ベクター）
 - ✅ Semantic search（セマンティック検索）
@@ -809,6 +893,7 @@ GET    /api/issues                  # アクティブイシュー（EPIC 12）
 ### 🎯 MVP Complete: Ready for Production
 
 **2025年7月22日（参議院選挙）目標達成**
+
 - ✅ 全主要機能実装完了
 - ✅ 品質指標達成（Lighthouse 90+）
 - ✅ セキュリティ・法的コンプライアンス完了
@@ -816,13 +901,15 @@ GET    /api/issues                  # アクティブイシュー（EPIC 12）
 - ✅ リアルタイムデータ統合稼働中
 
 **技術的成果**:
+
 - 3マイクロサービス統合アーキテクチャ
 - Airtable + Weaviate Cloudハイブリッドデータ基盤
 - AI駆動イシュー管理・検索システム
 - PWA対応アクセシブルUI
 - 75%コスト削減（$628→$155/月）
 
-**次期フェーズ**: 
+**次期フェーズ**:
+
 - EPIC 6: 議員データベース拡張（2025年9月）
 - EPIC 7: 3層分類システム深化（2025年8月）
 - EPIC 8: TOPページKanban高度化（2025年8月）
@@ -830,6 +917,7 @@ GET    /api/issues                  # アクティブイシュー（EPIC 12）
 ---
 
 **文書管理情報**
+
 - 作成日: 2025-07-12
 - 分析対象: development-tickets-final.md + 実装済みコードベース
 - バージョン: 1.0

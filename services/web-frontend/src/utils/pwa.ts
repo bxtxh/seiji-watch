@@ -91,7 +91,7 @@ function showUpdateNotification(registration: ServiceWorkerRegistration) {
   path.setAttribute("fill-rule", "evenodd");
   path.setAttribute(
     "d",
-    "M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z",
+    "M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
   );
   path.setAttribute("clip-rule", "evenodd");
 
@@ -307,7 +307,7 @@ export class CacheManager {
           const response = await cache.match(request);
           if (response && response.headers.get("content-length")) {
             totalSize += parseInt(
-              response.headers.get("content-length") || "0",
+              response.headers.get("content-length") || "0"
             );
           }
         }
@@ -326,7 +326,7 @@ export class CacheManager {
     try {
       const cacheNames = await caches.keys();
       const deletePromises = cacheNames.map((cacheName) =>
-        caches.delete(cacheName),
+        caches.delete(cacheName)
       );
       await Promise.all(deletePromises);
 
@@ -382,7 +382,7 @@ export class PWAPerformanceMonitor {
             const performanceEntry = entry as any;
             console.log(
               "FID:",
-              performanceEntry.processingStart - performanceEntry.startTime,
+              performanceEntry.processingStart - performanceEntry.startTime
             );
           });
         });
@@ -407,7 +407,7 @@ export class PWAPerformanceMonitor {
   static measureNavigationTiming(): void {
     window.addEventListener("load", () => {
       const navigation = performance.getEntriesByType(
-        "navigation",
+        "navigation"
       )[0] as PerformanceNavigationTiming;
 
       console.log("Navigation Timing:", {
