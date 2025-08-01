@@ -119,9 +119,9 @@ class TestVerbEndingValidator:
         ]
 
         for text in valid_endings:
-            assert validator.is_valid_verb_ending(text), (
-                f"Should recognize '{text}' as valid verb ending"
-            )
+            assert validator.is_valid_verb_ending(
+                text
+            ), f"Should recognize '{text}' as valid verb ending"
 
     def test_invalid_verb_endings(self):
         """Test rejection of invalid verb endings."""
@@ -136,9 +136,9 @@ class TestVerbEndingValidator:
         ]
 
         for text in invalid_endings:
-            assert not validator.is_valid_verb_ending(text), (
-                f"Should reject '{text}' as invalid verb ending"
-            )
+            assert not validator.is_valid_verb_ending(
+                text
+            ), f"Should reject '{text}' as invalid verb ending"
 
     def test_compound_verb_handling(self):
         """Test handling of compound verbs."""
@@ -151,9 +151,9 @@ class TestVerbEndingValidator:
         ]
 
         for text in compound_verbs:
-            assert validator.is_valid_verb_ending(text), (
-                f"Should handle compound verb '{text}'"
-            )
+            assert validator.is_valid_verb_ending(
+                text
+            ), f"Should handle compound verb '{text}'"
 
 
 class TestVocabularyLevelValidator:
@@ -171,9 +171,9 @@ class TestVocabularyLevelValidator:
         ]
 
         for text in appropriate_texts:
-            assert validator.is_high_school_appropriate(text), (
-                f"Should accept '{text}' as high school appropriate"
-            )
+            assert validator.is_high_school_appropriate(
+                text
+            ), f"Should accept '{text}' as high school appropriate"
 
     def test_advanced_vocabulary_detection(self):
         """Test detection of advanced vocabulary."""
@@ -187,9 +187,9 @@ class TestVocabularyLevelValidator:
         ]
 
         for text in advanced_texts:
-            assert not validator.is_high_school_appropriate(text), (
-                f"Should reject '{text}' as too advanced"
-            )
+            assert not validator.is_high_school_appropriate(
+                text
+            ), f"Should reject '{text}' as too advanced"
 
 
 class TestBillData:

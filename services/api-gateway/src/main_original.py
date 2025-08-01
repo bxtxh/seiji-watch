@@ -1033,9 +1033,7 @@ async def get_members_list(
                 "party": (
                     "自由民主党"
                     if i % 3 == 0
-                    else "立憲民主党"
-                    if i % 3 == 1
-                    else "日本維新の会"
+                    else "立憲民主党" if i % 3 == 1 else "日本維新の会"
                 ),
                 "constituency": f"東京都第{(i % 10) + 1}区",
                 "terms_served": (i % 5) + 1,

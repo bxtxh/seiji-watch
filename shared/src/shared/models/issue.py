@@ -69,7 +69,9 @@ class Issue(BaseRecord):
     issue_tags: Optional[List[str]] = Field(
         None, description="List of related IssueTag record IDs"
     )
-    category_id: Optional[str] = Field(None, description="Related IssueCategory record ID")
+    category_id: Optional[str] = Field(
+        None, description="Related IssueCategory record ID"
+    )
 
     # Metadata
     extraction_confidence: Optional[float] = Field(

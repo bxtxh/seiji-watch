@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(
     title="Diet Issue Tracker API (Test Mode)",
     description="API Gateway for Diet Issue Tracker - Test Mode",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS middleware
@@ -23,10 +23,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     """Root endpoint."""
-    return {"message": "Diet Issue Tracker API Gateway (Test Mode)", "status": "running"}
+    return {
+        "message": "Diet Issue Tracker API Gateway (Test Mode)",
+        "status": "running",
+    }
+
 
 @app.get("/health")
 async def health_check():
@@ -37,8 +42,9 @@ async def health_check():
         "environment": os.getenv("ENVIRONMENT", "unknown"),
         "database_configured": bool(os.getenv("DATABASE_URL")),
         "redis_configured": bool(os.getenv("REDIS_URL")),
-        "jwt_configured": bool(os.getenv("JWT_SECRET_KEY"))
+        "jwt_configured": bool(os.getenv("JWT_SECRET_KEY")),
     }
+
 
 @app.get("/test/env")
 async def test_env():
@@ -48,9 +54,11 @@ async def test_env():
         "has_database_url": bool(os.getenv("DATABASE_URL")),
         "has_redis_url": bool(os.getenv("REDIS_URL")),
         "has_jwt_secret": bool(os.getenv("JWT_SECRET_KEY")),
-        "has_airtable_key": bool(os.getenv("AIRTABLE_API_KEY"))
+        "has_airtable_key": bool(os.getenv("AIRTABLE_API_KEY")),
     }
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

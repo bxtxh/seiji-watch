@@ -704,16 +704,12 @@ async def get_bills(max_records: int = 100, category: str | None = None):
                     "Category": (
                         "マクロ経済学"
                         if i <= 5
-                        else "市民権・自由・少数者問題"
-                        if i <= 8
-                        else "健康"
+                        else "市民権・自由・少数者問題" if i <= 8 else "健康"
                     ),
                     "Category_ID": (
                         "rec_l1_macroeconomics"
                         if i <= 5
-                        else "rec_l1_civil_rights"
-                        if i <= 8
-                        else "rec_l1_health"
+                        else "rec_l1_civil_rights" if i <= 8 else "rec_l1_health"
                     ),
                     "Diet_Session": "第213回国会",
                     "Submitted_Date": "2024-01-15",
@@ -760,9 +756,7 @@ async def get_members(limit: int = 50):
                 "party": (
                     "自由民主党"
                     if i % 3 == 0
-                    else "立憲民主党"
-                    if i % 3 == 1
-                    else "日本維新の会"
+                    else "立憲民主党" if i % 3 == 1 else "日本維新の会"
                 ),
                 "house": "衆議院" if i % 2 == 0 else "参議院",
             }

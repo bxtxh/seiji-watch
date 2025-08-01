@@ -618,9 +618,7 @@ class FullTextSearchEngine:
                     weight = (
                         "A"
                         if field == SearchField.TITLE
-                        else "B"
-                        if field == SearchField.OUTLINE
-                        else "C"
+                        else "B" if field == SearchField.OUTLINE else "C"
                     )
                     field_vectors.append(
                         f"setweight(to_tsvector('japanese', COALESCE({field.value}, '')), '{weight}')"

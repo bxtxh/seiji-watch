@@ -610,14 +610,14 @@ class BillsImprovementExecutor:
             strategy_results = {}
 
             # 1. Status Standardization
-            strategy_results[
-                "status_standardization"
-            ] = await self.execute_status_standardization(session, records)
+            strategy_results["status_standardization"] = (
+                await self.execute_status_standardization(session, records)
+            )
 
             # 2. Category Classification
-            strategy_results[
-                "category_classification"
-            ] = await self.execute_category_classification(session, records)
+            strategy_results["category_classification"] = (
+                await self.execute_category_classification(session, records)
+            )
 
             # 3. Priority Scoring
             strategy_results["priority_scoring"] = await self.execute_priority_scoring(
@@ -625,14 +625,14 @@ class BillsImprovementExecutor:
             )
 
             # 4. Completeness Enhancement
-            strategy_results[
-                "completeness_enhancement"
-            ] = await self.execute_completeness_enhancement(session, records)
+            strategy_results["completeness_enhancement"] = (
+                await self.execute_completeness_enhancement(session, records)
+            )
 
             # 5. Session Normalization
-            strategy_results[
-                "session_normalization"
-            ] = await self.execute_session_normalization(session, records)
+            strategy_results["session_normalization"] = (
+                await self.execute_session_normalization(session, records)
+            )
 
             execution_results["improvement_results"] = strategy_results
 

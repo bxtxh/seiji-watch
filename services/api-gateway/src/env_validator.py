@@ -123,9 +123,11 @@ class EnvironmentValidator:
             "airtable_pat": os.getenv("AIRTABLE_PAT"),
             "airtable_base_id": os.getenv("AIRTABLE_BASE_ID"),
             "environment": os.getenv("ENVIRONMENT", "staging"),
-            "cors_origins": os.getenv("ALLOWED_CORS_ORIGINS", "").split(",")
-            if os.getenv("ALLOWED_CORS_ORIGINS")
-            else [],
+            "cors_origins": (
+                os.getenv("ALLOWED_CORS_ORIGINS", "").split(",")
+                if os.getenv("ALLOWED_CORS_ORIGINS")
+                else []
+            ),
             "jwt_secret_key": os.getenv("JWT_SECRET_KEY"),
             "debug_token": os.getenv("DEBUG_API_TOKEN"),
             "log_level": os.getenv("LOG_LEVEL", "INFO"),
