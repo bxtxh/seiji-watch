@@ -444,8 +444,9 @@ class ResilientScraper:
                         content = await response.text()
 
                     # Check for duplicate content
-                    if skip_duplicates and self.duplicate_detector.is_duplicate_content(
-                        content, url
+                    if (
+                        skip_duplicates
+                        and self.duplicate_detector.is_duplicate_content(content, url)
                     ):
                         self.stats["cache_hits"] += 1
                         if job:

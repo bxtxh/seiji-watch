@@ -288,9 +288,9 @@ class DiscordNotificationBot:
 
         # Add next notification info
         next_notification = self._calculate_next_notification_time()
-        embed["description"] += (
-            f"\n⏰ 次回通知: {next_notification.strftime('%m月%d日 %H:%M')}"
-        )
+        embed[
+            "description"
+        ] += f"\n⏰ 次回通知: {next_notification.strftime('%m月%d日 %H:%M')}"
 
         return {"embeds": [embed]}
 

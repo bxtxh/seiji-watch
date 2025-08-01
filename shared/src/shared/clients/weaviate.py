@@ -25,7 +25,9 @@ class SearchResult:
 class WeaviateClient:
     """Async Weaviate client for Diet Issue Tracker vector operations."""
 
-    def __init__(self, api_key: Optional[str] = None, cluster_url: Optional[str] = None):
+    def __init__(
+        self, api_key: Optional[str] = None, cluster_url: Optional[str] = None
+    ):
         self.api_key = api_key or os.getenv("WEAVIATE_API_KEY")
         self.cluster_url = cluster_url or os.getenv("WEAVIATE_CLUSTER_URL")
 
@@ -538,7 +540,9 @@ class WeaviateClient:
         """Get current schema information."""
         return await self._request("GET", "schema")
 
-    async def get_object_count(self, class_name: Optional[str] = None) -> Dict[str, int]:
+    async def get_object_count(
+        self, class_name: Optional[str] = None
+    ) -> Dict[str, int]:
         """Get object count for classes."""
         counts = {}
 

@@ -400,9 +400,7 @@ class ContinuousQualityMonitor:
                 "trend_direction": (
                     "improving"
                     if score_delta > 0.01
-                    else "declining"
-                    if score_delta < -0.01
-                    else "stable"
+                    else "declining" if score_delta < -0.01 else "stable"
                 ),
                 "current_grade": last_report.get("quality_grade", "F"),
                 "previous_grade": first_report.get("quality_grade", "F"),

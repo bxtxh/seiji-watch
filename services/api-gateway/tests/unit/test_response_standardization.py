@@ -17,7 +17,7 @@ class TestResponseStandardization:
         """Test basic success response."""
         data = {"id": 1, "name": "Test"}
         response = APIResponse.success(data)
-        
+
         assert response["success"] is True
         assert response["data"] == data
         assert "timestamp" in response
@@ -27,14 +27,11 @@ class TestResponseStandardization:
         """Test success response with all optional fields."""
         data = [{"id": 1}, {"id": 2}]
         metadata = {"source": "airtable", "cached": False}
-        
+
         response = APIResponse.success(
-            data=data,
-            message="Items retrieved",
-            metadata=metadata,
-            count=2
+            data=data, message="Items retrieved", metadata=metadata, count=2
         )
-        
+
         assert response["success"] is True
         assert response["data"] == data
         assert response["message"] == "Items retrieved"
@@ -47,12 +44,12 @@ class TestResponseStandardization:
             error="Validation failed",
             status_code=400,
             details={"field": "email", "reason": "Invalid format"},
-            error_code="VALIDATION_ERROR"
+            error_code="VALIDATION_ERROR",
         )
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 400
-        
+
         # Parse the JSON content
         content = json.loads(response.body)
         assert content["success"] is False
@@ -64,15 +61,15 @@ class TestResponseStandardization:
     def test_paginated_response(self):
         """Test paginated response format."""
         data = [{"id": i} for i in range(1, 21)]
-        
+
         response = APIResponse.paginated(
             data=data[:10],  # First page
             page=1,
             page_size=10,
             total=20,
-            message="First page of results"
+            message="First page of results",
         )
-        
+
         assert response["success"] is True
         assert len(response["data"]) == 10
         assert response["pagination"]["page"] == 1
@@ -86,10 +83,10 @@ class TestResponseStandardization:
         """Test handling of HTTPException."""
         exc = HTTPException(status_code=404, detail="Resource not found")
         response = handle_api_error(exc)
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 404
-        
+
         content = json.loads(response.body)
         assert content["success"] is False
         assert content["error"] == "Resource not found"
@@ -98,10 +95,10 @@ class TestResponseStandardization:
         """Test handling of generic exceptions."""
         exc = ValueError("Invalid value")
         response = handle_api_error(exc, default_message="Operation failed")
-        
+
         assert isinstance(response, JSONResponse)
         assert response.status_code == 500
-        
+
         content = json.loads(response.body)
         assert content["success"] is False
         assert content["error"] == "Operation failed"
@@ -123,23 +120,20 @@ class TestResponseStandardization:
                             "schedule": {"from": "2025-07-01", "to": "2025-07-28"},
                             "tags": ["tag1"],
                             "related_bills": [],
-                            "updated_at": "2025-07-12T10:00:00Z"
+                            "updated_at": "2025-07-12T10:00:00Z",
                         }
                     ],
                     "in_review": [],
-                    "completed": []
+                    "completed": [],
                 }
             },
             "metadata": {
                 "total_issues": 1,
                 "last_updated": "2025-07-12T10:00:00Z",
-                "date_range": {
-                    "from": "2025-07-01",
-                    "to": "2025-07-28"
-                }
-            }
+                "date_range": {"from": "2025-07-01", "to": "2025-07-28"},
+            },
         }
-        
+
         # Verify it matches our standard format
         assert kanban_response["success"] is True
         assert "data" in kanban_response
@@ -151,16 +145,16 @@ class TestResponseStandardization:
         # Current format (raw array)
         current_response = [
             {"id": "rec1", "fields": {"Name": "田中太郎"}},
-            {"id": "rec2", "fields": {"Name": "佐藤花子"}}
+            {"id": "rec2", "fields": {"Name": "佐藤花子"}},
         ]
-        
+
         # Expected standardized format
         expected_response = APIResponse.success(
             data=current_response,
             count=len(current_response),
-            message="Members retrieved successfully"
+            message="Members retrieved successfully",
         )
-        
+
         assert expected_response["success"] is True
         assert expected_response["data"] == current_response
         assert expected_response["count"] == 2
@@ -168,12 +162,8 @@ class TestResponseStandardization:
 
     def test_empty_list_response(self):
         """Test standardized response for empty lists."""
-        response = APIResponse.success(
-            data=[],
-            count=0,
-            message="No items found"
-        )
-        
+        response = APIResponse.success(data=[], count=0, message="No items found")
+
         assert response["success"] is True
         assert response["data"] == []
         assert response["count"] == 0

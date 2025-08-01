@@ -42,7 +42,9 @@ class Member(BaseRecord):
     # Career information
     first_elected: Optional[str] = Field(None, description="Year first elected")
     terms_served: Optional[int] = Field(None, description="Number of terms served")
-    previous_occupations: Optional[str] = Field(None, description="Previous occupations")
+    previous_occupations: Optional[str] = Field(
+        None, description="Previous occupations"
+    )
     education: Optional[str] = Field(None, description="Educational background")
 
     # Contact and web presence

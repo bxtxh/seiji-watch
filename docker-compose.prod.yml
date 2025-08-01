@@ -1,0 +1,178 @@
+# ===================================================
+# Docker Compose - Production Configuration
+# ===================================================
+# Use this file for production-like environment
+# docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  # ===========================================
+  # Production Configuration for Core Services
+  # ===========================================
+  
+  api-gateway:
+    build:
+      target: production
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - API_RELOAD=false
+      - WORKERS=4
+    volumes: []  # No source code mounting in production
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    command: ["gunicorn", "src.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
+
+  web-frontend:
+    build:
+      target: production
+    environment:
+      - NODE_ENV=production
+    volumes: []  # No source code mounting in production
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command: ["npm", "start"]
+
+  data-processor:
+    build:
+      target: production
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    volumes: []
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # ===========================================
+  # Production Configuration for Worker Services
+  # ===========================================
+  
+  diet-scraper:
+    build:
+      target: production
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - SCRAPING_DELAY_SECONDS=2  # Respectful scraping
+    volumes:
+      - scraped_data:/data/scraped  # Only data volumes
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  stt-worker:
+    build:
+      target: production
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - WHISPER_DEVICE=cuda  # Use GPU if available
+    volumes:
+      - audio_data:/data/audio
+      - transcripts_data:/data/transcripts
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  vector-store:
+    build:
+      target: production
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - BATCH_SIZE=100  # Optimized batch size
+    volumes: []
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+
+  notifications-worker:
+    build:
+      target: production
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    volumes: []
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+  # ===========================================
+  # Production Database Configuration
+  # ===========================================
+  
+  postgres:
+    ports: []  # Don't expose ports in production
+    environment:
+      - POSTGRES_LOG_STATEMENT=none  # Minimal logging
+      - POSTGRES_LOG_DURATION=off
+      - POSTGRES_SHARED_BUFFERS=256MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=1GB
+      - POSTGRES_MAINTENANCE_WORK_MEM=64MB
+      - POSTGRES_CHECKPOINT_COMPLETION_TARGET=0.9
+      - POSTGRES_WAL_BUFFERS=16MB
+      - POSTGRES_DEFAULT_STATISTICS_TARGET=100
+      - POSTGRES_RANDOM_PAGE_COST=1.1
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+
+  redis:
+    ports: []  # Don't expose ports in production
+    command: redis-server --appendonly yes --loglevel warning --maxmemory 512mb --maxmemory-policy allkeys-lru
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Remove development tools in production
+  adminer:
+    deploy:
+      replicas: 0
+
+  mailhog:
+    deploy:
+      replicas: 0
+
+# No additional volumes needed for production
+# Use the base volumes from docker-compose.yml

@@ -232,10 +232,10 @@ class AirtableSchemaInspector:
                         problematic_fields[field_name] = value
 
                 if problematic_fields:
-                    test_results[
-                        "problematic_fields_test"
-                    ] = await self.test_single_update(
-                        session, table_name, record_id, problematic_fields
+                    test_results["problematic_fields_test"] = (
+                        await self.test_single_update(
+                            session, table_name, record_id, problematic_fields
+                        )
                     )
 
                 return test_results

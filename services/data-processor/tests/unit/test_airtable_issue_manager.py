@@ -10,7 +10,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from src.services.airtable_issue_manager import AirtableIssueManager, AirtableIssueRecord
+from src.services.airtable_issue_manager import (
+    AirtableIssueManager,
+    AirtableIssueRecord,
+)
 from src.services.policy_issue_extractor import DualLevelIssue
 
 

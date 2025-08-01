@@ -64,7 +64,9 @@ async def fix_bills_empty_records():
 
         # Identify empty or mostly empty records
         empty_records = []
-        minimal_records = []  # Records with only Bill_Status but missing other essential fields
+        minimal_records = (
+            []
+        )  # Records with only Bill_Status but missing other essential fields
 
         essential_fields = ["Title", "Bill_Number", "Diet_Session", "House"]
 
