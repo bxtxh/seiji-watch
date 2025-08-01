@@ -18,6 +18,10 @@ env:
   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'test-jwt-secret-unified-for-ci-cd' }}
   ENVIRONMENT: testing
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   # ====================================
   # Docker Build & Test Job

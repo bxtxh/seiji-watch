@@ -3,10 +3,10 @@ Unit tests for Airtable integration functionality.
 Tests the basic happy path scenarios for Airtable data fetching.
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 from httpx import Response
-import json
 
 
 class TestAirtableIntegration:
@@ -222,8 +222,8 @@ class TestAirtableIntegration:
         mock_httpx_client.get.return_value = mock_response
 
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            from simple_api import app
             from fastapi.testclient import TestClient
+            from simple_api import app
 
             client = TestClient(app)
             response = client.get("/api/issues/kanban?range=30d&max_per_stage=8")
@@ -254,8 +254,8 @@ class TestAirtableIntegration:
         mock_httpx_client.get.return_value = mock_response
 
         with patch("httpx.AsyncClient", return_value=mock_httpx_client):
-            from simple_api import app
             from fastapi.testclient import TestClient
+            from simple_api import app
 
             client = TestClient(app)
 
@@ -275,8 +275,8 @@ class TestAirtableIntegration:
 
     def test_api_health_check(self):
         """Test API health check endpoint."""
-        from simple_api import app
         from fastapi.testclient import TestClient
+        from simple_api import app
 
         client = TestClient(app)
         response = client.get("/api/health")
@@ -289,8 +289,8 @@ class TestAirtableIntegration:
 
     def test_cors_configuration(self):
         """Test CORS is properly configured."""
-        from simple_api import app
         from fastapi.testclient import TestClient
+        from simple_api import app
 
         client = TestClient(app)
 

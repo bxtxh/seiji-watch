@@ -146,6 +146,44 @@ def handle_api_error(
     )
 
 
+def sanitize_error_for_api(error: Exception) -> str:
+    """
+    Sanitize error messages for safe API exposure.
+    
+    In production, this should:
+    - Remove sensitive information
+    - Hide internal implementation details
+    - Return user-friendly error messages
+    
+    Args:
+        error: The exception to sanitize
+        
+    Returns:
+        Safe error message string
+    """
+    import os
+    
+    # In development, show more details
+    if os.getenv("ENVIRONMENT", "production") in ["development", "test"]:
+        return str(error)
+    
+    # In production, return generic messages based on error type
+    error_type = type(error).__name__
+    
+    # Map common errors to user-friendly messages
+    error_messages = {
+        "ValueError": "Invalid input provided",
+        "KeyError": "Required data not found",
+        "ConnectionError": "Service temporarily unavailable",
+        "TimeoutError": "Request timed out",
+        "PermissionError": "Access denied",
+        "NotImplementedError": "Feature not available",
+    }
+    
+    # Return mapped message or generic message
+    return error_messages.get(error_type, "An error occurred processing your request")
+
+
 # Response type hints for better IDE support
 SuccessResponse = Dict[str, Any]
 ErrorResponse = JSONResponse

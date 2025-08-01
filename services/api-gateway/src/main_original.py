@@ -602,7 +602,7 @@ async def collect_member_profiles(
         log_error("Member profile collection failed", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "議員プロフィール収集に失敗しました",
         }
 
@@ -627,7 +627,7 @@ async def warmup_cache(current_user: dict = Depends(require_admin_access)):
         log_error("Cache warmup failed", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "キャッシュウォームアップに失敗しました",
         }
 
@@ -643,7 +643,7 @@ async def get_cache_stats():
         log_error("Failed to get cache stats", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "キャッシュ統計の取得に失敗しました",
         }
 
@@ -684,7 +684,7 @@ async def schedule_member_statistics_batch(
         log_error("Failed to schedule member statistics batch", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "議員統計バッチ処理のスケジュールに失敗しました",
         }
 
@@ -724,7 +724,7 @@ async def schedule_policy_stance_analysis(
         log_error("Failed to schedule policy stance analysis", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "政策スタンス分析のスケジュールに失敗しました",
         }
 
@@ -756,7 +756,7 @@ async def get_queue_stats():
         log_error("Failed to get queue stats", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "キュー統計の取得に失敗しました",
         }
 
@@ -772,7 +772,7 @@ async def get_failed_jobs():
         log_error("Failed to get failed jobs", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "失敗したジョブの取得に失敗しました",
         }
 
@@ -791,7 +791,7 @@ async def get_available_issues():
         log_error("Failed to get available issues", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "政策イシューの取得に失敗しました",
         }
 
@@ -807,7 +807,7 @@ async def get_member_policy_analysis(member_id: str, force_refresh: bool = False
         log_error(f"Failed to get policy analysis for member {member_id}", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "政策分析の取得に失敗しました",
         }
 
@@ -845,7 +845,7 @@ async def get_member_issue_stance(member_id: str, issue_tag: str):
         )
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "政策スタンスの取得に失敗しました",
         }
 
@@ -882,7 +882,7 @@ async def compare_members_on_issue(request: Request):
         log_error("Failed to compare members on issue", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "議員比較の実行に失敗しました",
         }
 
@@ -907,7 +907,7 @@ async def get_similar_members(member_id: str, issue_tags: str | None = None):
         log_error(f"Failed to get similar members for {member_id}", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "類似議員の取得に失敗しました",
         }
 
@@ -924,7 +924,7 @@ async def get_policy_trends(issue_tag: str, days: int = 30):
         log_error(f"Failed to get policy trends for {issue_tag}", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "政策トレンドの取得に失敗しました",
         }
 
@@ -972,7 +972,7 @@ async def get_member_profile(member_id: str):
             status_code=500,
             content={
                 "success": False,
-                "error": str(e),
+                "error": sanitize_error_for_api(e),
                 "message": "議員プロフィールの取得に失敗しました",
             },
         )
@@ -1002,7 +1002,7 @@ async def get_member_voting_stats(member_id: str):
         log_error(f"Failed to get voting stats for {member_id}", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "投票統計の取得に失敗しました",
         }
 
@@ -1073,7 +1073,7 @@ async def get_members_list(
         log_error("Failed to get members list", error=e)
         return {
             "success": False,
-            "error": str(e),
+            "error": sanitize_error_for_api(e),
             "message": "議員一覧の取得に失敗しました",
         }
 

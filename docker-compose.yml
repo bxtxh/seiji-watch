@@ -6,9 +6,9 @@ services:
     image: pgvector/pgvector:pg15
     container_name: seiji-watch-postgres
     environment:
-      POSTGRES_DB: diet_tracker
-      POSTGRES_USER: diet_user
-      POSTGRES_PASSWORD: diet_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -43,10 +43,10 @@ services:
     container_name: seiji-watch-api-gateway
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://diet_user:diet_password@postgres:5432/diet_tracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
-      ENVIRONMENT: development
-      JWT_SECRET_KEY: your_super_secret_jwt_key_here_change_in_production
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-development-secret-key}
     volumes:
       - ./services/api-gateway:/app
       - api_gateway_venv:/app/.venv
@@ -87,7 +87,7 @@ services:
       target: development
     container_name: seiji-watch-diet-scraper
     environment:
-      DATABASE_URL: postgresql://diet_user:diet_password@postgres:5432/diet_tracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       ENVIRONMENT: development
     volumes:
@@ -109,7 +109,7 @@ services:
       target: development
     container_name: seiji-watch-data-processor
     environment:
-      DATABASE_URL: postgresql://diet_user:diet_password@postgres:5432/diet_tracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       AIRTABLE_API_KEY: ${AIRTABLE_API_KEY}
       AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID}
@@ -133,7 +133,7 @@ services:
       target: development
     container_name: seiji-watch-stt-worker
     environment:
-      DATABASE_URL: postgresql://diet_user:diet_password@postgres:5432/diet_tracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ENVIRONMENT: development
@@ -157,7 +157,7 @@ services:
       target: development
     container_name: seiji-watch-vector-store
     environment:
-      DATABASE_URL: postgresql://diet_user:diet_password@postgres:5432/diet_tracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ENVIRONMENT: development
@@ -180,7 +180,7 @@ services:
       target: development
     container_name: seiji-watch-notifications-worker
     environment:
-      DATABASE_URL: postgresql://diet_user:diet_password@postgres:5432/diet_tracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL}
