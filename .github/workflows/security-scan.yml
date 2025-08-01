@@ -23,6 +23,9 @@ jobs:
   trivy-scan:
     name: Trivy Container Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     strategy:
       matrix:
         service:
@@ -69,6 +72,9 @@ jobs:
   dependency-scan:
     name: Dependency Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -124,6 +130,9 @@ jobs:
   secret-scan:
     name: Secret Detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -144,6 +153,9 @@ jobs:
   sast-scan:
     name: SAST with Semgrep
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -174,6 +186,8 @@ jobs:
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -210,6 +224,9 @@ jobs:
   iac-scan:
     name: Infrastructure as Code Security
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -240,6 +257,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [trivy-scan, dependency-scan, secret-scan, sast-scan, license-check, iac-scan]
     if: always()
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Create security report
         run: |

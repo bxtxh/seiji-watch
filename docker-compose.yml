@@ -12,9 +12,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5432:5432"  # SECURITY: Only expose in development. Use internal network in production
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U diet_user -d diet_tracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,7 +24,7 @@ services:
     image: redis:7-alpine
     container_name: seiji-watch-redis
     ports:
-      - "6379:6379"
+      - "6379:6379"  # SECURITY: Only expose in development. Use internal network in production
     volumes:
       - redis_data:/data
     healthcheck:

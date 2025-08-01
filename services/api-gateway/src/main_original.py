@@ -410,7 +410,7 @@ async def get_metrics():
         )
     except Exception as e:
         log_error("Failed to export metrics", error=e)
-        raise HTTPException(status_code=500, detail="Failed to export metrics")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to export metrics"))
 
 
 @app.get("/metrics/json")
@@ -439,7 +439,7 @@ async def get_status():
         )
     except Exception as e:
         log_error("Failed to get system status", error=e)
-        raise HTTPException(status_code=500, detail="Failed to get system status")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to get system status"))
 
 
 # Root endpoint
@@ -1089,7 +1089,7 @@ async def get_categories(max_records: int = 100):
         return categories
     except Exception as e:
         log_error("Failed to get categories", error=e)
-        raise HTTPException(status_code=500, detail="Failed to fetch categories")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to fetch categories"))
 
 
 @app.get("/api/issues/categories/tree")
@@ -1100,7 +1100,7 @@ async def get_category_tree():
         return tree
     except Exception as e:
         log_error("Failed to get category tree", error=e)
-        raise HTTPException(status_code=500, detail="Failed to fetch category tree")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to fetch category tree"))
 
 
 @app.get("/api/issues/categories/{category_id}")
@@ -1115,7 +1115,7 @@ async def get_category_detail(category_id: str):
         raise
     except Exception as e:
         log_error(f"Failed to get category {category_id}", error=e)
-        raise HTTPException(status_code=500, detail="Failed to fetch category")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to fetch category"))
 
 
 @app.get("/api/issues/categories/{category_id}/children")
@@ -1126,7 +1126,7 @@ async def get_category_children(category_id: str):
         return children
     except Exception as e:
         log_error(f"Failed to get children for category {category_id}", error=e)
-        raise HTTPException(status_code=500, detail="Failed to fetch category children")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to fetch category children"))
 
 
 @app.get("/api/issues/categories/search")
@@ -1139,7 +1139,7 @@ async def search_categories(query: str, max_records: int = 50):
         return results
     except Exception as e:
         log_error(f"Failed to search categories with query: {query}", error=e)
-        raise HTTPException(status_code=500, detail="Failed to search categories")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to search categories"))
 
 
 @app.get("/api/bills")
@@ -1185,7 +1185,7 @@ async def get_bills(max_records: int = 100, category: str | None = None):
 
     except Exception as e:
         log_error("Failed to get bills from Airtable", error=e)
-        raise HTTPException(status_code=500, detail="Failed to fetch bills")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to fetch bills"))
 
 
 @app.get("/api/bills/{bill_id}")
@@ -1226,7 +1226,7 @@ async def get_bill_detail(bill_id: str):
         raise
     except Exception as e:
         log_error(f"Failed to get bill detail for {bill_id}", error=e)
-        raise HTTPException(status_code=500, detail="Failed to fetch bill detail")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to fetch bill detail"))
 
 
 # CORS preflight handled automatically by CORSMiddleware
