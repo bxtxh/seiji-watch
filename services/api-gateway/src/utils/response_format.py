@@ -3,8 +3,9 @@ Standardized API response format utilities.
 Ensures consistent response structure across all endpoints.
 """
 
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
+from datetime import datetime
+from typing import Any
+
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 
@@ -15,10 +16,10 @@ class APIResponse:
     @staticmethod
     def success(
         data: Any,
-        message: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        count: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        message: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        count: int | None = None,
+    ) -> dict[str, Any]:
         """
         Create a successful response.
 
@@ -34,7 +35,7 @@ class APIResponse:
         response = {
             "success": True,
             "data": data,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(datetime.UTC).isoformat(),
         }
 
         if message:
@@ -52,8 +53,8 @@ class APIResponse:
     def error(
         error: str,
         status_code: int = 400,
-        details: Optional[Dict[str, Any]] = None,
-        error_code: Optional[str] = None,
+        details: dict[str, Any] | None = None,
+        error_code: str | None = None,
     ) -> JSONResponse:
         """
         Create an error response.
@@ -70,7 +71,7 @@ class APIResponse:
         response = {
             "success": False,
             "error": error,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(datetime.UTC).isoformat(),
         }
 
         if details:
@@ -83,12 +84,12 @@ class APIResponse:
 
     @staticmethod
     def paginated(
-        data: List[Any],
+        data: list[Any],
         page: int,
         page_size: int,
         total: int,
-        message: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        message: str | None = None,
+    ) -> dict[str, Any]:
         """
         Create a paginated response.
 
@@ -115,7 +116,7 @@ class APIResponse:
                 "has_next": page < total_pages,
                 "has_prev": page > 1,
             },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(datetime.UTC).isoformat(),
             "message": message,
         }
 
@@ -149,27 +150,27 @@ def handle_api_error(
 def sanitize_error_for_api(error: Exception) -> str:
     """
     Sanitize error messages for safe API exposure.
-    
+
     In production, this should:
     - Remove sensitive information
     - Hide internal implementation details
     - Return user-friendly error messages
-    
+
     Args:
         error: The exception to sanitize
-        
+
     Returns:
         Safe error message string
     """
     import os
-    
+
     # In development, show more details
     if os.getenv("ENVIRONMENT", "production") in ["development", "test"]:
         return str(error)
-    
+
     # In production, return generic messages based on error type
     error_type = type(error).__name__
-    
+
     # Map common errors to user-friendly messages
     error_messages = {
         "ValueError": "Invalid input provided",
@@ -179,19 +180,19 @@ def sanitize_error_for_api(error: Exception) -> str:
         "PermissionError": "Access denied",
         "NotImplementedError": "Feature not available",
     }
-    
+
     # Return mapped message or generic message
     return error_messages.get(error_type, "An error occurred processing your request")
 
 
 # Response type hints for better IDE support
-SuccessResponse = Dict[str, Any]
+SuccessResponse = dict[str, Any]
 ErrorResponse = JSONResponse
-PaginatedResponse = Dict[str, Any]
+PaginatedResponse = dict[str, Any]
 
 
 # Example usage functions
-def format_list_response(items: List[Any], item_name: str = "items") -> SuccessResponse:
+def format_list_response(items: list[Any], item_name: str = "items") -> SuccessResponse:
     """Format a list response with count."""
     return APIResponse.success(
         data=items, count=len(items), message=f"Retrieved {len(items)} {item_name}"
