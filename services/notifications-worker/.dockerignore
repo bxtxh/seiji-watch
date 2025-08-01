@@ -46,7 +46,6 @@ desktop.ini
 README.md
 docs/
 *.md
-reports/
 
 # Test files
 tests/
@@ -86,18 +85,9 @@ logs/
 *.backup
 tmp/
 temp/
-*.wav
-*.mp3
-*.mp4
 
 # Scripts (development only)
 scripts/
-*.py.bak
-
-# Data files (should be mounted as volumes)
-data/
-processed_data/
-exports/
 
 # Coverage reports
 coverage/
@@ -107,8 +97,7 @@ coverage/
 *.prof
 *.lprof
 
-# Analysis scripts (development only)
-*_analysis.py
-*_analyzer.py
-*_inspection.py
-*_diagnosis.py
+# Email templates backup (keep only main templates)
+templates/*.bak
+templates/test/
+templates/dev/

@@ -3386,3 +3386,261 @@ CI/CDパイプラインで複数のlintエラーが発生し、deployment が bl
 - **Critical Path:** 構文エラー修正 → API接続確認 → データ表示修正 → UI/UX改善
 - **Key Deliverable:** 正常に動作し、データが表示されるフロントエンド
 - **Risk Mitigation**: 簡素化によりリスク大幅低減 + 迅速な問題対応
+
+---
+
+## EPIC 23: Docker環境統一によるCI/CD問題解決
+
+**Target:** 2025年8月1日 | **Priority:** P0 | **Status:** 🆕 NEW
+
+_ローカル環境とGitHub Actions CI環境の差異を解消し、開発効率と品質を向上_
+
+### Background & Critical Issue
+
+- **Problem**: ローカルで成功するテストがGitHub Actions CIで失敗する環境差異問題
+- **Root Cause**: 
+  - Python/Node.jsバージョンの微妙な違い
+  - システムパッケージ依存関係の差異
+  - 環境変数設定の不一致
+  - ファイルシステムパス構造の違い
+- **Impact**: 
+  - 開発者の作業効率低下（CI失敗による手戻り）
+  - マージ遅延による開発速度低下
+  - 本番環境へのリスク持ち込み可能性
+
+### Strategic Approach
+
+完全なDocker化により、開発・CI・本番環境を統一し、「Write Once, Run Anywhere」を実現する。
+
+### Implementation Phases
+
+#### Phase 1: Foundation (Week 1) - 基盤整備
+
+##### T23-1: 不足している依存関係ファイルの作成
+
+**Priority:** P0 | **Estimate:** 4 hours
+
+- diet-scraper/pyproject.toml 作成
+- stt-worker/pyproject.toml 作成  
+- vector-store/pyproject.toml 作成
+- notifications-worker/pyproject.toml 作成
+- 各サービスの依存関係を明確化
+- Pythonバージョン3.11.2で統一
+
+**DoD:** 全サービスがpoetry installで依存関係をインストール可能
+
+##### T23-2: 包括的docker-compose.yml構築
+
+**Priority:** P0 | **Estimate:** 6 hours
+
+- 全7マイクロサービスの定義
+- PostgreSQL (pgvector付き) + Redis設定
+- ネットワーク分離（frontend/backend/data層）
+- ボリュームマウント設定（開発用）
+- 環境変数注入設定
+- ヘルスチェック定義
+
+```yaml
+services:
+  # Infrastructure
+  postgres:
+    image: pgvector/pgvector:pg15
+  redis:
+    image: redis:7-alpine
+  
+  # Core Services  
+  api-gateway:
+    build: ./services/api-gateway
+  web-frontend:
+    build: ./services/web-frontend
+  
+  # Worker Services
+  diet-scraper:
+    build: ./services/diet-scraper
+  # ... 他のサービス
+```
+
+**DoD:** docker-compose up で全サービスが起動し相互接続可能
+
+##### T23-3: 環境変数テンプレート整備
+
+**Priority:** P0 | **Estimate:** 3 hours
+
+- 各サービス用.env.exampleファイル作成
+- docker-compose用.env.docker作成
+- 環境変数バリデーションスクリプト
+- シークレット管理ガイドライン文書化
+
+**DoD:** 環境変数設定が明確で、新規開発者が迷わない
+
+#### Phase 2: Developer Experience (Week 2) - 開発体験向上
+
+##### T23-4: Docker Composeプロファイル実装
+
+**Priority:** P1 | **Estimate:** 4 hours
+
+```yaml
+profiles:
+  core:     # 最小構成（DB + API + Frontend）
+  workers:  # ワーカーサービス群
+  full:     # 全サービス
+  test:     # テスト実行環境
+```
+
+- プロファイル別起動設定
+- メモリ/CPU制限設定
+- 開発用オーバーライド設定
+
+**DoD:** 用途別に最適な構成で起動可能
+
+##### T23-5: 開発支援スクリプト作成
+
+**Priority:** P1 | **Estimate:** 5 hours
+
+- `scripts/docker/start.sh` - プロファイル別起動
+- `scripts/docker/logs.sh` - ログ集約表示
+- `scripts/docker/reset.sh` - クリーンリビルド
+- `scripts/docker/test.sh` - テスト実行
+- `scripts/docker/shell.sh` - コンテナ内シェル接続
+
+**DoD:** 頻繁な操作がワンコマンドで実行可能
+
+##### T23-6: ホットリロード設定
+
+**Priority:** P1 | **Estimate:** 4 hours
+
+- Python: watchgod/watchfiles設定
+- Next.js: ファイル監視設定
+- ボリュームマウント最適化
+- inotify制限調整（Linux）
+
+**DoD:** コード変更が即座に反映される
+
+#### Phase 3: CI/CD Integration (Week 3) - CI/CD統合
+
+##### T23-7: マルチステージビルド最適化
+
+**Priority:** P1 | **Estimate:** 6 hours
+
+```dockerfile
+# Example: Python service
+FROM python:3.11-slim as builder
+# 依存関係インストール
+
+FROM python:3.11-slim as test
+# テスト実行
+
+FROM python:3.11-slim as production
+# 最小限の本番イメージ
+```
+
+- ビルドキャッシュ最適化
+- レイヤー最小化
+- セキュリティスキャン統合
+
+**DoD:** イメージサイズ50%削減、ビルド時間30%短縮
+
+##### T23-8: GitHub Actions Docker統合
+
+**Priority:** P0 | **Estimate:** 8 hours
+
+```yaml
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and Test
+        run: |
+          docker-compose -f docker-compose.test.yml build
+          docker-compose -f docker-compose.test.yml run tests
+```
+
+- Docker Compose によるCI実行
+- テストカバレッジレポート生成
+- Trivyセキュリティスキャン
+- ビルドアーティファクト保存
+
+**DoD:** CIがDocker環境で完全動作
+
+##### T23-9: Dockerベーステスト戦略
+
+**Priority:** P1 | **Estimate:** 6 hours
+
+- ユニットテスト: ビルドステージ内実行
+- 統合テスト: docker-compose環境
+- E2Eテスト: フルスタック起動後実行
+- テストデータ初期化スクリプト
+
+**DoD:** 全テストがDocker内で再現可能
+
+#### Phase 4: Production Alignment (Week 4) - 本番環境対応
+
+##### T23-10: 本番用イメージ強化
+
+**Priority:** P2 | **Estimate:** 6 hours
+
+- Distroless/Alpine ベースイメージ採用
+- 非rootユーザー実行
+- 読み取り専用ファイルシステム
+- ヘルスチェックエンドポイント
+- リソース制限設定
+
+**DoD:** セキュリティベストプラクティス準拠
+
+##### T23-11: コンテナレジストリ戦略
+
+**Priority:** P2 | **Estimate:** 4 hours
+
+- マルチアーキテクチャビルド（amd64/arm64）
+- セマンティックバージョニング
+- 脆弱性スキャン自動化
+- イメージ署名（Cosign）
+
+**DoD:** 安全で追跡可能なイメージ配布
+
+##### T23-12: ドキュメント作成
+
+**Priority:** P1 | **Estimate:** 4 hours
+
+- Docker開発環境セットアップガイド
+- トラブルシューティングガイド
+- ベストプラクティス文書
+- CI/CD移行ガイド
+
+**DoD:** 新規開発者が30分以内に環境構築完了
+
+### Success Metrics
+
+- **環境構築時間**: クローンから起動まで < 5分
+- **CI成功率**: 95%以上（環境起因の失敗ゼロ）
+- **イメージサイズ**: Python < 200MB, Node.js < 100MB
+- **ビルド時間**: < 10分（全サービス）
+- **開発者満足度**: 環境問題による作業中断ゼロ
+
+### Dependencies
+
+- 既存のDockerfile（更新必要）
+- GitHub Actions設定ファイル
+- 各サービスの依存関係定義
+
+### Risks & Mitigation
+
+- **Risk:** Docker Desktop ライセンス問題
+  - **Mitigation:** Rancher Desktop/Colima代替案提供
+- **Risk:** M1/M2 Mac互換性
+  - **Mitigation:** マルチアーキテクチャビルド対応
+- **Risk:** Windows開発者のWSL2問題
+  - **Mitigation:** WSL2セットアップガイド提供
+
+**EPIC 23 Summary:**
+
+- **Total Tickets:** 12
+- **Total Effort:** 63 hours (約8人日)
+- **Timeline:** 4週間（並行作業可能）
+- **Critical Path:** T23-1 → T23-2 → T23-8（依存関係→基盤→CI統合）
+- **Key Deliverable:** 完全Docker化された開発・CI環境
+- **Expected Impact:** 
+  - CI失敗率90%削減
+  - 環境セットアップ時間95%削減
+  - 開発速度20%向上

@@ -46,7 +46,6 @@ desktop.ini
 README.md
 docs/
 *.md
-reports/
 
 # Test files
 tests/
@@ -86,18 +85,31 @@ logs/
 *.backup
 tmp/
 temp/
+
+# Audio/Video files (should be processed from storage)
 *.wav
 *.mp3
 *.mp4
+*.m4a
+*.flac
+*.ogg
+*.webm
+
+# Model files (should be mounted or downloaded at runtime)
+models/
+*.pt
+*.pth
+*.onnx
+*.bin
+
+# Transcripts (should be stored in database/storage)
+transcripts/
+*.txt
+*.srt
+*.vtt
 
 # Scripts (development only)
 scripts/
-*.py.bak
-
-# Data files (should be mounted as volumes)
-data/
-processed_data/
-exports/
 
 # Coverage reports
 coverage/
@@ -106,9 +118,3 @@ coverage/
 # Profiling data
 *.prof
 *.lprof
-
-# Analysis scripts (development only)
-*_analysis.py
-*_analyzer.py
-*_inspection.py
-*_diagnosis.py

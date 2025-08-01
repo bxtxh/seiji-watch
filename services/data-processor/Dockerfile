@@ -1,85 +1,196 @@
-# Multi-stage build for Ingest Worker service
+# Multi-stage build for Data Processor service
+# Optimized for layer caching, security, and minimal image size
+
+# ============ Stage 1: Builder ============
 FROM python:3.11-slim as builder
+
+# Build arguments for flexibility
+ARG POETRY_VERSION=1.7.1
+ARG PIP_VERSION=24.0
+
+# Set environment variables for build
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Install system dependencies for building (single layer)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    gcc \
+    g++ \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install Poetry
+RUN pip install --upgrade pip==${PIP_VERSION} && \
+    pip install poetry==${POETRY_VERSION}
+
+WORKDIR /app
+
+# Copy only dependency files first (better caching)
+COPY pyproject.toml poetry.lock* ./
+
+# Install dependencies (without dev dependencies)
+RUN poetry install --without dev --no-root && \
+    rm -rf ${POETRY_CACHE_DIR}
+
+# ============ Stage 2: Development ============
+FROM python:3.11-slim as development
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
 
-# Install system dependencies for building
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# Install runtime + dev dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
     curl \
     git \
     ffmpeg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry==1.7.1
-
-# Configure Poetry
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VENV_IN_PROJECT=1 \
-    POETRY_CACHE_DIR=/opt/poetry-cache
-
-# Set work directory
 WORKDIR /app
 
-# Copy poetry files
-COPY pyproject.toml poetry.lock* ./
-
-# Copy shared dependency if exists
-COPY ../shared /app/shared 2>/dev/null || true
-
-# Install dependencies
-RUN poetry install --only=main --no-root && rm -rf $POETRY_CACHE_DIR
-
-# Production stage
-FROM python:3.11-slim as production
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/.venv/bin:$PATH"
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    curl \
-    ffmpeg \
-    wget \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
-# Set work directory
-WORKDIR /app
-
-# Copy virtual environment from builder stage
+# Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy application code
 COPY . .
 
-# Copy shared modules if they exist
-COPY ../shared /app/shared 2>/dev/null || true
+# Install dev dependencies
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    black \
+    ruff \
+    mypy \
+    ipdb \
+    jupyter
 
-# Create directories for temporary files
-RUN mkdir -p /app/temp && chown -R appuser:appuser /app
+# Create directories for processing
+RUN mkdir -p /app/data /app/logs /app/temp
+
+# Health check endpoint port
+EXPOSE 8082
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8082/health || exit 1
+
+# Development mode
+CMD ["python", "-m", "src.main", "--dev"]
+
+# ============ Stage 3: Testing ============
+FROM python:3.11-slim as test
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    curl \
+    ffmpeg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
+
+# Copy application code and tests
+COPY . .
+
+# Install test dependencies
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    pytest-mock \
+    freezegun \
+    factory-boy
+
+# Run tests by default
+CMD ["pytest", "-v", "--cov=src", "--cov-report=term-missing"]
+
+# ============ Stage 4: Production ============
+FROM python:3.11-slim as production
+
+# Build arguments
+ARG GIT_COMMIT=unknown
+ARG BUILD_DATE=unknown
+ARG VERSION=latest
+
+# Labels for metadata
+LABEL org.opencontainers.image.title="Data Processor" \
+      org.opencontainers.image.description="Diet Issue Tracker Data Processor Service" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${GIT_COMMIT}" \
+      org.opencontainers.image.source="https://github.com/your-repo/seiji-watch"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHASHSEED=random \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    # Security
+    PYTHONIOENCODING=utf-8 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+# Install runtime dependencies only (minimal)
+# Include ffmpeg for audio processing if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev \
+    curl \
+    ffmpeg \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* /var/tmp/*
+
+# Create non-root user with specific UID/GID
+RUN groupadd -r -g 1000 appuser && \
+    useradd -r -u 1000 -g appuser -d /app -s /sbin/nologin appuser
+
+WORKDIR /app
+
+# Copy virtual environment from builder (as root for proper permissions)
+COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
+
+# Copy only necessary application files (exclude tests, docs, etc.)
+COPY --chown=appuser:appuser src/ ./src/
+COPY --chown=appuser:appuser pyproject.toml ./
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/data /app/logs /app/temp && \
+    chown -R appuser:appuser /app/data /app/logs /app/temp
 
 # Switch to non-root user
 USER appuser
 
-# Expose port for health checks
-EXPOSE 8080
+# Health check endpoint
+EXPOSE 8082
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+# Health check with shorter timeout for production
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8082/health || exit 1
 
-# Run the application
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Production mode - can be run as worker or API server
+CMD ["python", "-m", "src.main"]
