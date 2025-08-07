@@ -66,12 +66,16 @@ class Bill(BaseRecord):
     bill_type: Optional[str] = Field(None, description="Bill type (government/member)")
 
     # Timeline
-    submitted_date: Optional[str] = Field(None, description="Submission date (YYYY-MM-DD)")
+    submitted_date: Optional[str] = Field(
+        None, description="Submission date (YYYY-MM-DD)"
+    )
     first_reading_date: Optional[str] = Field(None, description="First reading date")
     committee_referral_date: Optional[str] = Field(
         None, description="Committee referral date"
     )
-    committee_report_date: Optional[str] = Field(None, description="Committee report date")
+    committee_report_date: Optional[str] = Field(
+        None, description="Committee report date"
+    )
     final_vote_date: Optional[str] = Field(None, description="Final vote date")
     promulgated_date: Optional[str] = Field(None, description="Promulgation date")
 

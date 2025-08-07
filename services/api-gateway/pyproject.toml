@@ -17,7 +17,7 @@ rq = "^1.16.0"
 python-jose = "^3.3.0"
 passlib = "^1.7.0"
 python-multipart = "^0.0.6"
-shared = {path = "../../shared", develop = true}
+# shared = {path = "../../shared", develop = true}  # Temporarily disabled for Docker test
 sqlalchemy = "^2.0.41"
 python-dotenv = "^1.0.0"
 
@@ -28,6 +28,7 @@ httpx = "^0.25.0"
 ruff = "^0.7.0"
 types-psutil = "^5.9.5"
 types-requests = "^2.31.0"
+watchdog = {extras = ["watchmedo"], version = "^3.0.0"}
 
 [build-system]
 requires = ["poetry-core"]

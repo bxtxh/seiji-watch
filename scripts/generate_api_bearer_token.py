@@ -21,7 +21,9 @@ TEST_SECRET_KEY = "test-jwt-secret-unified-for-ci-cd"
 
 # SECURITY: No hardcoded production secrets!
 # 使用する秘密鍵を環境変数から取得（プロダクション用はJWT_SECRET_KEY_PROD）
-SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("JWT_SECRET_KEY_PROD") or TEST_SECRET_KEY
+SECRET_KEY = (
+    os.getenv("JWT_SECRET_KEY") or os.getenv("JWT_SECRET_KEY_PROD") or TEST_SECRET_KEY
+)
 
 
 def generate_ci_bearer_token(secret_key: str, hours: int = 24) -> str:

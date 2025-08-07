@@ -696,7 +696,9 @@ class AirtableClient:
             filter_formula=filter_formula, max_records=1000
         )
 
-    async def find_category_by_cap_code(self, cap_code: str) -> Optional[Dict[str, Any]]:
+    async def find_category_by_cap_code(
+        self, cap_code: str
+    ) -> Optional[Dict[str, Any]]:
         """Find category by CAP code."""
         filter_formula = f"{{CAP_Code}} = '{cap_code}'"
         categories = await self.list_issue_categories(

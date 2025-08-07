@@ -1,56 +1,215 @@
-version: "3.8"
+version: '3.8'
 
 services:
+  # PostgreSQL with pgvector extension
   postgres:
     image: pgvector/pgvector:pg15
     container_name: seiji-watch-postgres
     environment:
-      POSTGRES_DB: seiji_watch
-      POSTGRES_USER: seiji_watch_user
-      POSTGRES_PASSWORD: seiji_watch_pass
-      POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"  # SECURITY: Only expose in development. Use internal network in production
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U seiji_watch_user -d seiji_watch"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  adminer:
-    image: adminer:4.8.1
-    container_name: seiji-watch-adminer
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
-      ADMINER_DESIGN: dracula
-
+  # Redis for caching and rate limiting
   redis:
-    image: redis:7.2-alpine
+    image: redis:7-alpine
     container_name: seiji-watch-redis
     ports:
-      - "6379:6379"
+      - "6379:6379"  # SECURITY: Only expose in development. Use internal network in production
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      target: development
+      args:
+        POETRY_VERSION: 1.7.1
+    container_name: seiji-watch-api-gateway
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-development-secret-key}
+    volumes:
+      - ./services/api-gateway:/app
+      - api_gateway_venv:/app/.venv
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  # Web Frontend
+  web-frontend:
+    build:
+      context: ./services/web-frontend
+      target: development
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    container_name: seiji-watch-web-frontend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      NODE_ENV: development
+    volumes:
+      - ./services/web-frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3002:3000"
+    depends_on:
+      - api-gateway
+    command: ["npm", "run", "dev"]
+
+  # Diet Scraper
+  diet-scraper:
+    build:
+      context: ./services/diet-scraper
+      target: development
+    container_name: seiji-watch-diet-scraper
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: development
+    volumes:
+      - ./services/diet-scraper:/app
+      - diet_scraper_venv:/app/.venv
+      - scraper_data:/app/data
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Data Processor
+  data-processor:
+    build:
+      context: ./services/data-processor
+      target: development
+    container_name: seiji-watch-data-processor
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      AIRTABLE_API_KEY: ${AIRTABLE_API_KEY}
+      AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID}
+      ENVIRONMENT: development
+    volumes:
+      - ./services/data-processor:/app
+      - data_processor_venv:/app/.venv
+      - processor_data:/app/data
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # STT Worker
+  stt-worker:
+    build:
+      context: ./services/stt-worker
+      target: development
+    container_name: seiji-watch-stt-worker
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ENVIRONMENT: development
+    volumes:
+      - ./services/stt-worker:/app
+      - stt_worker_venv:/app/.venv
+      - stt_audio:/app/audio
+      - stt_models:/app/models
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Vector Store
+  vector-store:
+    build:
+      context: ./services/vector-store
+      target: development
+    container_name: seiji-watch-vector-store
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ENVIRONMENT: development
+    volumes:
+      - ./services/vector-store:/app
+      - vector_store_venv:/app/.venv
+      - embeddings_cache:/app/embeddings
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Notifications Worker
+  notifications-worker:
+    build:
+      context: ./services/notifications-worker
+      target: development
+    container_name: seiji-watch-notifications-worker
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL}
+      ENVIRONMENT: development
+    volumes:
+      - ./services/notifications-worker:/app
+      - notifications_venv:/app/.venv
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
-    driver: local
   redis_data:
-    driver: local
+  api_gateway_venv:
+  diet_scraper_venv:
+  data_processor_venv:
+  stt_worker_venv:
+  vector_store_venv:
+  notifications_venv:
+  scraper_data:
+  processor_data:
+  stt_audio:
+  stt_models:
+  embeddings_cache:
 
 networks:
   default:

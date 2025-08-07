@@ -10,6 +10,7 @@ from .base import create_engine, get_session
 engine = None
 SessionLocal = None
 
+
 def _ensure_initialized():
     """Ensure database engine and session are initialized."""
     global engine, SessionLocal

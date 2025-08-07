@@ -11,9 +11,9 @@ import sys
 from datetime import datetime, time, timedelta
 from typing import Any
 
-from batch.issue_relationship_batch import IssueRelationshipBatchProcessor
+from ..batch.issue_relationship_batch import IssueRelationshipBatchProcessor
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from ..security.validation import InputValidator
 
@@ -35,8 +35,9 @@ class BatchJobTriggerRequest(BaseModel):
     force_run: bool = False
     custom_params: dict[str, Any] | None = None
 
-    @validator("job_id")
-    def validate_job_id(self, v):
+    @field_validator("job_id")
+    @classmethod
+    def validate_job_id(cls, v):
         if not v or not v.strip():
             raise ValueError("Job ID cannot be empty")
         return InputValidator.sanitize_string(v, 100)
@@ -53,8 +54,9 @@ class BatchJobConfigUpdateRequest(BaseModel):
     notification_on_success: bool | None = None
     notification_on_failure: bool | None = None
 
-    @validator("schedule_time")
-    def validate_schedule_time(self, v):
+    @field_validator("schedule_time")
+    @classmethod
+    def validate_schedule_time(cls, v):
         if v is not None:
             try:
                 hour, minute = map(int, v.split(":"))

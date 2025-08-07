@@ -1,61 +1,114 @@
 # Git files
 .git
 .gitignore
+.gitattributes
 
 # Python cache files
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
+__pycache__/
+*.py[cod]
+*$py.class
 *.so
-.pytest_cache
+.Python
+*.egg-info/
+.pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
 
 # Virtual environments
-.venv
+.venv/
 venv/
 env/
+ENV/
+.env
 
 # IDE files
-.vscode
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
+*~
+.project
+.pydevproject
+.settings/
 
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Documentation
+# Documentation (exclude from production)
 README.md
 docs/
+*.md
+reports/
 
 # Test files
 tests/
 test_*.py
 *_test.py
+conftest.py
+pytest.ini
+.pytest_cache/
 
 # Development files
 .env.local
 .env.development
 .env.test
+*.env.example
+Makefile
+docker-compose*.yml
 
-# Poetry
-poetry.lock
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+cloudbuild.yaml
 
 # Build artifacts
 dist/
 build/
+*.egg-info/
 
 # Logs
 *.log
 logs/
+*.log.*
 
 # Temporary files
-temp/
 *.tmp
+*.bak
+*.backup
+tmp/
+temp/
 *.wav
 *.mp3
 *.mp4
+
+# Scripts (development only)
+scripts/
+*.py.bak
+
+# Data files (should be mounted as volumes)
+data/
+processed_data/
+exports/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Profiling data
+*.prof
+*.lprof
+
+# Analysis scripts (development only)
+*_analysis.py
+*_analyzer.py
+*_inspection.py
+*_diagnosis.py

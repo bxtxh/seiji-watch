@@ -35,7 +35,9 @@ class Meeting(BaseRecord):
     video_url: Optional[str] = Field(None, description="Video URL")
     audio_url: Optional[str] = Field(None, description="Audio URL")
     transcript_url: Optional[str] = Field(None, description="Transcript URL")
-    documents_urls: Optional[List[str]] = Field(None, description="List of document URLs")
+    documents_urls: Optional[List[str]] = Field(
+        None, description="List of document URLs"
+    )
 
     # Processing status
     is_processed: bool = Field(False, description="Whether meeting is processed")
@@ -66,12 +68,16 @@ class Speech(BaseRecord):
 
     # Speech metadata
     speech_order: int = Field(..., description="Order within meeting")
-    start_time: Optional[str] = Field(None, description="Speech start time (ISO format)")
+    start_time: Optional[str] = Field(
+        None, description="Speech start time (ISO format)"
+    )
     end_time: Optional[str] = Field(None, description="Speech end time (ISO format)")
     duration_seconds: Optional[int] = Field(None, description="Duration in seconds")
 
     # Speaker information (for non-member speakers)
-    speaker_name: Optional[str] = Field(None, description="Speaker name (for non-members)")
+    speaker_name: Optional[str] = Field(
+        None, description="Speaker name (for non-members)"
+    )
     speaker_title: Optional[str] = Field(None, description="Speaker title")
     speaker_type: str = Field(
         "member", description="Speaker type (member/minister/official/other)"

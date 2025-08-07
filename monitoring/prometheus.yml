@@ -1,0 +1,115 @@
+# ===================================================
+# Prometheus Configuration
+# ===================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'seiji-watch-monitor'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+          # - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'postgres'
+
+  # Redis Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'redis'
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['api-gateway:8000']
+
+  # Web Frontend (if metrics endpoint is available)
+  - job_name: 'web-frontend'
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets: ['web-frontend:3000']
+
+  # Data Processor
+  - job_name: 'data-processor'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['data-processor:8082']
+
+  # Diet Scraper
+  - job_name: 'diet-scraper'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['diet-scraper:8081']
+
+  # STT Worker
+  - job_name: 'stt-worker'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['stt-worker:8083']
+
+  # Vector Store
+  - job_name: 'vector-store'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['vector-store:8084']
+
+  # Notifications Worker
+  - job_name: 'notifications-worker'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['notifications-worker:8085']
+
+  # Nginx
+  - job_name: 'nginx'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['nginx:80']
+
+  # Node Exporter (for host metrics)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # cAdvisor (for container metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+# Service discovery for Docker Swarm (optional)
+# - job_name: 'docker-swarm'
+#   dockerswarm_sd_configs:
+#     - host: unix:///var/run/docker.sock
+#       role: tasks
+#   relabel_configs:
+#     - source_labels: [__meta_dockerswarm_service_name]
+#       target_label: service
+#     - source_labels: [__meta_dockerswarm_node_hostname]
+#       target_label: node
