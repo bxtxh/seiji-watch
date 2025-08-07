@@ -421,7 +421,7 @@ async def get_metrics_json():
         return JSONResponse(content=metrics_data)
     except Exception as e:
         log_error("Failed to export metrics as JSON", error=e)
-        raise HTTPException(status_code=500, detail="Failed to export metrics")
+        raise HTTPException(status_code=500, detail=sanitize_error_for_api(e, "Failed to export metrics"))
 
 
 @app.get("/status")
