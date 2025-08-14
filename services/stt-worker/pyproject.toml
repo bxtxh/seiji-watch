@@ -22,7 +22,7 @@ rq = "^1.16.0"
 numpy = "^1.24.0"
 scipy = "^1.11.0"
 librosa = "^0.10.0"
-shared = {path = "../../shared", develop = true}
+# shared = {path = "../../shared", develop = true}  # Commented out for Docker builds
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

@@ -19,7 +19,7 @@ pydantic = "^2.5.0"
 google-cloud-storage = "^2.10.0"
 google-cloud-pubsub = "^2.18.0"
 janome = "^0.4.2"
-shared = {path = "../../shared", develop = true}
+# shared = {path = "../../shared", develop = true}  # Commented out for Docker builds
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

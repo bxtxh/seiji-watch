@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  # Redis for caching and message queue
+  redis:
+    image: redis:7-alpine
+    container_name: migration-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - migration_network
+
+  # Migration worker service
+  migration-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.migration
+    container_name: migration-worker
+    environment:
+      - PYTHONPATH=/app/shared/src:/app
+      - AIRTABLE_PAT=${AIRTABLE_PAT}
+      - AIRTABLE_BASE_ID=${AIRTABLE_BASE_ID}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MIGRATION_PHASE=${MIGRATION_PHASE:-1}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./shared:/app/shared
+      - ./scripts:/app/scripts
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: python3 /app/scripts/migration_worker.py
+    restart: unless-stopped
+    networks:
+      - migration_network
+
+  # Sync worker service
+  sync-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.migration
+    container_name: sync-worker
+    environment:
+      - PYTHONPATH=/app/shared/src:/app
+      - AIRTABLE_PAT=${AIRTABLE_PAT}
+      - AIRTABLE_BASE_ID=${AIRTABLE_BASE_ID}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SYNC_MODE=${SYNC_MODE:-incremental}
+      - SYNC_INTERVAL_MINUTES=${SYNC_INTERVAL_MINUTES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./shared:/app/shared
+      - ./scripts:/app/scripts
+      - ./logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: python3 /app/scripts/sync_worker.py
+    restart: unless-stopped
+    networks:
+      - migration_network
+
+  # Monitoring service
+  monitoring:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.monitoring
+    container_name: migration-monitoring
+    ports:
+      - "8080:8080"
+      - "9090:9090"  # Prometheus metrics
+    environment:
+      - PYTHONPATH=/app/shared/src:/app
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONITORING_PORT=8080
+      - METRICS_PORT=9090
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./shared:/app/shared
+      - ./logs:/app/logs
+      - ./monitoring/dashboards:/app/dashboards
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: python3 /app/scripts/monitoring_server.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - migration_network
+
+  # Rollback manager service (on-demand)
+  rollback-manager:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.migration
+    container_name: rollback-manager
+    environment:
+      - PYTHONPATH=/app/shared/src:/app
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./shared:/app/shared
+      - ./scripts:/app/scripts
+      - ./backups:/app/backups
+      - ./logs:/app/logs
+    command: python3 /app/scripts/rollback_service.py
+    profiles:
+      - rollback
+    networks:
+      - migration_network
+
+  # Migration API Gateway (optional)
+  migration-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: migration-api
+    ports:
+      - "8081:8081"
+    environment:
+      - PYTHONPATH=/app/shared/src:/app/services/api-gateway/src:/app
+      - AIRTABLE_PAT=${AIRTABLE_PAT}
+      - AIRTABLE_BASE_ID=${AIRTABLE_BASE_ID}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - API_PORT=8081
+      - JWT_SECRET_KEY=${MIGRATION_JWT_SECRET}
+      - MIGRATION_ADMIN_EMAIL=${MIGRATION_ADMIN_EMAIL}
+      - MIGRATION_ADMIN_PASSWORD=${MIGRATION_ADMIN_PASSWORD}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./shared:/app/shared
+      - ./services/api-gateway:/app/services/api-gateway
+      - ./logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn services.api_gateway.src.routes.hybrid_api:app --host 0.0.0.0 --port 8081 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/v2/monitoring/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - migration_network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  migration_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

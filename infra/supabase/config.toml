@@ -1,0 +1,62 @@
+# Supabase Configuration for Diet Issue Tracker
+
+[project]
+# A unique project identifier used for local development
+project_id = "seiji-watch"
+
+[api]
+# Port for the Supabase API gateway
+port = 54321
+# Schemas to expose in the API
+schemas = ["public", "storage", "graphql_public"]
+# Extra schemas to add to the search_path of every request
+extra_search_path = ["public", "extensions"]
+# The maximum number of rows returned from a single query
+max_rows = 1000
+
+[db]
+# Port for the local PostgreSQL database
+port = 54322
+# The database major version to use
+major_version = 15
+
+[studio]
+# Port for Supabase Studio
+port = 54323
+
+[inbucket]
+# Port for the email testing server
+port = 54324
+
+[storage]
+# The maximum file size allowed for uploads (50MB)
+file_size_limit = "50MiB"
+
+[auth]
+# The base URL of your application
+site_url = "http://localhost:3000"
+# A list of URLs to redirect to after a successful login
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+# How long tokens are valid for, in seconds
+jwt_expiry = 3600
+# Allow/disallow new user signups
+enable_signup = true
+
+[auth.email]
+# Allow/disallow magic link login
+enable_signup = true
+# Allow/disallow email confirmations
+enable_confirmations = true
+
+# Email templates
+[auth.email.template.confirmation]
+subject = "Confirm your email for Seiji Watch"
+content_path = "./email-templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password for Seiji Watch"
+content_path = "./email-templates/recovery.html"
+
+[auth.email.template.invite]
+subject = "You have been invited to Seiji Watch"
+content_path = "./email-templates/invite.html"
