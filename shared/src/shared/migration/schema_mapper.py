@@ -6,21 +6,21 @@ import json
 import logging
 import re
 import uuid
-from datetime import datetime, date
-from typing import Any, Dict, List, Optional, Union
+from datetime import date, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 class SchemaMapper:
     """Maps Airtable schema and data to Supabase format."""
-    
+
     def __init__(self):
         """Initialize schema mapper with field mappings."""
         self.field_mappings = self._load_field_mappings()
         self.type_converters = self._load_type_converters()
-        
-    def _load_field_mappings(self) -> Dict[str, Dict[str, Any]]:
+
+    def _load_field_mappings(self) -> dict[str, dict[str, Any]]:
         """Load field mappings for each table."""
         return {
             "Parties": {
@@ -199,8 +199,8 @@ class SchemaMapper:
                 "Updated_At": "updated_at",
             },
         }
-        
-    def _load_type_converters(self) -> Dict[str, callable]:
+
+    def _load_type_converters(self) -> dict[str, callable]:
         """Load type conversion functions."""
         return {
             "boolean": self._convert_boolean,
@@ -213,93 +213,116 @@ class SchemaMapper:
             "uuid": self._convert_uuid,
             "array": self._convert_array,
         }
-        
+
     def airtable_to_supabase(
         self,
         table_name: str,
-        airtable_record: Dict[str, Any],
-        id_mappings: Optional[Dict[str, Dict[str, str]]] = None
-    ) -> Dict[str, Any]:
+        airtable_record: dict[str, Any],
+        id_mappings: dict[str, dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
         """Convert Airtable record to Supabase format.
-        
+
         Args:
             table_name: Name of the Airtable table
             airtable_record: Airtable record with 'id' and 'fields'
             id_mappings: Optional ID mappings for foreign key resolution
-            
+
         Returns:
             Supabase-formatted record
         """
         if table_name not in self.field_mappings:
             raise ValueError(f"Unknown table: {table_name}")
-            
+
         # Extract Airtable fields
         airtable_id = airtable_record.get("id", "")
         fields = airtable_record.get("fields", {})
-        
+
         # Start with airtable_id
-        supabase_record = {
-            "airtable_id": airtable_id
-        }
-        
+        supabase_record = {"airtable_id": airtable_id}
+
         # Map each field
         mapping = self.field_mappings[table_name]
         for airtable_field, supabase_field in mapping.items():
             if airtable_field in fields:
                 value = fields[airtable_field]
-                
+
                 # Handle foreign key references
                 if supabase_field.endswith("_id") and id_mappings:
                     value = self._resolve_foreign_key(
                         value, supabase_field, id_mappings
                     )
                 # Handle JSON fields
-                elif airtable_field in ["Submitting_Members", "Related_Bills", 
-                                       "Key_Points", "Tags", "Agenda", 
-                                       "Documents_Urls", "Topics"]:
+                elif airtable_field in [
+                    "Submitting_Members",
+                    "Related_Bills",
+                    "Key_Points",
+                    "Tags",
+                    "Agenda",
+                    "Documents_Urls",
+                    "Topics",
+                ]:
                     value = self._convert_json(value)
                 # Handle date/time fields
-                elif "Date" in airtable_field or airtable_field in ["Created_At", "Updated_At"]:
+                elif "Date" in airtable_field or airtable_field in [
+                    "Created_At",
+                    "Updated_At",
+                ]:
                     value = self._convert_datetime(value)
                 elif "Time" in airtable_field:
                     value = self._convert_time(value)
                 # Handle boolean fields
-                elif airtable_field.startswith("Is_") or airtable_field in ["STT_Completed", "Transcript_Processed"]:
+                elif airtable_field.startswith("Is_") or airtable_field in [
+                    "STT_Completed",
+                    "Transcript_Processed",
+                ]:
                     value = self._convert_boolean(value)
                 # Handle numeric fields
-                elif airtable_field in ["Terms_Served", "Session_Number", "Participant_Count", 
-                                       "Speech_Order", "Word_Count", "Total_Votes", 
-                                       "Yes_Votes", "No_Votes", "Abstain_Votes", "Absent_Votes"]:
+                elif airtable_field in [
+                    "Terms_Served",
+                    "Session_Number",
+                    "Participant_Count",
+                    "Speech_Order",
+                    "Word_Count",
+                    "Total_Votes",
+                    "Yes_Votes",
+                    "No_Votes",
+                    "Abstain_Votes",
+                    "Absent_Votes",
+                ]:
                     value = self._convert_integer(value)
-                elif airtable_field in ["Estimated_Cost", "Confidence_Score", "Extraction_Confidence"]:
+                elif airtable_field in [
+                    "Estimated_Cost",
+                    "Confidence_Score",
+                    "Extraction_Confidence",
+                ]:
                     value = self._convert_decimal(value)
-                    
+
                 supabase_record[supabase_field] = value
-                
+
         # Add sync version
         supabase_record["sync_version"] = 1
-        
+
         return supabase_record
-        
+
     def _resolve_foreign_key(
         self,
-        value: Union[str, List[str]],
+        value: str | list[str],
         field_name: str,
-        id_mappings: Dict[str, Dict[str, str]]
-    ) -> Optional[Union[str, List[str]]]:
+        id_mappings: dict[str, dict[str, str]],
+    ) -> str | list[str] | None:
         """Resolve Airtable record IDs to Supabase UUIDs.
-        
+
         Args:
             value: Airtable record ID(s)
             field_name: Field name to determine table
             id_mappings: Mapping of table -> airtable_id -> supabase_id
-            
+
         Returns:
             Supabase UUID(s)
         """
         if not value:
             return None
-            
+
         # Determine table from field name
         table_map = {
             "party_id": "parties",
@@ -311,12 +334,12 @@ class SchemaMapper:
             "category_id": "policy_categories",
             "parent_id": "policy_categories",
         }
-        
+
         table = table_map.get(field_name)
         if not table or table not in id_mappings:
             logger.warning(f"Cannot resolve foreign key for {field_name}")
             return None
-            
+
         # Handle single vs multiple IDs
         if isinstance(value, list):
             resolved = []
@@ -327,7 +350,7 @@ class SchemaMapper:
             return resolved if resolved else None
         else:
             return id_mappings[table].get(value)
-            
+
     def _convert_boolean(self, value: Any) -> bool:
         """Convert to boolean."""
         if isinstance(value, bool):
@@ -335,8 +358,8 @@ class SchemaMapper:
         if isinstance(value, str):
             return value.lower() in ["true", "yes", "1", "on"]
         return bool(value)
-        
-    def _convert_integer(self, value: Any) -> Optional[int]:
+
+    def _convert_integer(self, value: Any) -> int | None:
         """Convert to integer."""
         if value is None or value == "":
             return None
@@ -345,8 +368,8 @@ class SchemaMapper:
         except (ValueError, TypeError):
             logger.warning(f"Cannot convert to integer: {value}")
             return None
-            
-    def _convert_decimal(self, value: Any) -> Optional[float]:
+
+    def _convert_decimal(self, value: Any) -> float | None:
         """Convert to decimal."""
         if value is None or value == "":
             return None
@@ -355,15 +378,15 @@ class SchemaMapper:
         except (ValueError, TypeError):
             logger.warning(f"Cannot convert to decimal: {value}")
             return None
-            
-    def _convert_date(self, value: Any) -> Optional[str]:
+
+    def _convert_date(self, value: Any) -> str | None:
         """Convert to ISO date string."""
         if not value:
             return None
-            
+
         if isinstance(value, date):
             return value.isoformat()
-            
+
         if isinstance(value, str):
             # Try to parse various date formats
             formats = [
@@ -373,59 +396,59 @@ class SchemaMapper:
                 "%m/%d/%Y",
                 "%Y年%m月%d日",
             ]
-            
+
             for fmt in formats:
                 try:
                     dt = datetime.strptime(value, fmt)
                     return dt.date().isoformat()
                 except ValueError:
                     continue
-                    
+
             # If no format matches, return as-is and log warning
             logger.warning(f"Cannot parse date: {value}")
             return value
-            
+
         return str(value)
-        
-    def _convert_datetime(self, value: Any) -> Optional[str]:
+
+    def _convert_datetime(self, value: Any) -> str | None:
         """Convert to ISO datetime string."""
         if not value:
             return None
-            
+
         if isinstance(value, datetime):
             return value.isoformat()
-            
+
         if isinstance(value, str):
             # Airtable datetime format: 2024-01-15T09:30:00.000Z
             if "T" in value:
                 return value
-                
+
             # Try to parse as date only
             date_str = self._convert_date(value)
             if date_str:
                 return f"{date_str}T00:00:00Z"
-                
+
         return str(value)
-        
-    def _convert_time(self, value: Any) -> Optional[str]:
+
+    def _convert_time(self, value: Any) -> str | None:
         """Convert to time string."""
         if not value:
             return None
-            
+
         if isinstance(value, str):
             # Ensure HH:MM:SS format
             if re.match(r"^\d{2}:\d{2}(:\d{2})?$", value):
                 if len(value) == 5:  # HH:MM
                     return f"{value}:00"
                 return value
-                
+
         return str(value)
-        
-    def _convert_json(self, value: Any) -> Optional[str]:
+
+    def _convert_json(self, value: Any) -> str | None:
         """Convert to JSON string."""
         if not value:
             return None
-            
+
         if isinstance(value, str):
             # Check if already JSON
             try:
@@ -434,17 +457,17 @@ class SchemaMapper:
             except json.JSONDecodeError:
                 # Treat as single value and wrap in array
                 return json.dumps([value])
-                
+
         if isinstance(value, (list, dict)):
             return json.dumps(value, ensure_ascii=False)
-            
+
         return json.dumps(value)
-        
+
     def _convert_uuid(self, value: Any) -> str:
         """Convert to UUID string."""
         if not value:
             return str(uuid.uuid4())
-            
+
         # Check if already UUID
         try:
             uuid.UUID(value)
@@ -452,15 +475,15 @@ class SchemaMapper:
         except (ValueError, AttributeError):
             # Generate deterministic UUID from value
             return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(value)))
-            
-    def _convert_array(self, value: Any) -> List[Any]:
+
+    def _convert_array(self, value: Any) -> list[Any]:
         """Convert to array."""
         if not value:
             return []
-            
+
         if isinstance(value, list):
             return value
-            
+
         if isinstance(value, str):
             # Try to parse as JSON array
             try:
@@ -469,13 +492,13 @@ class SchemaMapper:
                     return parsed
             except json.JSONDecodeError:
                 pass
-                
+
             # Split comma-separated values
             if "," in value:
                 return [v.strip() for v in value.split(",")]
-                
+
         return [value]
-        
+
     def get_supabase_table_name(self, airtable_table: str) -> str:
         """Get Supabase table name from Airtable table name."""
         table_map = {
@@ -490,25 +513,21 @@ class SchemaMapper:
             "Issues": "issues",
             "IssueTags": "issue_tags",
         }
-        
+
         return table_map.get(airtable_table, airtable_table.lower())
-        
-    def validate_record(
-        self,
-        table_name: str,
-        record: Dict[str, Any]
-    ) -> List[str]:
+
+    def validate_record(self, table_name: str, record: dict[str, Any]) -> list[str]:
         """Validate a record for required fields and constraints.
-        
+
         Args:
             table_name: Supabase table name
             record: Record to validate
-            
+
         Returns:
             List of validation errors (empty if valid)
         """
         errors = []
-        
+
         # Define required fields per table
         required_fields = {
             "parties": ["airtable_id", "name"],
@@ -521,27 +540,27 @@ class SchemaMapper:
             "issues": ["airtable_id", "title", "description"],
             "issue_tags": ["airtable_id", "name", "category"],
         }
-        
+
         # Check required fields
         if table_name in required_fields:
             for field in required_fields[table_name]:
                 if field not in record or record[field] is None:
                     errors.append(f"Missing required field: {field}")
-                    
+
         # Validate specific constraints
         if table_name == "members" and "house" in record:
             if record["house"] not in ["衆議院", "参議院"]:
                 errors.append(f"Invalid house value: {record['house']}")
-                
+
         if table_name == "policy_categories" and "layer" in record:
             if record["layer"] not in ["L1", "L2", "L3"]:
                 errors.append(f"Invalid layer value: {record['layer']}")
-                
+
         # Validate color codes
         color_fields = ["color_code"]
         for field in color_fields:
             if field in record and record[field]:
                 if not re.match(r"^#[0-9A-Fa-f]{6}$", record[field]):
                     errors.append(f"Invalid color code: {record[field]}")
-                    
+
         return errors

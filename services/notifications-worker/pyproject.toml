@@ -22,7 +22,7 @@ redis = "^5.0.0"
 rq = "^1.16.0"
 google-cloud-pubsub = "^2.18.0"
 google-cloud-scheduler = "^2.13.0"
-shared = {path = "../../shared", develop = true}
+# shared = {path = "../../shared", develop = true}  # Commented out for Docker builds
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

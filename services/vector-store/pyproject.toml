@@ -26,7 +26,7 @@ torch = "^2.1.0"
 transformers = "^4.35.0"
 redis = "^5.0.0"
 google-cloud-pubsub = "^2.18.0"
-shared = {path = "../../shared", develop = true}
+# shared = {path = "../../shared", develop = true}  # Commented out for Docker builds
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
