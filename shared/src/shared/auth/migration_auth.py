@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import jwt
-import hashlib
+import bcrypt
 import secrets
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional, List
@@ -164,8 +164,9 @@ class MigrationAuth:
         }
         
     def _hash_password(self, password: str) -> str:
-        """Hash password using SHA256 (use bcrypt in production)."""
-        return hashlib.sha256(password.encode()).hexdigest()
+        """Hash password using bcrypt for secure password storage."""
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
         
     def create_user(
         self,
@@ -219,8 +220,12 @@ class MigrationAuth:
             return None
             
         # Verify password
-        password_hash = self._hash_password(password)
-        if self.password_hashes.get(user.id) != password_hash:
+        stored_hash = self.password_hashes.get(user.id)
+        if not stored_hash:
+            return None
+        
+        # Use bcrypt's checkpw for secure comparison
+        if not bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
             return None
             
         # Update last login
@@ -292,8 +297,9 @@ class MigrationAuth:
         # Generate secure random key
         api_key = f"mig_{secrets.token_urlsafe(32)}"
         
-        # Store hash of key
-        key_hash = self._hash_password(api_key)
+        # Store hash of key using bcrypt
+        salt = bcrypt.gensalt()
+        key_hash = bcrypt.hashpw(api_key.encode('utf-8'), salt).decode('utf-8')
         self.api_keys[key_hash] = user_id
         
         logger.info(f"Created API key for user {user_id}: {description}")
@@ -312,13 +318,12 @@ class MigrationAuth:
         Returns:
             User associated with key or None
         """
-        key_hash = self._hash_password(api_key)
-        user_id = self.api_keys.get(key_hash)
+        # Check against all stored API key hashes
+        for stored_hash, user_id in self.api_keys.items():
+            if bcrypt.checkpw(api_key.encode('utf-8'), stored_hash.encode('utf-8')):
+                return self.users.get(user_id)
         
-        if not user_id:
-            return None
-            
-        return self.users.get(user_id)
+        return None
 
 
 # FastAPI dependencies
