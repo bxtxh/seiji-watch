@@ -140,7 +140,12 @@ class HybridDataAccessLayer:
             value = await self.redis.get(key)
             if value:
                 self.metrics["cache_hits"] += 1
-                return json.loads(value)
+                try:
+                    return json.loads(value)
+                except json.JSONDecodeError:
+                    logger.warning(f"Invalid JSON in cache for key: {key}")
+                    self.metrics["cache_misses"] += 1
+                    return None
             else:
                 self.metrics["cache_misses"] += 1
                 return None
@@ -544,7 +549,7 @@ class HybridDataAccessLayer:
             airtable_field = self._map_to_airtable_field(field)
 
             if value is None:
-                conditions.append("{{field}} = BLANK()")
+                conditions.append(f"{{{airtable_field}}} = BLANK()")
             elif isinstance(value, bool):
                 conditions.append(f"{{{airtable_field}}} = {str(value).upper()}")
             elif isinstance(value, (int, float)):

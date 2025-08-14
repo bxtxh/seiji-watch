@@ -293,10 +293,7 @@ class MigrationAuth:
 
         logger.info(f"Created API key for user {user_id}: {description}")
 
-        # 🔴 認証情報が必要です - APIキーを安全に保存してください
-        logger.warning(
-            f"Store this API key securely, it won't be shown again: {api_key}"
-        )
+        # Note: API key is returned to the caller but not logged for security
 
         return api_key
 

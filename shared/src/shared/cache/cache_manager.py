@@ -349,12 +349,15 @@ class CacheManager:
             cached_data = await self.redis_client.get(key)
             response_time = (asyncio.get_event_loop().time() - start_time) * 1000
 
-            # Update average response time
-            self.statistics.avg_response_time_ms = (
-                self.statistics.avg_response_time_ms
-                * (self.statistics.total_requests - 1)
-                + response_time
-            ) / self.statistics.total_requests
+            # Update average response time (avoid division by zero)
+            if self.statistics.total_requests > 0:
+                self.statistics.avg_response_time_ms = (
+                    self.statistics.avg_response_time_ms
+                    * (self.statistics.total_requests - 1)
+                    + response_time
+                ) / self.statistics.total_requests
+            else:
+                self.statistics.avg_response_time_ms = response_time
 
             if cached_data:
                 # Cache hit
