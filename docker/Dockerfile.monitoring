@@ -1,0 +1,44 @@
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.monitoring.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.monitoring.txt
+
+# Copy application code
+COPY shared/ /app/shared/
+COPY scripts/ /app/scripts/
+COPY monitoring/ /app/monitoring/
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/dashboards /app/metrics
+
+# Set Python path
+ENV PYTHONPATH=/app/shared/src:/app
+ENV PYTHONUNBUFFERED=1
+
+# Create non-root user
+RUN useradd -m -u 1000 monitoring && \
+    chown -R monitoring:monitoring /app
+
+USER monitoring
+
+# Expose ports
+EXPOSE 8080 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Default command
+CMD ["python3", "/app/scripts/monitoring_server.py"]

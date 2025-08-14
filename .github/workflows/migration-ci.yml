@@ -1,0 +1,253 @@
+name: Migration CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - feat/supabase-migration
+    paths:
+      - 'shared/src/shared/clients/**'
+      - 'shared/src/shared/migration/**'
+      - 'shared/src/shared/dal/**'
+      - 'scripts/migration*.py'
+      - 'scripts/sync*.py'
+      - 'infra/supabase/**'
+      - 'tests/migration/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'shared/src/shared/migration/**'
+      - 'tests/migration/**'
+
+jobs:
+  test-migration:
+    name: Test Migration Components
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: supabase/postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.migration.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.migration.txt
+          pip install pytest pytest-asyncio pytest-cov
+      
+      - name: Set up test database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          psql $DATABASE_URL < infra/supabase/migrations/001_initial_schema.sql
+          psql $DATABASE_URL < infra/supabase/migrations/002_security_policies.sql
+      
+      - name: Run unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/shared/src:${{ github.workspace }}
+          SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          AIRTABLE_PAT: test_token
+          AIRTABLE_BASE_ID: test_base
+        run: |
+          pytest tests/migration/ -v --cov=shared.migration --cov-report=xml
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: migration
+          name: migration-coverage
+
+  lint-migration:
+    name: Lint Migration Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy
+      
+      - name: Run ruff
+        run: |
+          ruff check shared/src/shared/migration/
+          ruff check shared/src/shared/dal/
+          ruff check scripts/migration*.py
+          ruff check scripts/sync*.py
+      
+      - name: Run mypy
+        run: |
+          mypy shared/src/shared/migration/ --ignore-missing-imports
+          mypy shared/src/shared/dal/ --ignore-missing-imports
+
+  validate-schema:
+    name: Validate Database Schema
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: supabase/postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      
+      - name: Test migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          # Apply all migrations
+          for migration in infra/supabase/migrations/*.sql; do
+            echo "Applying $(basename $migration)..."
+            psql $DATABASE_URL < $migration
+          done
+          
+          # Verify schema
+          psql $DATABASE_URL -c "\dt" | grep -E "bills|members|parties|policy_categories"
+          psql $DATABASE_URL -c "SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'public';"
+
+  test-docker:
+    name: Test Docker Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build migration worker image
+        run: |
+          docker build -f docker/Dockerfile.migration -t migration-worker:test .
+      
+      - name: Build monitoring image
+        run: |
+          docker build -f docker/Dockerfile.monitoring -t migration-monitoring:test .
+      
+      - name: Test docker-compose
+        run: |
+          docker-compose -f docker-compose.migration.yml config
+
+  dry-run-migration:
+    name: Dry Run Migration
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.migration.txt
+      
+      - name: Run migration dry-run
+        env:
+          PYTHONPATH: ${{ github.workspace }}/shared/src:${{ github.workspace }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT_TEST }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID_TEST }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL_TEST }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_TEST }}
+        run: |
+          python scripts/migration_cli.py migrate full --dry-run
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [test-migration, lint-migration, validate-schema]
+    if: github.ref == 'refs/heads/feat/supabase-migration' && github.event_name == 'push'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to staging
+        env:
+          ENVIRONMENT: staging
+          MIGRATION_PHASE: 1
+        run: |
+          echo "Deploying to staging environment..."
+          # ./scripts/deploy_migration.sh staging 1
+
+  notify:
+    name: Notify Status
+    runs-on: ubuntu-latest
+    needs: [test-migration, lint-migration, validate-schema]
+    if: always()
+    
+    steps:
+      - name: Send notification
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "Migration CI/CD pipeline completed"
+          # Add Slack/Discord notification here
